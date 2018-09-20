@@ -1,5 +1,5 @@
 # sscs-bulk-scan
-Project to manage the Bulk Scan transformation for SSCS 
+Project to manage the Bulk Scan transformation for SSCS
 
 [![Build Status](https://travis-ci.org/hmcts/sscs-bulk-scan.svg?branch=master)](https://travis-ci.org/hmcts/sscs-bulk-scan)
 
