@@ -1,0 +1,15 @@
+#!groovy
+properties([
+        [$class: 'GithubProjectProperty', projectUrlStr: 'https://github.com/hmcts/sscs-bulk-scan.git'],
+        pipelineTriggers([[$class: 'GitHubPushTrigger']])
+])
+
+@Library("Infrastructure")
+
+def product = "sscs"
+def component = "bulk-scan"
+
+withPipeline("java", product, component) {
+    enableSlackNotifications('#sscs-tech')
+}
+

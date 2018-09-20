@@ -1,0 +1,11 @@
+server:
+  port: 8090
+
+management:
+  endpoints:
+    web:
+      base-path: /
+
+spring:
+  application:
+    name: SscsBulkScan
