@@ -2,6 +2,7 @@ plugins {
   id 'application'
   id 'checkstyle'
   id 'pmd'
+  id 'org.sonarqube' version '2.6.2'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.0.5.RELEASE'
   id 'org.springframework.boot' version '2.0.3.RELEASE'
@@ -114,6 +115,20 @@ dependencyCheck {
 
 repositories {
   jcenter()
+}
+
+project.tasks['sonarqube'].dependsOn test, integration
+
+sonarqube {
+  properties {
+    property "sonar.projectName", "SSCS - Bulk Scan"
+    property "sonar.projectKey", "SSCSTYANS"
+    property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
+    property "sonar.jacoco.itReportPath", "${project.buildDir}/jacoco/integration.exec"
+    property "sonar.exclusions", "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
+      "src/main/java/uk/gov/hmcts/reform/sscs/BulkScanApplication.java," +
+      "src/main/java/uk/gov/hmcts/reform/sscs/config/**,"
+  }
 }
 
 // it is important to specify logback classic and core packages explicitly as libraries like spring boot
