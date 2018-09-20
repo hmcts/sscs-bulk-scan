@@ -57,13 +57,9 @@ task functional(type: Test, description: 'Runs the functional tests.', group: 'V
 task integration(type: Test, description: 'Runs the integration tests.', group: 'Verification') {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
-
-  // set your environment variables here
-  // environment("APPINSIGHTS_INSTRUMENTATIONKEY", "test-key")
 }
 
-task smoke(type: Test) {
-  description = "Runs Smoke Tests"
+task smoke(type: Test, description: 'Runs Smoke Tests.') {
   testClassesDirs = sourceSets.smokeTest.output.classesDirs
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
@@ -114,6 +110,13 @@ dependencyCheck {
 }
 
 repositories {
+  mavenLocal()
+  maven {
+    url "https://dl.bintray.com/hmcts/hmcts-maven"
+  }
+  maven {
+    url 'https://repo.spring.io/libs-milestone'
+  }
   jcenter()
 }
 
@@ -149,6 +152,8 @@ dependencies {
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
 
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '0.0.34'
+
   compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.0.1.RELEASE'
 
   testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
@@ -157,8 +162,11 @@ dependencies {
   integrationTestCompile sourceSets.test.runtimeClasspath
 
   functionalTestCompile sourceSets.main.runtimeClasspath
+  functionalTestCompile sourceSets.test.runtimeClasspath
 
   smokeTestCompile sourceSets.main.runtimeClasspath
+  smokeTestCompile sourceSets.test.runtimeClasspath
+
 }
 
 mainClassName = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
