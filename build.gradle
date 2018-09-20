@@ -146,10 +146,10 @@ dependencies {
   smokeTestCompile sourceSets.main.runtimeClasspath
 }
 
-mainClassName = 'uk.gov.hmcts.reform.demo.Application'
+mainClassName = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
 
 bootJar {
-  archiveName = 'spring-boot-template.jar'
+  archiveName = 'sscs-bulk-scan.jar'
 
   manifest {
     attributes('Implementation-Version': project.version.toString())

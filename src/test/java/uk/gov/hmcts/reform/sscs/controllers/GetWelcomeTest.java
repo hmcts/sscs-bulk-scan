@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.demo.controllers;
+package uk.gov.hmcts.reform.sscs.controllers;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
