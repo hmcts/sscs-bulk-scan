@@ -157,6 +157,8 @@ dependencies {
 
   compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.0.1.RELEASE'
 
+  compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+
   testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
 
   integrationTestCompile sourceSets.main.runtimeClasspath
