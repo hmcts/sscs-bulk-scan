@@ -5,20 +5,17 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.domain.CaseValidationResponse;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Arrays.asList;
 
 @Component
 public class SscsCaseValidator implements CaseValidator {
 
     @Value("${display.case.error}")
-    private boolean displayCaseError;
+    private boolean displayCaseError; // Only required to demo error scenario
 
     @Value("${display.case.warning}")
-    private boolean displayCaseWarning;
+    private boolean displayCaseWarning; // Only required to demo warning scenario
 
     @Override
     public CaseValidationResponse validate(Map<String, Object> caseData) {
