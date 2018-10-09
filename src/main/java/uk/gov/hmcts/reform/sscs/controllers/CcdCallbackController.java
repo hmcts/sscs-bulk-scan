@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +19,14 @@ import uk.gov.hmcts.reform.sscs.service.CcdCallbackHandler;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @RestController
-public class BulkScanController {
+public class CcdCallbackController {
 
-    private static final org.slf4j.Logger LOG = getLogger(BulkScanController.class);
+    private static final Logger logger = getLogger(CcdCallbackController.class);
 
     private final CcdCallbackHandler ccdCallbackHandler;
 
     @Autowired
-    public BulkScanController(CcdCallbackHandler ccdCallbackHandler) {
+    public CcdCallbackController(CcdCallbackHandler ccdCallbackHandler) {
         this.ccdCallbackHandler = ccdCallbackHandler;
     }
 
@@ -40,10 +41,14 @@ public class BulkScanController {
         @ApiResponse(code = 500, message = "Internal Server Error")
     })
     public ResponseEntity<CcdCallbackResponse> createCaseCallbackHandler(
-        @RequestHeader(value = "Authorization") String authorisationToken,
+        @RequestHeader(value = "Authorization") String userAuthorisationToken,
+        @RequestHeader(value = "serviceauthorization") String serviceAuthorisationToken,
+        @RequestHeader(value = "user-id") String userId,
         @RequestBody @ApiParam("CaseData") CreateCaseEvent caseDetailsRequest) {
 
-        return ResponseEntity.ok(ccdCallbackHandler.handle(caseDetailsRequest, authorisationToken));
+        logger.info("CCD Call back case details  {}", caseDetailsRequest);
+
+        return ResponseEntity.ok(ccdCallbackHandler.handle(caseDetailsRequest, userAuthorisationToken, serviceAuthorisationToken, userId));
     }
 
 }
