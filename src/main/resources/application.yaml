@@ -9,6 +9,3 @@ management:
 spring:
   application:
     name: SscsBulkScan
-  devtools:
-    restart:
-      enabled: true
