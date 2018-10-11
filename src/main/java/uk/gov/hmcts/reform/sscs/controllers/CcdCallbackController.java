@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,16 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.sscs.domain.CcdCallbackResponse;
-import uk.gov.hmcts.reform.sscs.domain.CreateCaseEvent;
-import uk.gov.hmcts.reform.sscs.service.CcdCallbackHandler;
-
-import static org.slf4j.LoggerFactory.getLogger;
+import uk.gov.hmcts.reform.sscs.domain.bulkscan.CcdCallbackResponse;
+import uk.gov.hmcts.reform.sscs.domain.bulkscan.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.service.bulkscan.CcdCallbackHandler;
 
 @RestController
 public class CcdCallbackController {
-
-    private static final Logger logger = getLogger(CcdCallbackController.class);
 
     private final CcdCallbackHandler ccdCallbackHandler;
 
@@ -30,7 +25,7 @@ public class CcdCallbackController {
         this.ccdCallbackHandler = ccdCallbackHandler;
     }
 
-    @PostMapping(path = "/create-case",
+    @PostMapping(path = "/exception-record",
         consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Handles about to submit callback from CCD")
     @ApiResponses(value = {
@@ -40,15 +35,15 @@ public class CcdCallbackController {
         @ApiResponse(code = 400, message = "Bad Request"),
         @ApiResponse(code = 500, message = "Internal Server Error")
     })
-    public ResponseEntity<CcdCallbackResponse> createCaseCallbackHandler(
-        @RequestHeader(value = "Authorization") String userAuthorisationToken,
-        @RequestHeader(value = "serviceauthorization") String serviceAuthorisationToken,
+    public ResponseEntity<CcdCallbackResponse> handleExceptionRecordCallback(
+        @RequestHeader(value = "Authorization") String userAuthToken,
+        @RequestHeader(value = "serviceauthorization") String serviceAuthToken,
         @RequestHeader(value = "user-id") String userId,
-        @RequestBody @ApiParam("CaseData") CreateCaseEvent caseDetailsRequest) {
+        @RequestBody @ApiParam("CaseData") ExceptionCaseData caseData) {
 
-        logger.info("CCD Call back case details  {}", caseDetailsRequest);
+        CcdCallbackResponse ccdCallbackResponse = ccdCallbackHandler.handle(caseData, userAuthToken, serviceAuthToken, userId);
 
-        return ResponseEntity.ok(ccdCallbackHandler.handle(caseDetailsRequest, userAuthorisationToken, serviceAuthorisationToken, userId));
+        return ResponseEntity.ok(ccdCallbackResponse);
     }
 
 }

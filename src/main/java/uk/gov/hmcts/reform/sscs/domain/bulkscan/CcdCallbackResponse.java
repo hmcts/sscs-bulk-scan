@@ -1,19 +1,16 @@
-package uk.gov.hmcts.reform.sscs.domain;
+package uk.gov.hmcts.reform.sscs.domain.bulkscan;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 
+import lombok.Builder;
+import lombok.Data;
+
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ApiModel(description = "The response to a callback from ccd")
 @Builder
