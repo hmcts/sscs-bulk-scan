@@ -129,6 +129,7 @@ sonarqube {
     property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
     property "sonar.jacoco.itReportPath", "${project.buildDir}/jacoco/integration.exec"
     property "sonar.exclusions", "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
+      "src/main/java/uk/gov/hmcts/reform/sscs/domain/bulkscan/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/BulkScanApplication.java," +
       "src/main/java/uk/gov/hmcts/reform/sscs/config/**,"
   }
@@ -139,7 +140,8 @@ sonarqube {
 def versions = [
   reformLogging: '3.0.1',
   springBoot: springBoot.class.package.implementationVersion,
-  springfoxSwagger: '2.9.2'
+  springfoxSwagger: '2.9.2',
+  lombok: '1.18.2'
 ]
 
 dependencies {
@@ -153,8 +155,11 @@ dependencies {
 
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '0.0.34'
+  compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '1.0.4'
 
   compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.0.1.RELEASE'
+
+  compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
   testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
 
