@@ -139,7 +139,8 @@ sonarqube {
 def versions = [
   reformLogging: '3.0.1',
   springBoot: springBoot.class.package.implementationVersion,
-  springfoxSwagger: '2.9.2'
+  springfoxSwagger: '2.9.2',
+  lombok: '1.18.2'
 ]
 
 dependencies {
