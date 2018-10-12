@@ -125,7 +125,7 @@ project.tasks['sonarqube'].dependsOn test, integration
 sonarqube {
   properties {
     property "sonar.projectName", "SSCS - Bulk Scan"
-    property "sonar.projectKey", "SSCSTYANS"
+    property "sonar.projectKey", "sscs-bulk-scan"
     property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
     property "sonar.jacoco.itReportPath", "${project.buildDir}/jacoco/integration.exec"
     property "sonar.exclusions", "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
