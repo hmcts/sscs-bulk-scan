@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.sscs.domain.bulkscan;
+package uk.gov.hmcts.reform.sscs.bulkscancore.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;

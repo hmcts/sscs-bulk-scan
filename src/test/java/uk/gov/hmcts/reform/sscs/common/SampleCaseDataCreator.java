@@ -8,13 +8,23 @@ import java.util.Objects;
 
 public class SampleCaseDataCreator {
 
-    public Map<String, Object> caseData() {
+    public Map<String, Object> exceptionCaseData() {
         return ImmutableMap.of(
             "journeyClassification", "New Application",
             "poBoxJurisdiction", "SSCS",
             "poBox", "SSCSPO",
             "openingDate", "2018-01-11",
             "scanRecords", ocrData()
+        );
+    }
+
+    public Map<String, Object> sscsCaseData() {
+        return ImmutableMap.of(
+            "generatedEmail", "sscstest@test.com",
+            "caseReference", "123456789",
+            "caseCreated", "2018-01-11",
+            "generatedNino", "SR11111",
+            "generatedSurname", "Smith"
         );
     }
 
