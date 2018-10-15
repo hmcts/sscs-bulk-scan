@@ -5,6 +5,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CcdCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -31,13 +33,20 @@ public class CcdCallbackHandler {
 
         Map<String, Object> exceptionRecordData = exceptionCaseData.getCaseDetails().getCaseData();
 
-        logger.info("SSCS exception record case id  {}", exceptionRecordData.get("id"));
+        logger.info("Processing callback for SSCS exception record id  {}", exceptionRecordData.get("id"));
 
         // Transform into SSCS case
-        Map<String, Object> sscsCaseCaseData = caseTransformer.transformExceptionRecordToCase(exceptionRecordData);
+        CaseTransformationResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionRecordData);
+
+        if (!ObjectUtils.isEmpty(caseTransformationResponse.getErrors())) {
+            return CcdCallbackResponse.builder()
+                .errors(caseTransformationResponse.getErrors())
+                .data(exceptionRecordData)
+                .build();
+        }
 
         return CcdCallbackResponse.builder()
-            .data(sscsCaseCaseData)
+            .data(caseTransformationResponse.getTransformedCase())
             .build();
     }
 }
