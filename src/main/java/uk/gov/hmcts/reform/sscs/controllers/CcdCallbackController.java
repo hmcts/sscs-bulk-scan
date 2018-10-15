@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.sscs.domain.bulkscan.CcdCallbackResponse;
-import uk.gov.hmcts.reform.sscs.domain.bulkscan.ExceptionCaseData;
-import uk.gov.hmcts.reform.sscs.service.bulkscan.CcdCallbackHandler;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CcdCallbackResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 
 @RestController
 public class CcdCallbackController {
