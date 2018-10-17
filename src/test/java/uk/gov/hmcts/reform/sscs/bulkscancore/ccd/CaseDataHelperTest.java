@@ -12,8 +12,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -33,8 +31,6 @@ public class CaseDataHelperTest {
 
     private static final Long CASE_ID = Long.valueOf("1538992487551266");
 
-    private static final String INVALID_SERVICE_AUTH = "invalidserviceauth";
-
     @Mock
     private CoreCaseDataApi coreCaseDataApi;
 
@@ -44,10 +40,12 @@ public class CaseDataHelperTest {
 
     @Before
     public void setUp() {
-        caseDataHelper = new CaseDataHelper(coreCaseDataApi);
-        ReflectionTestUtils.setField(caseDataHelper, "jurisdictionId", "SSCS");
-        ReflectionTestUtils.setField(caseDataHelper, "caseType", "Benefit");
-        ReflectionTestUtils.setField(caseDataHelper, "eventId", "appealCreated");
+        caseDataHelper = new CaseDataHelper(
+            coreCaseDataApi,
+            "SSCS",
+            "Benefit",
+            "appealCreated"
+        );
     }
 
     @Test
@@ -88,31 +86,6 @@ public class CaseDataHelperTest {
 
         // Then
         assertThat(actualCaseId).isEqualTo(CASE_ID);
-    }
-
-    @Test
-    public void should_throw_forbidden_exception_when_service_auth_is_invalid() {
-        // Given
-        when(coreCaseDataApi.startForCaseworker(
-            TEST_USER_AUTH_TOKEN,
-            INVALID_SERVICE_AUTH,
-            TEST_USER_ID,
-            "SSCS",
-            "Benefit",
-            "appealCreated")
-        ).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
-
-        // When
-        Throwable exception = Assertions.catchThrowable(() -> caseDataHelper.createCase(
-            caseDataCreator.sscsCaseData(),
-            TEST_USER_AUTH_TOKEN,
-            INVALID_SERVICE_AUTH,
-            TEST_USER_ID
-        ));
-
-        // Then
-        assertThat(exception).isInstanceOf(HttpClientErrorException.class);
-        assertThat(exception).hasMessage("403 FORBIDDEN");
     }
 
     @Test

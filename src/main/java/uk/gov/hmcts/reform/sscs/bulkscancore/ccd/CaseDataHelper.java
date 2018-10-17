@@ -13,28 +13,33 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 public class CaseDataHelper {
     private final CoreCaseDataApi coreCaseDataApi;
 
-    @Value("${ccd.case.jurisdictionId}")
-    private String jurisdictionId;
+    private final String jurisdiction;
 
-    @Value("${ccd.case.type}")
-    private String caseType;
+    private final String caseType;
 
-    @Value("${ccd.case.eventId}")
-    private String eventId;
+    private final String eventId;
 
-    public CaseDataHelper(CoreCaseDataApi coreCaseDataApi) {
+    public CaseDataHelper(
+        CoreCaseDataApi coreCaseDataApi,
+        @Value("${ccd.case.jurisdiction}") String jurisdiction,
+        @Value("${ccd.case.type}") String caseType,
+        @Value("${ccd.case.eventId}") String eventId
+    ) {
         this.coreCaseDataApi = coreCaseDataApi;
+        this.jurisdiction = jurisdiction;
+        this.caseType = caseType;
+        this.eventId = eventId;
     }
 
     public Long createCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId) {
         StartEventResponse startEventResponse = coreCaseDataApi.startForCaseworker(
-            userAuthToken, serviceAuthToken, userId, jurisdictionId, caseType, eventId
+            userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, eventId
         );
 
         CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken());
 
         CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
-            userAuthToken, serviceAuthToken, userId, jurisdictionId, caseType, true, caseDataContent
+            userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, true, caseDataContent
         );
 
         return caseDetails.getId();
