@@ -37,7 +37,7 @@ public class CcdCallbackHandlerTest {
     }
 
     @Test
-    public void should_and_return_case_data_when_transformation_and_validation_is_successful() {
+    public void should_handle_and_return_case_data_when_transformation_and_validation_is_successful() {
         // given
         CaseDetails caseDetails = CaseDetails
             .builder()
