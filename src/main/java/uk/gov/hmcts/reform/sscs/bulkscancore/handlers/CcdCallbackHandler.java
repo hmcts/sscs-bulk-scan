@@ -7,9 +7,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CcdCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
@@ -31,7 +31,7 @@ public class CcdCallbackHandler {
         this.caseValidator = caseValidator;
     }
 
-    public CcdCallbackResponse handle(
+    public AboutToStartOrSubmitCallbackResponse handle(
         ExceptionCaseData exceptionCaseData,
         String userAuthToken,
         String serviceAuthToken,
@@ -49,7 +49,7 @@ public class CcdCallbackHandler {
         Map<String, Object> transformedCase = caseTransformationResponse.getTransformedCase();
 
         if (!ObjectUtils.isEmpty(caseTransformationResponse.getErrors())) {
-            return CcdCallbackResponse.builder()
+            return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(exceptionRecordData)
                 .errors(caseTransformationResponse.getErrors())
                 .build();
@@ -61,12 +61,12 @@ public class CcdCallbackHandler {
         if (isEmpty(caseValidationResponse.getErrors()) && isEmpty(caseValidationResponse.getWarnings())) {
             // TODO : Create case and populate case reference in exception record. Also transition state of exception record
 
-            return CcdCallbackResponse.builder()
+            return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(transformedCase) // Return transformed case for now. Replace later with exception record
                 .build();
         }
 
-        return CcdCallbackResponse.builder()
+        return AboutToStartOrSubmitCallbackResponse.builder()
             .data(exceptionRecordData)
             .errors(caseValidationResponse.getErrors())
             .warnings(caseValidationResponse.getWarnings())
