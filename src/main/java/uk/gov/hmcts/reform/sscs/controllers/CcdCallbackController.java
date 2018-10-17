@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 
@@ -31,17 +31,17 @@ public class CcdCallbackController {
     @ApiResponses(value = {
         @ApiResponse(code = 200,
             message = "Callback was processed successfully or in case of an error message is attached to the case",
-            response = AboutToStartOrSubmitCallbackResponse.class),
+            response = CallbackResponse.class),
         @ApiResponse(code = 400, message = "Bad Request"),
         @ApiResponse(code = 500, message = "Internal Server Error")
     })
-    public ResponseEntity<AboutToStartOrSubmitCallbackResponse> handleExceptionRecordCallback(
+    public ResponseEntity<CallbackResponse> handleExceptionRecordCallback(
         @RequestHeader(value = "Authorization") String userAuthToken,
         @RequestHeader(value = "serviceauthorization") String serviceAuthToken,
         @RequestHeader(value = "user-id") String userId,
         @RequestBody @ApiParam("CaseData") ExceptionCaseData caseData) {
 
-        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse = ccdCallbackHandler.handle(caseData, userAuthToken, serviceAuthToken, userId);
+        CallbackResponse ccdCallbackResponse = ccdCallbackHandler.handle(caseData, userAuthToken, serviceAuthToken, userId);
 
         return ResponseEntity.ok(ccdCallbackResponse);
     }

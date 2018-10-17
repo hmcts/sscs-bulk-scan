@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
@@ -60,7 +61,7 @@ public class CcdCallbackHandlerTest {
             .thenReturn(CaseValidationResponse.builder().build());
 
         // when
-        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse = invokeCallbackHandler(caseDetails);
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse = (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
 
         // then
         assertThat(ccdCallbackResponse.getData())
@@ -92,7 +93,7 @@ public class CcdCallbackHandlerTest {
             );
 
         // when
-        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse = invokeCallbackHandler(caseDetails);
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse = (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
 
         // then
         assertThat(ccdCallbackResponse.getData()).containsAllEntriesOf(caseDataCreator.exceptionCaseData());
@@ -124,7 +125,7 @@ public class CcdCallbackHandlerTest {
                 .build());
 
         // when
-        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse = invokeCallbackHandler(caseDetails);
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse = (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
 
         // then
         assertThat(ccdCallbackResponse.getData()).containsAllEntriesOf(caseDataCreator.exceptionCaseData());
@@ -133,7 +134,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }
 
-    private AboutToStartOrSubmitCallbackResponse invokeCallbackHandler(CaseDetails caseDetails) {
+    private CallbackResponse invokeCallbackHandler(CaseDetails caseDetails) {
         return ccdCallbackHandler.handle(
             ExceptionCaseData.builder()
                 .caseDetails(caseDetails)

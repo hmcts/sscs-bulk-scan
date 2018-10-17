@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
@@ -31,7 +32,7 @@ public class CcdCallbackHandler {
         this.caseValidator = caseValidator;
     }
 
-    public AboutToStartOrSubmitCallbackResponse handle(
+    public CallbackResponse handle(
         ExceptionCaseData exceptionCaseData,
         String userAuthToken,
         String serviceAuthToken,
