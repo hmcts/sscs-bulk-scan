@@ -55,7 +55,7 @@ public class CcdCallbackHandler {
                 .build();
         }
 
-        // Validate the transformed case against robotics schema
+        // Validate the transformed case
         CaseValidationResponse caseValidationResponse = caseValidator.validate(transformedCase);
 
         if (isEmpty(caseValidationResponse.getErrors()) && isEmpty(caseValidationResponse.getWarnings())) {
