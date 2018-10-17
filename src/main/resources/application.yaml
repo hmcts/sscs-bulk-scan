@@ -9,3 +9,10 @@ management:
 spring:
   application:
     name: SscsBulkScan
+
+ccd:
+ case:
+  jurisdiction: SSCS
+  type: Benefit
+  eventId: appealCreated
+
