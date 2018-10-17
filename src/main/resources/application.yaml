@@ -12,8 +12,7 @@ spring:
 
 ccd:
  case:
-  jurisdiction: ${CCD_CASE_JURISDICTION:SSCS}
-  type: ${CCD_CASE_TYPE:Benefit}
-  eventId: ${CCD_CASE_EVENT_ID:appealCreated}
-
+  jurisdiction: SSCS
+  type: Benefit
+  eventId: appealCreated
 
