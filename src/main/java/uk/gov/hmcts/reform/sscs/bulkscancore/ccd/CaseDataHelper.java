@@ -31,7 +31,7 @@ public class CaseDataHelper {
             userAuthToken, serviceAuthToken, userId, jurisdictionId, caseType, eventId
         );
 
-        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse);
+        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken());
 
         CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
             userAuthToken, serviceAuthToken, userId, jurisdictionId, caseType, true, caseDataContent
@@ -40,10 +40,10 @@ public class CaseDataHelper {
         return caseDetails.getId();
     }
 
-    private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, StartEventResponse startEventResponse) {
+    private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken) {
         return CaseDataContent.builder()
             .data(sscsCaseData)
-            .eventToken(startEventResponse.getToken())
+            .eventToken(eventToken)
             .event(Event.builder()
                 .description("Case created from exception record")
                 .id(eventId)
