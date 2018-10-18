@@ -1,21 +1,20 @@
 package uk.gov.hmcts.reform.sscs.common;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class SampleCaseDataCreator {
 
     public Map<String, Object> exceptionCaseData() {
-        return ImmutableMap.of(
-            "journeyClassification", "New Application",
-            "poBoxJurisdiction", "SSCS",
-            "poBox", "SSCSPO",
-            "openingDate", "2018-01-11",
-            "scanRecords", ocrData()
-        );
+        // Can't use Immutable map here as it will be modified by the handler
+        Map<String, Object> exceptionRecord = new HashMap<>();
+        exceptionRecord.put("journeyClassification", "New Application");
+        exceptionRecord.put("poBoxJurisdiction", "SSCS");
+        exceptionRecord.put("poBox", "SSCSPO");
+        exceptionRecord.put("openingDate", "2018-01-11");
+        exceptionRecord.put("scanRecords", ocrData());
+
+        return exceptionRecord;
     }
 
     public Map<String, Object> sscsCaseData() {
@@ -28,7 +27,7 @@ public class SampleCaseDataCreator {
         );
     }
 
-    private List<ScannedOcrData> ocrData() {
+    public List<ScannedOcrData> ocrData() {
         ScannedOcrData ocrData1 = new ScannedOcrData();
         ocrData1.setValue(ImmutableMap.of("key", "firstName", "value", "John"));
         ocrData1.setId("d55a7f14-92c3-4134-af78-f2aa2b201841");

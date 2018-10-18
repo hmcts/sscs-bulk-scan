@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
@@ -24,12 +25,16 @@ public class CcdCallbackHandler {
 
     private final CaseValidator caseValidator;
 
+    private final CaseDataHelper caseDataHelper;
+
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
-        CaseValidator caseValidator
+        CaseValidator caseValidator,
+        CaseDataHelper caseDataHelper
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
+        this.caseDataHelper = caseDataHelper;
     }
 
     public CallbackResponse handle(
@@ -38,18 +43,22 @@ public class CcdCallbackHandler {
         String serviceAuthToken,
         String userId
     ) {
-        // TODO : Transform implementation, Validate implementation, Create Case, Case transition
+        // TODO : Transformation and Validation interface implementation
 
         Map<String, Object> exceptionRecordData = exceptionCaseData.getCaseDetails().getCaseData();
 
-        logger.info("Processing callback for SSCS exception record id  {}", exceptionRecordData.get("id"));
+        String exceptionRecordId = (String) exceptionRecordData.get("id");
+
+        logger.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
         // Transform into SSCS case
-        CaseTransformationResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionRecordData);
+        CaseTransformationResponse caseTransformationResponse =
+            caseTransformer.transformExceptionRecordToCase(exceptionRecordData);
 
         Map<String, Object> transformedCase = caseTransformationResponse.getTransformedCase();
 
         if (!ObjectUtils.isEmpty(caseTransformationResponse.getErrors())) {
+            logger.info("Errors found while transforming exception record id {}", exceptionRecordId);
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(exceptionRecordData)
                 .errors(caseTransformationResponse.getErrors())
@@ -60,12 +69,23 @@ public class CcdCallbackHandler {
         CaseValidationResponse caseValidationResponse = caseValidator.validate(transformedCase);
 
         if (isEmpty(caseValidationResponse.getErrors()) && isEmpty(caseValidationResponse.getWarnings())) {
-            // TODO : Create case and populate case reference in exception record. Also transition state of exception record
+            Long caseId = caseDataHelper.createCase(transformedCase, userAuthToken, serviceAuthToken, userId);
+
+            logger.info(
+                "Case created with exceptionRecordId {} from exception record id {}",
+                caseId,
+                exceptionRecordId
+            );
+
+            exceptionRecordData.put("state", "ScannedRecordCaseCreated");
+            exceptionRecordData.put("caseReference", String.valueOf(caseId));
 
             return AboutToStartOrSubmitCallbackResponse.builder()
-                .data(transformedCase) // Return transformed case for now. Replace later with exception record
+                .data(exceptionRecordData)
                 .build();
         }
+
+        logger.info("Validations/Warnings found while processing exception record id {}", exceptionRecordId);
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(exceptionRecordData)
