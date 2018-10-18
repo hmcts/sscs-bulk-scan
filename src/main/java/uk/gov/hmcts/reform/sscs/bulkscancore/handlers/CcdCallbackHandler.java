@@ -43,7 +43,7 @@ public class CcdCallbackHandler {
         String serviceAuthToken,
         String userId
     ) {
-        // TODO : Transformat and Validate interface implementation
+        // TODO : Transformation and Validation interface implementation
 
         Map<String, Object> exceptionRecordData = exceptionCaseData.getCaseDetails().getCaseData();
 
