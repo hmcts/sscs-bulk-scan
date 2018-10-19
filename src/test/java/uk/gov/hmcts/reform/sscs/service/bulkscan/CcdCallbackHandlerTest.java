@@ -103,7 +103,7 @@ public class CcdCallbackHandlerTest {
 
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
             .thenReturn(CaseTransformationResponse.builder()
-                .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
+                .errors(ImmutableList.of("Cannot transformers Appellant Date of Birth. Please enter valid date"))
                 .build()
             );
 
@@ -115,7 +115,7 @@ public class CcdCallbackHandlerTest {
         assertExceptionDataEntries(ccdCallbackResponse);
 
         assertThat(ccdCallbackResponse.getErrors())
-            .containsOnly("Cannot transform Appellant Date of Birth. Please enter valid date");
+            .containsOnly("Cannot transformers Appellant Date of Birth. Please enter valid date");
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }
 
