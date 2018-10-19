@@ -141,7 +141,8 @@ def versions = [
   reformLogging: '3.0.1',
   springBoot: springBoot.class.package.implementationVersion,
   springfoxSwagger: '2.9.2',
-  lombok: '1.18.2'
+  lombok: '1.18.2',
+  springCloudWiremock: '2.0.1.RELEASE'
 ]
 
 dependencies {
@@ -162,6 +163,8 @@ dependencies {
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
   testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
+
+  integrationTestCompile group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock
 
   integrationTestCompile sourceSets.main.runtimeClasspath
   integrationTestCompile sourceSets.test.runtimeClasspath

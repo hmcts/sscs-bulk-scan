@@ -1,0 +1,17 @@
+{
+  "event_token": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI4c25kMm81NjJjbWZ0YjNhZGIwcXNuMWY4ZCIsInN1YiI6IjI1IiwiaWF0IjoxNTM5ODczODYxLCJldmVudC1pZCI6ImFwcGVhbENyZWF0ZWQiLCJjYXNlLXR5cGUtaWQiOiJCZW5lZml0IiwianVyaXNkaWN0aW9uLWlkIjoiU1NDUyIsImNhc2UtdmVyc2lvbiI6ImJmMjFhOWU4ZmJjNWEzODQ2ZmIwNWI0ZmEwODU5ZTA5MTdiMjIwMmYifQ.t8T25Pve2ib6_xLrxIqrT0SNu30oCnLVICqpqt21OWo",
+  "security_classification": "PUBLIC",
+  "ignore_warning": false,
+  "data": {
+    "caseReference": "123456789",
+    "generatedSurname": "Smith",
+    "generatedEmail": "sscstest@test.com",
+    "caseCreated": "2018-01-11",
+    "generatedNino": "SR11111"
+  },
+  "event": {
+    "id": "appealCreated",
+    "summary": null,
+    "description": "Case created from exception record"
+  }
+}

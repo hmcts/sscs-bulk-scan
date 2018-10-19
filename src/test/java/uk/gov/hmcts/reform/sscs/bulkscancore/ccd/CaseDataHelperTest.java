@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.HttpServerErrorException;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.ccd.client.model.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 
 @RunWith(SpringRunner.class)
@@ -72,6 +69,7 @@ public class CaseDataHelperTest {
             sscsCaseDataContent())
         ).thenReturn(CaseDetails.builder()
             .id(CASE_ID)
+            .securityClassification(Classification.PUBLIC)
             .data(caseDataCreator.sscsCaseData())
             .createdDate(LocalDateTime.of(2018, 1, 1, 0, 0))
             .build());
@@ -123,6 +121,7 @@ public class CaseDataHelperTest {
                 .id("appealCreated")
                 .build()
             )
+            .securityClassification(Classification.PUBLIC)
             .build();
     }
 
