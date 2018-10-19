@@ -14,20 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.HttpServerErrorException;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.ccd.client.model.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 
 @RunWith(SpringRunner.class)
 public class CaseDataHelperTest {
 
-    private static final String EVENT_TOKEN =
-        "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI4cG1jN284YWdyaDA0MzIxcGJ1ZG5rOGs1cCIsInN1YiI6IjI1IiwiaWF0IjoxNTM4OTk2MTQyLCJldm"
-            + "VudC1pZCI6ImFwcGVhbENyZWF0ZWQiLCJjYXNlLXR5cGUtaWQiOiJCZW5lZml0IiwianVyaXNkaWN0aW9uLWlkIjoiU1NDUyIsImNhc2U"
-            + "tdmVyc2lvbiI6ImJmMjFhOWU4ZmJjNWEzODQ2ZmIwNWI0ZmEwODU5ZTA5MTdiMjIwMmYifQ.v5CIHOFPKCrxjhEKAPDhltd-ErynobIY5"
-            + "FVjXJffEVU";
+    private static final String EVENT_TOKEN = "VALID_EVENT_TOKEN";
 
     private static final Long CASE_ID = Long.valueOf("1538992487551266");
 
@@ -72,6 +65,7 @@ public class CaseDataHelperTest {
             sscsCaseDataContent())
         ).thenReturn(CaseDetails.builder()
             .id(CASE_ID)
+            .securityClassification(Classification.PUBLIC)
             .data(caseDataCreator.sscsCaseData())
             .createdDate(LocalDateTime.of(2018, 1, 1, 0, 0))
             .build());
@@ -123,6 +117,7 @@ public class CaseDataHelperTest {
                 .id("appealCreated")
                 .build()
             )
+            .securityClassification(Classification.PUBLIC)
             .build();
     }
 

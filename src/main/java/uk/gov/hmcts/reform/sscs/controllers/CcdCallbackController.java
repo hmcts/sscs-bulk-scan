@@ -45,5 +45,4 @@ public class CcdCallbackController {
 
         return ResponseEntity.ok(ccdCallbackResponse);
     }
-
 }

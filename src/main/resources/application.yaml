@@ -19,4 +19,3 @@ ccd:
 core_case_data:
   api:
     url: http://localhost:4452
-
