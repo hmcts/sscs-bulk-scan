@@ -1,5 +1,5 @@
 {
-  "token": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI4c25kMm81NjJjbWZ0YjNhZGIwcXNuMWY4ZCIsInN1YiI6IjI1IiwiaWF0IjoxNTM5ODczODYxLCJldmVudC1pZCI6ImFwcGVhbENyZWF0ZWQiLCJjYXNlLXR5cGUtaWQiOiJCZW5lZml0IiwianVyaXNkaWN0aW9uLWlkIjoiU1NDUyIsImNhc2UtdmVyc2lvbiI6ImJmMjFhOWU4ZmJjNWEzODQ2ZmIwNWI0ZmEwODU5ZTA5MTdiMjIwMmYifQ.t8T25Pve2ib6_xLrxIqrT0SNu30oCnLVICqpqt21OWo",
+  "token": "test_event_token",
   "case_details": {
     "id": null,
     "jurisdiction": "SSCS",

@@ -41,15 +41,9 @@ public class CaseDataHelperTest {
 
     private static final String SERVICE_AUTHORIZATION_HEADER_KEY = "ServiceAuthorization";
 
-    private static final String USER_AUTH_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJhOGdyMjR2NmtiYXRibXFlcWthM3VuamVicSIsInN1YiI6I"
-        + "jYwIiwiaWF0IjoxNTA2NDE0OTI0LCJleHAiOjE1MDY0NDM3MjQsImRhdGEiOiJjaXRpemVuLGRpdm9yY2UtcHJpdmF0ZS1iZXRhLGNpdGl"
-        + "6ZW4tbG9hMSxkaXZvcmNlLXByaXZhdGUtYmV0YS1sb2ExIiwidHlwZSI6IkFDQ0VTUyIsImlkIjoiNjAiLCJmb3JlbmFtZSI6ImpvaG4iL"
-        + "CJzdXJuYW1lIjoic21pdGgiLCJkZWZhdWx0LXNlcnZpY2UiOiJEaXZvcmNlIiwibG9hIjoxLCJkZWZhdWx0LXVybCI6Imh0dHBzOi8vd3d"
-        + "3LWxvY2FsLnJlZ2lzdHJhdGlvbi5yZWZvcm0uaG1jdHMubmV0OjkwMDAvcG9jL2Rpdm9yY2UiLCJncm91cCI6ImRpdm9yY2UtcHJpdmF0Z"
-        + "S1iZXRhIn0.mkKaw1_CGwC7KuntMlp8SWsLLgrCFwKtr0oFmFq42AA";
+    private static final String USER_AUTH_TOKEN = "Bearer TEST_USER_AUTH_TOKEN";
 
-    private static final String SERVICE_AUTH_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkaXZvcmNlX2NjZF9zdWJtaXNzaW9uIiwiZXh"
-        + "wIjoxNTA2NDUwNTUyfQ.IvB5-Rtywc9_pDlLkk3wMnWFT5ACu9FU2av4Z4xjCi7NRuDlvLy78TIDC2KzIVSqyJL4IklHOUPG7FCBT3SoIQ";
+    private static final String SERVICE_AUTH_TOKEN = "TEST_SERVICE_AUTH";
 
     private static final String USER_ID = "1234";
 

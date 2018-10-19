@@ -20,11 +20,7 @@ import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 @RunWith(SpringRunner.class)
 public class CaseDataHelperTest {
 
-    private static final String EVENT_TOKEN =
-        "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI4cG1jN284YWdyaDA0MzIxcGJ1ZG5rOGs1cCIsInN1YiI6IjI1IiwiaWF0IjoxNTM4OTk2MTQyLCJldm"
-            + "VudC1pZCI6ImFwcGVhbENyZWF0ZWQiLCJjYXNlLXR5cGUtaWQiOiJCZW5lZml0IiwianVyaXNkaWN0aW9uLWlkIjoiU1NDUyIsImNhc2U"
-            + "tdmVyc2lvbiI6ImJmMjFhOWU4ZmJjNWEzODQ2ZmIwNWI0ZmEwODU5ZTA5MTdiMjIwMmYifQ.v5CIHOFPKCrxjhEKAPDhltd-ErynobIY5"
-            + "FVjXJffEVU";
+    private static final String EVENT_TOKEN = "VALID_EVENT_TOKEN";
 
     private static final Long CASE_ID = Long.valueOf("1538992487551266");
 
