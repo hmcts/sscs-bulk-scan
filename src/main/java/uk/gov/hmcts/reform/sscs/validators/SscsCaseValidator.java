@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.sscs.validators;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
@@ -11,10 +10,12 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 @Component
 public class SscsCaseValidator implements CaseValidator {
 
-//    @Value("${display.case.error}")
+    //TODO: Implement this properly
+
+    //    @Value("${display.case.error}")
     private boolean displayCaseError; // Only required to demo error scenario
 
-//    @Value("${display.case.warning}")
+    //    @Value("${display.case.warning}")
     private boolean displayCaseWarning; // Only required to demo warning scenario
 
     @Override
