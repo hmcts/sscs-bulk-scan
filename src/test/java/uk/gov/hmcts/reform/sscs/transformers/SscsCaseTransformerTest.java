@@ -67,6 +67,17 @@ public class SscsCaseTransformerTest {
         assertEquals(buildTestAppealData(), transformer.buildAppealFromData(pairs));
     }
 
+    @Test
+    public void givenOnlyOneKeyValuePair_thenBuildAnAppeal() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION).build();
+
+        Appeal result = transformer.buildAppealFromData(pairs);
+
+        assertEquals(BENEFIT_TYPE_DESCRIPTION, result.getBenefitType().getCode());
+
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
