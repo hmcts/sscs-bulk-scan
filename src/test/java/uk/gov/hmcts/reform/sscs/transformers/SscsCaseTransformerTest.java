@@ -1,18 +1,41 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+
 
 public class SscsCaseTransformerTest {
 
-    SscsCaseTransformer transformer = new SscsCaseTransformer();
+    @Mock
+    SscsJsonExtractor sscsJsonExtractor;
+
+    @InjectMocks
+    SscsCaseTransformer transformer;
+
+    Map<String, Object> ocrMap = new HashMap<>();
+
+    @Before
+    public void setup() {
+        initMocks(this);
+    }
 
     @Test
     public void givenKeyValuePairs_thenBuildAnAppeal() {
@@ -64,18 +87,81 @@ public class SscsCaseTransformerTest {
             .put("signature_appellant_name", SIGNATURE_APPELLANT_NAME)
             .build();
 
-        assertEquals(buildTestAppealData(), transformer.buildAppealFromData(pairs));
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals(buildTestAppealData(), result.getTransformedCase().get("appeal"));
+
+        assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
     public void givenOnlyOneKeyValuePair_thenBuildAnAppeal() {
+
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION).build();
 
-        Appeal result = transformer.buildAppealFromData(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
 
-        assertEquals(BENEFIT_TYPE_DESCRIPTION, result.getBenefitType().getCode());
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
+        assertEquals(BENEFIT_TYPE_DESCRIPTION, ((Appeal) result.getTransformedCase().get("appeal")).getBenefitType().getCode());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenContradictingPaperAndOralCaseValues_thenAddErrorToList() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("is_hearing_type_oral", true)
+            .put("is_hearing_type_paper", true).build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("is_hearing_type_oral and is_hearing_type_paper have contradicting values"));
+    }
+
+    @Test
+    public void givenContradictingIsAppointeeValues_thenAddErrorToList() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("is_appointee", true)
+            .put("is_not_appointee", true).build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("is_appointee and is_not_appointee have contradicting values"));
+    }
+
+    @Test
+    public void givenBooleanValueIsText_thenAddErrorToList() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("is_appointee", "I am a text value")
+            .put("is_not_appointee", true).build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("is_appointee does not contain a valid boolean value. Needs to be true or false"));
+    }
+
+    @Test
+    public void givenIsAppointeeBooleanValueIsEmpty_thenIgnoreField() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("is_not_appointee", true).build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getIsAppointee());
+
+        assertTrue(result.getErrors().isEmpty());
     }
 
     private Appeal buildTestAppealData() {

@@ -20,11 +20,13 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private SscsJsonExtractor sscsJsonExtractor;
 
+    private List<String> errors;
+
     @Override
     public CaseTransformationResponse transformExceptionRecordToCase(Map<String, Object> caseData) {
 
         Map<String, Object> transformed = new HashMap<>();
-        List<String> errors = new ArrayList<>();
+        errors = new ArrayList<>();
 
         Map<String, Object> pairs = sscsJsonExtractor.extractJson(caseData);
         Appeal appeal = buildAppealFromData(pairs);
@@ -33,7 +35,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         return CaseTransformationResponse.builder().transformedCase(transformed).errors(errors).build();
     }
 
-    protected Appeal buildAppealFromData(Map<String, Object> pairs) {
+    private Appeal buildAppealFromData(Map<String, Object> pairs) {
         return Appeal.builder()
             .benefitType(BenefitType.builder().code(getField(pairs, "benefit_type_description")).build())
             .appellant(buildAppellant(pairs))
@@ -51,8 +53,15 @@ public class SscsCaseTransformer implements CaseTransformer {
             .address(buildAppellantAddress(pairs))
             .identity(buildAppellantIdentity(pairs))
             .contact(buildAppellantContact(pairs))
-            .isAppointee(convertBooleanToYesNoString(checkBooleansNotContradict(pairs, "is_appointee", "is_not_appointee")))
+            .isAppointee(buildIsAppointeeField(pairs))
         .build();
+    }
+
+    private String buildIsAppointeeField(Map<String, Object> pairs) {
+        if (areBooleansValid(pairs, "is_appointee", "is_not_appointee") && !doBooleansContradict(pairs, "is_appointee", "is_not_appointee")) {
+            return convertBooleanToYesNoString((boolean) pairs.get("is_appointee"));
+        }
+        return null;
     }
 
     private Representative buildRepresentative(Map<String, Object> pairs) {
@@ -138,12 +147,10 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String findHearingType(Map<String, Object> pairs) {
-        if (checkBooleansNotContradict(pairs, "is_hearing_type_oral", "is_hearing_type_paper")) {
+        if (areBooleansValid(pairs, "is_hearing_type_oral", "is_hearing_type_paper") && !doBooleansContradict(pairs, "is_hearing_type_oral", "is_hearing_type_paper")) {
             return (boolean) pairs.get("is_hearing_type_oral") ? "Oral" : "Paper";
-        } else {
-            // TODO: handle thrown exception
-            return "";
         }
+        return null;
     }
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs) {
@@ -185,12 +192,26 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
     }
 
-    private boolean checkBooleansNotContradict(Map<String, Object> pairs, String value1, String value2) {
-        // TODO: handle contradiction errors!
+    private boolean doBooleansContradict(Map<String, Object> pairs, String value1, String value2) {
         if (pairs.containsKey(value1) && pairs.containsKey(value2)) {
-            return (boolean) pairs.get(value1) != (boolean) pairs.get(value2) ? (boolean) pairs.get(value1) : false;
+            if ((boolean) pairs.get(value1) == (boolean) pairs.get(value2)) {
+                errors.add(value1 + " and " + value2 + " have contradicting values");
+                return true;
+            }
         }
         return false;
+    }
+
+    private boolean areBooleansValid(Map<String, Object> pairs, String... values) {
+        for (String value : values) {
+            if (pairs.get(value) == null) {
+                return false;
+            } else if (!(pairs.get(value) instanceof Boolean)) {
+                errors.add(value + " does not contain a valid boolean value. Needs to be true or false");
+                return false;
+            }
+        }
+        return true;
     }
 
     private String convertBooleanToYesNoString(boolean value) {
