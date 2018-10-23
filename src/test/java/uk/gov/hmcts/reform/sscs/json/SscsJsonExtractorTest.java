@@ -37,7 +37,7 @@ public class SscsJsonExtractorTest {
         Map<String, Object> scannedOcrDataMap = new HashMap<>();
         scannedOcrDataMap.put("scanOCRData", ocrList);
 
-        HashMap<String, Object> result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
+        Map<String, Object> result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
         assertEquals("Bob", result.get("appellant_first_name"));
     }

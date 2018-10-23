@@ -26,7 +26,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         Map<String, Object> transformed = new HashMap<>();
         List<String> errors = new ArrayList<>();
 
-        HashMap<String, Object> pairs = sscsJsonExtractor.extractJson(caseData);
+        Map<String, Object> pairs = sscsJsonExtractor.extractJson(caseData);
         Appeal appeal = buildAppealFromData(pairs);
         transformed.put("appeal", appeal);
 
@@ -51,12 +51,12 @@ public class SscsCaseTransformer implements CaseTransformer {
             .address(buildAppellantAddress(pairs))
             .identity(buildAppellantIdentity(pairs))
             .contact(buildAppellantContact(pairs))
-            .isAppointee(convertBooleanToYesNoString(checkValidBooleans((Boolean) pairs.get("is_appointee"), (Boolean) pairs.get("is_not_appointee"))))
+            .isAppointee(convertBooleanToYesNoString(checkBooleansNotContradict(pairs, "is_appointee", "is_not_appointee")))
         .build();
     }
 
     private Representative buildRepresentative(Map<String, Object> pairs) {
-        Boolean doesRepExist = findBooleanExists(getField(pairs,"representative_person_title"), getField(pairs,"representative_person_first_name"),
+        boolean doesRepExist = findBooleanExists(getField(pairs,"representative_person_title"), getField(pairs,"representative_person_first_name"),
             getField(pairs,"representative_person_last_name"), getField(pairs,"representative_address_line1"), getField(pairs,"representative_address_line2"),
             getField(pairs,"representative_address_line3"), getField(pairs,"representative_address_line4"), getField(pairs,"representative_postcode"),
             getField(pairs,"representative_phone_number"), getField(pairs,"representative_name"));
@@ -138,8 +138,8 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String findHearingType(Map<String, Object> pairs) {
-        if (checkValidBooleans((Boolean) pairs.get("is_hearing_type_oral"), (Boolean) pairs.get("is_hearing_type_paper"))) {
-            return (Boolean) pairs.get("is_hearing_type_oral") ? "Oral" : "Paper";
+        if (checkBooleansNotContradict(pairs, "is_hearing_type_oral", "is_hearing_type_paper")) {
+            return (boolean) pairs.get("is_hearing_type_oral") ? "Oral" : "Paper";
         } else {
             // TODO: handle thrown exception
             return "";
@@ -185,20 +185,19 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
     }
 
-    private Boolean checkValidBooleans(Boolean positiveValue, Boolean negativeValue) {
-        if (positiveValue != negativeValue) {
-            return positiveValue;
-        } else {
-            // TODO: throw validation exception!
-            return false;
+    private boolean checkBooleansNotContradict(Map<String, Object> pairs, String value1, String value2) {
+        // TODO: handle contradiction errors!
+        if (pairs.containsKey(value1) && pairs.containsKey(value2)) {
+            return (boolean) pairs.get(value1) != (boolean) pairs.get(value2) ? (boolean) pairs.get(value1) : false;
         }
+        return false;
     }
 
-    private String convertBooleanToYesNoString(Boolean value) {
+    private String convertBooleanToYesNoString(boolean value) {
         return value ? YES : NO;
     }
 
-    private Boolean findBooleanExists(String... values) {
+    private boolean findBooleanExists(String... values) {
         for (String v : values) {
             if (v != null) {
                 return true;

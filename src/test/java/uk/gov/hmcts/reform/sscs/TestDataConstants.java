@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.sscs;
 
-public class TestDataUtil {
+public class TestDataConstants {
 
-    private TestDataUtil() {
+    private TestDataConstants() {
 
     }
 

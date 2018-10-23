@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static org.junit.Assert.assertEquals;
-import static uk.gov.hmcts.reform.sscs.TestDataUtil.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
