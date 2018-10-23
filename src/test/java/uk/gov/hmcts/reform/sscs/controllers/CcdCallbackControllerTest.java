@@ -4,6 +4,8 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,9 +20,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
+import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
+import uk.gov.hmcts.reform.sscs.exceptions.UnAuthorizedException;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(CcdCallbackController.class)
@@ -30,6 +35,9 @@ public class CcdCallbackControllerTest {
 
     @MockBean
     private CcdCallbackHandler ccdCallbackHandler;
+
+    @MockBean
+    private AuthService authService;
 
     private SampleCaseDataCreator caseDataCreator = new SampleCaseDataCreator();
 
@@ -44,6 +52,11 @@ public class CcdCallbackControllerTest {
             .data(caseDataCreator.exceptionCaseData())
             .build()
         );
+
+        given(authService.authenticate("test-header"))
+            .willReturn("some-service");
+
+        doNothing().when(authService).assertIsAllowedToHandleCallback("some-service");
 
         mockMvc.perform(post("/exception-record")
             .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -73,6 +86,11 @@ public class CcdCallbackControllerTest {
             eq(TEST_USER_ID))
         ).willThrow(RuntimeException.class);
 
+        given(authService.authenticate("test-header"))
+            .willReturn("some-service");
+
+        doNothing().when(authService).assertIsAllowedToHandleCallback("some-service");
+
         mockMvc.perform(post("/exception-record")
             .contentType(MediaType.APPLICATION_JSON_UTF8)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
@@ -80,5 +98,36 @@ public class CcdCallbackControllerTest {
             .header("user-id", TEST_USER_ID)
             .content(exceptionRecord()))
             .andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    public void should_throw_unauthenticated_exception_when_auth_header_is_missing() throws Exception {
+        // given
+        willThrow(UnAuthorizedException.class)
+            .given(authService).authenticate(null);
+
+        // when
+        mockMvc.perform(post("/exception-record")
+            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .header("Authorization", TEST_USER_AUTH_TOKEN)
+            .header("user-id", TEST_USER_ID)
+            .content(exceptionRecord()))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void should_throw_unauthorized_exception_when_auth_header_is_missing() throws Exception {
+        // given
+        willThrow(ForbiddenException.class)
+            .given(authService).authenticate(null);
+
+        // when
+        mockMvc.perform(post("/exception-record")
+            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .header("Authorization", TEST_USER_AUTH_TOKEN)
+            .header("Authorization", TEST_USER_AUTH_TOKEN)
+            .header("user-id", TEST_USER_ID)
+            .content(exceptionRecord()))
+            .andExpect(status().isForbidden());
     }
 }

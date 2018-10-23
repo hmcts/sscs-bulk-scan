@@ -24,17 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.WireMockSpring;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "core_case_data.api.url=http://localhost:4000"
-    })
-@ContextConfiguration
-@DirtiesContext
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CaseDataHelperTest {
 
     private static final String AUTHORIZATION_HEADER_KEY = "Authorization";
@@ -60,7 +53,6 @@ public class CaseDataHelperTest {
 
     @Autowired
     private CaseDataHelper caseDataHelper;
-
 
     @Test
     public void should_successfully_create_case_and_return_case_data() throws Exception {

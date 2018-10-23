@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 
@@ -20,9 +21,15 @@ public class CcdCallbackController {
 
     private final CcdCallbackHandler ccdCallbackHandler;
 
+    private final AuthService authService;
+
     @Autowired
-    public CcdCallbackController(CcdCallbackHandler ccdCallbackHandler) {
+    public CcdCallbackController(
+        CcdCallbackHandler ccdCallbackHandler,
+        AuthService authService
+    ) {
         this.ccdCallbackHandler = ccdCallbackHandler;
+        this.authService = authService;
     }
 
     @PostMapping(path = "/exception-record",
@@ -37,11 +44,16 @@ public class CcdCallbackController {
     })
     public ResponseEntity<CallbackResponse> handleExceptionRecordCallback(
         @RequestHeader(value = "Authorization") String userAuthToken,
-        @RequestHeader(value = "serviceauthorization") String serviceAuthToken,
+        @RequestHeader(value = "serviceauthorization", required = false) String serviceAuthToken,
         @RequestHeader(value = "user-id") String userId,
         @RequestBody @ApiParam("CaseData") ExceptionCaseData caseData) {
 
-        CallbackResponse ccdCallbackResponse = ccdCallbackHandler.handle(caseData, userAuthToken, serviceAuthToken, userId);
+        String serviceName = authService.authenticate(serviceAuthToken);
+
+        authService.assertIsAllowedToHandleCallback(serviceName);
+
+        CallbackResponse ccdCallbackResponse =
+            ccdCallbackHandler.handle(caseData, userAuthToken, serviceAuthToken, userId);
 
         return ResponseEntity.ok(ccdCallbackResponse);
     }
