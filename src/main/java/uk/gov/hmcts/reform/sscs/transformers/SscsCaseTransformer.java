@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,7 +113,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private Identity buildAppellantIdentity(Map<String, Object> pairs) {
         return Identity.builder()
-            .dob(getField(pairs,"appellant_date_of_birth"))
+            .dob(generateDateForCcd(pairs,"appellant_date_of_birth"))
             .nino(getField(pairs,"appellant_ni_number"))
         .build();
     }
@@ -225,6 +228,19 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         }
         return false;
+    }
+
+    private String generateDateForCcd(Map<String, Object> pairs, String field) {
+        if (pairs.containsKey(field)) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            try {
+                return LocalDate.parse(getField(pairs, field), formatter).toString();
+            } catch (DateTimeParseException ex) {
+                errors.add(field + " is an invalid date field. Needs to be in the format dd/mm/yyyy");
+            }
+        }
+        return null;
     }
 
     private String getField(Map<String, Object> pairs, String field) {

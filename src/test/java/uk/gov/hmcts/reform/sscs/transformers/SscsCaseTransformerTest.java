@@ -164,10 +164,22 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
     }
 
+    @Test
+    public void givenAnInvalidDateOfBirth_thenAddErrorToList() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("appellant_date_of_birth", "12/99/1987").build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("appellant_date_of_birth is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
-        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NI_NUMBER).dob(APPELLANT_DATE_OF_BIRTH).build();
+        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NI_NUMBER).dob("1987-08-12").build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).build();
 
         Name repName = Name.builder().title(REPRESENTATIVE_PERSON_TITLE).firstName(REPRESENTATIVE_PERSON_FIRST_NAME).lastName(REPRESENTATIVE_PERSON_LAST_NAME).build();
