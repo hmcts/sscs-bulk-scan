@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.sscs.exceptions;
 
-public class UnAuthorizedException extends RuntimeException {
+public class UnauthorizedException extends RuntimeException {
     private static final long serialVersionUID = -948721106877408028L;
 
-    public UnAuthorizedException(String message) {
+    public UnauthorizedException(String message) {
         super(message);
     }
 }

@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
-import uk.gov.hmcts.reform.sscs.exceptions.UnAuthorizedException;
+import uk.gov.hmcts.reform.sscs.exceptions.UnauthorizedException;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(CcdCallbackController.class)
@@ -103,7 +103,7 @@ public class CcdCallbackControllerTest {
     @Test
     public void should_throw_unauthenticated_exception_when_auth_header_is_missing() throws Exception {
         // given
-        willThrow(UnAuthorizedException.class)
+        willThrow(UnauthorizedException.class)
             .given(authService).authenticate(null);
 
         // when

@@ -15,7 +15,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
-import uk.gov.hmcts.reform.sscs.exceptions.UnAuthorizedException;
+import uk.gov.hmcts.reform.sscs.exceptions.UnauthorizedException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthServiceTest {
@@ -46,7 +46,7 @@ public class AuthServiceTest {
 
         // then
         assertThat(exception)
-            .isInstanceOf(UnAuthorizedException.class)
+            .isInstanceOf(UnauthorizedException.class)
             .hasMessage("Missing ServiceAuthorization header");
 
         // and

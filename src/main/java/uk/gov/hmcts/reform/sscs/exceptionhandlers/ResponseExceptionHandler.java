@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
-import uk.gov.hmcts.reform.sscs.exceptions.UnAuthorizedException;
+import uk.gov.hmcts.reform.sscs.exceptions.UnauthorizedException;
 
 @ControllerAdvice
 public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ResponseExceptionHandler.class);
 
-    @ExceptionHandler(UnAuthorizedException.class)
+    @ExceptionHandler(UnauthorizedException.class)
     protected ResponseEntity<Void> handleUnAuthorizedException(Exception exception) {
         log.error(exception.getMessage(), exception);
 
