@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,9 +15,6 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
 @Component
 public class SscsCaseTransformer implements CaseTransformer {
-
-    private static final String YES = "Yes";
-    private static final String NO = "No";
 
     @Autowired
     private SscsJsonExtractor sscsJsonExtractor;
@@ -39,9 +35,37 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Appeal buildAppealFromData(Map<String, Object> pairs) {
+
+        Appellant appellant = null;
+
+        if (hasPerson(pairs, "person2")) {
+            Appointee appointee = null;
+            if (hasPerson(pairs, "person1")) {
+                appointee = Appointee.builder()
+                    .name(buildPersonName(pairs, "person1"))
+                    .address(buildPersonAddress(pairs, "person1"))
+                    .contact(buildPersonContact(pairs, "person1"))
+                    .identity(buildPersonIdentity(pairs, "person1"))
+                .build();
+            }
+            appellant = Appellant.builder()
+                .name(buildPersonName(pairs, "person2"))
+                .address(buildPersonAddress(pairs, "person2"))
+                .identity(buildPersonIdentity(pairs, "person2"))
+                .appointee(appointee)
+                .build();
+        } else if (hasPerson(pairs, "person1")) {
+            appellant = Appellant.builder()
+                .name(buildPersonName(pairs, "person1"))
+                .address(buildPersonAddress(pairs, "person1"))
+                .contact(buildPersonContact(pairs, "person1"))
+                .identity(buildPersonIdentity(pairs, "person1"))
+                .build();
+        }
+
         return Appeal.builder()
             .benefitType(BenefitType.builder().code(getField(pairs, "benefit_type_description")).build())
-            .appellant(buildAppellant(pairs))
+            .appellant(appellant)
             .rep(buildRepresentative(pairs))
             .mrnDetails(buildMrnDetails(pairs))
             .hearingType(findHearingType(pairs))
@@ -50,39 +74,19 @@ public class SscsCaseTransformer implements CaseTransformer {
         .build();
     }
 
-    private Appellant buildAppellant(Map<String, Object> pairs) {
-        return Appellant.builder()
-            .name(buildAppellantName(pairs))
-            .address(buildAppellantAddress(pairs))
-            .identity(buildAppellantIdentity(pairs))
-            .contact(buildAppellantContact(pairs))
-            .isAppointee(buildIsAppointeeField(pairs))
-        .build();
-    }
-
-    private String buildIsAppointeeField(Map<String, Object> pairs) {
-        if (areBooleansValid(pairs, "is_appointee", "is_not_appointee") && !doBooleansContradict(pairs, "is_appointee", "is_not_appointee")) {
-            return convertBooleanToYesNoString((boolean) pairs.get("is_appointee"));
-        }
-        return null;
-    }
-
     private Representative buildRepresentative(Map<String, Object> pairs) {
-        boolean doesRepExist = findBooleanExists(getField(pairs,"representative_person_title"), getField(pairs,"representative_person_first_name"),
-            getField(pairs,"representative_person_last_name"), getField(pairs,"representative_address_line1"), getField(pairs,"representative_address_line2"),
-            getField(pairs,"representative_address_line3"), getField(pairs,"representative_address_line4"), getField(pairs,"representative_postcode"),
-            getField(pairs,"representative_phone_number"), getField(pairs,"representative_name"));
+        boolean doesRepExist = hasPerson(pairs, "representative");
 
         if (doesRepExist) {
             return Representative.builder()
                 .hasRepresentative(convertBooleanToYesNoString(doesRepExist))
-                .name(buildRepresentativePersonName(pairs))
-                .address(buildRepresentativeAddress(pairs))
-                .organisation(getField(pairs,"representative_name"))
-                .contact(buildRepresentativeContact(pairs))
+                .name(buildPersonName(pairs, "representative"))
+                .address(buildPersonAddress(pairs, "representative"))
+                .organisation(getField(pairs,"representative_company"))
+                .contact(buildPersonContact(pairs, "representative"))
                 .build();
         } else {
-            return Representative.builder().hasRepresentative(NO).build();
+            return Representative.builder().hasRepresentative(convertBooleanToYesNoString(doesRepExist)).build();
         }
     }
 
@@ -93,64 +97,40 @@ public class SscsCaseTransformer implements CaseTransformer {
         .build();
     }
 
-    private Name buildAppellantName(Map<String, Object> pairs) {
+    private Name buildPersonName(Map<String, Object> pairs, String personType) {
         return Name.builder()
-            .title(getField(pairs,"appellant_title"))
-            .firstName(getField(pairs,"appellant_first_name"))
-            .lastName(getField(pairs,"appellant_last_name"))
+            .title(getField(pairs,personType + "_title"))
+            .firstName(getField(pairs,personType + "_first_name"))
+            .lastName(getField(pairs,personType + "_last_name"))
         .build();
     }
 
-    private Address buildAppellantAddress(Map<String, Object> pairs) {
+    private Address buildPersonAddress(Map<String, Object> pairs, String personType) {
         return Address.builder()
-            .line1(getField(pairs,"appellant_address_line1"))
-            .line2(getField(pairs,"appellant_address_line2"))
-            .town(getField(pairs,"appellant_address_line3"))
-            .county(getField(pairs,"appellant_address_line4"))
-            .postcode(getField(pairs,"appellant_postcode"))
+            .line1(getField(pairs,personType + "_address_line1"))
+            .line2(getField(pairs,personType + "_address_line2"))
+            .town(getField(pairs,personType + "_address_line3"))
+            .county(getField(pairs,personType + "_address_line4"))
+            .postcode(getField(pairs,personType + "_postcode"))
         .build();
     }
 
-    private Identity buildAppellantIdentity(Map<String, Object> pairs) {
+    private Identity buildPersonIdentity(Map<String, Object> pairs, String personType) {
         return Identity.builder()
-            .dob(generateDateForCcd(pairs,"appellant_date_of_birth"))
-            .nino(getField(pairs,"appellant_ni_number"))
+            .dob(generateDateForCcd(pairs, errors,personType + "_date_of_birth"))
+            .nino(getField(pairs,personType + "_ni_number"))
         .build();
     }
 
-    private Contact buildAppellantContact(Map<String, Object> pairs) {
+    private Contact buildPersonContact(Map<String, Object> pairs, String personType) {
         return Contact.builder()
-            .phone(getField(pairs,"appellant_phone"))
-            .mobile(getField(pairs,"appellant_mobile"))
-        .build();
-    }
-
-    private Name buildRepresentativePersonName(Map<String, Object> pairs) {
-        return Name.builder()
-            .title(getField(pairs,"representative_person_title"))
-            .firstName(getField(pairs,"representative_person_first_name"))
-            .lastName(getField(pairs,"representative_person_last_name"))
-        .build();
-    }
-
-    private Address buildRepresentativeAddress(Map<String, Object> pairs) {
-        return Address.builder()
-            .line1(getField(pairs,"representative_address_line1"))
-            .line2(getField(pairs,"representative_address_line2"))
-            .town(getField(pairs,"representative_address_line3"))
-            .county(getField(pairs,"representative_address_line4"))
-            .postcode(getField(pairs,"representative_postcode"))
-        .build();
-    }
-
-    private Contact buildRepresentativeContact(Map<String, Object> pairs) {
-        return Contact.builder()
-            .phone(getField(pairs,"representative_phone_number"))
+            .phone(getField(pairs,personType + "_phone"))
+            .mobile(getField(pairs,personType + "_mobile"))
         .build();
     }
 
     private String findHearingType(Map<String, Object> pairs) {
-        if (areBooleansValid(pairs, "is_hearing_type_oral", "is_hearing_type_paper") && !doBooleansContradict(pairs, "is_hearing_type_oral", "is_hearing_type_paper")) {
+        if (areBooleansValid(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper") && !doBooleansContradict(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper")) {
             return (boolean) pairs.get("is_hearing_type_oral") ? "Oral" : "Paper";
         }
         return null;
@@ -194,57 +174,4 @@ public class SscsCaseTransformer implements CaseTransformer {
             return null;
         }
     }
-
-    private boolean doBooleansContradict(Map<String, Object> pairs, String value1, String value2) {
-        if (pairs.containsKey(value1) && pairs.containsKey(value2)) {
-            if ((boolean) pairs.get(value1) == (boolean) pairs.get(value2)) {
-                errors.add(value1 + " and " + value2 + " have contradicting values");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean areBooleansValid(Map<String, Object> pairs, String... values) {
-        for (String value : values) {
-            if (pairs.get(value) == null) {
-                return false;
-            } else if (!(pairs.get(value) instanceof Boolean)) {
-                errors.add(value + " does not contain a valid boolean value. Needs to be true or false");
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private String convertBooleanToYesNoString(boolean value) {
-        return value ? YES : NO;
-    }
-
-    private boolean findBooleanExists(String... values) {
-        for (String v : values) {
-            if (v != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private String generateDateForCcd(Map<String, Object> pairs, String field) {
-        if (pairs.containsKey(field)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-            try {
-                return LocalDate.parse(getField(pairs, field), formatter).toString();
-            } catch (DateTimeParseException ex) {
-                errors.add(field + " is an invalid date field. Needs to be in the format dd/mm/yyyy");
-            }
-        }
-        return null;
-    }
-
-    private String getField(Map<String, Object> pairs, String field) {
-        return pairs.get(field) != null ? pairs.get(field).toString() : null;
-    }
-
 }

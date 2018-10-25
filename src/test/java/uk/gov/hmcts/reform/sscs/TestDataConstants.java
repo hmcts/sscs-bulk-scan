@@ -8,8 +8,8 @@ public class TestDataConstants {
 
     public static final String BENEFIT_TYPE_DESCRIPTION = "PIP";
     public static final String APPELLANT_TITLE = "Mr";
-    public static final String APPELLANT_FIRST_NAME = "Mr";
-    public static final String APPELLANT_LAST_NAME = "Mr";
+    public static final String APPELLANT_FIRST_NAME = "Henry";
+    public static final String APPELLANT_LAST_NAME = "White";
     public static final String APPELLANT_ADDRESS_LINE1 = "10 My Road";
     public static final String APPELLANT_ADDRESS_LINE2 = "Hutton";
     public static final String APPELLANT_ADDRESS_LINE3 = "Brentwood";
@@ -19,8 +19,6 @@ public class TestDataConstants {
     public static final String APPELLANT_MOBILE = "07929292929";
     public static final String APPELLANT_DATE_OF_BIRTH = "12/08/1987";
     public static final String APPELLANT_NI_NUMBER = "JT 07 23 19 B";
-    public static final Boolean IS_APPOINTEE = true;
-    public static final Boolean IS_NOT_APPOINTEE = false;
     public static final String APPOINTEE_TITLE = "Mrs";
     public static final String APPOINTEE_FIRST_NAME = "Wendy";
     public static final String APPOINTEE_LAST_NAME = "Baker";
@@ -29,8 +27,10 @@ public class TestDataConstants {
     public static final String APPOINTEE_ADDRESS_LINE3 = "Romford";
     public static final String APPOINTEE_ADDRESS_LINE4 = "Essex";
     public static final String APPOINTEE_POSTCODE = "RM1 2KJ";
-    public static final String APPOINTEE_DATE_OF_BIRTH = "08/12/1990";
+    public static final String APPOINTEE_DATE_OF_BIRTH = "03/12/1990";
     public static final String APPOINTEE_NI_NUMBER = "BA 07 23 19 B";
+    public static final String APPOINTEE_PHONE = "01874505050";
+    public static final String APPOINTEE_MOBILE = "07929295555";
     public static final String REPRESENTATIVE_NAME = "IBM";
     public static final String REPRESENTATIVE_ADDRESS_LINE1 = "63 Grovehill Road";
     public static final String REPRESENTATIVE_ADDRESS_LINE2 = "The Square";

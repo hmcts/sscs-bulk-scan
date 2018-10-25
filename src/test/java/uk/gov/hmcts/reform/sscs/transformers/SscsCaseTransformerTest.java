@@ -38,44 +38,32 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenKeyValuePairs_thenBuildAnAppeal() {
+    public void givenKeyValuePairsWithPerson1_thenBuildAnAppeal() {
 
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION)
-            .put("appellant_title", APPELLANT_TITLE)
-            .put("appellant_first_name", APPELLANT_FIRST_NAME)
-            .put("appellant_last_name", APPELLANT_LAST_NAME)
-            .put("appellant_address_line1", APPELLANT_ADDRESS_LINE1)
-            .put("appellant_address_line2", APPELLANT_ADDRESS_LINE2)
-            .put("appellant_address_line3", APPELLANT_ADDRESS_LINE3)
-            .put("appellant_address_line4", APPELLANT_ADDRESS_LINE4)
-            .put("appellant_postcode", APPELLANT_POSTCODE)
-            .put("appellant_phone", APPELLANT_PHONE)
-            .put("appellant_mobile", APPELLANT_MOBILE)
-            .put("appellant_date_of_birth", APPELLANT_DATE_OF_BIRTH)
-            .put("appellant_ni_number", APPELLANT_NI_NUMBER)
-            .put("is_appointee", IS_APPOINTEE)
-            .put("is_not_appointee", IS_NOT_APPOINTEE)
-            .put("appointee_title", APPOINTEE_TITLE)
-            .put("appointee_first_name", APPOINTEE_FIRST_NAME)
-            .put("appointee_last_name", APPOINTEE_LAST_NAME)
-            .put("appointee_address_line1", APPOINTEE_ADDRESS_LINE1)
-            .put("appointee_address_line2", APPOINTEE_ADDRESS_LINE2)
-            .put("appointee_address_line3", APPOINTEE_ADDRESS_LINE3)
-            .put("appointee_address_line4", APPOINTEE_ADDRESS_LINE4)
-            .put("appointee_postcode", APPOINTEE_POSTCODE)
-            .put("appointee_date_of_birth", APPOINTEE_DATE_OF_BIRTH)
-            .put("appointee_ni_number", APPOINTEE_NI_NUMBER)
-            .put("representative_name", REPRESENTATIVE_NAME)
+            .put("person1_title", APPELLANT_TITLE)
+            .put("person1_first_name", APPELLANT_FIRST_NAME)
+            .put("person1_last_name", APPELLANT_LAST_NAME)
+            .put("person1_address_line1", APPELLANT_ADDRESS_LINE1)
+            .put("person1_address_line2", APPELLANT_ADDRESS_LINE2)
+            .put("person1_address_line3", APPELLANT_ADDRESS_LINE3)
+            .put("person1_address_line4", APPELLANT_ADDRESS_LINE4)
+            .put("person1_postcode", APPELLANT_POSTCODE)
+            .put("person1_phone", APPELLANT_PHONE)
+            .put("person1_mobile", APPELLANT_MOBILE)
+            .put("person1_date_of_birth", APPELLANT_DATE_OF_BIRTH)
+            .put("person1_ni_number", APPELLANT_NI_NUMBER)
+            .put("representative_company", REPRESENTATIVE_NAME)
             .put("representative_address_line1", REPRESENTATIVE_ADDRESS_LINE1)
             .put("representative_address_line2", REPRESENTATIVE_ADDRESS_LINE2)
             .put("representative_address_line3", REPRESENTATIVE_ADDRESS_LINE3)
             .put("representative_address_line4", REPRESENTATIVE_ADDRESS_LINE4)
             .put("representative_postcode", REPRESENTATIVE_POSTCODE)
-            .put("representative_phone_number", REPRESENTATIVE_PHONE_NUMBER)
-            .put("representative_person_title", REPRESENTATIVE_PERSON_TITLE)
-            .put("representative_person_first_name", REPRESENTATIVE_PERSON_FIRST_NAME)
-            .put("representative_person_last_name", REPRESENTATIVE_PERSON_LAST_NAME)
+            .put("representative_phone", REPRESENTATIVE_PHONE_NUMBER)
+            .put("representative_title", REPRESENTATIVE_PERSON_TITLE)
+            .put("representative_first_name", REPRESENTATIVE_PERSON_FIRST_NAME)
+            .put("representative_last_name", REPRESENTATIVE_PERSON_LAST_NAME)
             .put("appeal_late_reason", APPEAL_LATE_REASON)
             .put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL)
             .put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER)
@@ -95,6 +83,89 @@ public class SscsCaseTransformerTest {
 
         assertTrue(result.getErrors().isEmpty());
     }
+
+    @Test
+    public void givenKeyValuePairsWithPerson2AndPerson1_thenBuildAnAppeal() {
+
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("person1_title", APPOINTEE_TITLE)
+            .put("person1_first_name", APPOINTEE_FIRST_NAME)
+            .put("person1_last_name", APPOINTEE_LAST_NAME)
+            .put("person1_address_line1", APPOINTEE_ADDRESS_LINE1)
+            .put("person1_address_line2", APPOINTEE_ADDRESS_LINE2)
+            .put("person1_address_line3", APPOINTEE_ADDRESS_LINE3)
+            .put("person1_address_line4", APPOINTEE_ADDRESS_LINE4)
+            .put("person1_postcode", APPOINTEE_POSTCODE)
+            .put("person1_phone", APPOINTEE_PHONE)
+            .put("person1_mobile", APPOINTEE_MOBILE)
+            .put("person1_date_of_birth", APPOINTEE_DATE_OF_BIRTH)
+            .put("person1_ni_number", APPOINTEE_NI_NUMBER)
+            .put("person2_title", APPELLANT_TITLE)
+            .put("person2_first_name", APPELLANT_FIRST_NAME)
+            .put("person2_last_name", APPELLANT_LAST_NAME)
+            .put("person2_address_line1", APPELLANT_ADDRESS_LINE1)
+            .put("person2_address_line2", APPELLANT_ADDRESS_LINE2)
+            .put("person2_address_line3", APPELLANT_ADDRESS_LINE3)
+            .put("person2_address_line4", APPELLANT_ADDRESS_LINE4)
+            .put("person2_postcode", APPELLANT_POSTCODE)
+            .put("person2_date_of_birth", APPELLANT_DATE_OF_BIRTH)
+            .put("person2_ni_number", APPELLANT_NI_NUMBER)
+            .build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
+        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
+        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NI_NUMBER).dob("1987-08-12").build();
+
+        Name appointeeName = Name.builder().title(APPOINTEE_TITLE).firstName(APPOINTEE_FIRST_NAME).lastName(APPOINTEE_LAST_NAME).build();
+        Address appointeeAddress = Address.builder().line1(APPOINTEE_ADDRESS_LINE1).line2(APPOINTEE_ADDRESS_LINE2).town(APPOINTEE_ADDRESS_LINE3).county(APPOINTEE_ADDRESS_LINE4).postcode(APPOINTEE_POSTCODE).build();
+        Identity appointeeIdentity = Identity.builder().nino(APPOINTEE_NI_NUMBER).dob("1990-12-03").build();
+        Contact appointeeContact = Contact.builder().phone(APPOINTEE_PHONE).mobile(APPOINTEE_MOBILE).build();
+        Appointee appointee = Appointee.builder().name(appointeeName).address(appointeeAddress).contact(appointeeContact).identity(appointeeIdentity).build();
+
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).appointee(appointee).build();
+
+        Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
+        assertEquals(expectedAppellant, appellantResult);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenKeyValuePairsWithPerson2AndNoPerson1_thenBuildAnAppeal() {
+
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("person2_title", APPELLANT_TITLE)
+            .put("person2_first_name", APPELLANT_FIRST_NAME)
+            .put("person2_last_name", APPELLANT_LAST_NAME)
+            .put("person2_address_line1", APPELLANT_ADDRESS_LINE1)
+            .put("person2_address_line2", APPELLANT_ADDRESS_LINE2)
+            .put("person2_address_line3", APPELLANT_ADDRESS_LINE3)
+            .put("person2_address_line4", APPELLANT_ADDRESS_LINE4)
+            .put("person2_postcode", APPELLANT_POSTCODE)
+            .put("person2_date_of_birth", APPELLANT_DATE_OF_BIRTH)
+            .put("person2_ni_number", APPELLANT_NI_NUMBER)
+            .build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
+        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
+        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NI_NUMBER).dob("1987-08-12").build();
+
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).build();
+
+        Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
+        assertEquals(expectedAppellant, appellantResult);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
 
     @Test
     public void givenOnlyOneKeyValuePair_thenBuildAnAppeal() {
@@ -125,41 +196,28 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenContradictingIsAppointeeValues_thenAddErrorToList() {
-        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("is_appointee", true)
-            .put("is_not_appointee", true).build();
-
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
-
-        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
-
-        assertTrue(result.getErrors().contains("is_appointee and is_not_appointee have contradicting values"));
-    }
-
-    @Test
     public void givenBooleanValueIsText_thenAddErrorToList() {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("is_appointee", "I am a text value")
-            .put("is_not_appointee", true).build();
+            .put("is_hearing_type_oral", "I am a text value")
+            .put("is_hearing_type_paper", true).build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
-        assertTrue(result.getErrors().contains("is_appointee does not contain a valid boolean value. Needs to be true or false"));
+        assertTrue(result.getErrors().contains("is_hearing_type_oral does not contain a valid boolean value. Needs to be true or false"));
     }
 
     @Test
-    public void givenIsAppointeeBooleanValueIsEmpty_thenIgnoreField() {
+    public void givenIsHearingTypeOralBooleanValueIsEmpty_thenIgnoreField() {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("is_not_appointee", true).build();
+            .put("is_hearing_type_paper", true).build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
-        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getIsAppointee());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -167,13 +225,13 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenAnInvalidDateOfBirth_thenAddErrorToList() {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("appellant_date_of_birth", "12/99/1987").build();
+            .put("person1_date_of_birth", "12/99/1987").build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
-        assertTrue(result.getErrors().contains("appellant_date_of_birth is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+        assertTrue(result.getErrors().contains("person1_date_of_birth is an invalid date field. Needs to be in the format dd/mm/yyyy"));
     }
 
     private Appeal buildTestAppealData() {
@@ -181,6 +239,7 @@ public class SscsCaseTransformerTest {
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(APPELLANT_NI_NUMBER).dob("1987-08-12").build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).build();
+        Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).contact(appellantContact).build();
 
         Name repName = Name.builder().title(REPRESENTATIVE_PERSON_TITLE).firstName(REPRESENTATIVE_PERSON_FIRST_NAME).lastName(REPRESENTATIVE_PERSON_LAST_NAME).build();
         Address repAddress = Address.builder().line1(REPRESENTATIVE_ADDRESS_LINE1).line2(REPRESENTATIVE_ADDRESS_LINE2).town(REPRESENTATIVE_ADDRESS_LINE3).county(REPRESENTATIVE_ADDRESS_LINE4).postcode(REPRESENTATIVE_POSTCODE).build();
@@ -195,7 +254,7 @@ public class SscsCaseTransformerTest {
 
         return Appeal.builder()
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE_DESCRIPTION).build())
-            .appellant(Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).contact(appellantContact).isAppointee("Yes").build())
+            .appellant(appellant)
             .rep(Representative.builder().hasRepresentative("Yes").name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType("Oral")
