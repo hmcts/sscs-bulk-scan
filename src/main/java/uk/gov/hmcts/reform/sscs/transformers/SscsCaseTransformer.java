@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON1_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON2_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.REPRESENTATIVE_VALUE;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.ArrayList;
@@ -38,28 +41,28 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         Appellant appellant = null;
 
-        if (hasPerson(pairs, "person2")) {
+        if (hasPerson(pairs, PERSON2_VALUE)) {
             Appointee appointee = null;
-            if (hasPerson(pairs, "person1")) {
+            if (hasPerson(pairs, PERSON1_VALUE)) {
                 appointee = Appointee.builder()
-                    .name(buildPersonName(pairs, "person1"))
-                    .address(buildPersonAddress(pairs, "person1"))
-                    .contact(buildPersonContact(pairs, "person1"))
-                    .identity(buildPersonIdentity(pairs, "person1"))
+                    .name(buildPersonName(pairs, PERSON1_VALUE))
+                    .address(buildPersonAddress(pairs, PERSON1_VALUE))
+                    .contact(buildPersonContact(pairs, PERSON1_VALUE))
+                    .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
                 .build();
             }
             appellant = Appellant.builder()
-                .name(buildPersonName(pairs, "person2"))
-                .address(buildPersonAddress(pairs, "person2"))
-                .identity(buildPersonIdentity(pairs, "person2"))
+                .name(buildPersonName(pairs, PERSON2_VALUE))
+                .address(buildPersonAddress(pairs, PERSON2_VALUE))
+                .identity(buildPersonIdentity(pairs, PERSON2_VALUE))
                 .appointee(appointee)
                 .build();
-        } else if (hasPerson(pairs, "person1")) {
+        } else if (hasPerson(pairs, PERSON1_VALUE)) {
             appellant = Appellant.builder()
-                .name(buildPersonName(pairs, "person1"))
-                .address(buildPersonAddress(pairs, "person1"))
-                .contact(buildPersonContact(pairs, "person1"))
-                .identity(buildPersonIdentity(pairs, "person1"))
+                .name(buildPersonName(pairs, PERSON1_VALUE))
+                .address(buildPersonAddress(pairs, PERSON1_VALUE))
+                .contact(buildPersonContact(pairs, PERSON1_VALUE))
+                .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
                 .build();
         }
 
@@ -75,15 +78,15 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Representative buildRepresentative(Map<String, Object> pairs) {
-        boolean doesRepExist = hasPerson(pairs, "representative");
+        boolean doesRepExist = hasPerson(pairs, REPRESENTATIVE_VALUE);
 
         if (doesRepExist) {
             return Representative.builder()
                 .hasRepresentative(convertBooleanToYesNoString(doesRepExist))
-                .name(buildPersonName(pairs, "representative"))
-                .address(buildPersonAddress(pairs, "representative"))
+                .name(buildPersonName(pairs, REPRESENTATIVE_VALUE))
+                .address(buildPersonAddress(pairs, REPRESENTATIVE_VALUE))
                 .organisation(getField(pairs,"representative_company"))
-                .contact(buildPersonContact(pairs, "representative"))
+                .contact(buildPersonContact(pairs, REPRESENTATIVE_VALUE))
                 .build();
         } else {
             return Representative.builder().hasRepresentative(convertBooleanToYesNoString(doesRepExist)).build();

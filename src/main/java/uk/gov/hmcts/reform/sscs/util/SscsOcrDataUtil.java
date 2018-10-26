@@ -6,7 +6,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
-public class SscsOcrDataUtil {
+public final class SscsOcrDataUtil {
 
     private static final String YES = "Yes";
     private static final String NO = "No";
@@ -33,15 +33,13 @@ public class SscsOcrDataUtil {
     }
 
     public static String getField(Map<String, Object> pairs, String field) {
-        return pairs.get(field) != null ? pairs.get(field).toString() : null;
+        return pairs.containsKey(field) ? pairs.get(field).toString() : null;
     }
 
     public static boolean doBooleansContradict(Map<String, Object> pairs, List<String> errors, String value1, String value2) {
-        if (pairs.containsKey(value1) && pairs.containsKey(value2)) {
-            if ((boolean) pairs.get(value1) == (boolean) pairs.get(value2)) {
-                errors.add(value1 + " and " + value2 + " have contradicting values");
-                return true;
-            }
+        if (pairs.get(value1).equals(pairs.get(value2)) && pairs.get(value1) instanceof Boolean) {
+            errors.add(value1 + " and " + value2 + " have contradicting values");
+            return true;
         }
         return false;
     }
