@@ -20,8 +20,8 @@ core_case_data:
   api:
     url: http://localhost:4452
 
-display.case.error: false
 
+display.case.error: true
 display.case.warning: false
 
 idam:
