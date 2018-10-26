@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public final class SscsOcrDataUtil {
 
@@ -45,15 +46,16 @@ public final class SscsOcrDataUtil {
     }
 
     public static boolean areBooleansValid(Map<String, Object> pairs, List<String> errors, String... values) {
-        for (String value : values) {
+        return Stream.of(values).allMatch(value -> {
             if (pairs.get(value) == null) {
                 return false;
-            } else if (!(pairs.get(value) instanceof Boolean)) {
-                errors.add(value + " does not contain a valid boolean value. Needs to be true or false");
-                return false;
             }
-        }
-        return true;
+            if ((pairs.get(value) instanceof Boolean)) {
+                return true;
+            }
+            errors.add(value + " does not contain a valid boolean value. Needs to be true or false");
+            return false;
+        });
     }
 
     public static String convertBooleanToYesNoString(boolean value) {

@@ -51,19 +51,10 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
                 .build();
             }
-            appellant = Appellant.builder()
-                .name(buildPersonName(pairs, PERSON2_VALUE))
-                .address(buildPersonAddress(pairs, PERSON2_VALUE))
-                .identity(buildPersonIdentity(pairs, PERSON2_VALUE))
-                .appointee(appointee)
-                .build();
+            appellant = buildAppelant(pairs, PERSON2_VALUE, appointee, null);
+
         } else if (hasPerson(pairs, PERSON1_VALUE)) {
-            appellant = Appellant.builder()
-                .name(buildPersonName(pairs, PERSON1_VALUE))
-                .address(buildPersonAddress(pairs, PERSON1_VALUE))
-                .contact(buildPersonContact(pairs, PERSON1_VALUE))
-                .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
-                .build();
+            appellant = buildAppelant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE));
         }
 
         return Appeal.builder()
@@ -75,6 +66,16 @@ public class SscsCaseTransformer implements CaseTransformer {
             .hearingOptions(buildHearingOptions(pairs))
             .signer(getField(pairs,"signature_appellant_name"))
         .build();
+    }
+
+    private Appellant buildAppelant(Map<String, Object> pairs, String personType, Appointee appointee, Contact contact) {
+        return Appellant.builder()
+            .name(buildPersonName(pairs, personType))
+            .address(buildPersonAddress(pairs, personType))
+            .identity(buildPersonIdentity(pairs, personType))
+            .contact(contact)
+            .appointee(appointee)
+            .build();
     }
 
     private Representative buildRepresentative(Map<String, Object> pairs) {
