@@ -12,5 +12,6 @@ def product = "sscs"
 def component = "bulk-scan"
 
 withNightlyPipeline(type, product, component) {
+  enableMutationTest()
   enableSlackNotifications('#sscs-tech')
 }
