@@ -6,19 +6,12 @@ import static uk.gov.hmcts.reform.sscs.TestDataConstants.APPELLANT_TITLE;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
 
 public class SscsCaseValidatorTest {
 
-    SscsCaseValidator validator = new SscsCaseValidator();
-
-    @Before
-    public void setup() {
-        ReflectionTestUtils.setField(validator, "displayCaseError", true);
-    }
+    private SscsCaseValidator validator = new SscsCaseValidator();
 
     @Test
     public void givenAPerson1AndPerson2AreBothEmpty_thenAddAnError() {
