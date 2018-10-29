@@ -51,8 +51,8 @@ public class SscsCaseTransformerTest {
             .put("person1_postcode", APPELLANT_POSTCODE)
             .put("person1_phone", APPELLANT_PHONE)
             .put("person1_mobile", APPELLANT_MOBILE)
-            .put("person1_date_of_birth", APPELLANT_DATE_OF_BIRTH)
-            .put("person1_ni_number", APPELLANT_NI_NUMBER)
+            .put("person1_dob", APPELLANT_DATE_OF_BIRTH)
+            .put("person1_nino", APPELLANT_NINO)
             .put("representative_company", REPRESENTATIVE_NAME)
             .put("representative_address_line1", REPRESENTATIVE_ADDRESS_LINE1)
             .put("representative_address_line2", REPRESENTATIVE_ADDRESS_LINE2)
@@ -68,10 +68,9 @@ public class SscsCaseTransformerTest {
             .put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER)
             .put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES)
             .put("hearing_support_arrangements", HEARING_SUPPORT_ARRANGEMENTS)
-            .put("hearing_options_language", HEARING_OPTIONS_LANGUAGE)
-            .put("agree_less_hearing_notice_yes", AGREE_LESS_HEARING_NOTICE_YES)
-            .put("agree_less_hearing_notice_no", AGREE_LESS_HEARING_NOTICE_NO)
-            .put("signature_appellant_name", SIGNATURE_APPELLANT_NAME)
+            .put("hearing_options_language_type", HEARING_OPTIONS_LANGUAGE_TYPE)
+            .put("agree_less_hearing_notice", AGREE_LESS_HEARING_NOTICE)
+            .put("signature_name", SIGNATURE_NAME)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -97,8 +96,8 @@ public class SscsCaseTransformerTest {
             .put("person1_postcode", APPOINTEE_POSTCODE)
             .put("person1_phone", APPOINTEE_PHONE)
             .put("person1_mobile", APPOINTEE_MOBILE)
-            .put("person1_date_of_birth", APPOINTEE_DATE_OF_BIRTH)
-            .put("person1_ni_number", APPOINTEE_NI_NUMBER)
+            .put("person1_dob", APPOINTEE_DATE_OF_BIRTH)
+            .put("person1_nino", APPOINTEE_NINO)
             .put("person2_title", APPELLANT_TITLE)
             .put("person2_first_name", APPELLANT_FIRST_NAME)
             .put("person2_last_name", APPELLANT_LAST_NAME)
@@ -107,8 +106,8 @@ public class SscsCaseTransformerTest {
             .put("person2_address_line3", APPELLANT_ADDRESS_LINE3)
             .put("person2_address_line4", APPELLANT_ADDRESS_LINE4)
             .put("person2_postcode", APPELLANT_POSTCODE)
-            .put("person2_date_of_birth", APPELLANT_DATE_OF_BIRTH)
-            .put("person2_ni_number", APPELLANT_NI_NUMBER)
+            .put("person2_dob", APPELLANT_DATE_OF_BIRTH)
+            .put("person2_nino", APPELLANT_NINO)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -117,11 +116,11 @@ public class SscsCaseTransformerTest {
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
-        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NI_NUMBER).dob("1987-08-12").build();
+        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob("1987-08-12").build();
 
         Name appointeeName = Name.builder().title(APPOINTEE_TITLE).firstName(APPOINTEE_FIRST_NAME).lastName(APPOINTEE_LAST_NAME).build();
         Address appointeeAddress = Address.builder().line1(APPOINTEE_ADDRESS_LINE1).line2(APPOINTEE_ADDRESS_LINE2).town(APPOINTEE_ADDRESS_LINE3).county(APPOINTEE_ADDRESS_LINE4).postcode(APPOINTEE_POSTCODE).build();
-        Identity appointeeIdentity = Identity.builder().nino(APPOINTEE_NI_NUMBER).dob("1990-12-03").build();
+        Identity appointeeIdentity = Identity.builder().nino(APPOINTEE_NINO).dob("1990-12-03").build();
         Contact appointeeContact = Contact.builder().phone(APPOINTEE_PHONE).mobile(APPOINTEE_MOBILE).build();
         Appointee appointee = Appointee.builder().name(appointeeName).address(appointeeAddress).contact(appointeeContact).identity(appointeeIdentity).build();
 
@@ -145,8 +144,8 @@ public class SscsCaseTransformerTest {
             .put("person2_address_line3", APPELLANT_ADDRESS_LINE3)
             .put("person2_address_line4", APPELLANT_ADDRESS_LINE4)
             .put("person2_postcode", APPELLANT_POSTCODE)
-            .put("person2_date_of_birth", APPELLANT_DATE_OF_BIRTH)
-            .put("person2_ni_number", APPELLANT_NI_NUMBER)
+            .put("person2_dob", APPELLANT_DATE_OF_BIRTH)
+            .put("person2_nino", APPELLANT_NINO)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -155,7 +154,7 @@ public class SscsCaseTransformerTest {
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
-        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NI_NUMBER).dob("1987-08-12").build();
+        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob("1987-08-12").build();
 
         Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).build();
 
@@ -224,13 +223,13 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenAnInvalidDateOfBirth_thenAddErrorToList() {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("person1_date_of_birth", "12/99/1987").build();
+            .put("person1_dob", "12/99/1987").build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
-        assertTrue(result.getErrors().contains("person1_date_of_birth is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+        assertTrue(result.getErrors().contains("person1_dob is an invalid date field. Needs to be in the format dd/mm/yyyy"));
     }
 
     @Test
@@ -309,7 +308,7 @@ public class SscsCaseTransformerTest {
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
-        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NI_NUMBER).dob("1987-08-12").build();
+        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob("1987-08-12").build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).build();
         Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).contact(appellantContact).build();
 
@@ -330,8 +329,8 @@ public class SscsCaseTransformerTest {
             .rep(Representative.builder().hasRepresentative("Yes").name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType("Oral")
-            .hearingOptions(HearingOptions.builder().excludeDates(excludedDates).arrangements(hearingSupportArrangements).languageInterpreter("Yes").languages(HEARING_OPTIONS_LANGUAGE).build())
-            .signer(SIGNATURE_APPELLANT_NAME)
+            .hearingOptions(HearingOptions.builder().excludeDates(excludedDates).arrangements(hearingSupportArrangements).languageInterpreter("Yes").languages(HEARING_OPTIONS_LANGUAGE_TYPE).build())
+            .signer(SIGNATURE_NAME)
         .build();
     }
 

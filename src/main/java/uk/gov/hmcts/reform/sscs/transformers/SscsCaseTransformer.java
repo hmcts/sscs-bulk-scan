@@ -67,7 +67,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .mrnDetails(buildMrnDetails(pairs))
                 .hearingType(findHearingType(pairs))
                 .hearingOptions(buildHearingOptions(pairs))
-                .signer(getField(pairs, "signature_appellant_name"))
+                .signer(getField(pairs, "signature_name"))
                 .build();
         } else {
             errors.add("No OCR data, case cannot be created");
@@ -128,8 +128,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private Identity buildPersonIdentity(Map<String, Object> pairs, String personType) {
         return Identity.builder()
-            .dob(generateDateForCcd(pairs, errors,personType + "_date_of_birth"))
-            .nino(getField(pairs,personType + "_ni_number"))
+            .dob(generateDateForCcd(pairs, errors,personType + "_dob"))
+            .nino(getField(pairs,personType + "_nino"))
         .build();
     }
 
@@ -149,14 +149,14 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs) {
 
-        String isLanguageInterpreterRequired = convertBooleanToYesNoString(findBooleanExists(getField(pairs,"hearing_options_language")));
+        String isLanguageInterpreterRequired = convertBooleanToYesNoString(findBooleanExists(getField(pairs,"hearing_options_language_type")));
 
         //TODO: Handle sign languages here - discuss with Josh
         return HearingOptions.builder()
             .excludeDates(buildExcludedDates(pairs))
             .arrangements(buildArrangements(pairs))
             .languageInterpreter(isLanguageInterpreterRequired)
-            .languages(getField(pairs,"hearing_options_language"))
+            .languages(getField(pairs,"hearing_options_language_type"))
         .build();
     }
 
