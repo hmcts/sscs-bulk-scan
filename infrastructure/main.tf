@@ -10,6 +10,7 @@ locals {
   ase_name  = "${data.terraform_remote_state.core_apps_compute.ase_name[0]}"
   local_env = "${(var.env == "preview" || var.env == "spreview") ? (var.env == "preview" ) ? "aat" : "saat" : var.env}"
   s2s_url   = "http://rpe-service-auth-provider-${local.local_env}.service.core-compute-${local.local_env}.internal"
+  ccdApiUrl = "http://ccd-data-store-api-${local.local_env}.service.${local.local_env}.internal"
 }
 
 module "sscs-bulk-scan" {
@@ -27,6 +28,7 @@ module "sscs-bulk-scan" {
     LOGBACK_REQUIRE_ALERT_LEVEL = false
     LOGBACK_REQUIRE_ERROR_CODE  = false
 
-    IDAM_S2S-AUTH_URL = "${local.s2s_url}"
+    IDAM_S2S-AUTH_URL      = "${local.s2s_url}"
+    CORE_CASE_DATA_API_URL = "${local.ccdApiUrl}"
   }
 }
