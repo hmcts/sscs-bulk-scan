@@ -9,16 +9,15 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.domain.ScannedData;
+import uk.gov.hmcts.reform.sscs.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
 
@@ -38,7 +37,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenKeyValuePairsWithPerson1_thenBuildAnAppeal() {
+    public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
 
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION)
@@ -75,7 +74,7 @@ public class SscsCaseTransformerTest {
             .put("signature_appellant_name", SIGNATURE_APPELLANT_NAME)
             .build();
 
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
@@ -85,7 +84,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenKeyValuePairsWithPerson2AndPerson1_thenBuildAnAppeal() {
+    public void givenKeyValuePairsWithPerson2AndPerson1_thenBuildAnAppealWithAppellantAndAppointee() {
 
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("person1_title", APPOINTEE_TITLE)
@@ -112,7 +111,7 @@ public class SscsCaseTransformerTest {
             .put("person2_ni_number", APPELLANT_NI_NUMBER)
             .build();
 
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
@@ -135,7 +134,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenKeyValuePairsWithPerson2AndNoPerson1_thenBuildAnAppeal() {
+    public void givenKeyValuePairsWithPerson2AndNoPerson1_thenBuildAnAppealWithAppellant() {
 
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("person2_title", APPELLANT_TITLE)
@@ -150,7 +149,7 @@ public class SscsCaseTransformerTest {
             .put("person2_ni_number", APPELLANT_NI_NUMBER)
             .build();
 
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
@@ -173,7 +172,7 @@ public class SscsCaseTransformerTest {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION).build();
 
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
@@ -188,7 +187,7 @@ public class SscsCaseTransformerTest {
             .put("is_hearing_type_oral", true)
             .put("is_hearing_type_paper", true).build();
 
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
@@ -201,7 +200,7 @@ public class SscsCaseTransformerTest {
             .put("is_hearing_type_oral", "I am a text value")
             .put("is_hearing_type_paper", true).build();
 
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
@@ -213,7 +212,7 @@ public class SscsCaseTransformerTest {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("is_hearing_type_paper", true).build();
 
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
@@ -227,11 +226,84 @@ public class SscsCaseTransformerTest {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("person1_date_of_birth", "12/99/1987").build();
 
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(pairs);
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
         assertTrue(result.getErrors().contains("person1_date_of_birth is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+    }
+
+    @Test
+    public void givenACaseWithNullOcrData_thenAddErrorToList() {
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(null).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("No OCR data, case cannot be created"));
+    }
+
+    @Test
+    public void givenACaseWithNoOcrData_thenAddErrorToList() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder().build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("No OCR data, case cannot be created"));
+    }
+
+    @Test
+    public void givenOneDocument_thenBuildACase() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("is_hearing_type_paper", true).build();
+
+        List<ScannedRecord> records = new ArrayList<>();
+        ScannedRecord scannedRecord = buildTestScannedRecord("http://www.test1.com");
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        @SuppressWarnings("unchecked")
+        List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
+        assertEquals(scannedRecord.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord.getFilename(), docs.get(0).getValue().getDocumentFileName());
+        assertEquals(scannedRecord.getDocumentLink(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenMultipleDocuments_thenBuildACase() {
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("is_hearing_type_paper", true).build();
+
+        List<ScannedRecord> records = new ArrayList<>();
+        ScannedRecord scannedRecord1 = buildTestScannedRecord("http://www.test1.com");
+        ScannedRecord scannedRecord2 = buildTestScannedRecord("http://www.test2.com");
+        records.add(scannedRecord1);
+        records.add(scannedRecord2);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        @SuppressWarnings("unchecked")
+        List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
+        assertEquals(scannedRecord1.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord1.getFilename(), docs.get(0).getValue().getDocumentFileName());
+        assertEquals(scannedRecord1.getDocumentLink(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+        assertEquals(scannedRecord2.getDocScanDate(), docs.get(1).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord2.getFilename(), docs.get(1).getValue().getDocumentFileName());
+        assertEquals(scannedRecord2.getDocumentLink(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals("Other document", docs.get(1).getValue().getDocumentType());
+
+        assertTrue(result.getErrors().isEmpty());
     }
 
     private Appeal buildTestAppealData() {
@@ -261,6 +333,16 @@ public class SscsCaseTransformerTest {
             .hearingOptions(HearingOptions.builder().excludeDates(excludedDates).arrangements(hearingSupportArrangements).languageInterpreter("Yes").languages(HEARING_OPTIONS_LANGUAGE).build())
             .signer(SIGNATURE_APPELLANT_NAME)
         .build();
+    }
+
+    private ScannedRecord buildTestScannedRecord(String url) {
+        return ScannedRecord.builder()
+            .docScanDate("2018-08-10")
+            .documentControlNumber("123")
+            .documentLink(url)
+            .filename("mrn.jpg")
+            .documentType("Testing").build();
+
     }
 
 }
