@@ -22,11 +22,25 @@ public class SscsCaseValidator implements CaseValidator {
             .build();
     }
 
+<<<<<<< HEAD
     private List<String> populateErrors(Appeal appeal) {
         List<String> errors = new ArrayList<>();
         if (!checkAppellantExists(appeal.getAppellant())) {
             errors.add("person1 address and name mandatory fields are empty");
         }
+=======
+    private List<String> populateErrors(Map<String, Object> caseData) {
+        /**
+         * <pre>
+         * TODO : Currently transformation is not populating data which validator is expecting(keys with person1 and person2).
+         * </pre>
+         */
+        /*List<String> errors = new ArrayList<>();
+
+        //if (!hasPerson(caseData, "person1") && !hasPerson(caseData, "person2")) {
+            errors.add("person1 and person2 are both empty");
+        }*/
+>>>>>>> Ignored validator tests and fixed checkstyle issue
 
         return errors;
     }
