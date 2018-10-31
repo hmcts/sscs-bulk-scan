@@ -1,17 +1,61 @@
 {
-  "event_token": "test_event_token",
-  "security_classification": "PUBLIC",
-  "ignore_warning": false,
-  "data": {
-    "caseReference": "123456789",
-    "generatedSurname": "Smith",
-    "generatedEmail": "sscstest@test.com",
-    "caseCreated": "2018-01-11",
-    "generatedNino": "SR11111"
-  },
   "event": {
     "id": "appealCreated",
     "summary": null,
     "description": "Case created from exception record"
-  }
+  },
+  "data": {
+    "appeal": {
+      "mrnDetails": {
+        "dwpIssuingOffice": null,
+        "mrnDate": null,
+        "mrnLateReason": null,
+        "mrnMissingReason": null
+      },
+      "appellant": {
+        "name": {
+          "title": "Mr",
+          "firstName": "John",
+          "lastName": "Smith"
+        },
+        "address": {
+          "line1": "2 Drake Close",
+          "line2": "Hutton",
+          "town": "Brentwood",
+          "county": "Essex",
+          "postcode": "SE000RS"
+        },
+        "contact": {
+          "email": null,
+          "phone": "012345678",
+          "mobile": "012345678"
+        },
+        "identity": {
+          "dob": "1976-11-11",
+          "nino": null
+        },
+        "appointee": null
+      },
+      "benefitType": {
+        "code": "Employment Support Allowance",
+        "description": null
+      },
+      "hearingOptions": {
+        "languageInterpreter": "No"
+      },
+      "appealReasons": null,
+      "rep": {
+        "hasRepresentative": "No",
+        "organisation": null,
+        "name": null,
+        "address": null,
+        "contact": null
+      },
+      "signer": null,
+      "hearingType": null
+    }
+  },
+  "security_classification": "PUBLIC",
+  "event_token": "test_event_token",
+  "ignore_warning": false
 }

@@ -1,31 +1,70 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
-import static org.mockito.Mockito.doNothing;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.google.common.io.Resources.getResource;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import org.assertj.core.api.Assertions;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
+import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Resources;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+import org.apache.commons.codec.Charsets;
+import org.assertj.core.util.Strings;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.contract.wiremock.WireMockSpring;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.reform.sscs.auth.AuthService;
+import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CcdCallbackControllerTest {
+
+    private static final String AUTHORIZATION_HEADER_KEY = "Authorization";
+
+    private static final String SERVICE_AUTHORIZATION_HEADER_KEY = "ServiceAuthorization";
+
+    private static final String USER_AUTH_TOKEN = "Bearer TEST_USER_AUTH_TOKEN";
+
+    private static final String SERVICE_AUTH_TOKEN = "TEST_SERVICE_AUTH";
+
+    private static final String USER_TOKEN_WITHOUT_CASE_ACCESS = "USER_TOKEN_WITHOUT_CASE_ACCESS";
+
+    private static final String USER_ID = "1234";
+
+    private static final String START_EVENT_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/appealCreated/token";
+
+    private static final String SUBMIT_EVENT_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases?ignore-warning=true";
+
+    private static final String USER_ID_HEADER = "user-id";
+
+    private static final String KEY = "key";
+
+    private static final String VALUE = "value";
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -34,71 +73,322 @@ public class CcdCallbackControllerTest {
     private int randomServerPort;
 
     @MockBean
-    private AuthService authService;
+    private AuthTokenValidator authTokenValidator;
+
+    @ClassRule
+    public static WireMockClassRule ccdServer = new WireMockClassRule(WireMockSpring.options().port(4000)
+        .bindAddress("localhost").notifier(new ConsoleNotifier(true)));
+
+    private String baseUrl;
+
+    @Before
+    public void setUp() {
+        baseUrl = "http://localhost:" + randomServerPort + "/exception-record/";
+    }
 
     @Test
-    public void should_successfully_handle_callback_and_return_exception_record_response() throws Exception {
+    public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
+        throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        when(authService.authenticate("testServiceAuthToken")).thenReturn("testService");
-        doNothing().when(authService).assertIsAllowedToHandleCallback("testService");
+        startForCaseworkerStub();
 
-        final String baseUrl = "http://localhost:" + randomServerPort + "/exception-record/";
+        submitForCaseworkerStub();
 
-        URI uri = new URI(baseUrl);
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
 
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getWarnings()).isNull();
+        assertThat(callbackResponse.getData()).contains(
+            entry("caseReference", "1539878003972756"),
+            entry("state", "ScannedRecordCaseCreated")
+        );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_status_code_401_when_service_auth_token_is_missing() {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "testUserAuthToken");
-        headers.set("serviceauthorization", "testServiceAuthToken");
-        headers.set("user-id", "1");
+        headers.set(AUTHORIZATION_HEADER_KEY, USER_AUTH_TOKEN);
+        headers.set(USER_ID_HEADER, USER_ID);
 
-        ExceptionCaseData exceptionCaseData = ExceptionCaseData.builder()
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(401);
+    }
+
+    @Test
+    public void should_return_status_code_403_when_service_auth_token_is_missing() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("forbidden_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(403);
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_error_list_populated_when_exception_record_transformation_fails() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithContradictingValues()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("is_hearing_type_oral does not contain a valid boolean value. Needs to be true or false");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_403_status_when_usertoken_does_not_have_access_to_jurisdiction() throws Exception {
+        // Given
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION_HEADER_KEY, USER_TOKEN_WITHOUT_CASE_ACCESS);
+        headers.set(SERVICE_AUTHORIZATION_HEADER_KEY, SERVICE_AUTH_TOKEN);
+        headers.set(USER_ID_HEADER, USER_ID);
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        startForCaseworkerStubWithUserTokenHavingNoAccess();
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(403);
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_503_status_when_ccd_service_is_not_available() throws Exception {
+        // Given
+        startForCaseworkerStubWithCcdUnavailable();
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(503);
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+
+    private Map<String, Object> caseDataWithContradictingValues() {
+        List<Object> ocrList = new ArrayList<>();
+
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "is_hearing_type_oral", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, true))
+        );
+
+        return exceptionRecord(ocrList);
+    }
+
+    private Map<String, Object> exceptionRecord(List<Object> ocrList) {
+        Map<String, Object> exceptionRecord = new HashMap<>();
+        exceptionRecord.put("journeyClassification", "New Application");
+        exceptionRecord.put("poBoxJurisdiction", "SSCS");
+        exceptionRecord.put("poBox", "SSCSPO");
+        exceptionRecord.put("openingDate", "2018-01-11");
+        exceptionRecord.put("scanOCRData", ocrList);
+        return exceptionRecord;
+    }
+
+    private ExceptionCaseData exceptionCaseData(Map<String, Object> caseData) {
+        return ExceptionCaseData.builder()
             .caseDetails(CaseDetails.builder()
-                .caseData(caseData())
+                .caseData(caseData)
                 .build())
             .build();
-
-        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData, headers);
-
-        ResponseEntity<String> result = this.restTemplate.postForEntity(uri, request, String.class);
-
-        //Verify request succeed
-        Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
-
     }
 
     private Map<String, Object> caseData() {
-        Map<String, Object> caseData = new HashMap<>();
-        caseData.put("have_right_to_appeal_yes", true);
-        caseData.put("have_right_to_appeal_no", false);
-        caseData.put("contains_mrn", true);
-        caseData.put("benefit_type_description", "Employment Support Allowance");
-        caseData.put("person1_title", "Mr");
-        caseData.put("person1_last_name", "Smith");
-        caseData.put("person1_address_line1", "test_add_line1");
-        caseData.put("person1_address_line2", "test_add_line2");
-        caseData.put("representative_name", "ABC Advisory Services");
-        caseData.put("representative_address_line1", "63 test");
-        caseData.put("representative_address_line2", "The Square");
-        caseData.put("representative_address_line3", "test");
-        caseData.put("representative_address_line4", "Surrey");
-        caseData.put("representative_postcode", "RH1 6RE");
-        caseData.put("representative_phone_number", "012345678");
-        caseData.put("representative_person_title", "Mr");
-        caseData.put("representative_person_firstname", "Peter");
-        caseData.put("representative_person_lastname", "Hyland");
-        caseData.put("appeal_grounds", "see scanned SSCS1 form");
-        caseData.put("appeal_late_reason", "see scanned SSCS1 form");
-        caseData.put("is_hearing_type_oral", true);
-        caseData.put("is_hearing_type_paper", false);
-        caseData.put("hearing_options_exclude_dates", "I cannot attend on Mondays and I am on holiday in October.");
-        caseData.put("hearing_support_arrangements", "Wheelchair access");
-        caseData.put("hearing_support_language", "French");
-        caseData.put("hearing_options_dialect", "");
-        caseData.put("agree_less_hearing_notice_yes", true);
-        caseData.put("agree_less_hearing_notice_no", false);
-        caseData.put("signature_person1_name", "Sarah Smith");
-        caseData.put("signature_appeal_date", "01/04/2018");
+        List<Object> ocrList = new ArrayList<>();
 
-        return caseData;
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "have_right_to_appeal_yes", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "have_right_to_appeal_no", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "contains_mrn", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "benefit_type_description", VALUE, "Employment Support Allowance"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_title", VALUE, "Mr"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_first_name", VALUE, "John"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_last_name", VALUE, "Smith"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_address_line1", VALUE, "2 Drake Close"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_address_line2", VALUE, "Hutton"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_address_line3", VALUE, "Brentwood"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_address_line4", VALUE, "Essex"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_postcode", VALUE, "SE000RS"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_phone", VALUE, "012345678"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_mobile", VALUE, "012345678"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_date_of_birth", VALUE, "11/11/1976"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_date_of_birth", VALUE, "11/11/1976"))
+        );
+
+        return exceptionRecord(ocrList);
+    }
+
+    private void startForCaseworkerStub() throws Exception {
+        String eventStartResponseBody = loadJson("wiremockstubs/ccd/event-start-200-response.json");
+
+        ccdServer.stubFor(get(Strings.concat(START_EVENT_URL))
+            .withHeader(AUTHORIZATION_HEADER_KEY, equalTo(USER_AUTH_TOKEN))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(200)
+                .withBody(eventStartResponseBody)));
+    }
+
+    private void submitForCaseworkerStub() throws Exception {
+        String createCaseRequest = loadJson("wiremockstubs/ccd/case-creation-request.json");
+
+        ccdServer.stubFor(WireMock.post(Strings.concat(SUBMIT_EVENT_URL))
+            .withHeader(AUTHORIZATION_HEADER_KEY, equalTo(USER_AUTH_TOKEN))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .withRequestBody(equalToJson(createCaseRequest))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(200)
+                .withBody(loadJson("wiremockstubs/ccd/create-case-200-response.json"))));
+    }
+
+    private void startForCaseworkerStubWithUserTokenHavingNoAccess() throws Exception {
+        String eventStartResponseBody = loadJson("wiremockstubs/ccd/event-start-403-response.json");
+
+        ccdServer.stubFor(get(Strings.concat(START_EVENT_URL))
+            .withHeader(AUTHORIZATION_HEADER_KEY, equalTo(USER_TOKEN_WITHOUT_CASE_ACCESS))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(403)
+                .withBody(eventStartResponseBody)));
+    }
+
+    private void startForCaseworkerStubWithCcdUnavailable() throws Exception {
+        ccdServer.stubFor(get(Strings.concat(START_EVENT_URL))
+            .withHeader(AUTHORIZATION_HEADER_KEY, equalTo(USER_AUTH_TOKEN))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(503)));
+    }
+
+
+    private static String loadJson(String fileName) throws IOException {
+        URL url = getResource(fileName);
+        return Resources.toString(url, Charsets.toCharset("UTF-8"));
+    }
+
+    private static <K, V> Map.Entry<K, V> entry(K key, V value) {
+        return new AbstractMap.SimpleImmutableEntry<>(key, value);
+    }
+
+    private static Map<String, Object> ocrEntry(String key, Object value) {
+        return ImmutableMap.of(key, value);
+    }
+
+    private HttpHeaders httpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION_HEADER_KEY, USER_AUTH_TOKEN);
+        headers.set(SERVICE_AUTHORIZATION_HEADER_KEY, SERVICE_AUTH_TOKEN);
+        headers.set(USER_ID_HEADER, USER_ID);
+        return headers;
     }
 }
