@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.exceptionhandlers;
 
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -16,17 +17,24 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(ResponseExceptionHandler.class);
 
     @ExceptionHandler(UnauthorizedException.class)
-    protected ResponseEntity<Void> handleUnAuthorizedException(Exception exception) {
+    protected ResponseEntity<Void> handleUnAuthorizedException(UnauthorizedException exception) {
         log.error(exception.getMessage(), exception);
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @ExceptionHandler(ForbiddenException.class)
-    protected ResponseEntity<Void> handleForbiddenException(Exception exception) {
+    protected ResponseEntity<Void> handleForbiddenException(ForbiddenException exception) {
         log.error(exception.getMessage(), exception);
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @ExceptionHandler(FeignException.class)
+    protected ResponseEntity<String> handleFeignException(FeignException exception) {
+        log.error(exception.getMessage(), exception);
+
+        return ResponseEntity.status(exception.status()).body(exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

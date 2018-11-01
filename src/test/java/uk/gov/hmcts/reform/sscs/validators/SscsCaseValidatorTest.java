@@ -43,11 +43,10 @@ public class SscsCaseValidatorTest {
                 Appellant.builder().name(
                     Name.builder().firstName("Bob").lastName("Smith").build())
                     .address(Address.builder().line1("101 My Road").town("Brentwood").county("Essex").postcode("CM13 0GD")
-                .build()).build()).build()).build();
+                        .build()).build()).build()).build();
 
         CaseValidationResponse response = validator.validate(pairs);
 
         assertTrue(response.getErrors().isEmpty());
     }
-
 }

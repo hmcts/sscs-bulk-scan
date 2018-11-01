@@ -41,7 +41,7 @@ public class SscsCaseValidator implements CaseValidator {
                 appellant.getAddress().getCounty(),
                 appellant.getAddress().getPostcode()
             )
-            .noneMatch(Objects::isNull);
+                .noneMatch(Objects::isNull);
         } else {
             return false;
         }
