@@ -1,23 +1,23 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
-import uk.gov.hmcts.reform.sscs.domain.ScannedData;
-import uk.gov.hmcts.reform.sscs.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
 

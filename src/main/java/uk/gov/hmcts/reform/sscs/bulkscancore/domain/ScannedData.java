@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.sscs.domain;
+package uk.gov.hmcts.reform.sscs.bulkscancore.domain;
 
 import java.util.List;
 import java.util.Map;

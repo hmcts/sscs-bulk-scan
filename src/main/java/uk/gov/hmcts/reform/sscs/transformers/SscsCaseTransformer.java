@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON1_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON2_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.REPRESENTATIVE_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.ArrayList;
@@ -12,10 +10,10 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
-import uk.gov.hmcts.reform.sscs.domain.ScannedData;
-import uk.gov.hmcts.reform.sscs.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
 @Component

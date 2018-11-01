@@ -9,8 +9,8 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.gov.hmcts.reform.sscs.domain.ScannedData;
-import uk.gov.hmcts.reform.sscs.domain.ScannedRecord;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 
 public class SscsJsonExtractorTest {
 
@@ -45,7 +45,7 @@ public class SscsJsonExtractorTest {
     }
 
     @Test
-    public void givenRecordData_thenExtractIntoSscsRecordObject() {
+    public void givenDocumentData_thenExtractIntoSscsRecordObject() {
 
         Map<String, Object> valueMap = new HashMap<>();
 
