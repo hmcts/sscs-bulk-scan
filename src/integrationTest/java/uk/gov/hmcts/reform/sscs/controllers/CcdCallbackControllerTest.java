@@ -97,9 +97,10 @@ public class CcdCallbackControllerTest {
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         ccdServer.stop();
     }
+
     @Test
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
@@ -187,6 +188,29 @@ public class CcdCallbackControllerTest {
     }
 
     @Test
+    public void should_return_validation_error_when_appealant_details_are_not_available() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithMissingAppealantDetails()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("person1 address and name mandatory fields are empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+
+    @Test
     public void should_return_403_status_when_usertoken_does_not_have_access_to_jurisdiction() throws Exception {
         // Given
         HttpHeaders headers = new HttpHeaders();
@@ -208,9 +232,9 @@ public class CcdCallbackControllerTest {
         assertThat(result.getStatusCodeValue()).isEqualTo(403);
         assertThat(result.getBody())
             .contains(
-                " \"status\": 403,\n" +
-                    "  \"error\": \"Forbidden\",\n" +
-                    "  \"message\": \"Access Denied"
+                " \"status\": 403,\n"
+                    + "  \"error\": \"Forbidden\",\n"
+                    + "  \"message\": \"Access Denied"
             );
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
@@ -250,6 +274,38 @@ public class CcdCallbackControllerTest {
 
         return exceptionRecord(ocrList);
     }
+
+    private Map<String, Object> caseDataWithMissingAppealantDetails() {
+        List<Object> ocrList = new ArrayList<>();
+
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "have_right_to_appeal_yes", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "have_right_to_appeal_no", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "contains_mrn", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "benefit_type_description", VALUE, "Employment Support Allowance"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_title", VALUE, "Mr"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "person1_first_name", VALUE, "John"))
+        );
+
+        return exceptionRecord(ocrList);
+    }
+
 
     private Map<String, Object> exceptionRecord(List<Object> ocrList) {
         Map<String, Object> exceptionRecord = new HashMap<>();
@@ -330,7 +386,7 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_date_of_birth", VALUE, "11/11/1976"))
+            ImmutableMap.of(KEY, "person1_dob", VALUE, "11/11/1976"))
         );
         ocrList.add(ocrEntry(
             VALUE,
