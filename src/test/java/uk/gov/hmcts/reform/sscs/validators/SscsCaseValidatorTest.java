@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
@@ -13,7 +12,6 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Name;
 
-@Ignore // Needs to be removed when validator is fixed
 public class SscsCaseValidatorTest {
 
     private SscsCaseValidator validator = new SscsCaseValidator();
@@ -51,5 +49,4 @@ public class SscsCaseValidatorTest {
 
         assertTrue(response.getErrors().isEmpty());
     }
-
 }
