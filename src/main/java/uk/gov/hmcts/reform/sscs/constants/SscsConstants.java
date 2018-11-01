@@ -9,4 +9,6 @@ public final class SscsConstants {
     public static final String PERSON1_VALUE = "person1";
     public static final String PERSON2_VALUE = "person2";
     public static final String REPRESENTATIVE_VALUE = "representative";
+    public static final String DEFAULT_SIGN_LANGUAGE = "British Sign Language";
+
 }

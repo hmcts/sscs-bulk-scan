@@ -45,7 +45,10 @@ public class TestDataConstants {
     public static final String IS_HEARING_TYPE_ORAL = "true";
     public static final String IS_HEARING_TYPE_PAPER = "false";
     public static final String HEARING_OPTIONS_EXCLUDE_DATES = "01/12/2018";
-    public static final String HEARING_SUPPORT_ARRANGEMENTS = "hearingLoop";
+    public static final Boolean HEARING_LOOP = true;
+    public static final Boolean DISABLED_ACCESS = true;
+    public static final Boolean SIGN_LANGUAGE_REQUIRED = true;
+    public static final String SIGN_LANGUAGE_TYPE = "My sign language";
     public static final String HEARING_OPTIONS_LANGUAGE_TYPE = "Spanish";
     public static final Boolean AGREE_LESS_HEARING_NOTICE = true;
     public static final String SIGNATURE_NAME = "Barry Smith";
