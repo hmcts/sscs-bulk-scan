@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -149,15 +150,29 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs) {
 
-        String isLanguageInterpreterRequired = convertBooleanToYesNoString(findBooleanExists(getField(pairs,"hearing_options_language_type")));
+        boolean isSignLanguageInterpreterRequired = areBooleansValid(pairs, errors, "hearing_options_sign_language_interpreter") ? (boolean) pairs.get("hearing_options_sign_language_interpreter") : false;
 
-        //TODO: Handle sign languages here - discuss with Josh
+        String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
+
+        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs,"hearing_options_language_type")) && !isSignLanguageInterpreterRequired;
+
+        String languageType = isLanguageInterpreterRequired ? getField(pairs,"hearing_options_language_type") : null;
+
         return HearingOptions.builder()
             .excludeDates(buildExcludedDates(pairs))
             .arrangements(buildArrangements(pairs))
-            .languageInterpreter(isLanguageInterpreterRequired)
-            .languages(getField(pairs,"hearing_options_language_type"))
+            .other(getField(pairs,"hearing_support_arrangements"))
+            .languageInterpreter(convertBooleanToYesNoString(isLanguageInterpreterRequired))
+            .languages(languageType)
+            .signLanguageType(signLanguageType)
         .build();
+    }
+
+    private String findSignLanguageType(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
+        if (isSignLanguageInterpreterRequired) {
+            return getField(pairs, "hearing_options_sign_language_type") != null ? getField(pairs, "hearing_options_sign_language_type") : DEFAULT_SIGN_LANGUAGE;
+        }
+        return null;
     }
 
     private List<ExcludeDate> buildExcludedDates(Map<String, Object> pairs) {
@@ -174,16 +189,20 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private List<String> buildArrangements(Map<String, Object> pairs) {
-        // TODO: Create story to properly handle arrangements
 
-        if (pairs.containsKey("hearing_support_arrangements")) {
-            List<String> arrangements = new ArrayList<>();
+        List<String> arrangements = new ArrayList<>();
 
-            arrangements.add(getField(pairs,"hearing_support_arrangements"));
-            return arrangements;
-        } else {
-            return null;
+        if (areBooleansValid(pairs, errors, "hearing_options_accessible_hearing_rooms") && (boolean) pairs.get("hearing_options_accessible_hearing_rooms")) {
+            arrangements.add("disabledAccess");
         }
+        if (areBooleansValid(pairs, errors, "hearing_options_hearing_loop") && (boolean) pairs.get("hearing_options_hearing_loop")) {
+            arrangements.add("hearingLoop");
+        }
+        if (areBooleansValid(pairs, errors, "hearing_options_sign_language_interpreter") && (boolean) pairs.get("hearing_options_sign_language_interpreter")) {
+            arrangements.add("signLanguageInterpreter");
+        }
+        return arrangements;
+
     }
 
     private List<SscsDocument> buildDocumentsFromData(List<ScannedRecord> records) {

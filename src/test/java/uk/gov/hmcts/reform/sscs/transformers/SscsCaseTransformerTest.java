@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.DEFAULT_SIGN_LANGUAGE;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class SscsCaseTransformerTest {
             .put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL)
             .put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER)
             .put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES)
-            .put("hearing_support_arrangements", HEARING_SUPPORT_ARRANGEMENTS)
+            .put("hearing_options_hearing_loop", HEARING_LOOP)
             .put("hearing_options_language_type", HEARING_OPTIONS_LANGUAGE_TYPE)
             .put("agree_less_hearing_notice", AGREE_LESS_HEARING_NOTICE)
             .put("signature_name", SIGNATURE_NAME)
@@ -224,6 +225,93 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenHearingLoopIsTrue_thenBuildAnAppealWithArrangementsWithHearingLoop() {
+
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("hearing_options_hearing_loop", HEARING_LOOP)
+            .build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals("hearingLoop", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenDisabledAccessIsTrue_thenBuildAnAppealWithArrangementsWithDisabledAccess() {
+
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("hearing_options_accessible_hearing_rooms", DISABLED_ACCESS)
+            .build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals("disabledAccess", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenASignLanguageInterpreterIsTrueAndTypeIsEntered_thenBuildAnAppealWithArrangementsWithSignLanguageInterpreterAndTypeSetToOcrType() {
+
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("hearing_options_sign_language_interpreter", SIGN_LANGUAGE_REQUIRED)
+            .put("hearing_options_sign_language_type", SIGN_LANGUAGE_TYPE)
+            .build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+        assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenASignLanguageInterpreterIsTrueAndTypeIsNotEntered_thenBuildAnAppealWithArrangementsWithSignLanguageInterpreterAndTypeSetToDefaultType() {
+
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("hearing_options_sign_language_interpreter", SIGN_LANGUAGE_REQUIRED)
+            .build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+        assertEquals(DEFAULT_SIGN_LANGUAGE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenASignLanguageInterpreterAndLanguageInterpreterIsEntered_thenBuildAnAppealWithSignLanguageAndIgnoreLanguageInterpreter() {
+
+        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
+            .put("hearing_options_language_type", HEARING_OPTIONS_LANGUAGE_TYPE)
+            .put("hearing_options_sign_language_interpreter", SIGN_LANGUAGE_REQUIRED)
+            .put("hearing_options_sign_language_type", SIGN_LANGUAGE_TYPE)
+            .build();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+        assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
+        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     public void givenACaseWithNullOcrData_thenAddErrorToList() {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(null).build());
@@ -314,7 +402,7 @@ public class SscsCaseTransformerTest {
         excludedDates.add(excludeDate);
 
         List<String> hearingSupportArrangements = new ArrayList<>();
-        hearingSupportArrangements.add(HEARING_SUPPORT_ARRANGEMENTS);
+        hearingSupportArrangements.add("hearingLoop");
 
         return Appeal.builder()
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE_DESCRIPTION).build())
