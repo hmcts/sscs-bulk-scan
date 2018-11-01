@@ -18,7 +18,7 @@ public class TestDataConstants {
     public static final String APPELLANT_PHONE = "01234505050";
     public static final String APPELLANT_MOBILE = "07929292929";
     public static final String APPELLANT_DATE_OF_BIRTH = "12/08/1987";
-    public static final String APPELLANT_NI_NUMBER = "JT 07 23 19 B";
+    public static final String APPELLANT_NINO = "JT 07 23 19 B";
     public static final String APPOINTEE_TITLE = "Mrs";
     public static final String APPOINTEE_FIRST_NAME = "Wendy";
     public static final String APPOINTEE_LAST_NAME = "Baker";
@@ -28,7 +28,7 @@ public class TestDataConstants {
     public static final String APPOINTEE_ADDRESS_LINE4 = "Essex";
     public static final String APPOINTEE_POSTCODE = "RM1 2KJ";
     public static final String APPOINTEE_DATE_OF_BIRTH = "03/12/1990";
-    public static final String APPOINTEE_NI_NUMBER = "BA 07 23 19 B";
+    public static final String APPOINTEE_NINO = "BA 07 23 19 B";
     public static final String APPOINTEE_PHONE = "01874505050";
     public static final String APPOINTEE_MOBILE = "07929295555";
     public static final String REPRESENTATIVE_NAME = "IBM";
@@ -46,8 +46,7 @@ public class TestDataConstants {
     public static final Boolean IS_HEARING_TYPE_PAPER = false;
     public static final String HEARING_OPTIONS_EXCLUDE_DATES = "01/12/2018";
     public static final String HEARING_SUPPORT_ARRANGEMENTS = "hearingLoop";
-    public static final String HEARING_OPTIONS_LANGUAGE = "Spanish";
-    public static final Boolean AGREE_LESS_HEARING_NOTICE_YES = true;
-    public static final Boolean AGREE_LESS_HEARING_NOTICE_NO = false;
-    public static final String SIGNATURE_APPELLANT_NAME = "Barry Smith";
+    public static final String HEARING_OPTIONS_LANGUAGE_TYPE = "Spanish";
+    public static final Boolean AGREE_LESS_HEARING_NOTICE = true;
+    public static final String SIGNATURE_NAME = "Barry Smith";
 }

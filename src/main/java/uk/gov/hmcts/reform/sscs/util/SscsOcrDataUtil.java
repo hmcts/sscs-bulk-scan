@@ -21,7 +21,7 @@ public final class SscsOcrDataUtil {
         return findBooleanExists(getField(pairs,person + "_title"), getField(pairs,person + "_first_name"),
             getField(pairs,person + "_last_name"), getField(pairs,person + "_address_line1"), getField(pairs,person + "_address_line2"),
             getField(pairs,person + "_address_line3"), getField(pairs,person + "_address_line4"), getField(pairs,person + "_postcode"),
-            getField(pairs,person + "_date_of_birth"), getField(pairs,person + "_ni_number"),  getField(pairs,person + "_company"));
+            getField(pairs,person + "_dob"), getField(pairs,person + "_nino"),  getField(pairs,person + "_company"));
     }
 
     public static boolean findBooleanExists(String... values) {
