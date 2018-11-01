@@ -141,8 +141,8 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String findHearingType(Map<String, Object> pairs) {
-        if (areBooleansValid(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper") && !doBooleansContradict(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper")) {
-            return (boolean) pairs.get("is_hearing_type_oral") ? "Oral" : "Paper";
+        if (areBooleansValid(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper") && !doValuesContradict(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper")) {
+            return Boolean.parseBoolean(pairs.get("is_hearing_type_oral").toString()) ? "oral" : "paper";
         }
         return null;
     }

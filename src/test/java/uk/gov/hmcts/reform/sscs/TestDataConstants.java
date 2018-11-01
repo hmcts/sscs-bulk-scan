@@ -42,8 +42,8 @@ public class TestDataConstants {
     public static final String REPRESENTATIVE_PERSON_FIRST_NAME = "David";
     public static final String REPRESENTATIVE_PERSON_LAST_NAME = "North";
     public static final String APPEAL_LATE_REASON = "On holiday";
-    public static final Boolean IS_HEARING_TYPE_ORAL = true;
-    public static final Boolean IS_HEARING_TYPE_PAPER = false;
+    public static final String IS_HEARING_TYPE_ORAL = "true";
+    public static final String IS_HEARING_TYPE_PAPER = "false";
     public static final String HEARING_OPTIONS_EXCLUDE_DATES = "01/12/2018";
     public static final String HEARING_SUPPORT_ARRANGEMENTS = "hearingLoop";
     public static final String HEARING_OPTIONS_LANGUAGE_TYPE = "Spanish";

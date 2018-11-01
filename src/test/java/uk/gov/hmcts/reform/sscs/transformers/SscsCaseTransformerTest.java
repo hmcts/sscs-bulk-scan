@@ -108,6 +108,8 @@ public class SscsCaseTransformerTest {
             .put("person2_postcode", APPELLANT_POSTCODE)
             .put("person2_dob", APPELLANT_DATE_OF_BIRTH)
             .put("person2_nino", APPELLANT_NINO)
+            .put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL)
+            .put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -146,6 +148,8 @@ public class SscsCaseTransformerTest {
             .put("person2_postcode", APPELLANT_POSTCODE)
             .put("person2_dob", APPELLANT_DATE_OF_BIRTH)
             .put("person2_nino", APPELLANT_NINO)
+            .put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL)
+            .put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -166,16 +170,17 @@ public class SscsCaseTransformerTest {
 
 
     @Test
-    public void givenOnlyOneKeyValuePair_thenBuildAnAppeal() {
+    public void givenMinimumKeyValuePairs_thenBuildAnAppeal() {
 
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION).build();
+            .put("is_hearing_type_oral", "true")
+            .put("is_hearing_type_paper", "false").build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
-        assertEquals(BENEFIT_TYPE_DESCRIPTION, ((Appeal) result.getTransformedCase().get("appeal")).getBenefitType().getCode());
+        assertEquals("oral", ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -183,8 +188,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenContradictingPaperAndOralCaseValues_thenAddErrorToList() {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("is_hearing_type_oral", true)
-            .put("is_hearing_type_paper", true).build();
+            .put("is_hearing_type_oral", "true")
+            .put("is_hearing_type_paper", "true").build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
@@ -197,27 +202,13 @@ public class SscsCaseTransformerTest {
     public void givenBooleanValueIsText_thenAddErrorToList() {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("is_hearing_type_oral", "I am a text value")
-            .put("is_hearing_type_paper", true).build();
+            .put("is_hearing_type_paper", "true").build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
         assertTrue(result.getErrors().contains("is_hearing_type_oral does not contain a valid boolean value. Needs to be true or false"));
-    }
-
-    @Test
-    public void givenIsHearingTypeOralBooleanValueIsEmpty_thenIgnoreField() {
-        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("is_hearing_type_paper", true).build();
-
-        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-
-        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
-
-        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
-
-        assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
@@ -256,7 +247,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenOneDocument_thenBuildACase() {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("is_hearing_type_paper", true).build();
+            .put("is_hearing_type_paper", true)
+            .put("is_hearing_type_oral", false).build();
 
         List<ScannedRecord> records = new ArrayList<>();
         ScannedRecord scannedRecord = buildTestScannedRecord("http://www.test1.com");
@@ -279,7 +271,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenMultipleDocuments_thenBuildACase() {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("is_hearing_type_paper", true).build();
+            .put("is_hearing_type_paper", true)
+            .put("is_hearing_type_oral", false).build();
 
         List<ScannedRecord> records = new ArrayList<>();
         ScannedRecord scannedRecord1 = buildTestScannedRecord("http://www.test1.com");
@@ -328,7 +321,7 @@ public class SscsCaseTransformerTest {
             .appellant(appellant)
             .rep(Representative.builder().hasRepresentative("Yes").name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnLateReason(APPEAL_LATE_REASON).build())
-            .hearingType("Oral")
+            .hearingType("oral")
             .hearingOptions(HearingOptions.builder().excludeDates(excludedDates).arrangements(hearingSupportArrangements).languageInterpreter("Yes").languages(HEARING_OPTIONS_LANGUAGE_TYPE).build())
             .signer(SIGNATURE_NAME)
         .build();
