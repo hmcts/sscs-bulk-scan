@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON1_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON2_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.REPRESENTATIVE_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.ArrayList;
@@ -12,6 +10,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
@@ -30,42 +30,49 @@ public class SscsCaseTransformer implements CaseTransformer {
         Map<String, Object> transformed = new HashMap<>();
         errors = new ArrayList<>();
 
-        Map<String, Object> pairs = sscsJsonExtractor.extractJson(caseData);
-        Appeal appeal = buildAppealFromData(pairs);
+        ScannedData sscsData = sscsJsonExtractor.extractJson(caseData);
+        Appeal appeal = buildAppealFromData(sscsData.getOcrCaseData());
+        List<SscsDocument> sscsDocuments = buildDocumentsFromData(sscsData.getRecords());
+
         transformed.put("appeal", appeal);
+        transformed.put("sscsDocument", sscsDocuments);
 
         return CaseTransformationResponse.builder().transformedCase(transformed).errors(errors).build();
     }
 
     private Appeal buildAppealFromData(Map<String, Object> pairs) {
-
         Appellant appellant = null;
 
-        if (hasPerson(pairs, PERSON2_VALUE)) {
-            Appointee appointee = null;
-            if (hasPerson(pairs, PERSON1_VALUE)) {
-                appointee = Appointee.builder()
-                    .name(buildPersonName(pairs, PERSON1_VALUE))
-                    .address(buildPersonAddress(pairs, PERSON1_VALUE))
-                    .contact(buildPersonContact(pairs, PERSON1_VALUE))
-                    .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
-                .build();
+        if (pairs != null && pairs.size() != 0) {
+            if (hasPerson(pairs, PERSON2_VALUE)) {
+                Appointee appointee = null;
+                if (hasPerson(pairs, PERSON1_VALUE)) {
+                    appointee = Appointee.builder()
+                        .name(buildPersonName(pairs, PERSON1_VALUE))
+                        .address(buildPersonAddress(pairs, PERSON1_VALUE))
+                        .contact(buildPersonContact(pairs, PERSON1_VALUE))
+                        .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
+                        .build();
+                }
+                appellant = buildAppelant(pairs, PERSON2_VALUE, appointee, null);
+
+            } else if (hasPerson(pairs, PERSON1_VALUE)) {
+                appellant = buildAppelant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE));
             }
-            appellant = buildAppelant(pairs, PERSON2_VALUE, appointee, null);
 
-        } else if (hasPerson(pairs, PERSON1_VALUE)) {
-            appellant = buildAppelant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE));
+            return Appeal.builder()
+                .benefitType(BenefitType.builder().code(getField(pairs, "benefit_type_description")).build())
+                .appellant(appellant)
+                .rep(buildRepresentative(pairs))
+                .mrnDetails(buildMrnDetails(pairs))
+                .hearingType(findHearingType(pairs))
+                .hearingOptions(buildHearingOptions(pairs))
+                .signer(getField(pairs, "signature_appellant_name"))
+                .build();
+        } else {
+            errors.add("No OCR data, case cannot be created");
+            return Appeal.builder().build();
         }
-
-        return Appeal.builder()
-            .benefitType(BenefitType.builder().code(getField(pairs, "benefit_type_description")).build())
-            .appellant(appellant)
-            .rep(buildRepresentative(pairs))
-            .mrnDetails(buildMrnDetails(pairs))
-            .hearingType(findHearingType(pairs))
-            .hearingOptions(buildHearingOptions(pairs))
-            .signer(getField(pairs,"signature_appellant_name"))
-        .build();
     }
 
     private Appellant buildAppelant(Map<String, Object> pairs, String personType, Appointee appointee, Contact contact) {
@@ -177,5 +184,20 @@ public class SscsCaseTransformer implements CaseTransformer {
         } else {
             return null;
         }
+    }
+
+    private List<SscsDocument> buildDocumentsFromData(List<ScannedRecord> records) {
+        List<SscsDocument> documentDetails = new ArrayList<>();
+        if (records != null) {
+            for (ScannedRecord record : records) {
+                SscsDocumentDetails details = SscsDocumentDetails.builder()
+                    .documentLink(DocumentLink.builder().documentUrl(record.getDocumentLink()).build())
+                    .documentDateAdded(record.getDocScanDate())
+                    .documentFileName(record.getFilename())
+                    .documentType("Other document").build();
+                documentDetails.add(SscsDocument.builder().value(details).build());
+            }
+        }
+        return documentDetails;
     }
 }
