@@ -3,23 +3,23 @@ package uk.gov.hmcts.reform.sscs.controllers;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.google.common.io.Resources.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Strings.concat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
-import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import org.apache.commons.codec.Charsets;
-import org.assertj.core.util.Strings;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +27,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.WireMockSpring;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.SocketUtils;
 import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
@@ -40,15 +41,16 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWireMock
 public class CcdCallbackControllerTest {
-
-    private static final String AUTHORIZATION_HEADER_KEY = "Authorization";
 
     private static final String SERVICE_AUTHORIZATION_HEADER_KEY = "ServiceAuthorization";
 
-    private static final String USER_AUTH_TOKEN = "Bearer TEST_USER_AUTH_TOKEN";
+    private static final String BEARER = "Bearer ";
 
-    private static final String SERVICE_AUTH_TOKEN = "TEST_SERVICE_AUTH";
+    private static final String USER_AUTH_TOKEN = BEARER + "TEST_USER_AUTH_TOKEN";
+
+    private static final String SERVICE_AUTH_TOKEN = BEARER + "TEST_SERVICE_AUTH";
 
     private static final String USER_TOKEN_WITHOUT_CASE_ACCESS = "USER_TOKEN_WITHOUT_CASE_ACCESS";
 
@@ -75,17 +77,29 @@ public class CcdCallbackControllerTest {
     @MockBean
     private AuthTokenValidator authTokenValidator;
 
-    @ClassRule
-    public static WireMockClassRule ccdServer = new WireMockClassRule(WireMockSpring.options().port(4000)
-        .bindAddress("localhost").notifier(new ConsoleNotifier(true)));
+    @Rule
+    public WireMockRule ccdServer;
+
+    private static int wiremockPort = 0;
 
     private String baseUrl;
+
+    static {
+        wiremockPort = SocketUtils.findAvailableTcpPort();
+        System.setProperty("core_case_data.api.url", "http://localhost:" + wiremockPort);
+    }
 
     @Before
     public void setUp() {
         baseUrl = "http://localhost:" + randomServerPort + "/exception-record/";
+        ccdServer = new WireMockRule(wiremockPort);
+        ccdServer.start();
     }
 
+    @After
+    public void tearDown(){
+        ccdServer.stop();
+    }
     @Test
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
@@ -120,7 +134,7 @@ public class CcdCallbackControllerTest {
     @Test
     public void should_return_status_code_401_when_service_auth_token_is_missing() {
         HttpHeaders headers = new HttpHeaders();
-        headers.set(AUTHORIZATION_HEADER_KEY, USER_AUTH_TOKEN);
+        headers.set(AUTHORIZATION, USER_AUTH_TOKEN);
         headers.set(USER_ID_HEADER, USER_ID);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
@@ -176,7 +190,7 @@ public class CcdCallbackControllerTest {
     public void should_return_403_status_when_usertoken_does_not_have_access_to_jurisdiction() throws Exception {
         // Given
         HttpHeaders headers = new HttpHeaders();
-        headers.set(AUTHORIZATION_HEADER_KEY, USER_TOKEN_WITHOUT_CASE_ACCESS);
+        headers.set(AUTHORIZATION, USER_TOKEN_WITHOUT_CASE_ACCESS);
         headers.set(SERVICE_AUTHORIZATION_HEADER_KEY, SERVICE_AUTH_TOKEN);
         headers.set(USER_ID_HEADER, USER_ID);
 
@@ -187,11 +201,17 @@ public class CcdCallbackControllerTest {
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
 
         // When
-        ResponseEntity<Void> result =
-            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+        ResponseEntity<String> result =
+            this.restTemplate.postForEntity(baseUrl, request, String.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(403);
+        assertThat(result.getBody())
+            .contains(
+                " \"status\": 403,\n" +
+                    "  \"error\": \"Forbidden\",\n" +
+                    "  \"message\": \"Access Denied"
+            );
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -321,10 +341,10 @@ public class CcdCallbackControllerTest {
     }
 
     private void startForCaseworkerStub() throws Exception {
-        String eventStartResponseBody = loadJson("wiremockstubs/ccd/event-start-200-response.json");
+        String eventStartResponseBody = loadJson("mappings/event-start-200-response.json");
 
-        ccdServer.stubFor(get(Strings.concat(START_EVENT_URL))
-            .withHeader(AUTHORIZATION_HEADER_KEY, equalTo(USER_AUTH_TOKEN))
+        ccdServer.stubFor(get(concat(START_EVENT_URL))
+            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
             .willReturn(aResponse()
@@ -334,24 +354,24 @@ public class CcdCallbackControllerTest {
     }
 
     private void submitForCaseworkerStub() throws Exception {
-        String createCaseRequest = loadJson("wiremockstubs/ccd/case-creation-request.json");
+        String createCaseRequest = loadJson("mappings/case-creation-request.json");
 
-        ccdServer.stubFor(WireMock.post(Strings.concat(SUBMIT_EVENT_URL))
-            .withHeader(AUTHORIZATION_HEADER_KEY, equalTo(USER_AUTH_TOKEN))
+        ccdServer.stubFor(post(concat(SUBMIT_EVENT_URL))
+            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .withRequestBody(equalToJson(createCaseRequest))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .withStatus(200)
-                .withBody(loadJson("wiremockstubs/ccd/create-case-200-response.json"))));
+                .withBody(loadJson("mappings/create-case-200-response.json"))));
     }
 
     private void startForCaseworkerStubWithUserTokenHavingNoAccess() throws Exception {
-        String eventStartResponseBody = loadJson("wiremockstubs/ccd/event-start-403-response.json");
+        String eventStartResponseBody = loadJson("mappings/event-start-403-response.json");
 
-        ccdServer.stubFor(get(Strings.concat(START_EVENT_URL))
-            .withHeader(AUTHORIZATION_HEADER_KEY, equalTo(USER_TOKEN_WITHOUT_CASE_ACCESS))
+        ccdServer.stubFor(get(concat(START_EVENT_URL))
+            .withHeader(AUTHORIZATION, equalTo(USER_TOKEN_WITHOUT_CASE_ACCESS))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
             .willReturn(aResponse()
@@ -360,9 +380,9 @@ public class CcdCallbackControllerTest {
                 .withBody(eventStartResponseBody)));
     }
 
-    private void startForCaseworkerStubWithCcdUnavailable() throws Exception {
-        ccdServer.stubFor(get(Strings.concat(START_EVENT_URL))
-            .withHeader(AUTHORIZATION_HEADER_KEY, equalTo(USER_AUTH_TOKEN))
+    private void startForCaseworkerStubWithCcdUnavailable() {
+        ccdServer.stubFor(get(concat(START_EVENT_URL))
+            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
             .willReturn(aResponse()
@@ -386,7 +406,7 @@ public class CcdCallbackControllerTest {
 
     private HttpHeaders httpHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.set(AUTHORIZATION_HEADER_KEY, USER_AUTH_TOKEN);
+        headers.set(AUTHORIZATION, USER_AUTH_TOKEN);
         headers.set(SERVICE_AUTHORIZATION_HEADER_KEY, SERVICE_AUTH_TOKEN);
         headers.set(USER_ID_HEADER, USER_ID);
         return headers;

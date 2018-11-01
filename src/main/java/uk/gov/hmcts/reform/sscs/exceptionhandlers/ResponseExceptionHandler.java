@@ -31,10 +31,10 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(FeignException.class)
-    protected ResponseEntity<Void> handleFeignException(FeignException exception) {
+    protected ResponseEntity<String> handleFeignException(FeignException exception) {
         log.error(exception.getMessage(), exception);
 
-        return ResponseEntity.status(exception.status()).build();
+        return ResponseEntity.status(exception.status()).body(exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
