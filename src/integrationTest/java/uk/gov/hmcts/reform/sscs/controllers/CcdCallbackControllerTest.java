@@ -38,6 +38,8 @@ import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -272,7 +274,7 @@ public class CcdCallbackControllerTest {
             ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, true))
         );
 
-        return exceptionRecord(ocrList);
+        return exceptionRecord(ocrList, null);
     }
 
     private Map<String, Object> caseDataWithMissingAppealantDetails() {
@@ -311,17 +313,18 @@ public class CcdCallbackControllerTest {
             ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, false))
         );
 
-        return exceptionRecord(ocrList);
+        return exceptionRecord(ocrList, null);
     }
 
 
-    private Map<String, Object> exceptionRecord(List<Object> ocrList) {
+    private Map<String, Object> exceptionRecord(List<Object> ocrList, List<Object> docList) {
         Map<String, Object> exceptionRecord = new HashMap<>();
         exceptionRecord.put("journeyClassification", "New Application");
         exceptionRecord.put("poBoxJurisdiction", "SSCS");
         exceptionRecord.put("poBox", "SSCSPO");
         exceptionRecord.put("openingDate", "2018-01-11");
         exceptionRecord.put("scanOCRData", ocrList);
+        exceptionRecord.put("scanRecords", docList);
         return exceptionRecord;
     }
 
@@ -335,6 +338,18 @@ public class CcdCallbackControllerTest {
 
     private Map<String, Object> caseData() {
         List<Object> ocrList = new ArrayList<>();
+        List<Object> docList = new ArrayList<>();
+
+        docList.add(ocrEntry(
+            VALUE,
+            ScannedRecord.builder().docScanDate("2018-10-10")
+                .documentControlNumber("11111")
+                .documentLink(DocumentLink.builder().documentUrl("http://www.bbc.com").build())
+                .documentType("other")
+                .filename("11111.pdf")
+                .build())
+        );
+
 
         ocrList.add(ocrEntry(
             VALUE,
@@ -409,7 +424,7 @@ public class CcdCallbackControllerTest {
             ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, false))
         );
 
-        return exceptionRecord(ocrList);
+        return exceptionRecord(ocrList, docList);
     }
 
     private void startForCaseworkerStub() throws Exception {

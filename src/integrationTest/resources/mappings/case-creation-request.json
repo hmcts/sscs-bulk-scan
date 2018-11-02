@@ -53,9 +53,19 @@
       },
       "signer": null,
       "hearingType": "oral"
-    }
+    },
+    "sscsDocument" : [ {
+      "value" : {
+        "documentType" : "Other document",
+        "documentFileName" : "11111.pdf",
+        "documentDateAdded" : "2018-10-10",
+        "documentLink" : {
+          "document_url" : "http://www.bbc.com"
+        }
+      }
+    } ]
   },
-  "security_classification": "PUBLIC",
-  "event_token": "test_event_token",
-  "ignore_warning": false
+  "security_classification" : "PUBLIC",
+  "event_token" : "test_event_token",
+  "ignore_warning" : false
 }

@@ -251,7 +251,7 @@ public class SscsCaseTransformerTest {
             .put("is_hearing_type_oral", false).build();
 
         List<ScannedRecord> records = new ArrayList<>();
-        ScannedRecord scannedRecord = buildTestScannedRecord("http://www.test1.com");
+        ScannedRecord scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build());
         records.add(scannedRecord);
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
@@ -262,7 +262,7 @@ public class SscsCaseTransformerTest {
         List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
         assertEquals(scannedRecord.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord.getFilename(), docs.get(0).getValue().getDocumentFileName());
-        assertEquals(scannedRecord.getDocumentLink(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals(scannedRecord.getDocumentLink().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
 
         assertTrue(result.getErrors().isEmpty());
@@ -275,8 +275,8 @@ public class SscsCaseTransformerTest {
             .put("is_hearing_type_oral", false).build();
 
         List<ScannedRecord> records = new ArrayList<>();
-        ScannedRecord scannedRecord1 = buildTestScannedRecord("http://www.test1.com");
-        ScannedRecord scannedRecord2 = buildTestScannedRecord("http://www.test2.com");
+        ScannedRecord scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build());
+        ScannedRecord scannedRecord2 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test2.com").build());
         records.add(scannedRecord1);
         records.add(scannedRecord2);
 
@@ -288,11 +288,11 @@ public class SscsCaseTransformerTest {
         List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
         assertEquals(scannedRecord1.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord1.getFilename(), docs.get(0).getValue().getDocumentFileName());
-        assertEquals(scannedRecord1.getDocumentLink(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals(scannedRecord1.getDocumentLink().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
         assertEquals(scannedRecord2.getDocScanDate(), docs.get(1).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord2.getFilename(), docs.get(1).getValue().getDocumentFileName());
-        assertEquals(scannedRecord2.getDocumentLink(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals(scannedRecord2.getDocumentLink().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(1).getValue().getDocumentType());
 
         assertTrue(result.getErrors().isEmpty());
@@ -327,11 +327,11 @@ public class SscsCaseTransformerTest {
         .build();
     }
 
-    private ScannedRecord buildTestScannedRecord(String url) {
+    private ScannedRecord buildTestScannedRecord(DocumentLink link) {
         return ScannedRecord.builder()
             .docScanDate("2018-08-10")
             .documentControlNumber("123")
-            .documentLink(url)
+            .documentLink(link)
             .filename("mrn.jpg")
             .documentType("Testing").build();
 
