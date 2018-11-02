@@ -46,10 +46,13 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
-    public static boolean areBooleansValid(Map<String, Object> pairs, List<String> errors, String... values) {
+    public static boolean areBooleansValid(Map<String, Object> pairs, List<String> errors, Boolean mandatoryField, String... values) {
         return Stream.of(values).allMatch(value -> {
             if (pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null) {
                 return true;
+            }
+            if (!mandatoryField && pairs.get(value) == null) {
+                return false;
             }
             errors.add(value + " does not contain a valid boolean value. Needs to be true or false");
             return false;

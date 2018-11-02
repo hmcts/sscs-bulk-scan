@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
@@ -32,47 +33,47 @@ public class SscsCaseTransformerTest {
 
     Map<String, Object> ocrMap = new HashMap<>();
 
+    Map<String, Object> pairs = new HashMap<>();
+
     @Before
     public void setup() {
         initMocks(this);
+        pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
+        pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
     }
 
     @Test
     public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
 
-        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION)
-            .put("person1_title", APPELLANT_TITLE)
-            .put("person1_first_name", APPELLANT_FIRST_NAME)
-            .put("person1_last_name", APPELLANT_LAST_NAME)
-            .put("person1_address_line1", APPELLANT_ADDRESS_LINE1)
-            .put("person1_address_line2", APPELLANT_ADDRESS_LINE2)
-            .put("person1_address_line3", APPELLANT_ADDRESS_LINE3)
-            .put("person1_address_line4", APPELLANT_ADDRESS_LINE4)
-            .put("person1_postcode", APPELLANT_POSTCODE)
-            .put("person1_phone", APPELLANT_PHONE)
-            .put("person1_mobile", APPELLANT_MOBILE)
-            .put("person1_dob", APPELLANT_DATE_OF_BIRTH)
-            .put("person1_nino", APPELLANT_NINO)
-            .put("representative_company", REPRESENTATIVE_NAME)
-            .put("representative_address_line1", REPRESENTATIVE_ADDRESS_LINE1)
-            .put("representative_address_line2", REPRESENTATIVE_ADDRESS_LINE2)
-            .put("representative_address_line3", REPRESENTATIVE_ADDRESS_LINE3)
-            .put("representative_address_line4", REPRESENTATIVE_ADDRESS_LINE4)
-            .put("representative_postcode", REPRESENTATIVE_POSTCODE)
-            .put("representative_phone", REPRESENTATIVE_PHONE_NUMBER)
-            .put("representative_title", REPRESENTATIVE_PERSON_TITLE)
-            .put("representative_first_name", REPRESENTATIVE_PERSON_FIRST_NAME)
-            .put("representative_last_name", REPRESENTATIVE_PERSON_LAST_NAME)
-            .put("appeal_late_reason", APPEAL_LATE_REASON)
-            .put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL)
-            .put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER)
-            .put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES)
-            .put("hearing_options_hearing_loop", HEARING_LOOP)
-            .put("hearing_options_language_type", HEARING_OPTIONS_LANGUAGE_TYPE)
-            .put("agree_less_hearing_notice", AGREE_LESS_HEARING_NOTICE)
-            .put("signature_name", SIGNATURE_NAME)
-            .build();
+        pairs.put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION);
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_phone", APPELLANT_PHONE);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        pairs.put("person1_nino", APPELLANT_NINO);
+        pairs.put("representative_company", REPRESENTATIVE_NAME);
+        pairs.put("representative_address_line1", REPRESENTATIVE_ADDRESS_LINE1);
+        pairs.put("representative_address_line2", REPRESENTATIVE_ADDRESS_LINE2);
+        pairs.put("representative_address_line3", REPRESENTATIVE_ADDRESS_LINE3);
+        pairs.put("representative_address_line4", REPRESENTATIVE_ADDRESS_LINE4);
+        pairs.put("representative_postcode", REPRESENTATIVE_POSTCODE);
+        pairs.put("representative_phone", REPRESENTATIVE_PHONE_NUMBER);
+        pairs.put("representative_title", REPRESENTATIVE_PERSON_TITLE);
+        pairs.put("representative_first_name", REPRESENTATIVE_PERSON_FIRST_NAME);
+        pairs.put("representative_last_name", REPRESENTATIVE_PERSON_LAST_NAME);
+        pairs.put("appeal_late_reason", APPEAL_LATE_REASON);
+        pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
+        pairs.put("hearing_options_hearing_loop", HEARING_LOOP);
+        pairs.put("hearing_options_language_type", HEARING_OPTIONS_LANGUAGE_TYPE);
+        pairs.put("agree_less_hearing_notice", AGREE_LESS_HEARING_NOTICE);
+        pairs.put("signature_name", SIGNATURE_NAME);
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
@@ -229,6 +230,8 @@ public class SscsCaseTransformerTest {
 
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("hearing_options_hearing_loop", HEARING_LOOP)
+            .put("is_hearing_type_oral", true)
+            .put("is_hearing_type_paper", false)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -245,6 +248,8 @@ public class SscsCaseTransformerTest {
 
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("hearing_options_accessible_hearing_rooms", DISABLED_ACCESS)
+            .put("is_hearing_type_oral", true)
+            .put("is_hearing_type_paper", false)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -262,6 +267,8 @@ public class SscsCaseTransformerTest {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("hearing_options_sign_language_interpreter", SIGN_LANGUAGE_REQUIRED)
             .put("hearing_options_sign_language_type", SIGN_LANGUAGE_TYPE)
+            .put("is_hearing_type_oral", true)
+            .put("is_hearing_type_paper", false)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -279,6 +286,8 @@ public class SscsCaseTransformerTest {
 
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("hearing_options_sign_language_interpreter", SIGN_LANGUAGE_REQUIRED)
+            .put("is_hearing_type_oral", true)
+            .put("is_hearing_type_paper", false)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -298,6 +307,8 @@ public class SscsCaseTransformerTest {
             .put("hearing_options_language_type", HEARING_OPTIONS_LANGUAGE_TYPE)
             .put("hearing_options_sign_language_interpreter", SIGN_LANGUAGE_REQUIRED)
             .put("hearing_options_sign_language_type", SIGN_LANGUAGE_TYPE)
+            .put("is_hearing_type_oral", true)
+            .put("is_hearing_type_paper", false)
             .build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -412,7 +423,7 @@ public class SscsCaseTransformerTest {
             .hearingType("oral")
             .hearingOptions(HearingOptions.builder().excludeDates(excludedDates).arrangements(hearingSupportArrangements).languageInterpreter("Yes").languages(HEARING_OPTIONS_LANGUAGE_TYPE).build())
             .signer(SIGNATURE_NAME)
-        .build();
+            .build();
     }
 
     private ScannedRecord buildTestScannedRecord(String url) {

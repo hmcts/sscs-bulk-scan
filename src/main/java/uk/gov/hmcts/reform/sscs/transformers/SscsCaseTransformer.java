@@ -142,7 +142,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String findHearingType(Map<String, Object> pairs) {
-        if (areBooleansValid(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper") && !doValuesContradict(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper")) {
+        if (areBooleansValid(pairs, errors, true, "is_hearing_type_oral", "is_hearing_type_paper") && !doValuesContradict(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper")) {
             return Boolean.parseBoolean(pairs.get("is_hearing_type_oral").toString()) ? "oral" : "paper";
         }
         return null;
@@ -150,7 +150,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs) {
 
-        boolean isSignLanguageInterpreterRequired = areBooleansValid(pairs, errors, "hearing_options_sign_language_interpreter") ? (boolean) pairs.get("hearing_options_sign_language_interpreter") : false;
+        boolean isSignLanguageInterpreterRequired = areBooleansValid(pairs, errors, false,"hearing_options_sign_language_interpreter") ? (boolean) pairs.get("hearing_options_sign_language_interpreter") : false;
 
         String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
 
@@ -192,13 +192,13 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<String> arrangements = new ArrayList<>();
 
-        if (areBooleansValid(pairs, errors, "hearing_options_accessible_hearing_rooms") && (boolean) pairs.get("hearing_options_accessible_hearing_rooms")) {
+        if (areBooleansValid(pairs, errors, false, "hearing_options_accessible_hearing_rooms") && (boolean) pairs.get("hearing_options_accessible_hearing_rooms")) {
             arrangements.add("disabledAccess");
         }
-        if (areBooleansValid(pairs, errors, "hearing_options_hearing_loop") && (boolean) pairs.get("hearing_options_hearing_loop")) {
+        if (areBooleansValid(pairs, errors, false,"hearing_options_hearing_loop") && (boolean) pairs.get("hearing_options_hearing_loop")) {
             arrangements.add("hearingLoop");
         }
-        if (areBooleansValid(pairs, errors, "hearing_options_sign_language_interpreter") && (boolean) pairs.get("hearing_options_sign_language_interpreter")) {
+        if (areBooleansValid(pairs, errors, false,"hearing_options_sign_language_interpreter") && (boolean) pairs.get("hearing_options_sign_language_interpreter")) {
             arrangements.add("signLanguageInterpreter");
         }
         return arrangements;
