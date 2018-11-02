@@ -68,7 +68,7 @@ public class SscsOcrDataUtilTest {
     public void givenABooleanValue_thenReturnTrue() {
         pairs.put("hearing_type_oral", true);
 
-        assertTrue(areBooleansValid(pairs, new ArrayList<>(), "hearing_type_oral"));
+        assertTrue(areBooleansValid(pairs, new ArrayList<>(), true, "hearing_type_oral"));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class SscsOcrDataUtilTest {
 
         List<String> errors = new ArrayList<>();
 
-        assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral"));
+        assertFalse(areBooleansValid(pairs, errors, true, "hearing_type_oral"));
         assertEquals("hearing_type_oral does not contain a valid boolean value. Needs to be true or false", errors.get(0));
     }
 

@@ -142,35 +142,43 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String findHearingType(Map<String, Object> pairs) {
-        if (areBooleansValid(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper") && !doValuesContradict(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper")) {
-            return Boolean.parseBoolean(pairs.get("is_hearing_type_oral").toString()) ? "oral" : "paper";
+        if (areBooleansValid(pairs, errors, true, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL) && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
+            return Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
         }
         return null;
     }
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs) {
 
-        boolean isSignLanguageInterpreterRequired = areBooleansValid(pairs, errors, "hearing_options_sign_language_interpreter") ? (boolean) pairs.get("hearing_options_sign_language_interpreter") : false;
+        boolean isSignLanguageInterpreterRequired = findSignLanguageInterpreterRequired(pairs);
 
         String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
 
-        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs,"hearing_options_language_type")) && !isSignLanguageInterpreterRequired;
+        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs,HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) && !isSignLanguageInterpreterRequired;
 
-        String languageType = isLanguageInterpreterRequired ? getField(pairs,"hearing_options_language_type") : null;
+        String languageType = isLanguageInterpreterRequired ? getField(pairs,HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL) : null;
 
         return HearingOptions.builder()
             .excludeDates(buildExcludedDates(pairs))
             .arrangements(buildArrangements(pairs))
-            .other(getField(pairs,"hearing_support_arrangements"))
+            .other(getField(pairs,HEARING_SUPPORT_ARRANGEMENTS_LITERAL))
             .languageInterpreter(convertBooleanToYesNoString(isLanguageInterpreterRequired))
             .languages(languageType)
             .signLanguageType(signLanguageType)
         .build();
     }
 
+    private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
+        if (areBooleansValid(pairs, errors, false,HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
+            return (boolean) pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL);
+        } else {
+            return false;
+        }
+    }
+
     private String findSignLanguageType(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
         if (isSignLanguageInterpreterRequired) {
-            return getField(pairs, "hearing_options_sign_language_type") != null ? getField(pairs, "hearing_options_sign_language_type") : DEFAULT_SIGN_LANGUAGE;
+            return getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL) != null ? getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL) : DEFAULT_SIGN_LANGUAGE;
         }
         return null;
     }
@@ -192,13 +200,13 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<String> arrangements = new ArrayList<>();
 
-        if (areBooleansValid(pairs, errors, "hearing_options_accessible_hearing_rooms") && (boolean) pairs.get("hearing_options_accessible_hearing_rooms")) {
+        if (areBooleansValid(pairs, errors, false, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL) && (boolean) pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL)) {
             arrangements.add("disabledAccess");
         }
-        if (areBooleansValid(pairs, errors, "hearing_options_hearing_loop") && (boolean) pairs.get("hearing_options_hearing_loop")) {
+        if (areBooleansValid(pairs, errors, false,HEARING_OPTIONS_HEARING_LOOP_LITERAL) && (boolean) pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL)) {
             arrangements.add("hearingLoop");
         }
-        if (areBooleansValid(pairs, errors, "hearing_options_sign_language_interpreter") && (boolean) pairs.get("hearing_options_sign_language_interpreter")) {
+        if (areBooleansValid(pairs, errors, false,HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL) && (boolean) pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
             arrangements.add("signLanguageInterpreter");
         }
         return arrangements;
