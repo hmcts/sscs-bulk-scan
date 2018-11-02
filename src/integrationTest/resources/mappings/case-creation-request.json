@@ -52,7 +52,7 @@
         "contact": null
       },
       "signer": null,
-      "hearingType": null
+      "hearingType": "oral"
     }
   },
   "security_classification": "PUBLIC",

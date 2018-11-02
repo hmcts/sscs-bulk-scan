@@ -6,6 +6,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.apache.commons.lang.BooleanUtils;
 
 public final class SscsOcrDataUtil {
 
@@ -37,8 +38,8 @@ public final class SscsOcrDataUtil {
         return pairs.containsKey(field) ? pairs.get(field).toString() : null;
     }
 
-    public static boolean doBooleansContradict(Map<String, Object> pairs, List<String> errors, String value1, String value2) {
-        if (pairs.get(value1).equals(pairs.get(value2)) && pairs.get(value1) instanceof Boolean) {
+    public static boolean doValuesContradict(Map<String, Object> pairs, List<String> errors, String value1, String value2) {
+        if (pairs.get(value1).equals(pairs.get(value2))) {
             errors.add(value1 + " and " + value2 + " have contradicting values");
             return true;
         }
@@ -47,10 +48,7 @@ public final class SscsOcrDataUtil {
 
     public static boolean areBooleansValid(Map<String, Object> pairs, List<String> errors, String... values) {
         return Stream.of(values).allMatch(value -> {
-            if (pairs.get(value) == null) {
-                return false;
-            }
-            if ((pairs.get(value) instanceof Boolean)) {
+            if (pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null) {
                 return true;
             }
             errors.add(value + " does not contain a valid boolean value. Needs to be true or false");
