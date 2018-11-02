@@ -182,7 +182,7 @@ public class CcdCallbackControllerTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors())
-            .containsOnly("is_hearing_type_oral does not contain a valid boolean value. Needs to be true or false");
+            .containsOnly("is_hearing_type_oral and is_hearing_type_paper have contradicting values");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -302,6 +302,14 @@ public class CcdCallbackControllerTest {
             VALUE,
             ImmutableMap.of(KEY, "person1_first_name", VALUE, "John"))
         );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "is_hearing_type_oral", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, false))
+        );
 
         return exceptionRecord(ocrList);
     }
@@ -391,6 +399,14 @@ public class CcdCallbackControllerTest {
         ocrList.add(ocrEntry(
             VALUE,
             ImmutableMap.of(KEY, "person1_date_of_birth", VALUE, "11/11/1976"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "is_hearing_type_oral", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, false))
         );
 
         return exceptionRecord(ocrList);
