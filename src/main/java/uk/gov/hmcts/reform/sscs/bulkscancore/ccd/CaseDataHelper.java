@@ -14,26 +14,22 @@ public class CaseDataHelper {
 
     private final String caseType;
 
-    private final String eventId;
-
     public CaseDataHelper(
         CoreCaseDataApi coreCaseDataApi,
         @Value("${ccd.case.jurisdiction}") String jurisdiction,
-        @Value("${ccd.case.type}") String caseType,
-        @Value("${ccd.case.eventId}") String eventId
+        @Value("${ccd.case.type}") String caseType
     ) {
         this.coreCaseDataApi = coreCaseDataApi;
         this.jurisdiction = jurisdiction;
         this.caseType = caseType;
-        this.eventId = eventId;
     }
 
-    public Long createCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId) {
+    public Long createCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId, String eventId) {
         StartEventResponse startEventResponse = coreCaseDataApi.startForCaseworker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, eventId
         );
 
-        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken());
+        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId);
 
         CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, true, caseDataContent
@@ -42,7 +38,7 @@ public class CaseDataHelper {
         return caseDetails.getId();
     }
 
-    private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken) {
+    private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken, String eventId) {
         return CaseDataContent.builder()
             .data(sscsCaseData)
             .eventToken(eventToken)

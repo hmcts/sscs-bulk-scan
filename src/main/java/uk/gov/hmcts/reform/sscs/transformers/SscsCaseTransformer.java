@@ -7,7 +7,7 @@ import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesN
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -23,7 +23,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private List<String> errors;
 
     @Override
-    public CaseTransformationResponse transformExceptionRecordToCase(Map<String, Object> caseData) {
+    public CaseValidationResponse transformExceptionRecordToCase(Map<String, Object> caseData) {
 
         Map<String, Object> transformed = new HashMap<>();
         errors = new ArrayList<>();
@@ -35,7 +35,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         transformed.put("appeal", appeal);
         transformed.put("sscsDocument", sscsDocuments);
 
-        return CaseTransformationResponse.builder().transformedCase(transformed).errors(errors).build();
+        return CaseValidationResponse.builder().transformedCase(transformed).errors(errors).build();
     }
 
     private Appeal buildAppealFromData(Map<String, Object> pairs) {

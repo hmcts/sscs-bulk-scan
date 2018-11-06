@@ -36,8 +36,7 @@ public class CaseDataHelperTest {
         caseDataHelper = new CaseDataHelper(
             coreCaseDataApi,
             "SSCS",
-            "Benefit",
-            "appealCreated"
+            "Benefit"
         );
     }
 
@@ -75,7 +74,8 @@ public class CaseDataHelperTest {
             caseDataCreator.sscsCaseData(),
             TEST_USER_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            TEST_USER_ID
+            TEST_USER_ID,
+            "appealCreated"
         );
 
         // Then
@@ -99,7 +99,8 @@ public class CaseDataHelperTest {
             caseDataCreator.sscsCaseData(),
             TEST_USER_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            TEST_USER_ID
+            TEST_USER_ID,
+            "appealCreated"
         ));
 
         // Then
