@@ -65,20 +65,46 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
-    public void givenABooleanValue_thenReturnTrue() {
+    public void givenAValidBooleanValue_thenReturnTrue() {
         pairs.put("hearing_type_oral", true);
 
-        assertTrue(areBooleansValid(pairs, new ArrayList<>(), true, "hearing_type_oral"));
+        assertTrue(areBooleansValid(pairs, "hearing_type_oral"));
     }
 
     @Test
-    public void givenABooleanValueWithText_thenReturnFalseAndAddError() {
+    public void givenMultipleBooleanValues_thenReturnTrue() {
+        pairs.put("hearing_type_oral", true);
+        pairs.put("hearing_type_paper", false);
+
+        assertTrue(areBooleansValid(pairs, "hearing_type_oral", "hearing_type_paper"));
+    }
+
+    @Test
+    public void givenABooleanValueWithText_thenReturnFalse() {
+        pairs.put("hearing_type_oral", "blue");
+
+        assertFalse(areBooleansValid(pairs, "hearing_type_oral"));
+    }
+
+    @Test
+    public void givenAMandatoryBooleanValueWithText_thenReturnFalseAndAddError() {
         pairs.put("hearing_type_oral", "blue");
 
         List<String> errors = new ArrayList<>();
 
-        assertFalse(areBooleansValid(pairs, errors, true, "hearing_type_oral"));
+        assertFalse(areMandatoryBooleansValid(pairs, errors,  "hearing_type_oral"));
         assertEquals("hearing_type_oral does not contain a valid boolean value. Needs to be true or false", errors.get(0));
+    }
+
+    @Test
+    public void givenAMultipleMandatoryBooleanValueWithText_thenReturnFalseAndAddError() {
+        pairs.put("hearing_type_oral", false);
+        pairs.put("hearing_type_paper", "blue");
+
+        List<String> errors = new ArrayList<>();
+
+        assertFalse(areMandatoryBooleansValid(pairs, errors,  "hearing_type_oral", "hearing_type_paper"));
+        assertEquals("hearing_type_paper does not contain a valid boolean value. Needs to be true or false", errors.get(0));
     }
 
     @Test

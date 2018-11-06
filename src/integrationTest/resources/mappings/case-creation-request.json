@@ -41,7 +41,10 @@
         "description": null
       },
       "hearingOptions": {
-        "languageInterpreter": "No"
+        "wantsToAttend" : "Yes",
+        "wantsSupport" : "No",
+        "languageInterpreter": "No",
+        "arrangements" : []
       },
       "appealReasons": null,
       "rep": {

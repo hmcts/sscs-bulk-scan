@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.DEFAULT_SIGN_LANGUAGE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
@@ -162,13 +162,30 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenMinimumKeyValuePairs_thenBuildAnAppeal() {
+    public void givenOralHearingType_thenBuildAnAppealWithWantsToAttendYes() {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
-        assertEquals("oral", ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+        assertEquals(HEARING_TYPE_ORAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenPaperHearingType_thenBuildAnAppealWithWantsToAttendNo() {
+
+        pairs.put("is_hearing_type_oral", false);
+        pairs.put("is_hearing_type_paper", true);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals(HEARING_TYPE_PAPER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+        assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -176,8 +193,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenContradictingPaperAndOralCaseValues_thenAddErrorToList() {
         Map<String, Object> contradictingPairs = ImmutableMap.<String, Object>builder()
-            .put("is_hearing_type_oral", "true")
-            .put("is_hearing_type_paper", "true").build();
+            .put(IS_HEARING_TYPE_ORAL_LITERAL, "true")
+            .put(IS_HEARING_TYPE_PAPER_LITERAL, "true").build();
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(contradictingPairs).build());
 
@@ -208,6 +225,33 @@ public class SscsCaseTransformerTest {
         CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
         assertTrue(result.getErrors().contains("person1_dob is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+    }
+
+    @Test
+    public void givenCaseContainsHearingOptions_thenBuildAnAppealWithSupport() {
+
+        pairs.put("hearing_options_hearing_loop", HEARING_LOOP);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals("hearingLoop", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+        assertEquals("Yes", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsSupport());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenCaseContainsNoHearingOptions_thenBuildAnAppealWithNoSupport() {
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsSupport());
+
+        assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
@@ -375,10 +419,16 @@ public class SscsCaseTransformerTest {
         return Appeal.builder()
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE_DESCRIPTION).build())
             .appellant(appellant)
-            .rep(Representative.builder().hasRepresentative("Yes").name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
+            .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnLateReason(APPEAL_LATE_REASON).build())
-            .hearingType("oral")
-            .hearingOptions(HearingOptions.builder().excludeDates(excludedDates).arrangements(hearingSupportArrangements).languageInterpreter("Yes").languages(HEARING_OPTIONS_LANGUAGE_TYPE).build())
+            .hearingType(HEARING_TYPE_ORAL)
+            .hearingOptions(HearingOptions.builder()
+                .excludeDates(excludedDates)
+                .arrangements(hearingSupportArrangements)
+                .languageInterpreter(YES_LITERAL)
+                .languages(HEARING_OPTIONS_LANGUAGE_TYPE)
+                .wantsToAttend(YES_LITERAL)
+                .wantsSupport(YES_LITERAL).build())
             .signer(SIGNATURE_NAME)
             .build();
     }

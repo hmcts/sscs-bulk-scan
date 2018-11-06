@@ -46,17 +46,27 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
-    public static boolean areBooleansValid(Map<String, Object> pairs, List<String> errors, Boolean mandatoryField, String... values) {
+    public static boolean areMandatoryBooleansValid(Map<String, Object> pairs, List<String> errors, String... values) {
         return Stream.of(values).allMatch(value -> {
-            if (pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null) {
+            if (checkBooleanValue(pairs, value)) {
                 return true;
-            }
-            if (!mandatoryField && pairs.get(value) == null) {
-                return false;
             }
             errors.add(value + " does not contain a valid boolean value. Needs to be true or false");
             return false;
         });
+    }
+
+    public static boolean areBooleansValid(Map<String, Object> pairs, String... values) {
+        return Stream.of(values).allMatch(value -> {
+            return checkBooleanValue(pairs, value);
+        });
+    }
+
+    private static boolean checkBooleanValue(Map<String, Object> pairs, String value) {
+        if (pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null) {
+            return true;
+        }
+        return false;
     }
 
     public static String convertBooleanToYesNoString(boolean value) {
