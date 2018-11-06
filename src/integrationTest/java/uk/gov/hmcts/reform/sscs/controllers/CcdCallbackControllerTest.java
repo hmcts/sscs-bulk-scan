@@ -58,8 +58,11 @@ public class CcdCallbackControllerTest {
 
     private static final String USER_ID = "1234";
 
-    private static final String START_EVENT_URL =
+    private static final String START_EVENT_APPEAL_CREATED_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/appealCreated/token";
+
+    private static final String START_EVENT_INCOMPLETE_CASE_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/incompleteApplicationReceived/token";
 
     private static final String SUBMIT_EVENT_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases?ignore-warning=true";
@@ -109,9 +112,9 @@ public class CcdCallbackControllerTest {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        startForCaseworkerStub();
+        startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
 
-        submitForCaseworkerStub();
+        submitForCaseworkerStub(false);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
 
@@ -125,7 +128,7 @@ public class CcdCallbackControllerTest {
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
         assertThat(callbackResponse.getErrors()).isNull();
-        assertThat(callbackResponse.getWarnings()).isNull();
+        assertThat(callbackResponse.getWarnings()).isEmpty();
         assertThat(callbackResponse.getData()).contains(
             entry("caseReference", "1539878003972756"),
             entry("state", "ScannedRecordCaseCreated")
@@ -189,13 +192,19 @@ public class CcdCallbackControllerTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    //FIXME: Add test for first time warning button is pressed after PR for RDM-3246 is merged by CCD
+
     @Test
-    public void should_return_validation_error_when_appealant_details_are_not_available() {
+    public void should_return_warnings_when_appellant_details_are_not_available() throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
+        startForCaseworkerStub(START_EVENT_INCOMPLETE_CASE_URL);
+
+        submitForCaseworkerStub(true);
+
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
-            exceptionCaseData(caseDataWithMissingAppealantDetails()),
+            exceptionCaseData(caseDataWithMissingAppellantDetails()),
             httpHeaders()
         );
 
@@ -205,8 +214,13 @@ public class CcdCallbackControllerTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly("person1 address and name mandatory fields are empty");
+        assertThat(result.getBody().getWarnings())
+            .containsOnly("person1_last_name is empty",
+                "person1_address_line1 is empty",
+                "person1_address_line3 is empty",
+                "person1_address_line4 is empty",
+                "person1_postcode is empty",
+                "person1_nino is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -222,7 +236,7 @@ public class CcdCallbackControllerTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        startForCaseworkerStubWithUserTokenHavingNoAccess();
+        startForCaseworkerStubWithUserTokenHavingNoAccess(START_EVENT_APPEAL_CREATED_URL);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
 
@@ -245,7 +259,7 @@ public class CcdCallbackControllerTest {
     @Test
     public void should_return_503_status_when_ccd_service_is_not_available() throws Exception {
         // Given
-        startForCaseworkerStubWithCcdUnavailable();
+        startForCaseworkerStubWithCcdUnavailable(START_EVENT_APPEAL_CREATED_URL);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -277,7 +291,7 @@ public class CcdCallbackControllerTest {
         return exceptionRecord(ocrList, null);
     }
 
-    private Map<String, Object> caseDataWithMissingAppealantDetails() {
+    private Map<String, Object> caseDataWithMissingAppellantDetails() {
         List<Object> ocrList = new ArrayList<>();
 
         ocrList.add(ocrEntry(
@@ -413,7 +427,7 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_date_of_birth", VALUE, "11/11/1976"))
+            ImmutableMap.of(KEY, "person1_nino", VALUE, "JT0123456B"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -427,10 +441,10 @@ public class CcdCallbackControllerTest {
         return exceptionRecord(ocrList, docList);
     }
 
-    private void startForCaseworkerStub() throws Exception {
+    private void startForCaseworkerStub(String eventUrl) throws Exception {
         String eventStartResponseBody = loadJson("mappings/event-start-200-response.json");
 
-        ccdServer.stubFor(get(concat(START_EVENT_URL))
+        ccdServer.stubFor(get(concat(eventUrl))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
@@ -440,8 +454,13 @@ public class CcdCallbackControllerTest {
                 .withBody(eventStartResponseBody)));
     }
 
-    private void submitForCaseworkerStub() throws Exception {
-        String createCaseRequest = loadJson("mappings/case-creation-request.json");
+    private void submitForCaseworkerStub(Boolean isIncompleteApplication) throws Exception {
+        String createCaseRequest;
+        if (isIncompleteApplication) {
+            createCaseRequest = loadJson("mappings/case-incomplete-creation-request.json");
+        }  else {
+            createCaseRequest = loadJson("mappings/case-creation-request.json");
+        }
 
         ccdServer.stubFor(post(concat(SUBMIT_EVENT_URL))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
@@ -454,10 +473,10 @@ public class CcdCallbackControllerTest {
                 .withBody(loadJson("mappings/create-case-200-response.json"))));
     }
 
-    private void startForCaseworkerStubWithUserTokenHavingNoAccess() throws Exception {
+    private void startForCaseworkerStubWithUserTokenHavingNoAccess(String eventUrl) throws Exception {
         String eventStartResponseBody = loadJson("mappings/event-start-403-response.json");
 
-        ccdServer.stubFor(get(concat(START_EVENT_URL))
+        ccdServer.stubFor(get(concat(eventUrl))
             .withHeader(AUTHORIZATION, equalTo(USER_TOKEN_WITHOUT_CASE_ACCESS))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
@@ -467,8 +486,8 @@ public class CcdCallbackControllerTest {
                 .withBody(eventStartResponseBody)));
     }
 
-    private void startForCaseworkerStubWithCcdUnavailable() {
-        ccdServer.stubFor(get(concat(START_EVENT_URL))
+    private void startForCaseworkerStubWithCcdUnavailable(String eventUrl) {
+        ccdServer.stubFor(get(concat(eventUrl))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))

@@ -14,7 +14,8 @@ ccd:
  case:
   jurisdiction: SSCS
   type: Benefit
-  eventId: appealCreated
+  caseCreatedEventId: appealCreated
+  incompleteApplicationEventId: incompleteApplicationReceived
 
 core_case_data:
   api:

@@ -6,6 +6,7 @@ ccd:
  case:
   jurisdiction: SSCS
   type: Benefit
-  eventId: appealCreated
+  caseCreatedEventId: appealCreated
+  incompleteApplicationEventId: incompleteApplicationReceived
 
 allowed-services-for-callback : test_service
