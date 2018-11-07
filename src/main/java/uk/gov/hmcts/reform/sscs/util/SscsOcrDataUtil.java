@@ -57,16 +57,11 @@ public final class SscsOcrDataUtil {
     }
 
     public static boolean areBooleansValid(Map<String, Object> pairs, String... values) {
-        return Stream.of(values).allMatch(value -> {
-            return checkBooleanValue(pairs, value);
-        });
+        return Stream.of(values).allMatch(value -> checkBooleanValue(pairs, value));
     }
 
     private static boolean checkBooleanValue(Map<String, Object> pairs, String value) {
-        if (pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null) {
-            return true;
-        }
-        return false;
+        return pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
     }
 
     public static String convertBooleanToYesNoString(boolean value) {

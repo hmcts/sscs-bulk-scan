@@ -164,7 +164,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<String> arrangements = buildArrangements(pairs);
 
-        String wantsSupport = arrangements.size() > 0 ? YES_LITERAL : NO_LITERAL;
+        String wantsSupport = !arrangements.isEmpty() ? YES_LITERAL : NO_LITERAL;
 
         return HearingOptions.builder()
             .wantsToAttend(wantsToAttend)

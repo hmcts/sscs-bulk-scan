@@ -47,7 +47,7 @@ public class SscsJsonExtractorTest {
     }
 
     @Test
-    public void givenDocumentData_thenExtractIntoSscsRecordObject() {
+    public void givenDocumentData_thenExtractIntoSscsDocumentObject() {
 
         Map<String, Object> valueMap = new HashMap<>();
 
@@ -79,7 +79,7 @@ public class SscsJsonExtractorTest {
     }
 
     @Test
-    public void givenMultipleRecordData_thenExtractIntoSscsRecordObject() {
+    public void givenMultipleDocumentData_thenExtractIntoSscsDocumentObject() {
 
         Map<String, Object> valueMap1 = new HashMap<>();
         valueMap1.put("filename", "Test_doc");
@@ -121,5 +121,27 @@ public class SscsJsonExtractorTest {
 
         assertEquals(expectedRecord1, result.getRecords().get(0));
         assertEquals(expectedRecord2, result.getRecords().get(1));
+    }
+
+    @Test
+    public void givenExceptionCaseDataWithEmptyData_thenExtractIntoKeyValuePairs() {
+
+        Map<String, Object> valueMap = new HashMap<>();
+
+        valueMap.put("key", "appellant_first_name");
+        valueMap.put("value", null);
+
+        Map<String, Object> ocrValuesMap = new HashMap<>();
+        ocrValuesMap.put("value", valueMap);
+
+        List<Object> ocrList = new ArrayList<>();
+        ocrList.add(ocrValuesMap);
+
+        Map<String, Object> scannedOcrDataMap = new HashMap<>();
+        scannedOcrDataMap.put("scanOCRData", ocrList);
+
+        ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
+
+        assertNull(result.getOcrCaseData().get("appellant_first_name"));
     }
 }
