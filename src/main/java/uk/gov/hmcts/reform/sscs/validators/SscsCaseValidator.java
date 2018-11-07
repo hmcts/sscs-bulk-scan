@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
@@ -16,9 +16,9 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 public class SscsCaseValidator implements CaseValidator {
 
     @Override
-    public CaseValidationResponse validate(Map<String, Object> caseData) {
+    public CaseResponse validate(Map<String, Object> caseData) {
 
-        return CaseValidationResponse.builder()
+        return CaseResponse.builder()
             .warnings(populateWarnings((Appeal) caseData.get("appeal")))
             .build();
     }

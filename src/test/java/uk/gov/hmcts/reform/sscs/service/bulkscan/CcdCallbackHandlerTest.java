@@ -15,7 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
@@ -55,18 +55,18 @@ public class CcdCallbackHandlerTest {
             .build();
 
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
-            .thenReturn(CaseValidationResponse.builder()
+            .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
             );
 
         // No errors and warnings are populated hence validation would be successful
-        CaseValidationResponse caseValidationResponse = CaseValidationResponse.builder().build();
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validate(caseDataCreator.sscsCaseData()))
             .thenReturn(caseValidationResponse);
 
         // Return case id for successful ccd case creation
-        when(caseDataHandler.create(
+        when(caseDataHandler.handle(
             caseValidationResponse,
             caseDataCreator.sscsCaseData(),
             TEST_USER_AUTH_TOKEN,
@@ -95,7 +95,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
-            .thenReturn(CaseValidationResponse.builder()
+            .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
                 .build()
             );
@@ -122,14 +122,14 @@ public class CcdCallbackHandlerTest {
             .build();
 
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
-            .thenReturn(CaseValidationResponse.builder()
+            .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
             );
 
 
         when(caseValidator.validate(caseDataCreator.sscsCaseData()))
-            .thenReturn(CaseValidationResponse.builder()
+            .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
 

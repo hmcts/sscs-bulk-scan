@@ -2,11 +2,11 @@ package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import java.util.Map;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 
 public interface CaseDataHandler {
 
-    CallbackResponse create(CaseValidationResponse caseValidationResponse,
+    CallbackResponse handle(CaseResponse caseValidationResponse,
                             Map<String, Object> transformedCase,
                             String userAuthToken,
                             String serviceAuthToken,

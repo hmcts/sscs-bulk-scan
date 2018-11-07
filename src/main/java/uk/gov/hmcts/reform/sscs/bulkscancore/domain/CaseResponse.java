@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CaseValidationResponse {
+public class CaseResponse {
     @ApiModelProperty(value = "Warning messages")
     private List<String> warnings;
     @ApiModelProperty(value = "Transformed case")

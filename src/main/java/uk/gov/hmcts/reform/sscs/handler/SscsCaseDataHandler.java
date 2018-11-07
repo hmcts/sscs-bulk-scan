@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 
 @Component
@@ -30,7 +30,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         this.incompleteApplicationEventId = incompleteApplicationEventId;
     }
 
-    public CallbackResponse create(CaseValidationResponse caseValidationResponse,
+    public CallbackResponse handle(CaseResponse caseValidationResponse,
                                    Map<String, Object> transformedCase,
                                    String userAuthToken,
                                    String serviceAuthToken,
