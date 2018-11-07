@@ -42,3 +42,23 @@ idam:
 allowed-services-for-callback : ccd_data  # comma separated list of service names
 
 schema.location: /schema/sscs-bulk-scan-schema.json
+
+appeal:
+  email:
+    from: ${EMAIL_FROM:sscs@hmcts.net}
+    to: ${EMAIL_TO:receiver@hmcts.net}
+    subject: ${EMAIL_SUBJECT:Your appeal}
+    message: ${EMAIL_MESSAGE:Your appeal has been created \nPlease do not respond to this email}
+    host: ${EMAIL_SERVER_HOST:localhost}
+    port: ${EMAIL_SERVER_PORT:1025}
+    smtp:
+      tls.enabled: ${EMAIL_SMTP_TLS_ENABLED:true}
+      ssl.trust: ${EMAIL_SMTP_SSL_TRUST:*}
+
+robotics:
+  email:
+    from: ${ROBOTICS_EMAIL_FROM:sscs@hmcts.net}
+    to: ${ROBOTICS_EMAIL_TO:receiver@hmcts.net}
+    subject: ${ROBOTICS_EMAIL_SUBJECT:Robotics Data}
+    message: ${ROBOTICS_EMAIL_MESSAGE:Please find attached the robotics json file \nPlease do not respond to this email}
+  schema.resource.location: /schema/sscs-robotics.json
