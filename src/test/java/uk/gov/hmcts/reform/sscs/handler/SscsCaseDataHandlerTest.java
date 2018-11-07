@@ -19,7 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 
 public class SscsCaseDataHandlerTest {
 
@@ -41,14 +41,14 @@ public class SscsCaseDataHandlerTest {
         List<String> warnings = new ArrayList<>();
         warnings.add("I am a warning");
 
-        CaseValidationResponse caseValidationResponse = CaseValidationResponse.builder().warnings(warnings).build();
+        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings).build();
         Map<String, Object> transformedCase = new HashMap<>();
         Map<String, Object> exceptionRecordData = new HashMap<>();
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
 
-        CallbackResponse response =  sscsCaseDataHandler.create(caseValidationResponse, transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, exceptionRecordData, null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, exceptionRecordData, null);
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived");
         assertEquals(warnings.get(0), ((AboutToStartOrSubmitCallbackResponse) response).getWarnings().get(0));
@@ -58,14 +58,14 @@ public class SscsCaseDataHandlerTest {
     @Test
     public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEvent() {
 
-        CaseValidationResponse caseValidationResponse = CaseValidationResponse.builder().build();
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
         Map<String, Object> transformedCase = new HashMap<>();
         Map<String, Object> exceptionRecordData = new HashMap<>();
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
 
-        CallbackResponse response =  sscsCaseDataHandler.create(caseValidationResponse, transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, exceptionRecordData, null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, exceptionRecordData, null);
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
         assertNull(((AboutToStartOrSubmitCallbackResponse) response).getWarnings());
