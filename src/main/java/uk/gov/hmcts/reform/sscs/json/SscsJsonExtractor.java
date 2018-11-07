@@ -35,7 +35,9 @@ public class SscsJsonExtractor {
 
             JSONObject jsonObject = (JSONObject) j.get(VALUE);
 
-            pairs.put(jsonObject.get(KEY).toString(), jsonObject.get(VALUE).toString());
+            String jsonValue = jsonObject.has(VALUE) ? jsonObject.get(VALUE).toString() : null;
+
+            pairs.put(jsonObject.get(KEY).toString(), jsonValue);
         }
         return pairs;
     }

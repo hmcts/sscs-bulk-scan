@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,13 +61,15 @@ public class SscsCaseTransformer implements CaseTransformer {
                 appellant = buildAppelant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE));
             }
 
+            String hearingType = findHearingType(pairs);
+
             return Appeal.builder()
                 .benefitType(BenefitType.builder().code(getField(pairs, "benefit_type_description")).build())
                 .appellant(appellant)
                 .rep(buildRepresentative(pairs))
                 .mrnDetails(buildMrnDetails(pairs))
-                .hearingType(findHearingType(pairs))
-                .hearingOptions(buildHearingOptions(pairs))
+                .hearingType(hearingType)
+                .hearingOptions(buildHearingOptions(pairs, hearingType))
                 .signer(getField(pairs, "signature_name"))
                 .build();
         } else {
@@ -141,23 +144,53 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String findHearingType(Map<String, Object> pairs) {
-        if (areBooleansValid(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper") && !doValuesContradict(pairs, errors, "is_hearing_type_oral", "is_hearing_type_paper")) {
-            return Boolean.parseBoolean(pairs.get("is_hearing_type_oral").toString()) ? "oral" : "paper";
+        if (areMandatoryBooleansValid(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL) && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
+            return Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
         }
         return null;
     }
 
-    private HearingOptions buildHearingOptions(Map<String, Object> pairs) {
+    private HearingOptions buildHearingOptions(Map<String, Object> pairs, String hearingType) {
 
-        String isLanguageInterpreterRequired = convertBooleanToYesNoString(findBooleanExists(getField(pairs,"hearing_options_language_type")));
+        boolean isSignLanguageInterpreterRequired = findSignLanguageInterpreterRequired(pairs);
 
-        //TODO: Handle sign languages here - discuss with Josh
+        String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
+
+        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs,HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) && !isSignLanguageInterpreterRequired;
+
+        String languageType = isLanguageInterpreterRequired ? getField(pairs,HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL) : null;
+
+        String wantsToAttend = hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) ? YES_LITERAL : NO_LITERAL;
+
+        List<String> arrangements = buildArrangements(pairs);
+
+        String wantsSupport = !arrangements.isEmpty() ? YES_LITERAL : NO_LITERAL;
+
         return HearingOptions.builder()
+            .wantsToAttend(wantsToAttend)
+            .wantsSupport(wantsSupport)
             .excludeDates(buildExcludedDates(pairs))
-            .arrangements(buildArrangements(pairs))
-            .languageInterpreter(isLanguageInterpreterRequired)
-            .languages(getField(pairs,"hearing_options_language_type"))
+            .arrangements(arrangements)
+            .other(getField(pairs, HEARING_SUPPORT_ARRANGEMENTS_LITERAL))
+            .languageInterpreter(convertBooleanToYesNoString(isLanguageInterpreterRequired))
+            .languages(languageType)
+            .signLanguageType(signLanguageType)
         .build();
+    }
+
+    private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
+        if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
+            return Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString());
+        } else {
+            return false;
+        }
+    }
+
+    private String findSignLanguageType(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
+        if (isSignLanguageInterpreterRequired) {
+            return getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL) != null ? getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL) : DEFAULT_SIGN_LANGUAGE;
+        }
+        return null;
     }
 
     private List<ExcludeDate> buildExcludedDates(Map<String, Object> pairs) {
@@ -174,16 +207,20 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private List<String> buildArrangements(Map<String, Object> pairs) {
-        // TODO: Create story to properly handle arrangements
 
-        if (pairs.containsKey("hearing_support_arrangements")) {
-            List<String> arrangements = new ArrayList<>();
+        List<String> arrangements = new ArrayList<>();
 
-            arrangements.add(getField(pairs,"hearing_support_arrangements"));
-            return arrangements;
-        } else {
-            return null;
+        if (areBooleansValid(pairs, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL) &&  Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
+            arrangements.add("disabledAccess");
         }
+        if (areBooleansValid(pairs, HEARING_OPTIONS_HEARING_LOOP_LITERAL) && Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
+            arrangements.add("hearingLoop");
+        }
+        if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL) && Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString())) {
+            arrangements.add("signLanguageInterpreter");
+        }
+        return arrangements;
+
     }
 
     private List<SscsDocument> buildDocumentsFromData(List<ScannedRecord> records) {
