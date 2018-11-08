@@ -4,10 +4,7 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
@@ -156,9 +153,9 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
 
-        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs,HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) && !isSignLanguageInterpreterRequired;
+        boolean isLanguageInterpreterRequired = (findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL))) && !isSignLanguageInterpreterRequired;
 
-        String languageType = isLanguageInterpreterRequired ? getField(pairs,HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL) : null;
+        String languageType = isLanguageInterpreterRequired ? findLanguageTypeString(pairs) : null;
 
         String wantsToAttend = hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) ? YES_LITERAL : NO_LITERAL;
 
@@ -176,6 +173,20 @@ public class SscsCaseTransformer implements CaseTransformer {
             .languages(languageType)
             .signLanguageType(signLanguageType)
         .build();
+    }
+
+    private String findLanguageTypeString(Map<String, Object> pairs) {
+        String languageType = getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL);
+        String dialectType = getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL);
+
+        StringJoiner buildLanguageType = new StringJoiner(" ");
+        if (languageType != null) {
+            buildLanguageType.add(languageType);
+        }
+        if (dialectType != null) {
+            buildLanguageType.add(dialectType);
+        }
+        return buildLanguageType.toString();
     }
 
     private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
