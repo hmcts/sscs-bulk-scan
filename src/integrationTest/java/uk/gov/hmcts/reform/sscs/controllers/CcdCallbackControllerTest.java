@@ -192,16 +192,42 @@ public class CcdCallbackControllerTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
-    //FIXME: Add test for first time warning button is pressed after PR for RDM-3246 is merged by CCD
-
     @Test
-    public void should_return_warnings_when_appellant_details_are_not_available() throws Exception {
+    public void should_create_incomplete_case_when_warnings_are_ignored() throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         startForCaseworkerStub(START_EVENT_INCOMPLETE_CASE_URL);
 
         submitForCaseworkerStub(true);
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getData()).contains(
+            entry("caseReference", "1539878003972756"),
+            entry("state", "ScannedRecordCaseCreated")
+        );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_warnings_when_appellant_details_are_not_available() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
             exceptionCaseData(caseDataWithMissingAppellantDetails()),
@@ -224,7 +250,6 @@ public class CcdCallbackControllerTest {
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
-
 
     @Test
     public void should_return_403_status_when_usertoken_does_not_have_access_to_jurisdiction() throws Exception {
@@ -340,6 +365,14 @@ public class CcdCallbackControllerTest {
         exceptionRecord.put("scanOCRData", ocrList);
         exceptionRecord.put("scanRecords", docList);
         return exceptionRecord;
+    }
+
+    private ExceptionCaseData exceptionCaseDataWithIgnoreWarnings(Map<String, Object> caseData) {
+
+        ExceptionCaseData exceptionCaseData = exceptionCaseData(caseData);
+        exceptionCaseData.setIgnoreWarnings(true);
+
+        return exceptionCaseData;
     }
 
     private ExceptionCaseData exceptionCaseData(Map<String, Object> caseData) {

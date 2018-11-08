@@ -60,11 +60,18 @@ public class CcdCallbackHandler {
 
         AboutToStartOrSubmitCallbackResponse validationErrorResponse = checkForErrors(caseValidationResponse, exceptionRecordData, exceptionRecordId);
 
-        //TO DO: Only create case if ignore warnings flag is set after PR for RDM-3246 is merged by CCD
         if (validationErrorResponse != null) {
             return validationErrorResponse;
         } else {
-            return caseDataHandler.handle(caseValidationResponse, transformedCase, userAuthToken, serviceAuthToken, userId, exceptionRecordData, exceptionRecordId);
+            return caseDataHandler.handle(
+                caseValidationResponse,
+                exceptionCaseData.isIgnoreWarnings(),
+                transformedCase,
+                userAuthToken,
+                serviceAuthToken,
+                userId,
+                exceptionRecordData,
+                exceptionRecordId);
         }
     }
 

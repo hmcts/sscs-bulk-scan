@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 public interface CaseDataHandler {
 
     CallbackResponse handle(CaseResponse caseValidationResponse,
+                            boolean ignoreWarnings,
                             Map<String, Object> transformedCase,
                             String userAuthToken,
                             String serviceAuthToken,

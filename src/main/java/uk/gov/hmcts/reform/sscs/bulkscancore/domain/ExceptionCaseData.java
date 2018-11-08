@@ -18,4 +18,6 @@ public class ExceptionCaseData {
     private String eventId;
     @JsonProperty("case_details")
     private CaseDetails caseDetails;
+    @JsonProperty("ignore_warning")
+    private boolean ignoreWarnings;
 }

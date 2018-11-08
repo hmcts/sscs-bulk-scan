@@ -68,6 +68,7 @@ public class CcdCallbackHandlerTest {
         // Return case id for successful ccd case creation
         when(caseDataHandler.handle(
             caseValidationResponse,
+            false,
             caseDataCreator.sscsCaseData(),
             TEST_USER_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
