@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.IdamToken;
 
 public class SscsCaseDataHandlerTest {
 
@@ -48,7 +49,8 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, true, transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, exceptionRecordData, null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, true, transformedCase,
+            IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), exceptionRecordData, null);
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived");
         assertEquals(warnings.get(0), ((AboutToStartOrSubmitCallbackResponse) response).getWarnings().get(0));
@@ -67,7 +69,8 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false, transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, exceptionRecordData, null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false, transformedCase,
+            IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), exceptionRecordData, null);
 
         verifyZeroInteractions(caseDataHelper);
         assertEquals(warnings.get(0), ((AboutToStartOrSubmitCallbackResponse) response).getWarnings().get(0));
@@ -83,7 +86,8 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false, transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, exceptionRecordData, null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false, transformedCase,
+            IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), exceptionRecordData, null);
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
         assertNull(((AboutToStartOrSubmitCallbackResponse) response).getWarnings());

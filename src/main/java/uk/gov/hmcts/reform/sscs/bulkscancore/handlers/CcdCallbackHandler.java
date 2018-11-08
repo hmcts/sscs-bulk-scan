@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.IdamToken;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 
@@ -38,9 +39,7 @@ public class CcdCallbackHandler {
 
     public CallbackResponse handle(
         ExceptionCaseData exceptionCaseData,
-        String userAuthToken,
-        String serviceAuthToken,
-        String userId) {
+        IdamToken idamToken) {
 
         Map<String, Object> exceptionRecordData = exceptionCaseData.getCaseDetails().getCaseData();
 
@@ -67,9 +66,7 @@ public class CcdCallbackHandler {
                 caseValidationResponse,
                 exceptionCaseData.isIgnoreWarnings(),
                 transformedCase,
-                userAuthToken,
-                serviceAuthToken,
-                userId,
+                idamToken,
                 exceptionRecordData,
                 exceptionRecordId);
         }

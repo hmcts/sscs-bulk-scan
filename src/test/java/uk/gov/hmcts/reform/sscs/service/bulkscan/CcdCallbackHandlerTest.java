@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.IdamToken;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -70,9 +71,7 @@ public class CcdCallbackHandlerTest {
             caseValidationResponse,
             false,
             caseDataCreator.sscsCaseData(),
-            TEST_USER_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_USER_ID,
+            IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(),
             caseDataCreator.exceptionCaseData(),
             null)
         ).thenReturn(AboutToStartOrSubmitCallbackResponse.builder().data(caseDataCreator.exceptionCaseData()).build());
@@ -162,9 +161,7 @@ public class CcdCallbackHandlerTest {
                 .caseDetails(caseDetails)
                 .eventId("createNewCase")
                 .build(),
-            TEST_USER_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_USER_ID
+            IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
         );
     }
 
