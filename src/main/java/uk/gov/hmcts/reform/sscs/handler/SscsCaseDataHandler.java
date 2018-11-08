@@ -31,6 +31,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     }
 
     public CallbackResponse handle(CaseResponse caseValidationResponse,
+                                   boolean ignoreWarnings,
                                    Map<String, Object> transformedCase,
                                    String userAuthToken,
                                    String serviceAuthToken,
@@ -38,18 +39,23 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                                    Map<String, Object> exceptionRecordData,
                                    String exceptionRecordId) {
 
-        String eventId = isEmpty(caseValidationResponse.getWarnings()) ? caseCreatedEventId : incompleteApplicationEventId;
+        if (canCreateCase(caseValidationResponse, ignoreWarnings)) {
+            String eventId = isEmpty(caseValidationResponse.getWarnings()) ? caseCreatedEventId : incompleteApplicationEventId;
 
-        Long caseId = caseDataHelper.createCase(transformedCase, userAuthToken, serviceAuthToken, userId, eventId);
+            Long caseId = caseDataHelper.createCase(transformedCase, userAuthToken, serviceAuthToken, userId, eventId);
 
-        log.info("Case created with exceptionRecordId {} from exception record id {}", caseId, exceptionRecordId);
+            log.info("Case created with exceptionRecordId {} from exception record id {}", caseId, exceptionRecordId);
 
-        exceptionRecordData.put("state", "ScannedRecordCaseCreated");
-        exceptionRecordData.put("caseReference", String.valueOf(caseId));
+            exceptionRecordData.put("state", "ScannedRecordCaseCreated");
+            exceptionRecordData.put("caseReference", String.valueOf(caseId));
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .warnings(caseValidationResponse.getWarnings())
             .data(exceptionRecordData).build();
     }
 
+    private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings) {
+        return ((!isEmpty(caseValidationResponse.getWarnings()) && ignoreWarnings) || isEmpty(caseValidationResponse.getWarnings()));
+    }
 }

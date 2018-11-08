@@ -289,7 +289,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
-        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
         assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
@@ -305,7 +305,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
-        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
         assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
@@ -320,7 +320,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
-        CaseTransformationResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
         assertEquals(HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
