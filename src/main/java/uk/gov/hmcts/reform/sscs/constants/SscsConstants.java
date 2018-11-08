@@ -16,6 +16,7 @@ public final class SscsConstants {
     public static final String HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL = "hearing_options_sign_language_interpreter";
     public static final String HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL = "hearing_options_sign_language_type";
     public static final String HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL = "hearing_options_language_type";
+    public static final String HEARING_OPTIONS_DIALECT_LITERAL = "hearing_options_dialect";
     public static final String HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL = "hearing_options_accessible_hearing_rooms";
     public static final String HEARING_OPTIONS_HEARING_LOOP_LITERAL = "hearing_options_hearing_loop";
     public static final String HEARING_SUPPORT_ARRANGEMENTS_LITERAL = "hearing_support_arrangements";

@@ -50,6 +50,7 @@ public class TestDataConstants {
     public static final Boolean SIGN_LANGUAGE_REQUIRED = true;
     public static final String SIGN_LANGUAGE_TYPE = "My sign language";
     public static final String HEARING_OPTIONS_LANGUAGE_TYPE = "Spanish";
+    public static final String HEARING_OPTIONS_DIALECT_TYPE = "Castilian";
     public static final Boolean AGREE_LESS_HEARING_NOTICE = true;
     public static final String SIGNATURE_NAME = "Barry Smith";
 }
