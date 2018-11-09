@@ -14,11 +14,8 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
+import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
@@ -38,12 +35,13 @@ public class CcdCallbackHandlerTest {
     private CaseValidator caseValidator;
 
     @Mock
-    private CaseDataHelper caseDataHelper;
+    private CaseDataHandler caseDataHandler;
 
     @Before
     public void setUp() {
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHelper);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler);
     }
+
 
     @Test
     public void should_return_exception_data_with_case_id_and_state_when_transformation_and_validation_are_successful() {
@@ -55,39 +53,30 @@ public class CcdCallbackHandlerTest {
             .build();
 
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
-            .thenReturn(CaseTransformationResponse.builder()
+            .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
             );
 
         // No errors and warnings are populated hence validation would be successful
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validate(caseDataCreator.sscsCaseData()))
-            .thenReturn(CaseValidationResponse.builder().build());
+            .thenReturn(caseValidationResponse);
 
         // Return case id for successful ccd case creation
-        when(caseDataHelper.createCase(
+        when(caseDataHandler.handle(
+            caseValidationResponse,
+            false,
             caseDataCreator.sscsCaseData(),
-            TEST_USER_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_USER_ID)
-        ).thenReturn(Long.valueOf("1538992487551266"));
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(),
+            null)
+        ).thenReturn(HandlerResponse.builder().state("DocUpdated").build());
 
         // when
         AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
             (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
 
-        // then
-        assertThat(ccdCallbackResponse.getData())
-            .contains(
-                entry("journeyClassification", "New Application"),
-                entry("poBoxJurisdiction", "SSCS"),
-                entry("poBox", "SSCSPO"),
-                entry("openingDate", "2018-01-11"),
-                entry("scanRecords", caseDataCreator.ocrData()),
-                entry("state", "ScannedRecordCaseCreated"),
-                entry("caseReference", "1538992487551266")
-            );
-
+        assertExceptionDataEntries(ccdCallbackResponse);
         assertThat(ccdCallbackResponse.getErrors()).isNull();
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }
@@ -102,7 +91,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
-            .thenReturn(CaseTransformationResponse.builder()
+            .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
                 .build()
             );
@@ -129,14 +118,14 @@ public class CcdCallbackHandlerTest {
             .build();
 
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
-            .thenReturn(CaseTransformationResponse.builder()
+            .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
             );
 
 
         when(caseValidator.validate(caseDataCreator.sscsCaseData()))
-            .thenReturn(CaseValidationResponse.builder()
+            .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
 
@@ -151,37 +140,6 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }
 
-    @Test
-    public void should_return_exc_data_and_errors_in_callback_when_transformation_success_and_validn_fails_with_warning() {
-        // given
-        CaseDetails caseDetails = CaseDetails
-            .builder()
-            .caseData(caseDataCreator.exceptionCaseData())
-            .state("ScannedRecordReceived")
-            .build();
-
-        when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
-            .thenReturn(CaseTransformationResponse.builder()
-                .transformedCase(caseDataCreator.sscsCaseData())
-                .build()
-            );
-
-
-        when(caseValidator.validate(caseDataCreator.sscsCaseData()))
-            .thenReturn(CaseValidationResponse.builder()
-                .warnings(ImmutableList.of("DWP extension time needs to be provided"))
-                .build());
-
-        // when
-        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
-            (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
-
-        // then
-        assertExceptionDataEntries(ccdCallbackResponse);
-
-        assertThat(ccdCallbackResponse.getErrors()).isNull();
-        assertThat(ccdCallbackResponse.getWarnings()).containsOnly("DWP extension time needs to be provided");
-    }
 
     private void assertExceptionDataEntries(AboutToStartOrSubmitCallbackResponse ccdCallbackResponse) {
         assertThat(ccdCallbackResponse.getData()).contains(
@@ -199,9 +157,7 @@ public class CcdCallbackHandlerTest {
                 .caseDetails(caseDetails)
                 .eventId("createNewCase")
                 .build(),
-            TEST_USER_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_USER_ID
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
         );
     }
 

@@ -1,6 +1,6 @@
 {
   "event": {
-    "id": "appealCreated",
+    "id": "incompleteApplicationReceived",
     "summary": null,
     "description": "Case created from exception record"
   },
@@ -16,23 +16,17 @@
         "name": {
           "title": "Mr",
           "firstName": "John",
-          "lastName": "Smith"
+          "lastName": null
         },
-        "address": {
-          "line1": "2 Drake Close",
-          "line2": "Hutton",
-          "town": "Brentwood",
-          "county": "Essex",
-          "postcode": "SE000RS"
-        },
+        "address": { },
         "contact": {
           "email": null,
-          "phone": "012345678",
-          "mobile": "012345678"
+          "phone": null,
+          "mobile": null
         },
         "identity": {
-          "dob": "1976-11-11",
-          "nino": "JT0123456B"
+          "dob": null,
+          "nino": null
         },
         "appointee": null
       },
@@ -57,17 +51,7 @@
       "signer": null,
       "hearingType": "oral"
     },
-    "sscsDocument" : [ {
-      "value" : {
-        "documentType" : "Other document",
-        "documentFileName" : "11111.pdf",
-        "documentDateAdded" : "2018-10-10",
-        "documentLink" : {
-          "document_url" : "http://www.bbc.com",
-          "document_binary_url" : "http://www.bbc.com/binary"
-        }
-      }
-    } ]
+    "sscsDocument" : [ ]
   },
   "security_classification" : "PUBLIC",
   "event_token" : "test_event_token",

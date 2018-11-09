@@ -1,22 +1,23 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.springframework.util.ObjectUtils.isEmpty;
 
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseTransformationResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseValidationResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 
 @Component
+@Slf4j
 public class CcdCallbackHandler {
 
     private static final Logger logger = getLogger(CcdCallbackHandler.class);
@@ -25,70 +26,72 @@ public class CcdCallbackHandler {
 
     private final CaseValidator caseValidator;
 
-    private final CaseDataHelper caseDataHelper;
+    private final CaseDataHandler caseDataHandler;
 
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
-        CaseDataHelper caseDataHelper
+        CaseDataHandler caseDataHandler
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
-        this.caseDataHelper = caseDataHelper;
+        this.caseDataHandler = caseDataHandler;
     }
 
     public CallbackResponse handle(
         ExceptionCaseData exceptionCaseData,
-        String userAuthToken,
-        String serviceAuthToken,
-        String userId
-    ) {
+        Token token) {
+
         Map<String, Object> exceptionRecordData = exceptionCaseData.getCaseDetails().getCaseData();
 
         String exceptionRecordId = (String) exceptionRecordData.get("id");
 
         logger.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
-        // Transform into SSCS case
-        CaseTransformationResponse caseTransformationResponse =
-            caseTransformer.transformExceptionRecordToCase(exceptionRecordData);
+        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionRecordData);
+        AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrors(caseTransformationResponse, exceptionRecordData, exceptionRecordId);
+
+        if (transformErrorResponse != null) {
+            return transformErrorResponse;
+        }
 
         Map<String, Object> transformedCase = caseTransformationResponse.getTransformedCase();
+        CaseResponse caseValidationResponse = caseValidator.validate(transformedCase);
 
-        if (!ObjectUtils.isEmpty(caseTransformationResponse.getErrors())) {
-            logger.info("Errors found while transforming exception record id {}", exceptionRecordId);
-            return AboutToStartOrSubmitCallbackResponse.builder()
-                .data(exceptionRecordData)
-                .errors(caseTransformationResponse.getErrors())
-                .build();
-        }
+        AboutToStartOrSubmitCallbackResponse validationErrorResponse = checkForErrors(caseValidationResponse, exceptionRecordData, exceptionRecordId);
 
-        // Validate the transformed case
-        CaseValidationResponse caseValidationResponse = caseValidator.validate(transformedCase);
+        if (validationErrorResponse != null) {
+            return validationErrorResponse;
+        } else {
+            HandlerResponse handlerResponse = (HandlerResponse) caseDataHandler.handle(
+                caseValidationResponse,
+                exceptionCaseData.isIgnoreWarnings(),
+                transformedCase,
+                token,
+                exceptionRecordId);
 
-        if (isEmpty(caseValidationResponse.getErrors()) && isEmpty(caseValidationResponse.getWarnings())) {
-            Long caseId = caseDataHelper.createCase(transformedCase, userAuthToken, serviceAuthToken, userId);
-
-            logger.info(
-                "Case created with exceptionRecordId {} from exception record id {}",
-                caseId,
-                exceptionRecordId
-            );
-
-            exceptionRecordData.put("state", "ScannedRecordCaseCreated");
-            exceptionRecordData.put("caseReference", String.valueOf(caseId));
+            if (handlerResponse != null) {
+                exceptionRecordData.put("state", (handlerResponse.getState()));
+                exceptionRecordData.put("caseReference", String.valueOf((handlerResponse.getCaseId())));
+            }
 
             return AboutToStartOrSubmitCallbackResponse.builder()
+                .warnings(caseValidationResponse.getWarnings())
+                .data(exceptionRecordData).build();
+        }
+    }
+
+    private AboutToStartOrSubmitCallbackResponse checkForErrors(CaseResponse caseResponse,
+                                                                Map<String, Object> exceptionRecordData,
+                                                                String exceptionRecordId) {
+
+        if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
+            log.info("Errors found while transforming exception record id {}", exceptionRecordId);
+            return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(exceptionRecordData)
+                .errors(caseResponse.getErrors())
                 .build();
         }
-
-        logger.info("Validations/Warnings found while processing exception record id {}", exceptionRecordId);
-
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(exceptionRecordData)
-            .errors(caseValidationResponse.getErrors())
-            .warnings(caseValidationResponse.getWarnings())
-            .build();
+        return null;
     }
 }

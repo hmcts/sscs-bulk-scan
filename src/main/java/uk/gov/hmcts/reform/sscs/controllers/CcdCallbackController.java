@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 
 @RestController
@@ -52,8 +53,10 @@ public class CcdCallbackController {
 
         authService.assertIsAllowedToHandleCallback(serviceName);
 
+        Token token = Token.builder().serviceAuthToken(serviceAuthToken).userAuthToken(userAuthToken).userId(userId).build();
+
         CallbackResponse ccdCallbackResponse =
-            ccdCallbackHandler.handle(caseData, userAuthToken, serviceAuthToken, userId);
+            ccdCallbackHandler.handle(caseData, token);
 
         return ResponseEntity.ok(ccdCallbackResponse);
     }
