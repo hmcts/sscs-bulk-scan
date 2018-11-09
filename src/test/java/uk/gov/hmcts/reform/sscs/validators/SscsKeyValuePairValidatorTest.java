@@ -2,10 +2,9 @@ package uk.gov.hmcts.reform.sscs.validators;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedOcrData;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -14,8 +13,6 @@ public class SscsKeyValuePairValidatorTest {
 
     SscsKeyValuePairValidator validator = new SscsKeyValuePairValidator("/schema/sscs-bulk-scan-schema.json");
 
-    Map<String, Object> scannedOcrDataMap = new HashMap<>();
-
     @Test
     public void givenAValidKeyValuePair_thenReturnAnEmptyCaseResponse() {
         Map<String, Object> valueMap = new HashMap<>();
@@ -23,7 +20,7 @@ public class SscsKeyValuePairValidatorTest {
         valueMap.put("key", "person1_first_name");
         valueMap.put("value", "Bob");
 
-        buildScannedOcrData(valueMap);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanOCRData", valueMap);
 
         CaseResponse response = validator.validate(scannedOcrDataMap);
         assertNull(response.getErrors());
@@ -36,7 +33,7 @@ public class SscsKeyValuePairValidatorTest {
         valueMap.put("key", "invalid_key");
         valueMap.put("value", "test");
 
-        buildScannedOcrData(valueMap);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanOCRData", valueMap);
 
         CaseResponse response = validator.validate(scannedOcrDataMap);
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
@@ -53,7 +50,7 @@ public class SscsKeyValuePairValidatorTest {
         valueMap2.put("key", "invalid_key2");
         valueMap2.put("value", "test");
 
-        buildScannedOcrData(valueMap1, valueMap2);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanOCRData", valueMap1, valueMap2);
 
         CaseResponse response = validator.validate(scannedOcrDataMap);
         assertEquals(2, response.getErrors().size());
@@ -61,17 +58,5 @@ public class SscsKeyValuePairValidatorTest {
         assertEquals("#: extraneous key [invalid_key2] is not permitted", response.getErrors().get(1));
     }
 
-    @SafeVarargs
-    private final void buildScannedOcrData(Map<String, Object>... valueMap) {
-        List<Object> ocrList = new ArrayList<>();
-
-        for (Map<String, Object> values: valueMap) {
-            Map<String, Object> ocrValuesMap = new HashMap<>();
-            ocrValuesMap.put("value", values);
-            ocrList.add(ocrValuesMap);
-        }
-
-        scannedOcrDataMap.put("scanOCRData", ocrList);
-    }
 
 }

@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.sscs.json;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedOcrData;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -32,14 +32,7 @@ public class SscsJsonExtractorTest {
         valueMap.put("key", "person1_first_name");
         valueMap.put("value", "Bob");
 
-        Map<String, Object> ocrValuesMap = new HashMap<>();
-        ocrValuesMap.put("value", valueMap);
-
-        List<Object> ocrList = new ArrayList<>();
-        ocrList.add(ocrValuesMap);
-
-        Map<String, Object> scannedOcrDataMap = new HashMap<>();
-        scannedOcrDataMap.put("scanOCRData", ocrList);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanOCRData", valueMap);
 
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
@@ -55,20 +48,11 @@ public class SscsJsonExtractorTest {
         valueMap.put("docScanDate", "2018-08-10");
         valueMap.put("documentType", "1");
         valueMap.put("documentControlNumber", "4");
-
         JSONObject item = new JSONObject();
         item.put("document_url", "www.test.com");
-
         valueMap.put("documentLink", item);
 
-        Map<String, Object> ocrValuesMap = new HashMap<>();
-        ocrValuesMap.put("value", valueMap);
-
-        List<Object> ocrList = new ArrayList<>();
-        ocrList.add(ocrValuesMap);
-
-        Map<String, Object> scannedOcrDataMap = new HashMap<>();
-        scannedOcrDataMap.put("scanRecords", ocrList);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanRecords", valueMap);
 
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
@@ -99,17 +83,7 @@ public class SscsJsonExtractorTest {
         item2.put("document_url", "www.hello.com");
         valueMap2.put("documentLink", item2);
 
-        Map<String, Object> ocrValuesMap1 = new HashMap<>();
-        Map<String, Object> ocrValuesMap2 = new HashMap<>();
-        ocrValuesMap1.put("value", valueMap1);
-        ocrValuesMap2.put("value", valueMap2);
-
-        List<Object> ocrList = new ArrayList<>();
-        ocrList.add(ocrValuesMap1);
-        ocrList.add(ocrValuesMap2);
-
-        Map<String, Object> scannedOcrDataMap = new HashMap<>();
-        scannedOcrDataMap.put("scanRecords", ocrList);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanRecords", valueMap1, valueMap2);
 
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
@@ -131,14 +105,7 @@ public class SscsJsonExtractorTest {
         valueMap.put("key", "appellant_first_name");
         valueMap.put("value", null);
 
-        Map<String, Object> ocrValuesMap = new HashMap<>();
-        ocrValuesMap.put("value", valueMap);
-
-        List<Object> ocrList = new ArrayList<>();
-        ocrList.add(ocrValuesMap);
-
-        Map<String, Object> scannedOcrDataMap = new HashMap<>();
-        scannedOcrDataMap.put("scanOCRData", ocrList);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanOCRData", valueMap);
 
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 

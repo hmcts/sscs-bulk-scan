@@ -1,10 +1,11 @@
 package uk.gov.hmcts.reform.sscs.json;
 
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONArray;
@@ -17,29 +18,10 @@ import uk.gov.hmcts.reform.sscs.exceptions.BulkScanJsonException;
 @Component
 public class SscsJsonExtractor {
 
-    private static final String VALUE = "value";
-    private static final String KEY = "key";
-
     public ScannedData extractJson(Map<String, Object> exceptionCaseData) {
-        Map<String, Object> ocrPairs = buildOcrData(exceptionCaseData, "scanOCRData");
+        Map<String, Object> ocrPairs = build(exceptionCaseData);
         List<ScannedRecord> documents = buildScannedDocumentData(exceptionCaseData, "scanRecords");
         return ScannedData.builder().ocrCaseData(ocrPairs).records(documents).build();
-    }
-
-    private Map<String, Object> buildOcrData(Map<String, Object> exceptionCaseData, String field) {
-        Map<String, Object> pairs = new HashMap<>();
-
-        JSONArray jsonArray = new JSONArray((List) exceptionCaseData.get(field));
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject j = jsonArray.optJSONObject(i);
-
-            JSONObject jsonObject = (JSONObject) j.get(VALUE);
-
-            String jsonValue = jsonObject.has(VALUE) ? jsonObject.get(VALUE).toString() : null;
-
-            pairs.put(jsonObject.get(KEY).toString(), jsonValue);
-        }
-        return pairs;
     }
 
     private List<ScannedRecord> buildScannedDocumentData(Map<String, Object> exceptionCaseData, String field) {
@@ -49,7 +31,7 @@ public class SscsJsonExtractor {
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject j = jsonArray.optJSONObject(i);
 
-            JSONObject jsonObject = (JSONObject) j.get(VALUE);
+            JSONObject jsonObject = (JSONObject) j.get("value");
 
             records.add(getDeserializeRecord(jsonObject));
         }
