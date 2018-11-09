@@ -282,13 +282,32 @@ public class CcdCallbackControllerTest {
     }
 
     @Test
-    public void should_return_503_status_when_ccd_service_is_not_available() throws Exception {
+    public void should_return_503_status_when_ccd_service_is_not_available_when_creating_appeal() throws Exception {
         // Given
         startForCaseworkerStubWithCcdUnavailable(START_EVENT_APPEAL_CREATED_URL);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(503);
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_503_status_when_ccd_service_is_not_available_when_creating_incomplete_appeal() throws Exception {
+        // Given
+        startForCaseworkerStubWithCcdUnavailable(START_EVENT_INCOMPLETE_CASE_URL);
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()), httpHeaders());
 
         // When
         ResponseEntity<Void> result =
