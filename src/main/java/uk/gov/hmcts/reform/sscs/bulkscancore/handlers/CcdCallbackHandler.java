@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.IdamToken;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
@@ -62,13 +63,21 @@ public class CcdCallbackHandler {
         if (validationErrorResponse != null) {
             return validationErrorResponse;
         } else {
-            return caseDataHandler.handle(
+            HandlerResponse handlerResponse = (HandlerResponse) caseDataHandler.handle(
                 caseValidationResponse,
                 exceptionCaseData.isIgnoreWarnings(),
                 transformedCase,
                 idamToken,
-                exceptionRecordData,
                 exceptionRecordId);
+
+            if (handlerResponse != null) {
+                exceptionRecordData.put("state", (handlerResponse.getState()));
+                exceptionRecordData.put("caseReference", String.valueOf((handlerResponse.getCaseId())));
+            }
+
+            return AboutToStartOrSubmitCallbackResponse.builder()
+                .warnings(caseValidationResponse.getWarnings())
+                .data(exceptionRecordData).build();
         }
     }
 

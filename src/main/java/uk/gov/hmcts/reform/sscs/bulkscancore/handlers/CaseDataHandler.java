@@ -11,6 +11,5 @@ public interface CaseDataHandler {
                             boolean ignoreWarnings,
                             Map<String, Object> transformedCase,
                             IdamToken idamToken,
-                            Map<String, Object> exceptionRecordData,
                             String exceptionRecordId);
 }

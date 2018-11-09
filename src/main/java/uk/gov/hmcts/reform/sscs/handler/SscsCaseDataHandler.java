@@ -6,10 +6,10 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.IdamToken;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 
@@ -35,7 +35,6 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                                    boolean ignoreWarnings,
                                    Map<String, Object> transformedCase,
                                    IdamToken idamToken,
-                                   Map<String, Object> exceptionRecordData,
                                    String exceptionRecordId) {
 
         if (canCreateCase(caseValidationResponse, ignoreWarnings)) {
@@ -43,15 +42,11 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
             Long caseId = caseDataHelper.createCase(transformedCase, idamToken.getUserAuthToken(), idamToken.getServiceAuthToken(), idamToken.getUserId(), eventId);
 
-            log.info("Case created with exceptionRecordId {} from exception record id {}", caseId, exceptionRecordId);
+            log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
-            exceptionRecordData.put("state", "ScannedRecordCaseCreated");
-            exceptionRecordData.put("caseReference", String.valueOf(caseId));
+            return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
         }
-
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .warnings(caseValidationResponse.getWarnings())
-            .data(exceptionRecordData).build();
+        return null;
     }
 
     private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings) {

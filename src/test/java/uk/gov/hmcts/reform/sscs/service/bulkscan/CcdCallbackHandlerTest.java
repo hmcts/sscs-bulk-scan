@@ -14,10 +14,7 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.IdamToken;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -72,9 +69,8 @@ public class CcdCallbackHandlerTest {
             false,
             caseDataCreator.sscsCaseData(),
             IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(),
-            caseDataCreator.exceptionCaseData(),
             null)
-        ).thenReturn(AboutToStartOrSubmitCallbackResponse.builder().data(caseDataCreator.exceptionCaseData()).build());
+        ).thenReturn(HandlerResponse.builder().state("DocUpdated").build());
 
         // when
         AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
