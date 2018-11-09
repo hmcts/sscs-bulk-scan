@@ -29,7 +29,7 @@ public class SscsJsonExtractorTest {
 
         Map<String, Object> valueMap = new HashMap<>();
 
-        valueMap.put("key", "appellant_first_name");
+        valueMap.put("key", "person1_first_name");
         valueMap.put("value", "Bob");
 
         Map<String, Object> ocrValuesMap = new HashMap<>();
@@ -43,7 +43,7 @@ public class SscsJsonExtractorTest {
 
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
-        assertEquals("Bob", result.getOcrCaseData().get("appellant_first_name"));
+        assertEquals("Bob", result.getOcrCaseData().get("person1_first_name"));
     }
 
     @Test

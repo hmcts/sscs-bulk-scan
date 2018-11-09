@@ -10,3 +10,6 @@ ccd:
   incompleteApplicationEventId: incompleteApplicationReceived
 
 allowed-services-for-callback : test_service
+
+schema.location: /schema/sscs-bulk-scan-schema.json
+

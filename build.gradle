@@ -119,6 +119,11 @@ repositories {
     url 'https://repo.spring.io/libs-milestone'
   }
   jcenter()
+  mavenCentral()
+
+  // jitpack should be last resort
+  // see: https://github.com/jitpack/jitpack.io/issues/1939
+  maven { url 'https://jitpack.io' }
 }
 project.tasks['pitest'].group = "Verification"
 
@@ -170,6 +175,7 @@ dependencies {
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
   compile group: 'org.json', name: 'json', version: '20171018'
+  compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.9.2'
 
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger

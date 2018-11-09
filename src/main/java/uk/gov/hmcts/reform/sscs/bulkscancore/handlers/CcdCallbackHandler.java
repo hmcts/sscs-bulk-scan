@@ -15,12 +15,15 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
+import uk.gov.hmcts.reform.sscs.bulkscancore.validators.KeyValuePairValidator;
 
 @Component
 @Slf4j
 public class CcdCallbackHandler {
 
     private static final Logger logger = getLogger(CcdCallbackHandler.class);
+
+    private final KeyValuePairValidator keyValuePairValidator;
 
     private final CaseTransformer caseTransformer;
 
@@ -29,10 +32,12 @@ public class CcdCallbackHandler {
     private final CaseDataHandler caseDataHandler;
 
     public CcdCallbackHandler(
+        KeyValuePairValidator keyValuePairValidator,
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         CaseDataHandler caseDataHandler
     ) {
+        this.keyValuePairValidator = keyValuePairValidator;
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
@@ -47,6 +52,13 @@ public class CcdCallbackHandler {
         String exceptionRecordId = (String) exceptionRecordData.get("id");
 
         logger.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
+
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecordData);
+        AboutToStartOrSubmitCallbackResponse keyValuePairValidationErrorResponse = checkForErrors(keyValuePairValidatorResponse, exceptionRecordData, exceptionRecordId);
+
+        if (keyValuePairValidationErrorResponse != null) {
+            return keyValuePairValidationErrorResponse;
+        }
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionRecordData);
         AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrors(caseTransformationResponse, exceptionRecordData, exceptionRecordId);

@@ -193,6 +193,28 @@ public class CcdCallbackControllerTest {
     }
 
     @Test
+    public void should_return_error_list_populated_when_key_value_pair_validation_fails() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithInvalidKey()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("#: extraneous key [invalid_key] is not permitted");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
     public void should_create_incomplete_case_when_warnings_are_ignored() throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -335,17 +357,20 @@ public class CcdCallbackControllerTest {
         return exceptionRecord(ocrList, null);
     }
 
-    private Map<String, Object> caseDataWithMissingAppellantDetails() {
+    private Map<String, Object> caseDataWithInvalidKey() {
         List<Object> ocrList = new ArrayList<>();
 
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "have_right_to_appeal_yes", VALUE, true))
+            ImmutableMap.of(KEY, "invalid_key", VALUE, true))
         );
-        ocrList.add(ocrEntry(
-            VALUE,
-            ImmutableMap.of(KEY, "have_right_to_appeal_no", VALUE, true))
-        );
+
+        return exceptionRecord(ocrList, null);
+    }
+
+    private Map<String, Object> caseDataWithMissingAppellantDetails() {
+        List<Object> ocrList = new ArrayList<>();
+
         ocrList.add(ocrEntry(
             VALUE,
             ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2018"))
@@ -423,15 +448,6 @@ public class CcdCallbackControllerTest {
                 .build())
         );
 
-
-        ocrList.add(ocrEntry(
-            VALUE,
-            ImmutableMap.of(KEY, "have_right_to_appeal_yes", VALUE, true))
-        );
-        ocrList.add(ocrEntry(
-            VALUE,
-            ImmutableMap.of(KEY, "have_right_to_appeal_no", VALUE, true))
-        );
         ocrList.add(ocrEntry(
             VALUE,
             ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2018"))

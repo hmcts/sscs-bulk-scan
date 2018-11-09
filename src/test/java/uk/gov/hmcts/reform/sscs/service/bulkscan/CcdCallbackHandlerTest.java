@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
+import uk.gov.hmcts.reform.sscs.bulkscancore.validators.KeyValuePairValidator;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 
 @RunWith(SpringRunner.class)
@@ -27,6 +28,9 @@ public class CcdCallbackHandlerTest {
     private CcdCallbackHandler ccdCallbackHandler;
 
     private SampleCaseDataCreator caseDataCreator = new SampleCaseDataCreator();
+
+    @Mock
+    private KeyValuePairValidator keyValuePairValidator;
 
     @Mock
     private CaseTransformer caseTransformer;
@@ -39,9 +43,8 @@ public class CcdCallbackHandlerTest {
 
     @Before
     public void setUp() {
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler);
+        ccdCallbackHandler = new CcdCallbackHandler(keyValuePairValidator, caseTransformer, caseValidator, caseDataHandler);
     }
-
 
     @Test
     public void should_return_exception_data_with_case_id_and_state_when_transformation_and_validation_are_successful() {
@@ -51,6 +54,9 @@ public class CcdCallbackHandlerTest {
             .caseData(caseDataCreator.exceptionCaseData())
             .state("ScannedRecordReceived")
             .build();
+
+        when(keyValuePairValidator.validate(caseDataCreator.exceptionCaseData()))
+            .thenReturn(CaseResponse.builder().build());
 
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
             .thenReturn(CaseResponse.builder()
@@ -90,6 +96,9 @@ public class CcdCallbackHandlerTest {
             .state("ScannedRecordReceived")
             .build();
 
+        when(keyValuePairValidator.validate(caseDataCreator.exceptionCaseData()))
+            .thenReturn(CaseResponse.builder().build());
+
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
@@ -117,6 +126,9 @@ public class CcdCallbackHandlerTest {
             .state("ScannedRecordReceived")
             .build();
 
+        when(keyValuePairValidator.validate(caseDataCreator.exceptionCaseData()))
+            .thenReturn(CaseResponse.builder().build());
+
         when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
             .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
@@ -140,6 +152,29 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }
 
+    @Test
+    public void should_return_exception_record_and_errors_in_callback_response_when_key_value_pairs_validation_fails() {
+        // given
+        CaseDetails caseDetails = CaseDetails
+            .builder()
+            .caseData(caseDataCreator.exceptionCaseData())
+            .state("ScannedRecordReceived")
+            .build();
+
+        when(keyValuePairValidator.validate(caseDataCreator.exceptionCaseData()))
+            .thenReturn(CaseResponse.builder().errors(ImmutableList.of("Invalid key in key value pairs")).build());
+
+        // when
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
+
+        // then
+        assertExceptionDataEntries(ccdCallbackResponse);
+
+        assertThat(ccdCallbackResponse.getErrors())
+            .containsOnly("Invalid key in key value pairs");
+        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+    }
 
     private void assertExceptionDataEntries(AboutToStartOrSubmitCallbackResponse ccdCallbackResponse) {
         assertThat(ccdCallbackResponse.getData()).contains(

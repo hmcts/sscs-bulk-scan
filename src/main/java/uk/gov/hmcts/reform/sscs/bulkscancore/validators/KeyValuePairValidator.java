@@ -5,8 +5,8 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 
 /**
  * Each jurisdiction service needs to provide implementation of this interface
- * If case validation is not required then return original case data in the transformation.
+ * If key value pair validation is not required then return empty CaseResponse object.
  */
-public interface CaseValidator {
-    CaseResponse validate(Map<String, Object> caseData);
+public interface KeyValuePairValidator {
+    CaseResponse validate(Map<String, Object> keyValuePairs);
 }
