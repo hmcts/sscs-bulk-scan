@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.IdamToken;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
@@ -46,7 +46,7 @@ public class CcdCallbackControllerTest {
     public void should_successfully_handle_callback_and_return_exception_record_response() throws Exception {
         given(ccdCallbackHandler.handle(
             any(ExceptionCaseData.class),
-            eq(IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
+            eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
         ).willReturn(AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataCreator.exceptionCaseData())
             .build()
@@ -81,7 +81,7 @@ public class CcdCallbackControllerTest {
     public void should_throw_exception_when_handler_fails() throws Exception {
         given(ccdCallbackHandler.handle(
             any(ExceptionCaseData.class),
-            eq(IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
+            eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
         ).willThrow(RuntimeException.class);
 
         given(authService.authenticate("test-header"))

@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 
-public class IdamToken {
+public class Token {
 
     private String userAuthToken;
     private String serviceAuthToken;

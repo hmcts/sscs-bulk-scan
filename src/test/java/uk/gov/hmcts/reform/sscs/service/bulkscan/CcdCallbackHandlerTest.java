@@ -68,7 +68,7 @@ public class CcdCallbackHandlerTest {
             caseValidationResponse,
             false,
             caseDataCreator.sscsCaseData(),
-            IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(),
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(),
             null)
         ).thenReturn(HandlerResponse.builder().state("DocUpdated").build());
 
@@ -157,7 +157,7 @@ public class CcdCallbackHandlerTest {
                 .caseDetails(caseDetails)
                 .eventId("createNewCase")
                 .build(),
-            IdamToken.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
         );
     }
 

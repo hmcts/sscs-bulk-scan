@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.IdamToken;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 
 @Component
@@ -34,13 +34,13 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     public CallbackResponse handle(CaseResponse caseValidationResponse,
                                    boolean ignoreWarnings,
                                    Map<String, Object> transformedCase,
-                                   IdamToken idamToken,
+                                   Token token,
                                    String exceptionRecordId) {
 
         if (canCreateCase(caseValidationResponse, ignoreWarnings)) {
             String eventId = isEmpty(caseValidationResponse.getWarnings()) ? caseCreatedEventId : incompleteApplicationEventId;
 
-            Long caseId = caseDataHelper.createCase(transformedCase, idamToken.getUserAuthToken(), idamToken.getServiceAuthToken(), idamToken.getUserId(), eventId);
+            Long caseId = caseDataHelper.createCase(transformedCase, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
 
             log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
