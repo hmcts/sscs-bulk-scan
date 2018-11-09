@@ -239,7 +239,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (records != null) {
             for (ScannedRecord record : records) {
                 SscsDocumentDetails details = SscsDocumentDetails.builder()
-                    .documentLink(DocumentLink.builder().documentUrl(record.getDocumentLink().getDocumentUrl()).build())
+                    .documentLink(record.getDocumentLink())
                     .documentDateAdded(record.getDocScanDate())
                     .documentFileName(record.getFilename())
                     .documentType("Other document").build();

@@ -63,7 +63,8 @@
         "documentFileName" : "11111.pdf",
         "documentDateAdded" : "2018-10-10",
         "documentLink" : {
-          "document_url" : "http://www.bbc.com"
+          "document_url" : "http://www.bbc.com",
+          "document_binary_url" : "http://www.bbc.com/binary"
         }
       }
     } ]
