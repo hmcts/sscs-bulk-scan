@@ -410,7 +410,10 @@ public class CcdCallbackControllerTest {
             VALUE,
             ScannedRecord.builder().docScanDate("2018-10-10")
                 .documentControlNumber("11111")
-                .documentLink(DocumentLink.builder().documentUrl("http://www.bbc.com").documentBinaryUrl("http://www.bbc.com/binary").build())
+                .documentLink(DocumentLink.builder()
+                    .documentUrl("http://www.bbc.com")
+                    .documentBinaryUrl("http://www.bbc.com/binary")
+                    .documentFilename("myfile.jpg").build())
                 .documentType("other")
                 .filename("11111.pdf")
                 .build())

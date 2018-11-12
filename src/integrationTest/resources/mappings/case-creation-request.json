@@ -64,7 +64,8 @@
         "documentDateAdded" : "2018-10-10",
         "documentLink" : {
           "document_url" : "http://www.bbc.com",
-          "document_binary_url" : "http://www.bbc.com/binary"
+          "document_binary_url" : "http://www.bbc.com/binary",
+          "document_filename" : "myfile.jpg"
         }
       }
     } ]
