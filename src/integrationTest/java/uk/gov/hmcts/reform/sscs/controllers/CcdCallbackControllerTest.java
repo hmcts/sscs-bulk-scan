@@ -348,6 +348,10 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
+            ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2018"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
             ImmutableMap.of(KEY, "contains_mrn", VALUE, true))
         );
         ocrList.add(ocrEntry(
@@ -427,6 +431,10 @@ public class CcdCallbackControllerTest {
         ocrList.add(ocrEntry(
             VALUE,
             ImmutableMap.of(KEY, "have_right_to_appeal_no", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2018"))
         );
         ocrList.add(ocrEntry(
             VALUE,

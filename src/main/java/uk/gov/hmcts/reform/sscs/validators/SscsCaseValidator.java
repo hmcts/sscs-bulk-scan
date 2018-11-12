@@ -29,76 +29,86 @@ public class SscsCaseValidator implements CaseValidator {
         Appellant appellant = appeal.getAppellant();
 
         String personType = getPerson1OrPerson2(appellant);
-        if (!isAppellantFirstNameExists(appellant)) {
+        if (!doesAppellantFirstNameExist(appellant)) {
             warnings.add(personType + "_first_name is empty");
         }
-        if (!isAppellantLastNameExists(appellant)) {
+        if (!doesAppellantLastNameExist(appellant)) {
             warnings.add(personType + "_last_name is empty");
         }
-        if (!isAppellantAddressLine1Exists(appellant)) {
+        if (!doesAppellantAddressLine1Exist(appellant)) {
             warnings.add(personType + "_address_line1 is empty");
         }
-        if (!isAppellantAddressTownExists(appellant)) {
+        if (!doesAppellantAddressTownExist(appellant)) {
             warnings.add(personType + "_address_line3 is empty");
         }
-        if (!isAppellantAddressCountyExists(appellant)) {
+        if (!doesAppellantAddressCountyExist(appellant)) {
             warnings.add(personType + "_address_line4 is empty");
         }
-        if (!isAppellantAddressPostcodeExists(appellant)) {
+        if (!doesAppellantAddressPostcodeExist(appellant)) {
             warnings.add(personType + "_postcode is empty");
         }
-        if (!isAppellantNinoExists(appellant)) {
+        if (!doesAppellantNinoExist(appellant)) {
             warnings.add(personType + "_nino is empty");
+        }
+        if (!doesMrnDateExist(appeal)) {
+            warnings.add("mrn_date is empty");
         }
 
         return warnings;
     }
 
-    private Boolean isAppellantFirstNameExists(Appellant appellant) {
+    private Boolean doesAppellantFirstNameExist(Appellant appellant) {
         if (appellant != null && appellant.getName() != null) {
             return appellant.getName().getFirstName() != null;
         }
         return false;
     }
 
-    private Boolean isAppellantLastNameExists(Appellant appellant) {
+    private Boolean doesAppellantLastNameExist(Appellant appellant) {
         if (appellant != null && appellant.getName() != null) {
             return appellant.getName().getLastName() != null;
         }
         return false;
     }
 
-    private Boolean isAppellantAddressLine1Exists(Appellant appellant) {
+    private Boolean doesAppellantAddressLine1Exist(Appellant appellant) {
         if (appellant != null && appellant.getAddress() != null) {
             return appellant.getAddress().getLine1() != null;
         }
         return false;
     }
 
-    private Boolean isAppellantAddressTownExists(Appellant appellant) {
+    private Boolean doesAppellantAddressTownExist(Appellant appellant) {
         if (appellant != null && appellant.getAddress() != null) {
             return appellant.getAddress().getTown() != null;
         }
         return false;
     }
 
-    private Boolean isAppellantAddressCountyExists(Appellant appellant) {
+    private Boolean doesAppellantAddressCountyExist(Appellant appellant) {
         if (appellant != null && appellant.getAddress() != null) {
             return appellant.getAddress().getCounty() != null;
         }
         return false;
     }
 
-    private Boolean isAppellantAddressPostcodeExists(Appellant appellant) {
+    private Boolean doesAppellantAddressPostcodeExist(Appellant appellant) {
         if (appellant != null && appellant.getAddress() != null) {
             return appellant.getAddress().getPostcode() != null;
         }
         return false;
     }
 
-    private Boolean isAppellantNinoExists(Appellant appellant) {
+    private Boolean doesAppellantNinoExist(Appellant appellant) {
         if (appellant != null && appellant.getIdentity() != null) {
             return appellant.getIdentity().getNino() != null;
+        }
+        return false;
+    }
+
+    private Boolean doesMrnDateExist(Appeal appeal) {
+        if (appeal.getMrnDetails() != null) {
+            return appeal.getMrnDetails().getMrnDate() != null;
         }
         return false;
     }
