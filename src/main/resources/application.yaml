@@ -26,3 +26,5 @@ idam:
     url: http://localhost:4502
 
 allowed-services-for-callback : ccd_data  # comma separated list of service names
+
+schema.location: /schema/sscs-bulk-scan-schema.json

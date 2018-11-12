@@ -42,7 +42,6 @@ public class CcdCallbackHandlerTest {
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler);
     }
 
-
     @Test
     public void should_return_exception_data_with_case_id_and_state_when_transformation_and_validation_are_successful() {
         // given

@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
 
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @Component
 public class SscsCaseTransformer implements CaseTransformer {
@@ -20,12 +20,22 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private SscsJsonExtractor sscsJsonExtractor;
 
+    @Autowired
+    private SscsKeyValuePairValidator keyValuePairValidator;
+
     private List<String> errors;
 
     @Override
     public CaseResponse transformExceptionRecordToCase(Map<String, Object> caseData) {
 
         Map<String, Object> transformed = new HashMap<>();
+
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseData);
+
+        if (keyValuePairValidatorResponse.getErrors() != null) {
+            return CaseResponse.builder().errors(keyValuePairValidatorResponse.getErrors()).build();
+        }
+
         errors = new ArrayList<>();
 
         ScannedData sscsData = sscsJsonExtractor.extractJson(caseData);
