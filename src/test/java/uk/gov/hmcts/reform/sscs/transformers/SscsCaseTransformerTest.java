@@ -45,6 +45,7 @@ public class SscsCaseTransformerTest {
     public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
 
         pairs.put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION);
+        pairs.put("mrn_date", MRN_DATE);
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -225,6 +226,17 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
 
         assertTrue(result.getErrors().contains("person1_dob is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+    }
+
+    @Test
+    public void givenAnInvalidMrnDate_thenAddErrorToList() {
+        pairs.put("mrn_date", "12/99/1987");
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("mrn_date is an invalid date field. Needs to be in the format dd/mm/yyyy"));
     }
 
     @Test
@@ -466,7 +478,7 @@ public class SscsCaseTransformerTest {
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE_DESCRIPTION).build())
             .appellant(appellant)
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
-            .mrnDetails(MrnDetails.builder().mrnLateReason(APPEAL_LATE_REASON).build())
+            .mrnDetails(MrnDetails.builder().mrnDate("2018-11-01").mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingOptions(HearingOptions.builder()
                 .excludeDates(excludedDates)

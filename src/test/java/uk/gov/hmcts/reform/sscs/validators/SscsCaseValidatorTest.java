@@ -27,7 +27,8 @@ public class SscsCaseValidatorTest {
                 "person1_address_line3 is empty",
                 "person1_address_line4 is empty",
                 "person1_postcode is empty",
-                "person1_nino is empty");
+                "person1_nino is empty",
+                "mrn_date is empty");
     }
 
     @Test
@@ -35,7 +36,8 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("appeal", Appeal.builder().appellant(Appellant.builder().address(
                 Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13FG").build())
-                .identity(Identity.builder().nino("JT1234567B").build()).build()).build()).build();
+                .identity(Identity.builder().nino("JT1234567B").build()).build())
+                .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build()).build();
 
         CaseResponse response = validator.validate(pairs);
 
@@ -49,7 +51,8 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
             .put("appeal", Appeal.builder().appellant(Appellant.builder().name(
                 Name.builder().firstName("Harry").lastName("Kane").build())
-                .identity(Identity.builder().nino("JT1234567B").build()).build()).build()).build();
+                .identity(Identity.builder().nino("JT1234567B").build()).build())
+                .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build()).build();
 
         CaseResponse response = validator.validate(pairs);
 
@@ -141,6 +144,13 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppealDoesNotContainAnMrnDate_thenAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrnDate(null, buildAppellant(false)));
+
+        assertEquals("mrn_date is empty", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAllMandatoryFieldsForAnAppellantExists_thenDoNotAddAWarning() {
         Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false));
 
@@ -150,8 +160,14 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant) {
+        return buildMinimumAppealDataWithMrnDate("12/12/2018", appellant);
+    }
+
+    private Map<String, Object> buildMinimumAppealDataWithMrnDate(String mrnDate, Appellant appellant) {
         return ImmutableMap.<String, Object>builder()
-            .put("appeal", Appeal.builder().appellant(appellant).build()).build();
+            .put("appeal", Appeal.builder()
+                .mrnDetails(MrnDetails.builder().mrnDate(mrnDate).build())
+                .appellant(appellant).build()).build();
     }
 
     private Appellant buildAppellant(Boolean withAppointee) {

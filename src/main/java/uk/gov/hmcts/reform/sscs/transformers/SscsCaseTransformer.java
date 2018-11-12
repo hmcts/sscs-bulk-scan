@@ -104,6 +104,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private MrnDetails buildMrnDetails(Map<String, Object> pairs) {
 
         return MrnDetails.builder()
+            .mrnDate(generateDateForCcd(pairs, errors,"mrn_date"))
             .mrnLateReason(getField(pairs,"appeal_late_reason"))
         .build();
     }
