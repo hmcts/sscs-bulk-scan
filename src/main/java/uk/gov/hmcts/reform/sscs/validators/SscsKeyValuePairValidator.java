@@ -15,10 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.validators.KeyValuePairValidator;
 
 @Component
-public class SscsKeyValuePairValidator implements KeyValuePairValidator {
+public class SscsKeyValuePairValidator {
 
     private final String schemaResourceLocation;
     private Schema schema = null;
@@ -28,7 +27,6 @@ public class SscsKeyValuePairValidator implements KeyValuePairValidator {
         this.schemaResourceLocation = schemaResourceLocation;
     }
 
-    @Override
     public CaseResponse validate(Map<String, Object> keyValuePairs) {
         tryLoadSchema();
 
