@@ -68,15 +68,20 @@ public final class SscsOcrDataUtil {
         return value ? YES : NO;
     }
 
-    public static String generateDateForCcd(Map<String, Object> pairs, List<String> errors, String field) {
-        if (pairs.containsKey(field)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public static String generateDateForCcd(Map<String, Object> pairs, List<String> errors, String fieldName) {
+        if (pairs.containsKey(fieldName)) {
+            return getDateForCcd(getField(pairs, fieldName), errors, fieldName + " is an invalid date field. Needs to be in the format dd/mm/yyyy");
+        }
+        return null;
+    }
 
-            try {
-                return LocalDate.parse(getField(pairs, field), formatter).toString();
-            } catch (DateTimeParseException ex) {
-                errors.add(field + " is an invalid date field. Needs to be in the format dd/mm/yyyy");
-            }
+    public static String getDateForCcd(String ocrField, List<String> errors, String errorMessage) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        try {
+            return LocalDate.parse(ocrField, formatter).toString();
+        } catch (DateTimeParseException ex) {
+            errors.add(errorMessage);
         }
         return null;
     }

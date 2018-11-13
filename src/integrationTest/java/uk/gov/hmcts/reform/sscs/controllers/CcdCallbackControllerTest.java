@@ -555,6 +555,10 @@ public class CcdCallbackControllerTest {
             VALUE,
             ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, false))
         );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "hearing_options_exclude_dates", VALUE, "01/12/2018"))
+        );
 
         return exceptionRecord(ocrList, docList);
     }
