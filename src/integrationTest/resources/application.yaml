@@ -8,5 +8,6 @@ ccd:
   type: Benefit
   caseCreatedEventId: appealCreated
   incompleteApplicationEventId: incompleteApplicationReceived
+  nonCompliantEventId: nonCompliant
 
 allowed-services-for-callback : test_service

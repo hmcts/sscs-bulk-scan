@@ -20,6 +20,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         return CaseResponse.builder()
             .warnings(populateWarnings((Appeal) caseData.get("appeal")))
+            .transformedCase(caseData)
             .build();
     }
 

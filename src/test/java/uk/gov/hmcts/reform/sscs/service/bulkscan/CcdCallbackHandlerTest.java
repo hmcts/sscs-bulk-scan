@@ -67,7 +67,6 @@ public class CcdCallbackHandlerTest {
         when(caseDataHandler.handle(
             caseValidationResponse,
             false,
-            caseDataCreator.sscsCaseData(),
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(),
             null)
         ).thenReturn(HandlerResponse.builder().state("DocUpdated").build());

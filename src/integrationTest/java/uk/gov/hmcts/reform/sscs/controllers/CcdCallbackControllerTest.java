@@ -64,6 +64,9 @@ public class CcdCallbackControllerTest {
     private static final String START_EVENT_INCOMPLETE_CASE_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/incompleteApplicationReceived/token";
 
+    private static final String START_EVENT_NON_COMPLIANT_CASE_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/nonCompliant/token";
+
     private static final String SUBMIT_EVENT_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases?ignore-warning=true";
 
@@ -114,7 +117,7 @@ public class CcdCallbackControllerTest {
 
         startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
 
-        submitForCaseworkerStub(false);
+        submitForCaseworkerStub("appealCreated");
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
 
@@ -199,10 +202,42 @@ public class CcdCallbackControllerTest {
 
         startForCaseworkerStub(START_EVENT_INCOMPLETE_CASE_URL);
 
-        submitForCaseworkerStub(true);
+        submitForCaseworkerStub("incompleteApplication");
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
             exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getData()).contains(
+            entry("caseReference", "1539878003972756"),
+            entry("state", "ScannedRecordCaseCreated")
+        );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        startForCaseworkerStub(START_EVENT_NON_COMPLIANT_CASE_URL);
+
+        submitForCaseworkerStub("nonCompliant");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithMrnDate("01/01/2017")),
             httpHeaders()
         );
 
@@ -348,7 +383,7 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2018"))
+            ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2048"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -407,6 +442,10 @@ public class CcdCallbackControllerTest {
     }
 
     private Map<String, Object> caseData() {
+        return caseDataWithMrnDate("01/11/2048");
+    }
+
+    private Map<String, Object> caseDataWithMrnDate(String mrnDate) {
         List<Object> ocrList = new ArrayList<>();
         List<Object> docList = new ArrayList<>();
 
@@ -434,7 +473,7 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2018"))
+            ImmutableMap.of(KEY, "mrn_date", VALUE, mrnDate))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -517,12 +556,19 @@ public class CcdCallbackControllerTest {
                 .withBody(eventStartResponseBody)));
     }
 
-    private void submitForCaseworkerStub(Boolean isIncompleteApplication) throws Exception {
-        String createCaseRequest;
-        if (isIncompleteApplication) {
-            createCaseRequest = loadJson("mappings/case-incomplete-creation-request.json");
-        }  else {
-            createCaseRequest = loadJson("mappings/case-creation-request.json");
+    private void submitForCaseworkerStub(String eventId) throws Exception {
+        String createCaseRequest = "";
+        switch (eventId) {
+            case "appealCreated": createCaseRequest = loadJson("mappings/case-creation-request.json");
+                break;
+
+            case "incompleteApplication": createCaseRequest = loadJson("mappings/case-incomplete-creation-request.json");
+                break;
+
+            case "nonCompliant": createCaseRequest = loadJson("mappings/case-non-compliant-creation-request.json");
+                break;
+
+            default: break;
         }
 
         ccdServer.stubFor(post(concat(SUBMIT_EVENT_URL))

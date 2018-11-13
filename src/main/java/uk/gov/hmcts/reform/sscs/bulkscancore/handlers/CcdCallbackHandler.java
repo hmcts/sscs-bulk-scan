@@ -66,7 +66,6 @@ public class CcdCallbackHandler {
             HandlerResponse handlerResponse = (HandlerResponse) caseDataHandler.handle(
                 caseValidationResponse,
                 exceptionCaseData.isIgnoreWarnings(),
-                transformedCase,
                 token,
                 exceptionRecordId);
 

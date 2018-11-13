@@ -16,6 +16,7 @@ ccd:
   type: Benefit
   caseCreatedEventId: appealCreated
   incompleteApplicationEventId: incompleteApplicationReceived
+  nonCompliantEventId: nonCompliant
 
 core_case_data:
   api:

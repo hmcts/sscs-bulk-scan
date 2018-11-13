@@ -1,6 +1,6 @@
 {
   "event": {
-    "id": "incompleteApplicationReceived",
+    "id": "nonCompliant",
     "summary": null,
     "description": "Case created from exception record"
   },
@@ -8,7 +8,7 @@
     "appeal": {
       "mrnDetails": {
         "dwpIssuingOffice": null,
-        "mrnDate": "2048-11-01",
+        "mrnDate": "2017-01-01",
         "mrnLateReason": null,
         "mrnMissingReason": null
       },
@@ -16,17 +16,23 @@
         "name": {
           "title": "Mr",
           "firstName": "John",
-          "lastName": null
+          "lastName": "Smith"
         },
-        "address": { },
+        "address": {
+          "line1": "2 Drake Close",
+          "line2": "Hutton",
+          "town": "Brentwood",
+          "county": "Essex",
+          "postcode": "SE000RS"
+        },
         "contact": {
           "email": null,
-          "phone": null,
-          "mobile": null
+          "phone": "012345678",
+          "mobile": "012345678"
         },
         "identity": {
-          "dob": null,
-          "nino": null
+          "dob": "1976-11-11",
+          "nino": "JT0123456B"
         },
         "appointee": null
       },
@@ -51,7 +57,18 @@
       "signer": null,
       "hearingType": "oral"
     },
-    "sscsDocument" : [ ]
+    "sscsDocument" : [ {
+      "value" : {
+        "documentType" : "Other document",
+        "documentFileName" : "11111.pdf",
+        "documentDateAdded" : "2018-10-10",
+        "documentLink" : {
+          "document_url" : "http://www.bbc.com",
+          "document_binary_url" : "http://www.bbc.com/binary",
+          "document_filename" : "myfile.jpg"
+        }
+      }
+    } ]
   },
   "security_classification" : "PUBLIC",
   "event_token" : "test_event_token",
