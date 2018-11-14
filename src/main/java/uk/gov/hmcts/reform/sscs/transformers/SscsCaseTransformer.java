@@ -216,16 +216,36 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private List<ExcludeDate> buildExcludedDates(Map<String, Object> pairs) {
-        //TODO: Create story to properly implement this
 
         if (pairs.containsKey("hearing_options_exclude_dates")) {
-            List<ExcludeDate> excludeDates = new ArrayList<>();
-
-            excludeDates.add(ExcludeDate.builder().value(DateRange.builder().start(getField(pairs,"hearing_options_exclude_dates")).build()).build());
-            return excludeDates;
+            return extractExcludedDates(getField(pairs,"hearing_options_exclude_dates"));
         } else {
             return null;
         }
+    }
+
+    private List<ExcludeDate> extractExcludedDates(String excludedDatesList) {
+        List<ExcludeDate> excludeDates = new ArrayList<>();
+        List<String> items = Arrays.asList(excludedDatesList.split(",\\s*"));
+
+        for (String item : items) {
+            List<String> range = Arrays.asList(item.split("\\s*-\\s*"));
+            String errorMessage = "hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019";
+
+            if (range.size() > 2) {
+                errors.add(errorMessage);
+                return excludeDates;
+            }
+
+            String startDate = getDateForCcd(range.get(0), errors, errorMessage);
+            String endDate = null;
+
+            if (2 == range.size()) {
+                endDate = getDateForCcd(range.get(1), errors, errorMessage);
+            }
+            excludeDates.add(ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
+        }
+        return excludeDates;
     }
 
     private List<String> buildArrangements(Map<String, Object> pairs) {

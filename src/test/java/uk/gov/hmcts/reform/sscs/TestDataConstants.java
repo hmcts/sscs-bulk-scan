@@ -7,7 +7,7 @@ public class TestDataConstants {
     }
 
     public static final String BENEFIT_TYPE_DESCRIPTION = "PIP";
-    public static final String MRN_DATE = "01/11/2018";
+    public static final String MRN_DATE = "01/11/2048";
     public static final String APPELLANT_TITLE = "Mr";
     public static final String APPELLANT_FIRST_NAME = "Henry";
     public static final String APPELLANT_LAST_NAME = "White";

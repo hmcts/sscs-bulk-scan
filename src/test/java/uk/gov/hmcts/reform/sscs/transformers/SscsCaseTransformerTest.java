@@ -9,6 +9,8 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -283,6 +285,111 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenSingleExcludedDate_thenBuildAnAppealWithExcludedStartDate() {
+
+        pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertEquals("2018-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenTwoSingleExcludedDatesWithSpace_thenBuildAnAppealWithTwoExcludedStartDates() {
+
+        pairs.put("hearing_options_exclude_dates", "12/12/2018, 16/12/2018");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+        assertEquals("2018-12-12", (excludeDates.get(0).getValue().getStart()));
+        assertEquals("2018-12-16", (excludeDates.get(1).getValue().getStart()));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenTwoSingleExcludedDatesWithNoSpace_thenBuildAnAppealWithTwoExcludedStartDates() {
+
+        pairs.put("hearing_options_exclude_dates", "12/12/2018,16/12/2018");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+        assertEquals("2018-12-12", (excludeDates.get(0).getValue().getStart()));
+        assertEquals("2018-12-16", (excludeDates.get(1).getValue().getStart()));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenSingleExcludedDateFollowedByRangeWithSpace_thenBuildAnAppealWithSingleExcludedStartDateAndADateRange() {
+
+        pairs.put("hearing_options_exclude_dates", "12/12/2018, 16/12/2018 - 18/12/2018");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+        assertEquals("2018-12-12", (excludeDates.get(0).getValue().getStart()));
+        assertEquals("2018-12-16", (excludeDates.get(1).getValue().getStart()));
+        assertEquals("2018-12-18", (excludeDates.get(1).getValue().getEnd()));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenSingleExcludedDateFollowedByRangeWithNoSpace_thenBuildAnAppealWithSingleExcludedStartDateAndADateRange() {
+
+        pairs.put("hearing_options_exclude_dates", "16/12/2018-18/12/2018");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+        assertEquals("2018-12-16", (excludeDates.get(0).getValue().getStart()));
+        assertEquals("2018-12-18", (excludeDates.get(0).getValue().getEnd()));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenMultipleExcludedDateFollowedByMultipleRange_thenBuildAnAppealWithMultipleExcludedStartDatesAndMultipleDateRanges() {
+
+        pairs.put("hearing_options_exclude_dates", "12/12/2018, 14/12/2018, 16/12/2018 - 18/12/2018");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+        assertEquals("2018-12-12", (excludeDates.get(0).getValue().getStart()));
+        assertEquals("2018-12-14", (excludeDates.get(1).getValue().getStart()));
+        assertEquals("2018-12-16", (excludeDates.get(2).getValue().getStart()));
+        assertEquals("2018-12-18", (excludeDates.get(2).getValue().getEnd()));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenIncorrectExcludedDateFormat_thenAddAnError() {
+
+        pairs.put("hearing_options_exclude_dates", "16th December 2018");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019"));
+    }
+
+    @Test
+    public void givenIncorrectExcludedDateRangeFormat_thenAddAnError() {
+
+        pairs.put("hearing_options_exclude_dates", "16/12/2018 - 18/12/2018 - 20/12/2018");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019"));
+    }
+
+    @Test
     public void givenALanguageTypeIsEntered_thenBuildAnAppealWithArrangementsWithLanguageInterpreterAndTypeSet() {
 
         pairs.put(HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL, HEARING_OPTIONS_LANGUAGE_TYPE);
@@ -445,7 +552,7 @@ public class SscsCaseTransformerTest {
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
-        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob("1987-08-12").build();
+        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob(formatDate(APPELLANT_DATE_OF_BIRTH)).build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).build();
         Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).contact(appellantContact).build();
 
@@ -453,7 +560,7 @@ public class SscsCaseTransformerTest {
         Address repAddress = Address.builder().line1(REPRESENTATIVE_ADDRESS_LINE1).line2(REPRESENTATIVE_ADDRESS_LINE2).town(REPRESENTATIVE_ADDRESS_LINE3).county(REPRESENTATIVE_ADDRESS_LINE4).postcode(REPRESENTATIVE_POSTCODE).build();
         Contact repContact = Contact.builder().phone(REPRESENTATIVE_PHONE_NUMBER).build();
 
-        ExcludeDate excludeDate = ExcludeDate.builder().value(DateRange.builder().start(HEARING_OPTIONS_EXCLUDE_DATES).build()).build();
+        ExcludeDate excludeDate = ExcludeDate.builder().value(DateRange.builder().start(formatDate(HEARING_OPTIONS_EXCLUDE_DATES)).build()).build();
         List<ExcludeDate> excludedDates = new ArrayList<>();
         excludedDates.add(excludeDate);
 
@@ -464,7 +571,7 @@ public class SscsCaseTransformerTest {
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE_DESCRIPTION).build())
             .appellant(appellant)
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
-            .mrnDetails(MrnDetails.builder().mrnDate("2018-11-01").mrnLateReason(APPEAL_LATE_REASON).build())
+            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE)).mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingOptions(HearingOptions.builder()
                 .excludeDates(excludedDates)
@@ -484,7 +591,11 @@ public class SscsCaseTransformerTest {
             .documentLink(link)
             .filename("mrn.jpg")
             .documentType("Testing").build();
+    }
 
+    private String formatDate(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return LocalDate.parse(date, formatter).toString();
     }
 
 }
