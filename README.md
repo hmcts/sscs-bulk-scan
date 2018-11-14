@@ -82,6 +82,12 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+## Import Test Data
+
+```bash
+bin/import-test-data.sh
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
