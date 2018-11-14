@@ -38,12 +38,18 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         errors = new ArrayList<>();
 
-        ScannedData sscsData = sscsJsonExtractor.extractJson(caseData);
-        Appeal appeal = buildAppealFromData(sscsData.getOcrCaseData());
-        List<SscsDocument> sscsDocuments = buildDocumentsFromData(sscsData.getRecords());
+        ScannedData scannedData = sscsJsonExtractor.extractJson(caseData);
+        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData());
+        List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
 
         transformed.put("appeal", appeal);
         transformed.put("sscsDocument", sscsDocuments);
+
+        if (appeal.getAppellant() != null) {
+            transformed.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
+            transformed.put("generatedSurname", appeal.getAppellant().getName().getLastName());
+            transformed.put("generatedDOB", appeal.getAppellant().getIdentity().getDob());
+        }
 
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
     }
