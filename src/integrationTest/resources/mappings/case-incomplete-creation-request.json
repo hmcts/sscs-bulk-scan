@@ -51,7 +51,10 @@
       "signer": null,
       "hearingType": "oral"
     },
-    "sscsDocument" : [ ]
+    "sscsDocument" : [ ],
+    "generatedNino" : null,
+    "generatedSurname" : null,
+    "generatedDOB" : null
   },
   "security_classification" : "PUBLIC",
   "event_token" : "test_event_token",

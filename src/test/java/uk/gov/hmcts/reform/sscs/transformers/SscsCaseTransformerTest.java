@@ -549,6 +549,42 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
     }
 
+    @Test
+    public void givenAnAppellantDateOfBirth_thenSetGeneratedDobField() {
+        pairs.put("person1_dob", "12/01/1987");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        String generatedDob = ((String) result.getTransformedCase().get("generatedDOB"));
+        assertEquals("1987-01-12", generatedDob);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenAnAppellantSurname_thenSetGeneratedSurnameField() {
+        pairs.put("person1_last_name", "Smith");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        String generatedSurname = ((String) result.getTransformedCase().get("generatedSurname"));
+        assertEquals("Smith", generatedSurname);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenAnAppellantNino_thenSetGeneratedNinoField() {
+        pairs.put("person1_nino", "JT0123456B");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+
+        String generatedNino = ((String) result.getTransformedCase().get("generatedNino"));
+        assertEquals("JT0123456B", generatedNino);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();

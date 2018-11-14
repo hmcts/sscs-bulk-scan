@@ -74,7 +74,10 @@
           "document_filename" : "myfile.jpg"
         }
       }
-    } ]
+    } ],
+    "generatedNino" : "JT0123456B",
+    "generatedSurname" : "Smith",
+    "generatedDOB" : "1976-11-11"
   },
   "security_classification" : "PUBLIC",
   "event_token" : "test_event_token",
