@@ -9,7 +9,9 @@ userId=1
 userToken="$(${binFolder}/idam-user-token.sh caseworker-sscs,caseworker-sscs-systemupdate,caseworker-sscs-anonymouscitizen,caseworker-sscs-callagent,caseworker $userId)"
 serviceToken="$(${binFolder}/idam-service-token.sh ccd_data)"
 
-for f in ../test/import/*.json
+scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+for f in $scriptDir/../test/import/*.json
 do
   echo "Importing ${f}"
   curl \

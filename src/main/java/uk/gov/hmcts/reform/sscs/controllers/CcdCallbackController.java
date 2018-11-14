@@ -49,9 +49,6 @@ public class CcdCallbackController {
         @RequestHeader(value = "user-id") String userId,
         @RequestBody @ApiParam("CaseData") ExceptionCaseData caseData) {
 
-        System.out.println(userAuthToken);
-        System.out.println(serviceAuthToken);
-
         String serviceName = authService.authenticate(serviceAuthToken);
 
         authService.assertIsAllowedToHandleCallback(serviceName);
