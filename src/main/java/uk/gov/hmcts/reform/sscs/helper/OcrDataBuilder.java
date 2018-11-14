@@ -26,7 +26,9 @@ public class OcrDataBuilder {
 
             String jsonValue = jsonObject.has(VALUE) ? jsonObject.get(VALUE).toString() : null;
 
-            pairs.put(jsonObject.get(KEY).toString(), jsonValue);
+            if (jsonObject.has(KEY)) {
+                pairs.put(jsonObject.get(KEY).toString(), jsonValue);
+            }
         }
         return pairs;
     }
