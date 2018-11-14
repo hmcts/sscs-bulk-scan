@@ -51,7 +51,7 @@ public class CcdCallbackHandlerTest {
             .state("ScannedRecordReceived")
             .build();
 
-        when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
+        when(caseTransformer.transformExceptionRecordToCase(caseDetails))
             .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
@@ -88,7 +88,7 @@ public class CcdCallbackHandlerTest {
             .state("ScannedRecordReceived")
             .build();
 
-        when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
+        when(caseTransformer.transformExceptionRecordToCase(caseDetails))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
                 .build()
@@ -99,8 +99,6 @@ public class CcdCallbackHandlerTest {
             (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
 
         // then
-        assertExceptionDataEntries(ccdCallbackResponse);
-
         assertThat(ccdCallbackResponse.getErrors())
             .containsOnly("Cannot transform Appellant Date of Birth. Please enter valid date");
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
@@ -115,12 +113,11 @@ public class CcdCallbackHandlerTest {
             .state("ScannedRecordReceived")
             .build();
 
-        when(caseTransformer.transformExceptionRecordToCase(caseDataCreator.exceptionCaseData()))
+        when(caseTransformer.transformExceptionRecordToCase(caseDetails))
             .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
             );
-
 
         when(caseValidator.validate(caseDataCreator.sscsCaseData()))
             .thenReturn(CaseResponse.builder()
@@ -132,8 +129,6 @@ public class CcdCallbackHandlerTest {
             (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
 
         // then
-        assertExceptionDataEntries(ccdCallbackResponse);
-
         assertThat(ccdCallbackResponse.getErrors()).containsOnly("NI Number is invalid");
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }

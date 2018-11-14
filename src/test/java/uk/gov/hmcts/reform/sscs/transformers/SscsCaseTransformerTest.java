@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
@@ -37,6 +38,8 @@ public class SscsCaseTransformerTest {
     @InjectMocks
     SscsCaseTransformer transformer;
 
+    CaseDetails caseDetails;
+
     Map<String, Object> ocrMap = new HashMap<>();
 
     Map<String, Object> pairs = new HashMap<>();
@@ -49,6 +52,8 @@ public class SscsCaseTransformerTest {
 
         given(keyValuePairValidator.validate(ocrMap)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        caseDetails = CaseDetails.builder().caseData(ocrMap).build();
     }
 
     @Test
@@ -85,7 +90,7 @@ public class SscsCaseTransformerTest {
         pairs.put("agree_less_hearing_notice", AGREE_LESS_HEARING_NOTICE);
         pairs.put("signature_name", SIGNATURE_NAME);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(buildTestAppealData(), result.getTransformedCase().get("appeal"));
 
@@ -118,7 +123,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person2_dob", APPELLANT_DATE_OF_BIRTH);
         pairs.put("person2_nino", APPELLANT_NINO);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
@@ -152,7 +157,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person2_dob", APPELLANT_DATE_OF_BIRTH);
         pairs.put("person2_nino", APPELLANT_NINO);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
@@ -171,7 +176,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(HEARING_TYPE_ORAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
@@ -185,7 +190,7 @@ public class SscsCaseTransformerTest {
         pairs.put("is_hearing_type_oral", false);
         pairs.put("is_hearing_type_paper", true);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(HEARING_TYPE_PAPER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
         assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
@@ -201,7 +206,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(contradictingPairs).build());
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("is_hearing_type_oral and is_hearing_type_paper have contradicting values"));
     }
@@ -214,7 +219,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(textBooleanValueMap).build());
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("is_hearing_type_oral does not contain a valid boolean value. Needs to be true or false"));
     }
@@ -223,7 +228,7 @@ public class SscsCaseTransformerTest {
     public void givenAnInvalidDateOfBirth_thenAddErrorToList() {
         pairs.put("person1_dob", "12/99/1987");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("person1_dob is an invalid date field. Needs to be in the format dd/mm/yyyy"));
     }
@@ -232,7 +237,7 @@ public class SscsCaseTransformerTest {
     public void givenAnInvalidMrnDate_thenAddErrorToList() {
         pairs.put("mrn_date", "12/99/1987");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("mrn_date is an invalid date field. Needs to be in the format dd/mm/yyyy"));
     }
@@ -242,7 +247,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_hearing_loop", HEARING_LOOP);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("hearingLoop", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals("Yes", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsSupport());
@@ -253,7 +258,7 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenCaseContainsNoHearingOptions_thenBuildAnAppealWithNoSupport() {
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsSupport());
 
@@ -265,7 +270,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_hearing_loop", HEARING_LOOP);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("hearingLoop", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
 
@@ -277,7 +282,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_accessible_hearing_rooms", DISABLED_ACCESS);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("disabledAccess", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
 
@@ -289,7 +294,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("2018-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
 
@@ -301,7 +306,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_exclude_dates", "12/12/2018, 16/12/2018");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
         assertEquals("2018-12-12", (excludeDates.get(0).getValue().getStart()));
@@ -315,7 +320,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_exclude_dates", "12/12/2018,16/12/2018");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
         assertEquals("2018-12-12", (excludeDates.get(0).getValue().getStart()));
@@ -329,7 +334,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_exclude_dates", "12/12/2018, 16/12/2018 - 18/12/2018");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
         assertEquals("2018-12-12", (excludeDates.get(0).getValue().getStart()));
@@ -344,7 +349,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_exclude_dates", "16/12/2018-18/12/2018");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
         assertEquals("2018-12-16", (excludeDates.get(0).getValue().getStart()));
@@ -358,7 +363,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_exclude_dates", "12/12/2018, 14/12/2018, 16/12/2018 - 18/12/2018");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
         assertEquals("2018-12-12", (excludeDates.get(0).getValue().getStart()));
@@ -374,7 +379,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_exclude_dates", "16th December 2018");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019"));
     }
@@ -384,7 +389,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("hearing_options_exclude_dates", "16/12/2018 - 18/12/2018 - 20/12/2018");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019"));
     }
@@ -394,7 +399,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put(HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL, HEARING_OPTIONS_LANGUAGE_TYPE);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
@@ -408,7 +413,7 @@ public class SscsCaseTransformerTest {
         pairs.put(HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL, HEARING_OPTIONS_LANGUAGE_TYPE);
         pairs.put(HEARING_OPTIONS_DIALECT_LITERAL, HEARING_OPTIONS_DIALECT_TYPE);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
@@ -421,7 +426,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put(HEARING_OPTIONS_DIALECT_LITERAL, HEARING_OPTIONS_DIALECT_TYPE);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
@@ -435,7 +440,7 @@ public class SscsCaseTransformerTest {
         pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, SIGN_LANGUAGE_REQUIRED);
         pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL, SIGN_LANGUAGE_TYPE);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
@@ -448,7 +453,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, SIGN_LANGUAGE_REQUIRED);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals(DEFAULT_SIGN_LANGUAGE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
@@ -463,7 +468,7 @@ public class SscsCaseTransformerTest {
         pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, SIGN_LANGUAGE_REQUIRED);
         pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL, SIGN_LANGUAGE_TYPE);
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
@@ -477,7 +482,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(null).build());
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("No OCR data, case cannot be created"));
     }
@@ -488,7 +493,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(noPairs).build());
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("No OCR data, case cannot be created"));
     }
@@ -498,7 +503,7 @@ public class SscsCaseTransformerTest {
 
         given(keyValuePairValidator.validate(ocrMap)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("NI Number is invalid"));
     }
@@ -511,7 +516,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
@@ -533,7 +538,7 @@ public class SscsCaseTransformerTest {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
@@ -553,7 +558,7 @@ public class SscsCaseTransformerTest {
     public void givenAnAppellantDateOfBirth_thenSetGeneratedDobField() {
         pairs.put("person1_dob", "12/01/1987");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String generatedDob = ((String) result.getTransformedCase().get("generatedDOB"));
         assertEquals("1987-01-12", generatedDob);
@@ -565,7 +570,7 @@ public class SscsCaseTransformerTest {
     public void givenAnAppellantSurname_thenSetGeneratedSurnameField() {
         pairs.put("person1_last_name", "Smith");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String generatedSurname = ((String) result.getTransformedCase().get("generatedSurname"));
         assertEquals("Smith", generatedSurname);
@@ -577,7 +582,7 @@ public class SscsCaseTransformerTest {
     public void givenAnAppellantNino_thenSetGeneratedNinoField() {
         pairs.put("person1_nino", "JT0123456B");
 
-        CaseResponse result = transformer.transformExceptionRecordToCase(ocrMap);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String generatedNino = ((String) result.getTransformedCase().get("generatedNino"));
         assertEquals("JT0123456B", generatedNino);

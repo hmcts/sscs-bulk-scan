@@ -6,6 +6,7 @@ import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
@@ -26,11 +27,11 @@ public class SscsCaseTransformer implements CaseTransformer {
     private List<String> errors;
 
     @Override
-    public CaseResponse transformExceptionRecordToCase(Map<String, Object> caseData) {
+    public CaseResponse transformExceptionRecordToCase(CaseDetails caseDetails) {
 
         Map<String, Object> transformed = new HashMap<>();
 
-        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseData);
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseDetails.getCaseData());
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
             return CaseResponse.builder().errors(keyValuePairValidatorResponse.getErrors()).build();
@@ -38,12 +39,13 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         errors = new ArrayList<>();
 
-        ScannedData scannedData = sscsJsonExtractor.extractJson(caseData);
+        ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData());
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
 
         transformed.put("appeal", appeal);
         transformed.put("sscsDocument", sscsDocuments);
+        transformed.put("bulkScanCaseReference", caseDetails.getCaseId());
 
         if (appeal.getAppellant() != null) {
             transformed.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
