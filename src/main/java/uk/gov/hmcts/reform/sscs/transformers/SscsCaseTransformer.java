@@ -86,6 +86,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .hearingType(hearingType)
                 .hearingOptions(buildHearingOptions(pairs, hearingType))
                 .signer(getField(pairs, "signature_name"))
+                .receivedVia("Paper")
                 .build();
         } else {
             errors.add("No OCR data, case cannot be created");
