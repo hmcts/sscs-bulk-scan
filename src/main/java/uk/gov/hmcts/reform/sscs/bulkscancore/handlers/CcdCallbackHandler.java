@@ -86,6 +86,7 @@ public class CcdCallbackHandler {
 
         if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
             log.info("Errors found while transforming exception record id {}", exceptionRecordId);
+            log.info(caseResponse.getErrors());
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(exceptionRecordData)
                 .errors(caseResponse.getErrors())

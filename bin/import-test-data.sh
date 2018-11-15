@@ -11,10 +11,10 @@ serviceToken="$(${binFolder}/idam-service-token.sh ccd_data)"
 
 scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-for f in $scriptDir/../test/import/*.json
+for f in $scriptDir/../src/test/resources/import/*.json
 do
   echo "Importing ${f}"
-  curl \
+  curl -v \
     http://localhost:8090/exception-record \
     -H "Authorization: Bearer ${userToken}" \
     -H "ServiceAuthorization: Bearer ${serviceToken}" \
@@ -22,5 +22,8 @@ do
     -H "Content-Type: application/json" \
     --data @$f
 done
+
+echo
+
 
 
