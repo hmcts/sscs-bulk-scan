@@ -42,14 +42,12 @@ public class CcdCallbackHandler {
         ExceptionCaseData exceptionCaseData,
         Token token) {
 
-        Map<String, Object> exceptionRecordData = exceptionCaseData.getCaseDetails().getCaseData();
-
-        String exceptionRecordId = (String) exceptionRecordData.get("id");
+        String exceptionRecordId = exceptionCaseData.getCaseDetails().getCaseId();
 
         logger.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
-        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionRecordData);
-        AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrors(caseTransformationResponse, exceptionRecordData, exceptionRecordId);
+        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionCaseData.getCaseDetails());
+        AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrors(caseTransformationResponse, exceptionRecordId);
 
         if (transformErrorResponse != null) {
             return transformErrorResponse;
@@ -58,7 +56,7 @@ public class CcdCallbackHandler {
         Map<String, Object> transformedCase = caseTransformationResponse.getTransformedCase();
         CaseResponse caseValidationResponse = caseValidator.validate(transformedCase);
 
-        AboutToStartOrSubmitCallbackResponse validationErrorResponse = checkForErrors(caseValidationResponse, exceptionRecordData, exceptionRecordId);
+        AboutToStartOrSubmitCallbackResponse validationErrorResponse = checkForErrors(caseValidationResponse, exceptionRecordId);
 
         if (validationErrorResponse != null) {
             return validationErrorResponse;
@@ -68,6 +66,8 @@ public class CcdCallbackHandler {
                 exceptionCaseData.isIgnoreWarnings(),
                 token,
                 exceptionRecordId);
+
+            Map<String, Object> exceptionRecordData = exceptionCaseData.getCaseDetails().getCaseData();
 
             if (handlerResponse != null) {
                 exceptionRecordData.put("state", (handlerResponse.getState()));
@@ -81,13 +81,11 @@ public class CcdCallbackHandler {
     }
 
     private AboutToStartOrSubmitCallbackResponse checkForErrors(CaseResponse caseResponse,
-                                                                Map<String, Object> exceptionRecordData,
                                                                 String exceptionRecordId) {
 
         if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
             log.info("Errors found while transforming exception record id {}", exceptionRecordId);
             return AboutToStartOrSubmitCallbackResponse.builder()
-                .data(exceptionRecordData)
                 .errors(caseResponse.getErrors())
                 .build();
         }

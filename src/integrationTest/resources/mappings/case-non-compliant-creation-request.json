@@ -77,7 +77,8 @@
     } ],
     "generatedNino" : "JT0123456B",
     "generatedSurname" : "Smith",
-    "generatedDOB" : "1976-11-11"
+    "generatedDOB" : "1976-11-11",
+    "bulkScanCaseReference" : "1234567890"
   },
   "security_classification" : "PUBLIC",
   "event_token" : "test_event_token",

@@ -462,6 +462,7 @@ public class CcdCallbackControllerTest {
         return ExceptionCaseData.builder()
             .caseDetails(CaseDetails.builder()
                 .caseData(caseData)
+                .caseId("1234567890")
                 .build())
             .build();
     }
