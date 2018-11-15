@@ -622,6 +622,7 @@ public class SscsCaseTransformerTest {
                 .wantsToAttend(YES_LITERAL)
                 .wantsSupport(YES_LITERAL).build())
             .signer(SIGNATURE_NAME)
+            .receivedVia("Paper")
             .build();
     }
 

@@ -61,7 +61,8 @@
         "contact": null
       },
       "signer": null,
-      "hearingType": "oral"
+      "hearingType": "oral",
+      "receivedVia" : "Paper"
     },
     "sscsDocument" : [ {
       "value" : {
