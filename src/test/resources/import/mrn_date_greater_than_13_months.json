@@ -1,0 +1,367 @@
+{
+  "token": null,
+  "event_id": "createNewCase",
+  "case_details": {
+    "case_data": {
+      "poBox": "SSCSPO",
+      "journeyClassification": "New Application",
+      "poBoxJurisdiction": "SSCS",
+      "scanRecords": [],
+      "scanOCRData": [
+        {
+          "value": {
+            "key": "contains_mrn",
+            "value": "TRUE"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "mrn_date",
+            "value": "09/06/2017"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "benefit_type_description",
+            "value": "Employee Support Allowance"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person1_title",
+            "value": "Dr"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person1_first_name",
+            "value": "Frederick"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person1_last_name",
+            "value": "Falafel"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_address_line1",
+            "value": "1 New Street"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_address_line2",
+            "value": "Smallville"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_address_line3",
+            "value": "Newbury"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_address_line4",
+            "value": "Berkshire"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_postcode",
+            "value": "RG14PLT"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_phone",
+            "value": "01895733303"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_mobile",
+            "value": "07832882849"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_dob",
+            "value": "11/11/1976"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_nino",
+            "value": "JJ123457A"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_title",
+            "value": "Mrs"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person2_first_name",
+            "value": "Sarah"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person2_last_name",
+            "value": "Smith"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_address_line1",
+            "value": "109 Drake Close"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_address_line2",
+            "value": "Hutton"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_address_line3",
+            "value": "Brentwood"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_address_line4",
+            "value": "Essex"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_postcode",
+            "value": "SE166RS"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_dob",
+            "value": "09/12/1979"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_nino",
+            "value": "SD232321D"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_company",
+            "value": "ABC Advisory Services"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_address_line1",
+            "value": "63 Grove Hill Road"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_address_line2",
+            "value": "The Square"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_address_line3",
+            "value": "Redhill"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_address_line4",
+            "value": "Surrey"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_postcode",
+            "value": "RH1 6RE"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_phone",
+            "value": "02072323231"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_title",
+            "value": "Mr"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_first_name",
+            "value": "Peter"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_last_name",
+            "value": "Hyland"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "appeal_grounds",
+            "value": "see scanned SSCS1 form"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "appeal_late_reason",
+            "value": "see scanned SSCS1 form"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "is_hearing_type_oral",
+            "value": "false"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "is_hearing_type_paper",
+            "value": "true"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_exclude_dates",
+            "value": "01/11/2018,01/12/2018"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_support_arrangements",
+            "value": "Wheelchair access"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_hearing_loop",
+            "value": "Yes"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_accessible_hearing_rooms",
+            "value": "No"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_sign_language_interpreter",
+            "value": "No"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_language_type",
+            "value": "Spanish"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_dialect",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_sign_language_type",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "agree_less_hearing_notice",
+            "value": "TRUE"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "signature_name",
+            "value": "Sarah Smith"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "signature_appeal_date",
+            "value": "01/04/2018"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        }
+      ],
+      "openingDate": "2018-02-11"
+    },
+    "id": "12222",
+    "state": "ScannedRecordReceived"
+  }
+}
