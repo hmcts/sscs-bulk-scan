@@ -13,8 +13,11 @@ scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 for f in $scriptDir/../src/test/resources/import/*.json
 do
+  echo
+  echo "=========================================================================="
   echo "Importing ${f}"
-  curl -v \
+  echo "=========================================================================="
+  curl \
     http://localhost:8090/exception-record \
     -H "Authorization: Bearer ${userToken}" \
     -H "ServiceAuthorization: Bearer ${serviceToken}" \
