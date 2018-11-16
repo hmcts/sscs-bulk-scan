@@ -62,7 +62,7 @@ public class CcdCallbackControllerTest {
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("serviceauthorization", TEST_SERVICE_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
-            .content(exceptionRecord()))
+            .content(exceptionRecord("exceptionrecord.json")))
             .andExpect(jsonPath("$['data'].journeyClassification", is("New Application")))
             .andExpect(jsonPath("$['data'].poBoxJurisdiction", is("SSCS")))
             .andExpect(jsonPath("$['data'].poBox", is("SSCSPO")))
@@ -94,7 +94,7 @@ public class CcdCallbackControllerTest {
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("serviceauthorization", TEST_SERVICE_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
-            .content(exceptionRecord()))
+            .content(exceptionRecord("exceptionrecord.json")))
             .andExpect(status().is5xxServerError());
     }
 
@@ -109,7 +109,7 @@ public class CcdCallbackControllerTest {
             .contentType(MediaType.APPLICATION_JSON_UTF8)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
-            .content(exceptionRecord()))
+            .content(exceptionRecord("exceptionrecord.json")))
             .andExpect(status().isUnauthorized());
     }
 
@@ -125,7 +125,7 @@ public class CcdCallbackControllerTest {
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
-            .content(exceptionRecord()))
+            .content(exceptionRecord("exceptionrecord.json")))
             .andExpect(status().isForbidden());
     }
 }

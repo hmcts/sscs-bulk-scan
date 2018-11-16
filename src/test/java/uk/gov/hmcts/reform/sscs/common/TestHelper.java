@@ -16,8 +16,8 @@ public class TestHelper {
         //Utility class
     }
 
-    public static String exceptionRecord() throws IOException {
-        URL url = getResource("exceptionrecord.json");
+    public static String exceptionRecord(String fileName) throws IOException {
+        URL url = getResource(fileName);
         return Resources.toString(url, Charsets.toCharset("UTF-8"));
     }
 }
