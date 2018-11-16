@@ -27,6 +27,10 @@ variable "common_tags" {
   type = "map"
 }
 
+variable "idam_s2s_auth_microservice" {
+  default = "ccd_data"
+}
+
 variable "idam_oauth2_client_id" {
   default = "sscs"
 }
