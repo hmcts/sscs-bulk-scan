@@ -18,6 +18,6 @@ withNightlyPipeline(type, product, component) {
   env.TEST_URL = params.URL_TO_TEST
 
 //  enableMutationTest()
-  enableSecuirtyScan()
+  enableSecurityScan()
 //  enableSlackNotifications('#sscs-tech')
 }
