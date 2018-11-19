@@ -10,7 +10,7 @@ locals {
   ase_name  = "${data.terraform_remote_state.core_apps_compute.ase_name[0]}"
   local_env = "${(var.env == "preview" || var.env == "spreview") ? (var.env == "preview" ) ? "aat" : "saat" : var.env}"
 
-  s2sUrl   = "http://rpe-service-auth-provider-${local.local_env}.service.core-compute-${local.local_env}.internal"
+  s2s_url   = "http://rpe-service-auth-provider-${local.local_env}.service.core-compute-${local.local_env}.internal"
   ccdApiUrl = "http://ccd-data-store-api-${local.local_env}.service.core-compute-${local.local_env}.internal"
 
   vaultName = "sscs-bulk-scan-${local.local_env}"
@@ -33,20 +33,21 @@ module "sscs-bulk-scan" {
     LOGBACK_REQUIRE_ALERT_LEVEL = false
     LOGBACK_REQUIRE_ERROR_CODE = false
 
-    CORE_CASE_DATA_API_URL = "${local.ccdApiUrl}"
-
-    IDAM_URL = "${var.idam_url}"
-
     IDAM_S2S_AUTH_TOTP_SECRET = "${data.azurerm_key_vault_secret.sscs_s2s_secret.value}"
-    IDAM_S2S_AUTH = "${local.s2sUrl}"
+    IDAM_S2S_AUTH     = "${local.s2s_url}"
     IDAM_S2S_AUTH_MICROSERVICE = "${var.idam_s2s_auth_microservice}"
+
+    S2S_NAME    = "${var.idam_s2s_auth_microservice}"
+    S2S_SECRET  = "${data.azurerm_key_vault_secret.sscs_s2s_secret.value}"
+
+    IDAM_URL              = "${var.idam_url}"
 
     IDAM_OAUTH2_USER_EMAIL = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
     IDAM_OAUTH2_USER_PASSWORD = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
+    IDAM_OAUTH2_CLIENT_SECRET        = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
+    IDAM_OAUTH2_REDIRECT_URI  = "${var.idam_redirect_url}"
 
-    IDAM_OAUTH2_CLIENT_ID = "${var.idam_oauth2_client_id}"
-    IDAM_OAUTH2_CLIENT_SECRET = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
-    IDAM_OAUTH2_REDIRECT_URL = "${var.idam_redirect_url}"
+    CORE_CASE_DATA_API_URL    = "${local.ccdApiUrl}"
 
   }
 }
