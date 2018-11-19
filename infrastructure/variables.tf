@@ -38,6 +38,11 @@ variable "common_tags" {
   type = "map"
 }
 
+variable "infrastructure_env" {
+  default     = "test"
+  description = "Infrastructure environment to point to"
+}
+
 variable "idam_s2s_auth_microservice" {
   default = "ccd_data"
 }
