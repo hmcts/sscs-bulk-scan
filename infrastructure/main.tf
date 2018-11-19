@@ -15,7 +15,7 @@ locals {
 
   vaultName = "sscs-bulk-scan-${local.local_env}"
 
-  permanent_vault_uri    = "https://${var.raw_product}-bulk-scan-${local.local_env}.vault.azure.net/"
+  permanent_vault_uri    = "https://${var.raw_product}-${local.local_env}.vault.azure.net/"
 }
 
 module "sscs-bulk-scan" {

@@ -3,7 +3,7 @@ variable "product" {
 }
 
 variable "raw_product" {
-  default = "sscs" // jenkins-library overrides product for PRs and adds e.g. pr-118-rpe-...
+  default = "sscs-bulk-scan" // jenkins-library overrides product for PRs and adds e.g. pr-118-rpe-...
 }
 
 variable "component" {
