@@ -1,4 +1,4 @@
-FROM openjdk:8-jre
+FROM hmcts/cnp-java-base:openjdk-jre-8-alpine-1.4
 
 COPY build/bootScripts/sscs-bulk-scan /opt/app/bin/
 
@@ -6,7 +6,7 @@ COPY build/libs/sscs-bulk-scan.jar /opt/app/lib/
 
 WORKDIR /opt/app
 
-HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD http_proxy="" curl --silent --fail http://localhost:8090/health
+HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD if [ `wget -qO- http://localhost:8090/health | grep "UP"` ]; then exit 0; else exit 1; fi
 
 EXPOSE 8090
 
