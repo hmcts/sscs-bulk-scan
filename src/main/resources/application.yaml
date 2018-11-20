@@ -32,11 +32,11 @@ idam:
     url: ${IDAM_S2S_AUTH:http://localhost:4502}
   oauth2:
     user:
-      email: SSCS_SYSTEM_UPDATE
-      password: SSCS_SYSTEM_UPDATE
+      email: ${IDAM_OAUTH2_USER_EMAIL:SSCS_SYSTEM_UPDATE}
+      password: ${IDAM_OAUTH2_USER_PASSWORD:SSCS_SYSTEM_UPDATE}
     client:
-      id: sscs
-      secret: QM5RQQ53LZFOSIXJ
+      id: ${IDAM_OAUTH2_CLIENT_ID:sscs}
+      secret: ${IDAM_OAUTH2_CLIENT_SECRET:QM5RQQ53LZFOSIXJ}
     redirectUrl: ${IDAM_OAUTH2_REDIRECT_URL:https://localhost:9000/poc}
 
 allowed-services-for-callback : ccd_data  # comma separated list of service names
