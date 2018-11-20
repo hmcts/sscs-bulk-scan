@@ -25,7 +25,7 @@ core_case_data:
 idam:
   url: http://localhost:4501
   s2s-auth:
-    totp_secret: ${IDAM_S2S_AUTH_TOTP_SECRET:AAAAAAAAAAAAAAAA}
+    totp_secret: ${S2S_SECRET:AAAAAAAAAAAAAAAA}
     microservice: ${IDAM_S2S_AUTH_MICROSERVICE:ccd_data}
     url: ${IDAM_S2S_AUTH:http://localhost:4502}
   oauth2:

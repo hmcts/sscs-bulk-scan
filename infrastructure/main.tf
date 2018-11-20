@@ -15,7 +15,7 @@ locals {
 
   vaultName = "sscs-bulk-scan-${local.local_env}"
 
-  permanent_vault_uri    = "https://${var.raw_product}-${local.local_env}.vault.azure.net/"
+  permanent_vault_uri  = "https://${var.raw_product}-${local.local_env}.vault.azure.net/"
 }
 
 module "sscs-bulk-scan" {
@@ -31,24 +31,20 @@ module "sscs-bulk-scan" {
 
   app_settings = {
     LOGBACK_REQUIRE_ALERT_LEVEL = false
-    LOGBACK_REQUIRE_ERROR_CODE = false
+    LOGBACK_REQUIRE_ERROR_CODE  = false
 
-    IDAM_S2S_AUTH_TOTP_SECRET = "${data.azurerm_key_vault_secret.sscs_s2s_secret.value}"
-    IDAM_S2S_AUTH     = "${local.s2s_url}"
-    IDAM_S2S_AUTH_MICROSERVICE = "${var.idam_s2s_auth_microservice}"
+    S2S_SECRET                  = "${data.azurerm_key_vault_secret.sscs_s2s_secret.value}"
+    IDAM_S2S_AUTH               = "${local.s2s_url}"
+    IDAM_S2S_AUTH_MICROSERVICE  = "${var.idam_s2s_auth_microservice}"
 
-    S2S_NAME    = "${var.idam_s2s_auth_microservice}"
-    S2S_SECRET  = "${data.azurerm_key_vault_secret.sscs_s2s_secret.value}"
+    IDAM_URL                    = "${var.idam_url}"
 
-    IDAM_URL              = "${var.idam_url}"
+    IDAM_OAUTH2_USER_EMAIL      = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
+    IDAM_OAUTH2_USER_PASSWORD   = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
+    IDAM_OAUTH2_CLIENT_SECRET   = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
+    IDAM_OAUTH2_REDIRECT_URL    = "${var.idam_redirect_url}"
 
-    IDAM_OAUTH2_USER_EMAIL = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
-    IDAM_OAUTH2_USER_PASSWORD = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
-    IDAM_OAUTH2_CLIENT_SECRET        = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
-    IDAM_OAUTH2_REDIRECT_URI  = "${var.idam_redirect_url}"
-
-    CORE_CASE_DATA_API_URL    = "${local.ccdApiUrl}"
-
+    CORE_CASE_DATA_API_URL      = "${local.ccdApiUrl}"
   }
 }
 
