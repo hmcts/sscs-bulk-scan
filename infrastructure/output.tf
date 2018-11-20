@@ -10,6 +10,15 @@ output "vaultName" {
   value = "${local.vaultName}"
 }
 
-output "idam-s2s-api" {
+output "idam_s2s_auth" {
   value = "${local.s2s_url}"
 }
+
+output "idam_url" {
+  value = "${var.idam_url}"
+}
+
+output "idam_oauth2_redirect_url" {
+  value = "${var.idam_redirect_url}"
+}
+
