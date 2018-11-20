@@ -17,10 +17,6 @@ List<LinkedHashMap<String, Object>> secrets = [
   secret('IdamSscsUser', 'IDAM_OAUTH2_USER_EMAIL'),
   secret('IdamSscsPass', 'IDAM_OAUTH2_USER_PASSWORD'),
   secret('IdamAuthSecret', 'IDAM_OAUTH2_CLIENT_SECRET'),
-  secret('IdamS2sAuth', 'IDAM_S2S_AUTH'),
-  secret('IdamUrl', 'IDAM_URL'),
-  secret('IdamS2sAuthMicro', 'IDAM_S2S_AUTH_MICROSERVICE'),
-  secret('IdamAuthUrl','IDAM_OAUTH2_REDIRECT_URL')
 ]
 
 
