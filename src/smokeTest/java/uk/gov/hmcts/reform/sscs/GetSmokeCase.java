@@ -28,6 +28,8 @@ public class GetSmokeCase {
     public void givenASmokeCase_retrieveFromCcd() throws IOException {
         RestAssured.baseURI = appUrl;
         RestAssured.useRelaxedHTTPSValidation();
+        System.out.println(System.getenv("IDAM_OAUTH2_CLIENT_SECRET").substring(0,3));
+        System.exit(0);
 
         IdamTokens idamTokens = idamService.getIdamTokens();
 
