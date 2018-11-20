@@ -22,3 +22,6 @@ output "idam_oauth2_redirect_url" {
   value = "${var.idam_redirect_url}"
 }
 
+output "idam_oauth2_client_secret" {
+  value = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
+}
