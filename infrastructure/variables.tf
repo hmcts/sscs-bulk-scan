@@ -55,4 +55,6 @@ variable "idam_redirect_url" {
   default = "https://sscs-case-loader-sandbox.service.core-compute-sandbox.internal"
 }
 
-variable "idam_url" {}
+variable "idam_url" {
+  default = "http://testing.test"
+}

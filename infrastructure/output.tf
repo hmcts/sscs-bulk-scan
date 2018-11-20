@@ -9,3 +9,7 @@ output "vaultUri" {
 output "vaultName" {
   value = "${local.vaultName}"
 }
+
+output "idam-s2s-api" {
+  value = "${local.s2s_url}"
+}
