@@ -12,13 +12,17 @@ properties([
   [$class: 'GithubProjectProperty', projectUrlStr: 'https://github.com/hmcts/sscs-bulk-scan.git'],
   pipelineTriggers([[$class: 'GitHubPushTrigger']])
 ])
-
 List<LinkedHashMap<String, Object>> secrets = [
   secret('sscs-s2s-secret', 'S2S_SECRET'),
-  secret('idam-sscs-systemupdate-user', 'IDAM_OAUTH2_USER_EMAIL'),
-  secret('idam-sscs-systemupdate-password', 'IDAM_OAUTH2_USER_PASSWORD'),
-  secret('idam-sscs-oauth2-client-secret', 'IDAM_OAUTH2_CLIENT_SECRET'),
+  secret('IdamSscsUser', 'IDAM_OAUTH2_USER_EMAIL'),
+  secret('IdamSscsPass', 'IDAM_OAUTH2_USER_PASSWORD'),
+  secret('IdamAuthSecret', 'IDAM_OAUTH2_CLIENT_SECRET'),
+  secret('IdamS2sAuth', 'IDAM_S2S_AUTH'),
+  secret('IdamUrl', 'IDAM_URL'),
+  secret('IdamS2sAuthMicro', 'IDAM_S2S_AUTH_MICROSERVICE'),
+  secret('IdamAuthUrl','IDAM_OAUTH2_REDIRECT_URL')
 ]
+
 
 static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   [ $class: 'AzureKeyVaultSecret',
