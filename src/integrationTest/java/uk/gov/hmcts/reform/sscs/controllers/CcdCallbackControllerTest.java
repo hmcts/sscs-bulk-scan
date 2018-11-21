@@ -16,6 +16,8 @@ import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 import org.apache.commons.codec.Charsets;
 import org.joda.time.DateTimeUtils;
 import org.junit.After;
@@ -33,6 +35,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.SocketUtils;
 import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
@@ -40,11 +44,14 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
+import uk.gov.hmcts.reform.sscs.ccd.client.CcdClient;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
+import uk.gov.hmcts.reform.sscs.idam.IdamApiClient;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock
+@TestPropertySource(locations = "classpath:application_it.yaml")
 public class CcdCallbackControllerTest {
 
     private static final String SERVICE_AUTHORIZATION_HEADER_KEY = "ServiceAuthorization";
@@ -71,6 +78,9 @@ public class CcdCallbackControllerTest {
     private static final String SUBMIT_EVENT_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases?ignore-warning=true";
 
+    private static final String READ_EVENT_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756";
+
     private static final String USER_ID_HEADER = "user-id";
 
     private static final String KEY = "key";
@@ -86,12 +96,25 @@ public class CcdCallbackControllerTest {
     @MockBean
     private AuthTokenValidator authTokenValidator;
 
+//    @MockBean
+//    private CcdClient ccdClient;
+
+    @MockBean
+    private IdamApiClient idamApiClient;
+
+    @MockBean
+    private JavaMailSender mailSender;
+
     @Rule
     public WireMockRule ccdServer;
 
     private static int wiremockPort = 0;
 
+    private Session session = Session.getInstance(new Properties());
+
     private String baseUrl;
+
+    private MimeMessage message;
 
     static {
         wiremockPort = SocketUtils.findAvailableTcpPort();
@@ -104,6 +127,9 @@ public class CcdCallbackControllerTest {
         ccdServer = new WireMockRule(wiremockPort);
         ccdServer.start();
         DateTimeUtils.setCurrentMillisFixed(1542820369000L);
+
+        message = new MimeMessage(session);
+        when(mailSender.createMimeMessage()).thenReturn(message);
     }
 
     @After
@@ -120,6 +146,8 @@ public class CcdCallbackControllerTest {
         startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
 
         submitForCaseworkerStub("appealCreated");
+
+        readForCaseworkerStub(READ_EVENT_URL);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
 
@@ -599,6 +627,17 @@ public class CcdCallbackControllerTest {
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .withRequestBody(equalToJson(createCaseRequest))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(200)
+                .withBody(loadJson("mappings/create-case-200-response.json"))));
+    }
+
+    private void readForCaseworkerStub(String eventUrl) throws Exception {
+        ccdServer.stubFor(get(concat(eventUrl))
+            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .withStatus(200)

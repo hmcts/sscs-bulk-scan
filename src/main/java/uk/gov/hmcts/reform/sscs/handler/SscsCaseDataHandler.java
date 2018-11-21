@@ -2,21 +2,26 @@ package uk.gov.hmcts.reform.sscs.handler;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
+import java.net.URI;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
+import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.RoboticsService;
 import uk.gov.hmcts.reform.sscs.service.SscsPdfService;
@@ -26,28 +31,28 @@ import uk.gov.hmcts.reform.sscs.service.SscsPdfService;
 public class SscsCaseDataHandler implements CaseDataHandler {
 
     private final CaseDataHelper caseDataHelper;
-    private final SscsPdfService sscsPdfService;
     private final RoboticsService roboticsService;
     private final RegionalProcessingCenterService regionalProcessingCenterService;
     private final CcdService ccdService;
+    private final EvidenceManagementService evidenceManagementService;
     private final String caseCreatedEventId;
     private final String incompleteApplicationEventId;
 
     private final String nonCompliantEventId;
 
     public SscsCaseDataHandler(CaseDataHelper caseDataHelper,
-                               SscsPdfService sscsPdfService,
                                RoboticsService roboticsService,
                                RegionalProcessingCenterService regionalProcessingCenterService,
                                CcdService ccdService,
+                               EvidenceManagementService evidenceManagementService,
                                @Value("${ccd.case.caseCreatedEventId}") String caseCreatedEventId,
                                @Value("${ccd.case.incompleteApplicationEventId}") String incompleteApplicationEventId,
                                @Value("${ccd.case.nonCompliantEventId}") String nonCompliantEventId) {
         this.caseDataHelper = caseDataHelper;
-        this.sscsPdfService = sscsPdfService;
         this.roboticsService = roboticsService;
         this.regionalProcessingCenterService = regionalProcessingCenterService;
         this.ccdService = ccdService;
+        this.evidenceManagementService = evidenceManagementService;
         this.caseCreatedEventId = caseCreatedEventId;
         this.incompleteApplicationEventId = incompleteApplicationEventId;
         this.nonCompliantEventId = nonCompliantEventId;
@@ -64,14 +69,22 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             Long caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
 
             if (eventId.equals(caseCreatedEventId)) {
-                IdamTokens idamTokens = IdamTokens.builder().idamOauth2Token( token.getUserAuthToken()).serviceAuthorization(token.getServiceAuthToken()).userId(token.getUserId()).build();
-                SscsCaseData sscsCaseData = ccdService.getByCaseId(caseId, idamTokens).getData();
+                IdamTokens idamTokens = IdamTokens.builder().idamOauth2Token(token.getUserAuthToken()).serviceAuthorization(token.getServiceAuthToken()).userId(token.getUserId()).build();
+                SscsCaseDetails details = ccdService.getByCaseId(caseId, idamTokens);
 
-                byte[] pdf = sscsPdfService.generateAndSendPdf(sscsCaseData, caseId, idamTokens);
+                if (details != null) {
+                    SscsCaseData sscsCaseData = details.getData();
 
-                roboticsService.sendCaseToRobotics(sscsCaseData, caseId,
-                    regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
-                    pdf);
+                    Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);
+
+                    roboticsService.sendCaseToRobotics(sscsCaseData,
+                        caseId,
+                        regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
+                        null,
+                        additionalEvidence);
+                } else {
+                    //TODO: throw an error here - created but not sent to robotics
+                }
             }
 
             log.info("Case created with exceptionRecordId {} from exception record id {}", caseId, exceptionRecordId);
@@ -102,5 +115,26 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             return LocalDate.parse(mrnDetails.getMrnDate());
         }
         return null;
+    }
+
+    private Map<String, byte[]> downloadEvidence(SscsCaseData sscsCaseData) {
+        if (hasEvidence(sscsCaseData)) {
+            Map<String, byte[]> map = new LinkedHashMap<>();
+            for (SscsDocument doc : sscsCaseData.getSscsDocument()) {
+                map.put(doc.getValue().getDocumentFileName(), downloadBinary(doc));
+            }
+            return map;
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+
+    private boolean hasEvidence(SscsCaseData sscsCaseData) {
+        return CollectionUtils.isNotEmpty(sscsCaseData.getSscsDocument());
+    }
+
+    private byte[] downloadBinary(SscsDocument doc) {
+
+        return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()));
     }
 }

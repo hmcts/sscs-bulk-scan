@@ -21,6 +21,8 @@ ccd:
 test.url: ${TEST_URL:http://localhost:8090}
 
 core_case_data:
+  jurisdictionId: ${CORE_CASE_DATA_JURISDICTION_ID:SSCS}
+  caseTypeId: ${CORE_CASE_DATA_CASE_TYPE_ID:Benefit}
   api:
     url: http://localhost:4452
 
@@ -62,3 +64,5 @@ robotics:
     subject: ${ROBOTICS_EMAIL_SUBJECT:Robotics Data}
     message: ${ROBOTICS_EMAIL_MESSAGE:Please find attached the robotics json file \nPlease do not respond to this email}
   schema.resource.location: /schema/sscs-robotics.json
+
+document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://localhost:4506}

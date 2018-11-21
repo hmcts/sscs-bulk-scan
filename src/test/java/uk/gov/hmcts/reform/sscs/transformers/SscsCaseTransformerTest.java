@@ -557,12 +557,15 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
+        Map<String, Object> transformedCase = result.getTransformedCase();
         @SuppressWarnings("unchecked")
-        List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
+        List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
         assertEquals(scannedRecord.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord.getFilename(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord.getDocumentLink().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+
+        assertEquals(transformedCase.get("evidencePresent"), YES_LITERAL);
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -589,6 +592,20 @@ public class SscsCaseTransformerTest {
         assertEquals(scannedRecord2.getFilename(), docs.get(1).getValue().getDocumentFileName());
         assertEquals(scannedRecord2.getDocumentLink().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(1).getValue().getDocumentType());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenACaseWithNoDocuments_thenBuildACaseWithNoEvidencePresent() {
+        List<ScannedRecord> records = new ArrayList<>();
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Map<String, Object> transformedCase = result.getTransformedCase();
+        assertEquals(transformedCase.get("evidencePresent"), NO_LITERAL);
 
         assertTrue(result.getErrors().isEmpty());
     }

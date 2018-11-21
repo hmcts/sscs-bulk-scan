@@ -80,6 +80,7 @@
     "generatedNino" : "JT0123456B",
     "generatedSurname" : "Smith",
     "generatedDOB" : "1976-11-11",
+    "evidencePresent" : "Yes",
     "bulkScanCaseReference" : "1234567890",
     "caseCreated" : "2018-11-21"
   },
