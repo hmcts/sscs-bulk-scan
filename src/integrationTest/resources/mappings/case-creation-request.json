@@ -45,6 +45,7 @@
         "wantsSupport" : "No",
         "languageInterpreter": "No",
         "arrangements" : [],
+        "scheduleHearing" : "Yes",
         "excludeDates" : [{
           "value" : {
               "start" : "2018-12-01",

@@ -38,7 +38,8 @@
         "wantsToAttend" : "Yes",
         "wantsSupport" : "No",
         "languageInterpreter": "No",
-        "arrangements" : []
+        "arrangements" : [],
+        "scheduleHearing" : "No"
       },
       "appealReasons": null,
       "rep": {
