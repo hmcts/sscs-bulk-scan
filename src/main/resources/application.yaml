@@ -35,7 +35,7 @@ idam:
       email: ${IDAM_OAUTH2_USER_EMAIL:SSCS_SYSTEM_UPDATE}
       password: ${IDAM_OAUTH2_USER_PASSWORD:SSCS_SYSTEM_UPDATE}
     client:
-      id: sscs
+      id: ${IDAM_OAUTH2_CLIENT_ID:sscs}
       secret: ${IDAM_OAUTH2_CLIENT_SECRET:QM5RQQ53LZFOSIXJ}
     redirectUrl: ${IDAM_OAUTH2_REDIRECT_URL:https://localhost:9000/poc}
 

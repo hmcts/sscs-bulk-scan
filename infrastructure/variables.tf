@@ -48,7 +48,7 @@ variable "idam_s2s_auth_microservice" {
 }
 
 variable "idam_oauth2_client_id" {
-  default = "sscs"
+  default = "bsp"
 }
 
 variable "idam_redirect_url" {
