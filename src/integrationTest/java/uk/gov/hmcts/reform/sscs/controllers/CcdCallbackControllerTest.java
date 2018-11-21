@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import org.apache.commons.codec.Charsets;
+import org.joda.time.DateTimeUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -102,6 +103,7 @@ public class CcdCallbackControllerTest {
         baseUrl = "http://localhost:" + randomServerPort + "/exception-record/";
         ccdServer = new WireMockRule(wiremockPort);
         ccdServer.start();
+        DateTimeUtils.setCurrentMillisFixed(1542820369000L);
     }
 
     @After

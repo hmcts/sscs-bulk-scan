@@ -4,6 +4,9 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.*;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
@@ -46,6 +49,9 @@ public class SscsCaseTransformer implements CaseTransformer {
         transformed.put("appeal", appeal);
         transformed.put("sscsDocument", sscsDocuments);
         transformed.put("bulkScanCaseReference", caseDetails.getCaseId());
+
+        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
+        transformed.put("caseCreated", dtfOut.print(new DateTime()));
 
         if (appeal.getAppellant() != null) {
             transformed.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
