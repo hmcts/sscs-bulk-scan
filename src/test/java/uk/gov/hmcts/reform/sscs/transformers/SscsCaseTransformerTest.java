@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -290,13 +291,25 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenSingleExcludedDate_thenBuildAnAppealWithExcludedStartDate() {
+    public void givenSingleExcludedDate_thenBuildAnAppealWithExcludedStartDateAndScheduleHearingYes() {
 
         pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("2018-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenNoExcludedDate_thenBuildAnAppealWithExcludedStartDateAndScheduleHearingNo() {
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
+        assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -615,6 +628,7 @@ public class SscsCaseTransformerTest {
             .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE)).mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingOptions(HearingOptions.builder()
+                .scheduleHearing(YES_LITERAL)
                 .excludeDates(excludedDates)
                 .arrangements(hearingSupportArrangements)
                 .languageInterpreter(YES_LITERAL)
