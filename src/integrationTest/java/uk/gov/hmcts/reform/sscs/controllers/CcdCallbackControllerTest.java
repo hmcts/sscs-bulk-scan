@@ -44,7 +44,6 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
-import uk.gov.hmcts.reform.sscs.ccd.client.CcdClient;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.sscs.idam.IdamApiClient;
 
@@ -96,9 +95,6 @@ public class CcdCallbackControllerTest {
     @MockBean
     private AuthTokenValidator authTokenValidator;
 
-//    @MockBean
-//    private CcdClient ccdClient;
-
     @MockBean
     private IdamApiClient idamApiClient;
 
@@ -147,7 +143,7 @@ public class CcdCallbackControllerTest {
 
         submitForCaseworkerStub("appealCreated");
 
-        readForCaseworkerStub(READ_EVENT_URL);
+        readForCaseworkerStub(READ_EVENT_URL, true);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
 
@@ -406,6 +402,29 @@ public class CcdCallbackControllerTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    @Test
+    public void should_return_500_when_robotics_validation_is_invalid_when_creating_case() throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
+
+        submitForCaseworkerStub("appealCreated");
+
+        readForCaseworkerStub(READ_EVENT_URL, false);
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(500);
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
 
     private Map<String, Object> caseDataWithContradictingValues() {
         List<Object> ocrList = new ArrayList<>();
@@ -633,7 +652,9 @@ public class CcdCallbackControllerTest {
                 .withBody(loadJson("mappings/create-case-200-response.json"))));
     }
 
-    private void readForCaseworkerStub(String eventUrl) throws Exception {
+    private void readForCaseworkerStub(String eventUrl, Boolean validData) throws Exception {
+        String createCaseResponse = validData ? "mappings/create-case-200-response.json" : "mappings/create-case-invalid-robotics-200-response.json";
+
         ccdServer.stubFor(get(concat(eventUrl))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
@@ -641,7 +662,7 @@ public class CcdCallbackControllerTest {
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .withStatus(200)
-                .withBody(loadJson("mappings/create-case-200-response.json"))));
+                .withBody(loadJson(createCaseResponse))));
     }
 
     private void startForCaseworkerStubWithUserTokenHavingNoAccess(String eventUrl) throws Exception {

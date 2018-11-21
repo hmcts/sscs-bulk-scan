@@ -1,2 +1,1 @@
-allowed-services-for-callback : test_service
-
+allowed-services-for-callback: test_service

@@ -12,7 +12,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
@@ -20,11 +19,11 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
+import uk.gov.hmcts.reform.sscs.exceptions.CcdFindCaseException;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.RoboticsService;
-import uk.gov.hmcts.reform.sscs.service.SscsPdfService;
 
 @Component
 @Slf4j
@@ -83,7 +82,10 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                         null,
                         additionalEvidence);
                 } else {
-                    //TODO: throw an error here - created but not sent to robotics
+                    String message = "Could not find case id in CCD: " + caseId + ". Case may be created but could not be sent to robotics.";
+                    CcdFindCaseException exception = new CcdFindCaseException(new Exception(message));
+                    log.error("Error creating case in CCD: " + exception);
+                    throw exception;
                 }
             }
 

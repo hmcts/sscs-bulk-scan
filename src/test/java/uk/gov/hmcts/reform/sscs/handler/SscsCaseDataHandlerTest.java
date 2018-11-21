@@ -3,16 +3,12 @@ package uk.gov.hmcts.reform.sscs.handler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
-import gcardone.junidecode.App;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -25,17 +21,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.document.domain.Document;
-import uk.gov.hmcts.reform.pdf.service.client.PDFServiceClient;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
-import uk.gov.hmcts.reform.sscs.domain.email.Email;
-import uk.gov.hmcts.reform.sscs.domain.email.SubmitYourAppealEmailTemplate;
-import uk.gov.hmcts.reform.sscs.service.*;
+import uk.gov.hmcts.reform.sscs.exceptions.CcdFindCaseException;
+import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
+import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
+import uk.gov.hmcts.reform.sscs.service.RoboticsService;
 
 public class SscsCaseDataHandlerTest {
 
@@ -234,5 +229,26 @@ public class SscsCaseDataHandlerTest {
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
+    }
+
+    @Test(expected = CcdFindCaseException.class)
+    public void givenACaseWithNoWarningsButCcdIdCanNotBeFound_thenThrowCcdFindCaseException() {
+
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
+        Map<String, Object> transformedCase = new HashMap<>();
+        transformedCase.put("appeal", appeal);
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
+
+        byte[] expectedBytes = {1, 2, 3};
+        given(evidenceManagementService.download(any())).willReturn(expectedBytes);
+
+        given(caseDataHelper.createCase(
+            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
+
+        given(ccdService.getByCaseId(eq(1L), any())).willReturn(null);
+
+        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
     }
 }

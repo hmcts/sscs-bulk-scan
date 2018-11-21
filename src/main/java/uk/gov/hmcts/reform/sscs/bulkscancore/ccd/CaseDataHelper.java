@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.*;
-import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @Component
 public class CaseDataHelper {
@@ -38,17 +37,6 @@ public class CaseDataHelper {
 
         return caseDetails.getId();
     }
-
-//    public CaseDetails readForCaseworker(IdamTokens idamTokens, Long caseId, String jurisdictionId, String caseTypeId) {
-//        return coreCaseDataApi.readForCaseWorker(
-//            idamTokens.getIdamOauth2Token(),
-//            idamTokens.getServiceAuthorization(),
-//            idamTokens.getUserId(),
-//            jurisdictionId,
-//            caseTypeId,
-//            caseId.toString()
-//        );
-//    }
 
     private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken, String eventId) {
         return CaseDataContent.builder()
