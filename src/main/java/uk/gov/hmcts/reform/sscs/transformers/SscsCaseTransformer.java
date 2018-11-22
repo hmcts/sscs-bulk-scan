@@ -191,7 +191,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<ExcludeDate> excludedDates = buildExcludedDates(pairs);
 
-        String scheduleHearing = excludedDates != null && !excludedDates.isEmpty() ? YES_LITERAL : NO_LITERAL;
+        String scheduleHearing = excludedDates != null && !excludedDates.isEmpty() && wantsToAttend.equals(YES_LITERAL) ? YES_LITERAL : NO_LITERAL;
 
         return HearingOptions.builder()
             .wantsToAttend(wantsToAttend)
