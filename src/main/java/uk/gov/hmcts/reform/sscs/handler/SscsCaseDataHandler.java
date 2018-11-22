@@ -53,7 +53,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
                 return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
             } catch (Exception e) {
-                wrapAndThrowBulkScanException(exceptionRecordId, e);
+                wrapAndThrowCaseDataHandlerException(exceptionRecordId, e);
             }
         }
         return null;
@@ -82,7 +82,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         return null;
     }
 
-    private void wrapAndThrowBulkScanException(String exceptionId, Exception ex) {
+    private void wrapAndThrowCaseDataHandlerException(String exceptionId, Exception ex) {
         CaseDataHelperException exception = new CaseDataHelperException(exceptionId, ex);
         log.error("Error for exception id: " + exceptionId, exception);
         throw exception;
