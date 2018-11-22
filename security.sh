@@ -10,5 +10,7 @@ echo "listings of zap folder"
 ls -la /zap
 echo "listings of root folder"
 ls /
+echo "listings of wrk folder"
+ls -la /zap/wrk
 cp wrk/api-report.html functional-output/
 zap-cli -p 1001 alerts -l Informational
