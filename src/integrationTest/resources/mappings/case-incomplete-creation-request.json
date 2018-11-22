@@ -57,7 +57,8 @@
     "generatedNino" : null,
     "generatedSurname" : null,
     "generatedDOB" : null,
-    "bulkScanCaseReference" : "1234567890"
+    "bulkScanCaseReference" : "1234567890",
+    "caseCreated" : "2018-11-21"
   },
   "security_classification" : "PUBLIC",
   "event_token" : "test_event_token",

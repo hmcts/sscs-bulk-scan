@@ -10,12 +10,11 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -519,6 +518,18 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertTrue(result.getErrors().contains("NI Number is invalid"));
+    }
+
+    @Test
+    public void createCaseWithTodaysCaseCreationDate() {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String nowDateFormatted = df.format(new Date());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(nowDateFormatted, result.getTransformedCase().get("caseCreated"));
+
+        assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
