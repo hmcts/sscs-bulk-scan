@@ -21,6 +21,7 @@ public final class SscsConstants {
     public static final String HEARING_OPTIONS_HEARING_LOOP_LITERAL = "hearing_options_hearing_loop";
     public static final String HEARING_SUPPORT_ARRANGEMENTS_LITERAL = "hearing_support_arrangements";
     public static final String DEFAULT_SIGN_LANGUAGE = "British Sign Language";
+    public static final String BENEFIT_TYPE_DESCRIPTION = "benefit_type_description";
     public static final String YES_LITERAL = "Yes";
     public static final String NO_LITERAL = "No";
 

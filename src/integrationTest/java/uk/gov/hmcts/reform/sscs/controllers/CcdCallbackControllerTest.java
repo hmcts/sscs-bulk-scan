@@ -418,7 +418,7 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "benefit_type_description", VALUE, "Employment Support Allowance"))
+            ImmutableMap.of(KEY, "benefit_type_description", VALUE, "ESA"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -500,7 +500,7 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "benefit_type_description", VALUE, "Employment Support Allowance"))
+            ImmutableMap.of(KEY, "benefit_type_description", VALUE, "ESA"))
         );
         ocrList.add(ocrEntry(
             VALUE,
