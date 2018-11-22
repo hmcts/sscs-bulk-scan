@@ -5,9 +5,9 @@ ls
 cat zap.out
 pwd
 echo "the current listing of files"
-ls
+ls -la
 echo "listings of zap folder"
-ls /zap
+ls -la /zap
 echo "listings of root folder"
 ls /
 cp wrk/api-report.html functional-output/
