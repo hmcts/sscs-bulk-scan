@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 
 @Component
 @Slf4j
@@ -45,11 +46,15 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         if (canCreateCase(caseValidationResponse, ignoreWarnings)) {
             String eventId = findEventToCreateCase(caseValidationResponse);
 
-            Long caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
+            try {
+                Long caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
 
-            log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
+                log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
-            return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
+                return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
+            } catch (Exception e) {
+                wrapAndThrowBulkScanException(exceptionRecordId, e);
+            }
         }
         return null;
     }
@@ -75,5 +80,11 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             return LocalDate.parse(mrnDetails.getMrnDate());
         }
         return null;
+    }
+
+    private void wrapAndThrowBulkScanException(String exceptionId, Exception ex) {
+        CaseDataHelperException exception = new CaseDataHelperException(exceptionId, ex);
+        log.error("Error for exception id: " + exceptionId, exception);
+        throw exception;
     }
 }
