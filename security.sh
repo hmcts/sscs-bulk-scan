@@ -6,5 +6,7 @@ cat zap.out
 pwd
 echo "the current listing of files"
 ls
+ls /zap
+ls /
 cp wrk/api-report.html functional-output/
 zap-cli -p 1001 alerts -l Informational
