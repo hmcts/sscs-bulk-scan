@@ -52,7 +52,7 @@ variable "idam_oauth2_client_id" {
 }
 
 variable "idam_redirect_url" {
-  default = "https://sscs-case-loader-sandbox.service.core-compute-sandbox.internal"
+  default = "https://rpe-bulk-scan-processor*.service.core-compute-saat.internal/"
 }
 
 variable "idam_url" {
