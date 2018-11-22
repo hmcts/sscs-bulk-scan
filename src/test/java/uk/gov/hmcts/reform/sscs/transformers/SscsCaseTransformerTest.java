@@ -314,6 +314,21 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenAnExcludedDateAndDoesNotWantToAttendHearing_thenBuildAnAppealWithScheduleHearingNo() {
+
+        pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
+        pairs.put("is_hearing_type_oral", false);
+        pairs.put("is_hearing_type_paper", true);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("2018-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     public void givenTwoSingleExcludedDatesWithSpace_thenBuildAnAppealWithTwoExcludedStartDates() {
 
         pairs.put("hearing_options_exclude_dates", "12/12/2018, 16/12/2018");
