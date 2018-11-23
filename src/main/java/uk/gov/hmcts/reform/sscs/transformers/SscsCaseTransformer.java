@@ -76,16 +76,16 @@ public class SscsCaseTransformer implements CaseTransformer {
                         .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
                         .build();
                 }
-                appellant = buildAppelant(pairs, PERSON2_VALUE, appointee, null);
+                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, null);
 
             } else if (hasPerson(pairs, PERSON1_VALUE)) {
-                appellant = buildAppelant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE));
+                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE));
             }
 
             String hearingType = findHearingType(pairs);
 
             return Appeal.builder()
-                .benefitType(BenefitType.builder().code(getField(pairs, "benefit_type_description")).build())
+                .benefitType(BenefitType.builder().code(getField(pairs, BENEFIT_TYPE_DESCRIPTION)).build())
                 .appellant(appellant)
                 .rep(buildRepresentative(pairs))
                 .mrnDetails(buildMrnDetails(pairs))
@@ -100,7 +100,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
     }
 
-    private Appellant buildAppelant(Map<String, Object> pairs, String personType, Appointee appointee, Contact contact) {
+    private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee, Contact contact) {
         return Appellant.builder()
             .name(buildPersonName(pairs, personType))
             .address(buildPersonAddress(pairs, personType))

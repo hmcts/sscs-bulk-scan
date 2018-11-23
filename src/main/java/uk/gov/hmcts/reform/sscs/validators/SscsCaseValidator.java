@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON1_VALUE;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON2_VALUE;
 
@@ -11,21 +12,30 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
+import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
 
 @Component
 public class SscsCaseValidator implements CaseValidator {
 
+    List<String> warnings;
+    List<String> errors;
+
     @Override
     public CaseResponse validate(Map<String, Object> caseData) {
+        warnings = new ArrayList<>();
+        errors = new ArrayList<>();
+
+        validateAppeal((Appeal) caseData.get("appeal"));
 
         return CaseResponse.builder()
-            .warnings(populateWarnings((Appeal) caseData.get("appeal")))
+            .errors(errors)
+            .warnings(warnings)
             .transformedCase(caseData)
             .build();
     }
 
-    private List<String> populateWarnings(Appeal appeal) {
-        List<String> warnings = new ArrayList<>();
+    private List<String> validateAppeal(Appeal appeal) {
 
         Appellant appellant = appeal.getAppellant();
 
@@ -54,6 +64,7 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesMrnDateExist(appeal)) {
             warnings.add("mrn_date is empty");
         }
+        isBenefitTypeValid(appeal.getBenefitType());
 
         return warnings;
     }
@@ -120,5 +131,29 @@ public class SscsCaseValidator implements CaseValidator {
         } else {
             return PERSON2_VALUE;
         }
+    }
+
+    private void isBenefitTypeValid(BenefitType benefitType) {
+        if (benefitType != null && benefitType.getCode() != null) {
+            if (!validBenefitTypes(benefitType.getCode())) {
+                List<String> benefitNameList = new ArrayList<>();
+                for (Benefit be : Benefit.values()) {
+                    benefitNameList.add(be.name());
+                }
+
+                errors.add(BENEFIT_TYPE_DESCRIPTION + " invalid. Should be one of: " + String.join(", ", benefitNameList));
+            }
+        } else {
+            warnings.add(BENEFIT_TYPE_DESCRIPTION + " is empty");
+        }
+    }
+
+    private Boolean validBenefitTypes(String field) {
+        for (Benefit benefit : Benefit.values()) {
+            if (benefit.toString().toLowerCase().equals(field.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

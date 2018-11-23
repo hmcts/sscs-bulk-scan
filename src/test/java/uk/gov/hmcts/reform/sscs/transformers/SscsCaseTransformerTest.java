@@ -59,7 +59,7 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
 
-        pairs.put("benefit_type_description", BENEFIT_TYPE_DESCRIPTION);
+        pairs.put("benefit_type_description", BENEFIT_TYPE);
         pairs.put("mrn_date", MRN_DATE);
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -648,7 +648,7 @@ public class SscsCaseTransformerTest {
         hearingSupportArrangements.add("hearingLoop");
 
         return Appeal.builder()
-            .benefitType(BenefitType.builder().code(BENEFIT_TYPE_DESCRIPTION).build())
+            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).build())
             .appellant(appellant)
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE)).mrnLateReason(APPEAL_LATE_REASON).build())

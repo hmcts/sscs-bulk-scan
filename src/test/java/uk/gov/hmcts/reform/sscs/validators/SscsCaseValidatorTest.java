@@ -2,8 +2,12 @@ package uk.gov.hmcts.reform.sscs.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -28,7 +32,8 @@ public class SscsCaseValidatorTest {
                 "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_nino is empty",
-                "mrn_date is empty");
+                "mrn_date is empty",
+                "benefit_type_description is empty");
     }
 
     @Test
@@ -37,6 +42,7 @@ public class SscsCaseValidatorTest {
             .put("appeal", Appeal.builder().appellant(Appellant.builder().address(
                 Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13FG").build())
                 .identity(Identity.builder().nino("JT1234567B").build()).build())
+                .benefitType(BenefitType.builder().code(PIP.name()).build())
                 .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build()).build();
 
         CaseResponse response = validator.validate(pairs);
@@ -52,6 +58,7 @@ public class SscsCaseValidatorTest {
             .put("appeal", Appeal.builder().appellant(Appellant.builder().name(
                 Name.builder().firstName("Harry").lastName("Kane").build())
                 .identity(Identity.builder().nino("JT1234567B").build()).build())
+                .benefitType(BenefitType.builder().code(PIP.name()).build())
                 .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build()).build();
 
         CaseResponse response = validator.validate(pairs);
@@ -151,6 +158,33 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppealDoesNotContainABenefitTypeDescription_thenAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(null, buildAppellant(false)));
+
+        assertEquals(BENEFIT_TYPE_DESCRIPTION + " is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsAnInvalidBenefitTypeDescription_thenAddAnError() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", buildAppellant(false)));
+
+        List<String> benefitNameList = new ArrayList<>();
+        for (Benefit be : Benefit.values()) {
+            benefitNameList.add(be.name());
+        }
+
+        assertEquals(BENEFIT_TYPE_DESCRIPTION + " invalid. Should be one of: " + String.join(", ", benefitNameList), response.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsAValidBenefitTypeDescription_thenAddAnError() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellant(false)));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
     public void givenAllMandatoryFieldsForAnAppellantExists_thenDoNotAddAWarning() {
         Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false));
 
@@ -160,13 +194,22 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant) {
-        return buildMinimumAppealDataWithMrnDate("12/12/2018", appellant);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("12/12/2018", PIP.name(), appellant);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrnDate(String mrnDate, Appellant appellant) {
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrnDate, PIP.name(), appellant);
+    }
+
+    private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant) {
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("12/12/2018", benefitCode, appellant);
+    }
+
+    private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(String mrnDate, String benefitCode, Appellant appellant) {
         return ImmutableMap.<String, Object>builder()
             .put("appeal", Appeal.builder()
                 .mrnDetails(MrnDetails.builder().mrnDate(mrnDate).build())
+                .benefitType(BenefitType.builder().code(benefitCode).build())
                 .appellant(appellant).build()).build();
     }
 
