@@ -2,6 +2,10 @@ variable "product" {
   type = "string"
 }
 
+variable "raw_product" {
+  default = "sscs-bulk-scan" // jenkins-library overrides product for PRs and adds e.g. pr-118-rpe-...
+}
+
 variable "component" {
   type = "string"
 }
@@ -17,6 +21,13 @@ variable "env" {
 
 variable "ilbIp" {}
 
+variable "tenant_id" {}
+
+variable "jenkins_AAD_objectId" {
+  type        = "string"
+  description = "(Required) The Azure AD object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies."
+}
+
 variable "subscription" {}
 
 variable "capacity" {
@@ -25,4 +36,25 @@ variable "capacity" {
 
 variable "common_tags" {
   type = "map"
+}
+
+variable "infrastructure_env" {
+  default     = "test"
+  description = "Infrastructure environment to point to"
+}
+
+variable "idam_s2s_auth_microservice" {
+  default = "ccd_data"
+}
+
+variable "idam_oauth2_client_id" {
+  default = "bsp"
+}
+
+variable "idam_redirect_url" {
+  default = "https://rpe-bulk-scan-processor*.service.core-compute-saat.internal/oauth2/callback"
+}
+
+variable "idam_url" {
+  default = "http://testing.test"
 }

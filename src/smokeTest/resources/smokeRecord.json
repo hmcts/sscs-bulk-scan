@@ -1,0 +1,33 @@
+{
+  "token": null,
+  "event_id": "createNewCase",
+  "case_details": {
+    "case_data": {
+      "poBox": "SSCSPO",
+      "journeyClassification": "New Application",
+      "poBoxJurisdiction": "SSCS",
+      "scanOCRData": [
+        {
+          "value": {
+            "key": "is_hearing_type_oral",
+            "value": "true"
+          }
+        },
+        {
+          "value": {
+            "key": "is_hearing_type_paper",
+            "value": "false"
+          }
+        },
+        {
+          "value": {
+            "key": "mrn_date",
+            "value": "an invalid date"
+          }
+        }
+      ]
+    },
+    "id": "12222",
+    "state": "ScannedRecordReceived"
+  }
+}
