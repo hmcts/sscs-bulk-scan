@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.sscs.handler;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 import java.time.LocalDate;
+
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -52,7 +54,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
                 return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
-            } catch (feign.RetryableException e) {
+            } catch (FeignException e) {
                 throw e;
             } catch (Exception e) {
                 wrapAndThrowCaseDataHandlerException(exceptionRecordId, e);
