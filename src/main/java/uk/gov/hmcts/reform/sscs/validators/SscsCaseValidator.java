@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON1_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON2_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +62,7 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesMrnDateExist(appeal)) {
             warnings.add("mrn_date is empty");
         }
-        isBenefitTypeValid(appeal.getBenefitType());
+        isBenefitTypeValid(appeal);
 
         return warnings;
     }
@@ -133,27 +131,23 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void isBenefitTypeValid(BenefitType benefitType) {
+    private void isBenefitTypeValid(Appeal appeal) {
+        BenefitType benefitType = appeal.getBenefitType();
         if (benefitType != null && benefitType.getCode() != null) {
-            if (!validBenefitTypes(benefitType.getCode())) {
+            if (!Benefit.isBenefitTypeValid(benefitType.getCode())) {
                 List<String> benefitNameList = new ArrayList<>();
                 for (Benefit be : Benefit.values()) {
                     benefitNameList.add(be.name());
                 }
-
                 errors.add(BENEFIT_TYPE_DESCRIPTION + " invalid. Should be one of: " + String.join(", ", benefitNameList));
+            } else {
+                appeal.setBenefitType(BenefitType.builder()
+                    .code(benefitType.getCode())
+                    .description(Benefit.getBenefitByCode(benefitType.getCode()).getDescription())
+                    .build());
             }
         } else {
             warnings.add(BENEFIT_TYPE_DESCRIPTION + " is empty");
         }
-    }
-
-    private Boolean validBenefitTypes(String field) {
-        for (Benefit benefit : Benefit.values()) {
-            if (benefit.toString().toLowerCase().equals(field.toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

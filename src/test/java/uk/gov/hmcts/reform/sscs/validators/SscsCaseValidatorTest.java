@@ -180,6 +180,8 @@ public class SscsCaseValidatorTest {
     public void givenAnAppealContainsAValidBenefitTypeDescription_thenAddAnError() {
         CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellant(false)));
 
+        assertEquals("PIP", ((Appeal) response.getTransformedCase().get("appeal")).getBenefitType().getCode());
+        assertEquals("Personal Independence Payment", ((Appeal) response.getTransformedCase().get("appeal")).getBenefitType().getDescription());
         assertEquals(0, response.getWarnings().size());
         assertEquals(0, response.getErrors().size());
     }
