@@ -32,7 +32,7 @@
       },
       "benefitType": {
         "code": "ESA",
-        "description": null
+        "description": "Employment and Support Allowance"
       },
       "hearingOptions": {
         "wantsToAttend" : "Yes",
