@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @SpringBootTest
@@ -22,7 +21,7 @@ public class GetSmokeCase {
     private final String appUrl = System.getenv("TEST_URL");
 
     @Autowired
-    private IdamService idamService;
+    private IdamTest idamService;
 
     @Test
     public void givenASmokeCase_retrieveFromCcd() throws IOException {

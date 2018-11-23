@@ -33,3 +33,7 @@ output "idam_oauth2_user_email" {
 output "idam_oauth2_user_password" {
   value = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
 }
+
+output "idam_oauth2_client_id" {
+  value = "${var.idam_oauth2_client_id}"
+}

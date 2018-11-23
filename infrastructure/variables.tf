@@ -52,7 +52,7 @@ variable "idam_oauth2_client_id" {
 }
 
 variable "idam_redirect_url" {
-  default = "https://rpe-bulk-scan-processor%2A.service.core-compute-saat.internal/oauth2/callback"
+  default = "https://rpe-bulk-scan-processor*.service.core-compute-saat.internal/oauth2/callback"
 }
 
 variable "idam_url" {
