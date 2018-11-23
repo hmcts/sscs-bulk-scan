@@ -52,6 +52,8 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
                 return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
+            } catch (feign.RetryableException e) {
+                throw e;
             } catch (Exception e) {
                 wrapAndThrowCaseDataHandlerException(exceptionRecordId, e);
             }
