@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 echo ${TEST_URL}
-zap-api-scan.py -t ${TEST_URL}/v2/api-docs -f openapi -P 1001 -r api-report.html -a 
+zap-api-scan.py -t ${TEST_URL}/v2/api-docs -f openapi -P 1001 -r /zap/api-report.html -a 
 ls
 cat zap.out
 echo "the current listing of files"
