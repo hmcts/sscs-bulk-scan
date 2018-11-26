@@ -35,7 +35,7 @@ public final class SscsOcrDataUtil {
     }
 
     public static String getField(Map<String, Object> pairs, String field) {
-        return pairs.containsKey(field) ? pairs.get(field).toString() : null;
+        return pairs.containsKey(field) && pairs.get(field) != null ? pairs.get(field).toString() : null;
     }
 
     public static boolean doValuesContradict(Map<String, Object> pairs, List<String> errors, String value1, String value2) {
