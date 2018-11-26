@@ -28,7 +28,7 @@ idam:
   url: ${IDAM_URL:http://localhost:4501}
   s2s-auth:
     totp_secret: ${S2S_SECRET:AAAAAAAAAAAAAAAA}
-    microservice: ${IDAM_S2S_AUTH_MICROSERVICE:ccd_data}
+    microservice: ${IDAM_S2S_AUTH_MICROSERVICE:sscs_bulkscan}
     url: ${IDAM_S2S_AUTH:http://localhost:4502}
   oauth2:
     user:
