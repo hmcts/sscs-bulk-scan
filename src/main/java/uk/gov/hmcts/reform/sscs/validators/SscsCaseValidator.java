@@ -142,8 +142,8 @@ public class SscsCaseValidator implements CaseValidator {
                 errors.add(BENEFIT_TYPE_DESCRIPTION + " invalid. Should be one of: " + String.join(", ", benefitNameList));
             } else {
                 appeal.setBenefitType(BenefitType.builder()
-                    .code(benefitType.getCode())
-                    .description(Benefit.getBenefitByCode(benefitType.getCode()).getDescription())
+                    .code(benefitType.getCode().toUpperCase())
+                    .description(Benefit.getBenefitByCode(benefitType.getCode().toUpperCase()).getDescription())
                     .build());
             }
         } else {
