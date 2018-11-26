@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 
 public class SscsCaseDataHandlerTest {
 
@@ -177,5 +178,21 @@ public class SscsCaseDataHandlerTest {
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
+    }
+
+    @Test(expected = CaseDataHelperException.class)
+    public void shouldThrowCaseDataHelperExceptionForAnyException() throws Exception {
+
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().build()).build();
+        Map<String, Object> transformedCase = new HashMap<>();
+        transformedCase.put("appeal", appeal);
+
+        given(caseDataHelper.createCase(
+            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willThrow(new RuntimeException());
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
+
+        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
     }
 }
