@@ -565,7 +565,7 @@ public class SscsCaseTransformerTest {
         assertEquals(scannedRecord.getDocumentLink().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
 
-        assertEquals(transformedCase.get("evidencePresent"), YES_LITERAL);
+        assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -605,7 +605,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         Map<String, Object> transformedCase = result.getTransformedCase();
-        assertEquals(transformedCase.get("evidencePresent"), NO_LITERAL);
+        assertEquals(NO_LITERAL, transformedCase.get("evidencePresent"));
 
         assertTrue(result.getErrors().isEmpty());
     }

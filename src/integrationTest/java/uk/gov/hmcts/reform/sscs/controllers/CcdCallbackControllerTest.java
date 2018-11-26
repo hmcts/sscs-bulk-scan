@@ -14,6 +14,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import javax.mail.Session;
@@ -45,7 +46,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
-import uk.gov.hmcts.reform.sscs.idam.IdamApiClient;
+import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -96,7 +97,7 @@ public class CcdCallbackControllerTest {
     private AuthTokenValidator authTokenValidator;
 
     @MockBean
-    private IdamApiClient idamApiClient;
+    private EvidenceManagementService evidenceManagementService;
 
     @MockBean
     private JavaMailSender mailSender;
@@ -126,6 +127,9 @@ public class CcdCallbackControllerTest {
 
         message = new MimeMessage(session);
         when(mailSender.createMimeMessage()).thenReturn(message);
+
+        byte[] expectedBytes = {1, 2, 3};
+        when(evidenceManagementService.download(URI.create("http://www.bbc.com"))).thenReturn(expectedBytes);
     }
 
     @After
@@ -402,30 +406,6 @@ public class CcdCallbackControllerTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
-    @Test
-    public void should_return_500_when_robotics_validation_is_invalid_when_creating_case() throws Exception {
-        // Given
-        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-
-        startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
-
-        submitForCaseworkerStub("appealCreated");
-
-        readForCaseworkerStub(READ_EVENT_URL, false);
-
-        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
-
-        // When
-        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
-            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
-
-        // Then
-        assertThat(result.getStatusCodeValue()).isEqualTo(500);
-
-        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-    }
-
-
     private Map<String, Object> caseDataWithContradictingValues() {
         List<Object> ocrList = new ArrayList<>();
 
@@ -583,11 +563,11 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_phone", VALUE, "012345678"))
+            ImmutableMap.of(KEY, "person1_phone", VALUE, "01234567899"))
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_mobile", VALUE, "012345678"))
+            ImmutableMap.of(KEY, "person1_mobile", VALUE, "01234567899"))
         );
         ocrList.add(ocrEntry(
             VALUE,

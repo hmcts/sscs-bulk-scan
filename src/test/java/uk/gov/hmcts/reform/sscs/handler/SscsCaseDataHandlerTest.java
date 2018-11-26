@@ -17,24 +17,21 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
-import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
-import uk.gov.hmcts.reform.sscs.exceptions.CcdFindCaseException;
+import uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService;
+import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.RoboticsService;
 
 public class SscsCaseDataHandlerTest {
 
-    @InjectMocks
     SscsCaseDataHandler sscsCaseDataHandler;
 
     @Mock
@@ -49,8 +46,7 @@ public class SscsCaseDataHandlerTest {
     @Mock
     RegionalProcessingCenterService regionalProcessingCenterService;
 
-    @Mock
-    CcdService ccdService;
+    SscsCcdConvertService convertService;
 
     LocalDate localDate;
 
@@ -60,9 +56,10 @@ public class SscsCaseDataHandlerTest {
     public void setup() {
         initMocks(this);
 
-        ReflectionTestUtils.setField(sscsCaseDataHandler, "caseCreatedEventId", "appealCreated");
-        ReflectionTestUtils.setField(sscsCaseDataHandler, "incompleteApplicationEventId", "incompleteApplicationReceived");
-        ReflectionTestUtils.setField(sscsCaseDataHandler, "nonCompliantEventId", "nonCompliant");
+        convertService = new SscsCcdConvertService();
+
+        sscsCaseDataHandler = new SscsCaseDataHandler(caseDataHelper, roboticsService, regionalProcessingCenterService,
+            convertService, evidenceManagementService, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"));
 
         localDate = LocalDate.now();
     }
@@ -113,7 +110,11 @@ public class SscsCaseDataHandlerTest {
     @Test
     public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEvent() {
 
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
+            .appellant(Appellant.builder().address(
+                Address.builder().postcode("CM120HN").build())
+            .build()).build();
+
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
@@ -125,19 +126,9 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
 
-        SscsCaseData caseData = SscsCaseData.builder().appeal(
-            Appeal.builder().appellant(
-                Appellant.builder().address(
-                    Address.builder().postcode("CM120HN").build())
-                    .build())
-                .build())
-            .build();
-
-        given(ccdService.getByCaseId(eq(1L), any())).willReturn(SscsCaseDetails.builder().data(caseData).build());
-
         given(regionalProcessingCenterService.getFirstHalfOfPostcode("CM120HN")).willReturn("CM12");
 
-        doNothing().when(roboticsService).sendCaseToRobotics(eq(caseData), eq(1L), eq("CM12"), eq(null), any());
+        doNothing().when(roboticsService).sendCaseToRobotics(eq(SscsCaseData.builder().appeal(appeal).build()), eq(1L), eq("CM12"), eq(null), any());
 
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
@@ -197,7 +188,11 @@ public class SscsCaseDataHandlerTest {
     @Test
     public void givenACaseWithNoWarningsAndNoMrnDate_thenCreateCaseWithAppealCreatedEventAndSendRoboticsByEmailWithEvidence() {
 
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().build()).build();
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().build())
+            .appellant(Appellant.builder().address(
+                Address.builder().postcode("CM120HN").build())
+                .build())
+            .build();
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
@@ -209,19 +204,9 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
 
-        SscsCaseData caseData = SscsCaseData.builder().appeal(
-            Appeal.builder().appellant(
-                Appellant.builder().address(
-                    Address.builder().postcode("CM120HN").build())
-                    .build())
-                .build())
-            .build();
-
-        given(ccdService.getByCaseId(eq(1L), any())).willReturn(SscsCaseDetails.builder().data(caseData).build());
-
         given(regionalProcessingCenterService.getFirstHalfOfPostcode("CM120HN")).willReturn("CM12");
 
-        doNothing().when(roboticsService).sendCaseToRobotics(eq(caseData), eq(1L), eq("CM12"), eq(null), any());
+        doNothing().when(roboticsService).sendCaseToRobotics(eq(SscsCaseData.builder().appeal(appeal).build()), eq(1L), eq("CM12"), eq(null), any());
 
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
@@ -229,26 +214,5 @@ public class SscsCaseDataHandlerTest {
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
-    }
-
-    @Test(expected = CcdFindCaseException.class)
-    public void givenACaseWithNoWarningsButCcdIdCanNotBeFound_thenThrowCcdFindCaseException() {
-
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
-        Map<String, Object> transformedCase = new HashMap<>();
-        transformedCase.put("appeal", appeal);
-
-        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
-
-        byte[] expectedBytes = {1, 2, 3};
-        given(evidenceManagementService.download(any())).willReturn(expectedBytes);
-
-        given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
-
-        given(ccdService.getByCaseId(eq(1L), any())).willReturn(null);
-
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
     }
 }

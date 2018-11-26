@@ -132,6 +132,7 @@ pitest {
   excludedClasses = [
     'uk.gov.hmcts.reform.sscs.config.*',
     'uk.gov.hmcts.reform.sscs.bulkscancore.domain.*',
+    'uk.gov.hmcts.reform.sscs.domain.*',
     'uk.gov.hmcts.reform.sscs.BulkScanApplication'
   ]
   threads = 10
@@ -151,6 +152,7 @@ sonarqube {
     property "sonar.exclusions", "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/bulkscancore/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/BulkScanApplication.java," +
+      "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/config/**,"
     property "sonar.pitest.mode", "reuseReport"
     property "sonar.pitest.reportsDirectory", "build/reports/pitest"

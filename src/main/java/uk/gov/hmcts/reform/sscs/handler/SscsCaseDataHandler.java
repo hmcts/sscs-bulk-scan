@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
@@ -17,10 +16,12 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
-import uk.gov.hmcts.reform.sscs.ccd.domain.*;
-import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
-import uk.gov.hmcts.reform.sscs.exceptions.CcdFindCaseException;
-import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
+import uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService;
+import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.RoboticsService;
@@ -32,29 +33,22 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     private final CaseDataHelper caseDataHelper;
     private final RoboticsService roboticsService;
     private final RegionalProcessingCenterService regionalProcessingCenterService;
-    private final CcdService ccdService;
+    private final SscsCcdConvertService convertService;
     private final EvidenceManagementService evidenceManagementService;
-    private final String caseCreatedEventId;
-    private final String incompleteApplicationEventId;
-
-    private final String nonCompliantEventId;
+    private final CaseEvent caseEvent;
 
     public SscsCaseDataHandler(CaseDataHelper caseDataHelper,
                                RoboticsService roboticsService,
                                RegionalProcessingCenterService regionalProcessingCenterService,
-                               CcdService ccdService,
+                               SscsCcdConvertService convertService,
                                EvidenceManagementService evidenceManagementService,
-                               @Value("${ccd.case.caseCreatedEventId}") String caseCreatedEventId,
-                               @Value("${ccd.case.incompleteApplicationEventId}") String incompleteApplicationEventId,
-                               @Value("${ccd.case.nonCompliantEventId}") String nonCompliantEventId) {
+                               CaseEvent caseEvent) {
         this.caseDataHelper = caseDataHelper;
         this.roboticsService = roboticsService;
         this.regionalProcessingCenterService = regionalProcessingCenterService;
-        this.ccdService = ccdService;
+        this.convertService = convertService;
         this.evidenceManagementService = evidenceManagementService;
-        this.caseCreatedEventId = caseCreatedEventId;
-        this.incompleteApplicationEventId = incompleteApplicationEventId;
-        this.nonCompliantEventId = nonCompliantEventId;
+        this.caseEvent = caseEvent;
     }
 
     public CallbackResponse handle(CaseResponse caseValidationResponse,
@@ -67,26 +61,16 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
             Long caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
 
-            if (eventId.equals(caseCreatedEventId)) {
-                IdamTokens idamTokens = IdamTokens.builder().idamOauth2Token(token.getUserAuthToken()).serviceAuthorization(token.getServiceAuthToken()).userId(token.getUserId()).build();
-                SscsCaseDetails details = ccdService.getByCaseId(caseId, idamTokens);
+            if (eventId.equals(caseEvent.getCaseCreatedEventId())) {
+                SscsCaseData sscsCaseData = convertService.getCaseData(caseValidationResponse.getTransformedCase());
 
-                if (details != null) {
-                    SscsCaseData sscsCaseData = details.getData();
+                Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);
 
-                    Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);
-
-                    roboticsService.sendCaseToRobotics(sscsCaseData,
-                        caseId,
-                        regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
-                        null,
-                        additionalEvidence);
-                } else {
-                    String message = "Could not find case id in CCD: " + caseId + ". Case may be created but could not be sent to robotics.";
-                    CcdFindCaseException exception = new CcdFindCaseException(new Exception(message));
-                    log.error("Error creating case in CCD: " + exception);
-                    throw exception;
-                }
+                roboticsService.sendCaseToRobotics(sscsCaseData,
+                    caseId,
+                    regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
+                    null,
+                    additionalEvidence);
             }
 
             log.info("Case created with exceptionRecordId {} from exception record id {}", caseId, exceptionRecordId);
@@ -104,11 +88,11 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         LocalDate mrnDate = findMrnDateTime(((Appeal) caseValidationResponse.getTransformedCase().get("appeal")).getMrnDetails());
 
         if (!isEmpty(caseValidationResponse.getWarnings())) {
-            return incompleteApplicationEventId;
+            return caseEvent.getIncompleteApplicationEventId();
         } else if (mrnDate != null && mrnDate.plusMonths(13L).isBefore(LocalDate.now())) {
-            return nonCompliantEventId;
+            return caseEvent.getNonCompliantEventId();
         } else {
-            return caseCreatedEventId;
+            return caseEvent.getCaseCreatedEventId();
         }
     }
 
@@ -136,7 +120,6 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     }
 
     private byte[] downloadBinary(SscsDocument doc) {
-
         return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()));
     }
 }

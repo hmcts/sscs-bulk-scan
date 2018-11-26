@@ -12,6 +12,7 @@ locals {
 
   s2s_url   = "http://rpe-service-auth-provider-${local.local_env}.service.core-compute-${local.local_env}.internal"
   ccdApiUrl = "http://ccd-data-store-api-${local.local_env}.service.core-compute-${local.local_env}.internal"
+  documentStore = "http://dm-store-${local.local_env}.service.core-compute-${local.local_env}.internal"
 
   vaultName = "sscs-bulk-scan-${local.local_env}"
 
@@ -46,6 +47,18 @@ module "sscs-bulk-scan" {
     IDAM_OAUTH2_REDIRECT_URL  = "${var.idam_redirect_url}"
 
     CORE_CASE_DATA_API_URL = "${local.ccdApiUrl}"
+
+    ROBOTICS_EMAIL_FROM    = "${data.azurerm_key_vault_secret.robotics_email_from.value}"
+    ROBOTICS_EMAIL_TO      = "${data.azurerm_key_vault_secret.robotics_email_to.value}"
+    ROBOTICS_EMAIL_SUBJECT = "${var.robotics_email_subject}"
+    ROBOTICS_EMAIL_MESSAGE = "${var.robotics_email_message}"
+
+    EMAIL_SERVER_HOST      = "${data.azurerm_key_vault_secret.smtp_host.value}"
+    EMAIL_SERVER_PORT      = "${data.azurerm_key_vault_secret.smtp_port.value}"
+    EMAIL_SMTP_TLS_ENABLED = "${var.appeal_email_smtp_tls_enabled}"
+    EMAIL_SMTP_SSL_TRUST   = "${var.appeal_email_smtp_ssl_trust}"
+
+    DOCUMENT_MANAGEMENT_URL = "${local.documentStore}"
   }
 }
 
@@ -77,5 +90,25 @@ data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
 
 data "azurerm_key_vault_secret" "idam_sscs_oauth2_client_secret" {
   name      = "idam-sscs-oauth2-client-secret"
+  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+}
+
+data "azurerm_key_vault_secret" "robotics_email_from" {
+  name      = "robotics-email-from"
+  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+}
+
+data "azurerm_key_vault_secret" "robotics_email_to" {
+  name      = "robotics-email-to"
+  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+}
+
+data "azurerm_key_vault_secret" "smtp_host" {
+  name      = "smtp-host"
+  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+}
+
+data "azurerm_key_vault_secret" "smtp_port" {
+  name      = "smtp-port"
   vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }

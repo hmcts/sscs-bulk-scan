@@ -43,6 +43,8 @@ idam:
 
 allowed-services-for-callback : ccd_data  # comma separated list of service names
 
+document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://localhost:4506}
+
 schema.location: /schema/sscs-bulk-scan-schema.json
 
 appeal:
@@ -61,4 +63,3 @@ robotics:
     message: ${ROBOTICS_EMAIL_MESSAGE:Please find attached the robotics json file \nPlease do not respond to this email}
   schema.resource.location: /schema/sscs-robotics.json
 
-document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://localhost:4506}
