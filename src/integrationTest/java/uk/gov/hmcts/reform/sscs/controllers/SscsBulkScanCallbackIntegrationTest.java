@@ -52,7 +52,7 @@ import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock
 @TestPropertySource(locations = "classpath:application_it.yaml")
-public class CcdCallbackControllerTest {
+public class SscsBulkScanCallbackIntegrationTest {
 
     private static final String SERVICE_AUTHORIZATION_HEADER_KEY = "ServiceAuthorization";
 
@@ -559,7 +559,7 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_postcode", VALUE, "SE000RS"))
+            ImmutableMap.of(KEY, "person1_postcode", VALUE, "CM13 1AQ"))
         );
         ocrList.add(ocrEntry(
             VALUE,
