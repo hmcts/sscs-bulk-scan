@@ -104,14 +104,28 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
-    public void givenAMultipleMandatoryBooleanValueWithText_thenReturnFalseAndAddError() {
+    public void givenMultipleMandatoryBooleanValuesOneBooleanOneText_thenReturnFalseAndAddOneError() {
         pairs.put("hearing_type_oral", false);
         pairs.put("hearing_type_paper", "blue");
 
         List<String> errors = new ArrayList<>();
 
         assertFalse(areMandatoryBooleansValid(pairs, errors,  "hearing_type_oral", "hearing_type_paper"));
+        assertEquals(1, errors.size());
         assertEquals("hearing_type_paper does not contain a valid boolean value. Needs to be true or false", errors.get(0));
+    }
+
+    @Test
+    public void givenMultipleMandatoryBooleanValuesWithText_thenReturnFalseAndAddTwoErrors() {
+        pairs.put("hearing_type_oral", "red");
+        pairs.put("hearing_type_paper", "blue");
+
+        List<String> errors = new ArrayList<>();
+
+        assertFalse(areMandatoryBooleansValid(pairs, errors,  "hearing_type_oral", "hearing_type_paper"));
+        assertEquals(2, errors.size());
+        assertEquals("hearing_type_oral does not contain a valid boolean value. Needs to be true or false", errors.get(0));
+        assertEquals("hearing_type_paper does not contain a valid boolean value. Needs to be true or false", errors.get(1));
     }
 
     @Test
