@@ -65,13 +65,15 @@ public class SscsCaseValidator implements CaseValidator {
             warnings.add("mrn_date is empty");
         }
 
-        if (!doesAppellantAddressPostcodeExist(appellant)) {
-            warnings.add(personType + "_postcode is empty");
-        } else {
+        if (isAppellantAddressPostcodeValid(appellant, personType)) {
             RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode());
 
             caseData.put("region", rpc.getName());
             caseData.put("regionalProcessingCenter", rpc);
+        }
+
+        if (!isPhoneNumberValid(appellant)) {
+            warnings.add(personType + "_phone is invalid");
         }
 
         isBenefitTypeValid(appeal);
@@ -114,10 +116,16 @@ public class SscsCaseValidator implements CaseValidator {
         return false;
     }
 
-    private Boolean doesAppellantAddressPostcodeExist(Appellant appellant) {
-        if (appellant != null && appellant.getAddress() != null) {
-            return appellant.getAddress().getPostcode() != null;
+    private Boolean isAppellantAddressPostcodeValid(Appellant appellant, String personType) {
+        if (appellant != null && appellant.getAddress() != null && appellant.getAddress().getPostcode() != null) {
+            if (appellant.getAddress().getPostcode().matches("^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$")) {
+                return true;
+            } else {
+                warnings.add(personType + "_postcode is not a valid postcode");
+                return false;
+            }
         }
+        warnings.add(personType + "_postcode is empty");
         return false;
     }
 
@@ -161,5 +169,12 @@ public class SscsCaseValidator implements CaseValidator {
         } else {
             warnings.add(BENEFIT_TYPE_DESCRIPTION + " is empty");
         }
+    }
+
+    private boolean isPhoneNumberValid(Appellant appellant) {
+        if (appellant != null && appellant.getContact() != null && appellant.getContact().getPhone() != null) {
+            return appellant.getContact().getPhone().matches("^[0-9\\-+ ]{10,17}$");
+        }
+        return true;
     }
 }
