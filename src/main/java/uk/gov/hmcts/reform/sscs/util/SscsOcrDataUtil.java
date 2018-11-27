@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.util;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -47,13 +48,14 @@ public final class SscsOcrDataUtil {
     }
 
     public static boolean areMandatoryBooleansValid(Map<String, Object> pairs, List<String> errors, String... values) {
-        return Stream.of(values).allMatch(value -> {
-            if (checkBooleanValue(pairs, value)) {
-                return true;
+        List<String> booleanErrors = new ArrayList<>();
+        for (String value : values) {
+            if (!checkBooleanValue(pairs, value)) {
+                booleanErrors.add(value + " does not contain a valid boolean value. Needs to be true or false");
             }
-            errors.add(value + " does not contain a valid boolean value. Needs to be true or false");
-            return false;
-        });
+        }
+        errors.addAll(booleanErrors);
+        return booleanErrors.isEmpty();
     }
 
     public static boolean areBooleansValid(Map<String, Object> pairs, String... values) {
