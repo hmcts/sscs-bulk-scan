@@ -23,7 +23,7 @@
           "line2": "Hutton",
           "town": "Brentwood",
           "county": "Essex",
-          "postcode": "SE000RS"
+          "postcode": "CM13 1AQ"
         },
         "contact": {
           "email": null,
@@ -77,6 +77,18 @@
         }
       }
     } ],
+    "region" : "BIRMINGHAM",
+    "regionalProcessingCenter" : {
+      "faxNumber" : "0126 434 7983",
+      "address4" : "PO Box 14620",
+      "phoneNumber" : "0300 123 1142",
+      "name" : "BIRMINGHAM",
+      "address1" : "HM Courts & Tribunals Service",
+      "address2" : "Social Security & Child Support Appeals",
+      "address3" : "Administrative Support Centre",
+      "postcode" : "B16 6FR",
+      "city" : "BIRMINGHAM"
+    },
     "generatedNino" : "JT0123456B",
     "generatedSurname" : "Smith",
     "generatedDOB" : "1976-11-11",

@@ -8,10 +8,8 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
-import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 @Component
 public class SscsCaseValidator implements CaseValidator {
@@ -19,12 +17,18 @@ public class SscsCaseValidator implements CaseValidator {
     List<String> warnings;
     List<String> errors;
 
+    private final RegionalProcessingCenterService regionalProcessingCenterService;
+
+    public SscsCaseValidator(RegionalProcessingCenterService regionalProcessingCenterService) {
+        this.regionalProcessingCenterService = regionalProcessingCenterService;
+    }
+
     @Override
     public CaseResponse validate(Map<String, Object> caseData) {
         warnings = new ArrayList<>();
         errors = new ArrayList<>();
 
-        validateAppeal((Appeal) caseData.get("appeal"));
+        validateAppeal(caseData);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -33,7 +37,8 @@ public class SscsCaseValidator implements CaseValidator {
             .build();
     }
 
-    private List<String> validateAppeal(Appeal appeal) {
+    private List<String> validateAppeal(Map<String, Object> caseData) {
+        Appeal appeal = (Appeal) caseData.get("appeal");
 
         Appellant appellant = appeal.getAppellant();
 
@@ -53,15 +58,22 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesAppellantAddressCountyExist(appellant)) {
             warnings.add(personType + "_address_line4 is empty");
         }
-        if (!doesAppellantAddressPostcodeExist(appellant)) {
-            warnings.add(personType + "_postcode is empty");
-        }
         if (!doesAppellantNinoExist(appellant)) {
             warnings.add(personType + "_nino is empty");
         }
         if (!doesMrnDateExist(appeal)) {
             warnings.add("mrn_date is empty");
         }
+
+        if (!doesAppellantAddressPostcodeExist(appellant)) {
+            warnings.add(personType + "_postcode is empty");
+        } else {
+            RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode());
+
+            caseData.put("region", rpc.getName());
+            caseData.put("regionalProcessingCenter", rpc);
+        }
+
         isBenefitTypeValid(appeal);
 
         return warnings;

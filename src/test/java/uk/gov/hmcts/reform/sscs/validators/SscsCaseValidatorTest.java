@@ -2,25 +2,43 @@ package uk.gov.hmcts.reform.sscs.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 public class SscsCaseValidatorTest {
 
-    private SscsCaseValidator validator = new SscsCaseValidator();
+    @Mock
+    RegionalProcessingCenterService regionalProcessingCenterService;
+
+    private SscsCaseValidator validator;
+
+    @Before
+    public void setup() {
+        initMocks(this);
+        validator = new SscsCaseValidator(regionalProcessingCenterService);
+
+        given(regionalProcessingCenterService.getByPostcode("CM13 0GD")).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
+    }
 
     @Test
     public void givenAnAppellantIsEmpty_thenAddAWarning() {
-        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("appeal", Appeal.builder().build()).build();
+
+        Map<String, Object> pairs = new HashMap<>();
+        pairs.put("appeal", Appeal.builder().build());
 
         CaseResponse response = validator.validate(pairs);
 
@@ -38,12 +56,13 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppellantWithNoName_thenAddWarnings() {
-        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("appeal", Appeal.builder().appellant(Appellant.builder().address(
-                Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13FG").build())
+        Map<String, Object> pairs = new HashMap<>();
+
+        pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().address(
+                Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13 0GD").build())
                 .identity(Identity.builder().nino("JT1234567B").build()).build())
                 .benefitType(BenefitType.builder().code(PIP.name()).build())
-                .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build()).build();
+                .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build());
 
         CaseResponse response = validator.validate(pairs);
 
@@ -54,12 +73,13 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppellantWithNoAddress_thenAddWarnings() {
-        Map<String, Object> pairs = ImmutableMap.<String, Object>builder()
-            .put("appeal", Appeal.builder().appellant(Appellant.builder().name(
-                Name.builder().firstName("Harry").lastName("Kane").build())
-                .identity(Identity.builder().nino("JT1234567B").build()).build())
-                .benefitType(BenefitType.builder().code(PIP.name()).build())
-                .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build()).build();
+        Map<String, Object> pairs = new HashMap<>();
+
+        pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(
+            Name.builder().firstName("Harry").lastName("Kane").build())
+            .identity(Identity.builder().nino("JT1234567B").build()).build())
+            .benefitType(BenefitType.builder().code(PIP.name()).build())
+            .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build());
 
         CaseResponse response = validator.validate(pairs);
 
@@ -121,13 +141,14 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppellantDoesNotContainAPostcode_thenAddAWarning() {
+    public void givenAnAppellantDoesNotContainAPostcode_thenAddAWarningAndDoNotAddRegionalProcessingCenter() {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setPostcode(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
 
         assertEquals("person1_postcode is empty", response.getWarnings().get(0));
+        verifyZeroInteractions(regionalProcessingCenterService);
     }
 
     @Test
@@ -202,6 +223,14 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAPostcode_thenAddRegionalProcessingCenterToCase() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellant(false)));
+
+        assertEquals("Address 1", ((RegionalProcessingCenter) response.getTransformedCase().get("regionalProcessingCenter")).getAddress1());
+        assertEquals("Liverpool", (response.getTransformedCase().get("region")));
+    }
+
+    @Test
     public void givenAllMandatoryFieldsForAnAppellantExists_thenDoNotAddAWarning() {
         Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false));
 
@@ -223,11 +252,13 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(String mrnDate, String benefitCode, Appellant appellant) {
-        return ImmutableMap.<String, Object>builder()
-            .put("appeal", Appeal.builder()
-                .mrnDetails(MrnDetails.builder().mrnDate(mrnDate).build())
-                .benefitType(BenefitType.builder().code(benefitCode).build())
-                .appellant(appellant).build()).build();
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("appeal", Appeal.builder()
+            .mrnDetails(MrnDetails.builder().mrnDate(mrnDate).build())
+            .benefitType(BenefitType.builder().code(benefitCode).build())
+            .appellant(appellant)
+            .build());
+        return dataMap;
     }
 
     private Appellant buildAppellant(Boolean withAppointee) {
