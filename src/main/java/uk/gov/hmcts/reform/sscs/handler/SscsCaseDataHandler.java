@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.handler;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
+import feign.FeignException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.RoboticsService;
@@ -59,23 +61,29 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         if (canCreateCase(caseValidationResponse, ignoreWarnings)) {
             String eventId = findEventToCreateCase(caseValidationResponse);
 
-            Long caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
+            try {
+                Long caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
 
-            if (eventId.equals(caseEvent.getCaseCreatedEventId())) {
-                SscsCaseData sscsCaseData = convertService.getCaseData(caseValidationResponse.getTransformedCase());
+                log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
-                Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);
+                if (eventId.equals(caseEvent.getCaseCreatedEventId())) {
+                    SscsCaseData sscsCaseData = convertService.getCaseData(caseValidationResponse.getTransformedCase());
 
-                roboticsService.sendCaseToRobotics(sscsCaseData,
-                    caseId,
-                    regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
-                    null,
-                    additionalEvidence);
+                    Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);
+
+                    roboticsService.sendCaseToRobotics(sscsCaseData,
+                        caseId,
+                        regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
+                        null,
+                        additionalEvidence);
+                }
+
+                return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
+            } catch (FeignException e) {
+                throw e;
+            } catch (Exception e) {
+                wrapAndThrowCaseDataHandlerException(exceptionRecordId, e);
             }
-
-            log.info("Case created with exceptionRecordId {} from exception record id {}", caseId, exceptionRecordId);
-
-            return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
         }
         return null;
     }
@@ -121,5 +129,11 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
     private byte[] downloadBinary(SscsDocument doc) {
         return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()));
+    }
+
+    private void wrapAndThrowCaseDataHandlerException(String exceptionId, Exception ex) {
+        CaseDataHelperException exception = new CaseDataHelperException(exceptionId, ex);
+        log.error("Error for exception id: " + exceptionId, exception);
+        throw exception;
     }
 }

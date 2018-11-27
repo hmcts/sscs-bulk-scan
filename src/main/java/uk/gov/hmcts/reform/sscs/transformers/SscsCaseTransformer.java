@@ -85,8 +85,10 @@ public class SscsCaseTransformer implements CaseTransformer {
 
             String hearingType = findHearingType(pairs);
 
+            BenefitType benefitType = getField(pairs, BENEFIT_TYPE_DESCRIPTION) != null ? BenefitType.builder().code(getField(pairs, BENEFIT_TYPE_DESCRIPTION).toUpperCase()).build() : null;
+
             return Appeal.builder()
-                .benefitType(BenefitType.builder().code(getField(pairs, BENEFIT_TYPE_DESCRIPTION)).build())
+                .benefitType(benefitType)
                 .appellant(appellant)
                 .rep(buildRepresentative(pairs))
                 .mrnDetails(buildMrnDetails(pairs))

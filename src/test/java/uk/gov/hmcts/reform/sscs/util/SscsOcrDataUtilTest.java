@@ -44,6 +44,13 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
+    public void givenAFieldWithEmptyValue_thenReturnNull() {
+        pairs.put("person1_title", null);
+
+        assertNull(SscsOcrDataUtil.getField(pairs, "person1_title"));
+    }
+
+    @Test
     public void givenAMapWhichDoesNotContainField_thenReturnNull() {
         assertNull(SscsOcrDataUtil.getField(pairs, "test"));
     }
