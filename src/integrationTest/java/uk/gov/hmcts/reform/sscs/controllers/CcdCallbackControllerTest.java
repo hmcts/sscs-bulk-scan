@@ -14,8 +14,11 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 import org.apache.commons.codec.Charsets;
 import org.joda.time.DateTimeUtils;
 import org.junit.After;
@@ -33,6 +36,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.SocketUtils;
 import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
@@ -41,10 +46,12 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
+import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock
+@TestPropertySource(locations = "classpath:application_it.yaml")
 public class CcdCallbackControllerTest {
 
     private static final String SERVICE_AUTHORIZATION_HEADER_KEY = "ServiceAuthorization";
@@ -71,6 +78,9 @@ public class CcdCallbackControllerTest {
     private static final String SUBMIT_EVENT_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases?ignore-warning=true";
 
+    private static final String READ_EVENT_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756";
+
     private static final String USER_ID_HEADER = "user-id";
 
     private static final String KEY = "key";
@@ -86,12 +96,22 @@ public class CcdCallbackControllerTest {
     @MockBean
     private AuthTokenValidator authTokenValidator;
 
+    @MockBean
+    private EvidenceManagementService evidenceManagementService;
+
+    @MockBean
+    private JavaMailSender mailSender;
+
     @Rule
     public WireMockRule ccdServer;
 
     private static int wiremockPort = 0;
 
+    private Session session = Session.getInstance(new Properties());
+
     private String baseUrl;
+
+    private MimeMessage message;
 
     static {
         wiremockPort = SocketUtils.findAvailableTcpPort();
@@ -104,6 +124,12 @@ public class CcdCallbackControllerTest {
         ccdServer = new WireMockRule(wiremockPort);
         ccdServer.start();
         DateTimeUtils.setCurrentMillisFixed(1542820369000L);
+
+        message = new MimeMessage(session);
+        when(mailSender.createMimeMessage()).thenReturn(message);
+
+        byte[] expectedBytes = {1, 2, 3};
+        when(evidenceManagementService.download(URI.create("http://www.bbc.com"))).thenReturn(expectedBytes);
     }
 
     @After
@@ -120,6 +146,8 @@ public class CcdCallbackControllerTest {
         startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
 
         submitForCaseworkerStub("appealCreated");
+
+        readForCaseworkerStub(READ_EVENT_URL, true);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
 
@@ -378,7 +406,6 @@ public class CcdCallbackControllerTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
-
     private Map<String, Object> caseDataWithContradictingValues() {
         List<Object> ocrList = new ArrayList<>();
 
@@ -536,11 +563,11 @@ public class CcdCallbackControllerTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_phone", VALUE, "012345678"))
+            ImmutableMap.of(KEY, "person1_phone", VALUE, "01234567899"))
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_mobile", VALUE, "012345678"))
+            ImmutableMap.of(KEY, "person1_mobile", VALUE, "01234567899"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -603,6 +630,19 @@ public class CcdCallbackControllerTest {
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .withStatus(200)
                 .withBody(loadJson("mappings/create-case-200-response.json"))));
+    }
+
+    private void readForCaseworkerStub(String eventUrl, Boolean validData) throws Exception {
+        String createCaseResponse = validData ? "mappings/create-case-200-response.json" : "mappings/create-case-invalid-robotics-200-response.json";
+
+        ccdServer.stubFor(get(concat(eventUrl))
+            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(200)
+                .withBody(loadJson(createCaseResponse))));
     }
 
     private void startForCaseworkerStubWithUserTokenHavingNoAccess(String eventUrl) throws Exception {
