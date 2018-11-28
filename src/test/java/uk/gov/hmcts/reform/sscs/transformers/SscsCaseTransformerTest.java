@@ -135,7 +135,7 @@ public class SscsCaseTransformerTest {
         Contact appointeeContact = Contact.builder().phone(APPOINTEE_PHONE).mobile(APPOINTEE_MOBILE).build();
         Appointee appointee = Appointee.builder().name(appointeeName).address(appointeeAddress).contact(appointeeContact).identity(appointeeIdentity).build();
 
-        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).appointee(appointee).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).appointee(appointee).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
         assertEquals(expectedAppellant, appellantResult);
@@ -163,7 +163,7 @@ public class SscsCaseTransformerTest {
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob("1987-08-12").build();
 
-        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
         assertEquals(expectedAppellant, appellantResult);
