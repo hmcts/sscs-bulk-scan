@@ -1,7 +1,5 @@
 FROM hmcts/cnp-java-base:openjdk-jre-8-alpine-1.4
 
-COPY build/bootScripts/sscs-bulk-scan /opt/app/bin/
-
 COPY build/libs/sscs-bulk-scan.jar /opt/app/lib/
 
 WORKDIR /opt/app
