@@ -122,7 +122,7 @@ public class SscsCaseDataHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
         byte[] expectedBytes = {1, 2, 3};
-        given(evidenceManagementService.download(any())).willReturn(expectedBytes);
+        given(evidenceManagementService.download(any(), eq(null))).willReturn(expectedBytes);
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
@@ -200,7 +200,7 @@ public class SscsCaseDataHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
         byte[] expectedBytes = {1, 2, 3};
-        given(evidenceManagementService.download(any())).willReturn(expectedBytes);
+        given(evidenceManagementService.download(any(), eq(null))).willReturn(expectedBytes);
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);

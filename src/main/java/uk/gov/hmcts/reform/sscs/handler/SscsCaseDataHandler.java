@@ -128,7 +128,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     }
 
     private byte[] downloadBinary(SscsDocument doc) {
-        return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()));
+        return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()), null);
     }
 
     private void wrapAndThrowCaseDataHandlerException(String exceptionId, Exception ex) {
