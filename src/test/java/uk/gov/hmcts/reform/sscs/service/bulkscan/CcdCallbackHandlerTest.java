@@ -20,6 +20,8 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
+import uk.gov.hmcts.reform.sscs.handler.SscsRoboticsHandler;
+import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
 @RunWith(SpringRunner.class)
 public class CcdCallbackHandlerTest {
@@ -37,9 +39,15 @@ public class CcdCallbackHandlerTest {
     @Mock
     private CaseDataHandler caseDataHandler;
 
+    @Mock
+    private SscsRoboticsHandler roboticsHandler;
+
+    @Mock
+    private SscsDataHelper sscsDataHelper;
+
     @Before
     public void setUp() {
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper);
     }
 
 

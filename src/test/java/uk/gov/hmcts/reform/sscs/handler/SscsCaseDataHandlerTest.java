@@ -2,10 +2,9 @@ package uk.gov.hmcts.reform.sscs.handler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
@@ -23,31 +22,25 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
-import uk.gov.hmcts.reform.sscs.ccd.domain.*;
-import uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService;
-import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
+import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
-import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
-import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
-import uk.gov.hmcts.reform.sscs.service.RoboticsService;
+import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
 public class SscsCaseDataHandlerTest {
 
     SscsCaseDataHandler sscsCaseDataHandler;
 
     @Mock
+    SscsDataHelper sscsDataHelper;
+
+    @Mock
     CaseDataHelper caseDataHelper;
 
     @Mock
-    EvidenceManagementService evidenceManagementService;
-
-    @Mock
-    RoboticsService roboticsService;
-
-    @Mock
-    RegionalProcessingCenterService regionalProcessingCenterService;
-
-    SscsCcdConvertService convertService;
+    SscsRoboticsHandler sscsRoboticsHandler;
 
     LocalDate localDate;
 
@@ -57,10 +50,7 @@ public class SscsCaseDataHandlerTest {
     public void setup() {
         initMocks(this);
 
-        convertService = new SscsCcdConvertService();
-
-        sscsCaseDataHandler = new SscsCaseDataHandler(caseDataHelper, roboticsService, regionalProcessingCenterService,
-            convertService, evidenceManagementService, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"));
+        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, sscsRoboticsHandler);
 
         localDate = LocalDate.now();
     }
@@ -78,6 +68,8 @@ public class SscsCaseDataHandlerTest {
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
+
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("incompleteApplicationReceived");
 
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, true,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
@@ -121,15 +113,10 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        byte[] expectedBytes = {1, 2, 3};
-        given(evidenceManagementService.download(any(), eq(null))).willReturn(expectedBytes);
-
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
 
-        given(regionalProcessingCenterService.getFirstHalfOfPostcode("CM120HN")).willReturn("CM12");
-
-        doNothing().when(roboticsService).sendCaseToRobotics(eq(SscsCaseData.builder().appeal(appeal).build()), eq(1L), eq("CM12"), eq(null), any());
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
 
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
@@ -152,6 +139,8 @@ public class SscsCaseDataHandlerTest {
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "nonCompliant")).willReturn(1L);
+
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("nonCompliant");
 
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, true,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
@@ -178,6 +167,8 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
 
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("incompleteApplicationReceived");
+
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, true,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
@@ -199,15 +190,10 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        byte[] expectedBytes = {1, 2, 3};
-        given(evidenceManagementService.download(any(), eq(null))).willReturn(expectedBytes);
-
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
 
-        given(regionalProcessingCenterService.getFirstHalfOfPostcode("CM120HN")).willReturn("CM12");
-
-        doNothing().when(roboticsService).sendCaseToRobotics(eq(SscsCaseData.builder().appeal(appeal).build()), eq(1L), eq("CM12"), eq(null), any());
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
 
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
@@ -224,10 +210,12 @@ public class SscsCaseDataHandlerTest {
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
+        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
+
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willThrow(new RuntimeException());
 
-        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
 
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
