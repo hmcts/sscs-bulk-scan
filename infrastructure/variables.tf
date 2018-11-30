@@ -44,7 +44,7 @@ variable "infrastructure_env" {
 }
 
 variable "idam_s2s_auth_microservice" {
-  default = "ccd_data"
+  default = "sscs_bulkscan"
 }
 
 variable "idam_oauth2_client_id" {
