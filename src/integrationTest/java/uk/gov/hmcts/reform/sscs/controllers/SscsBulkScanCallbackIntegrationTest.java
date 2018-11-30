@@ -129,7 +129,7 @@ public class SscsBulkScanCallbackIntegrationTest {
         when(mailSender.createMimeMessage()).thenReturn(message);
 
         byte[] expectedBytes = {1, 2, 3};
-        when(evidenceManagementService.download(URI.create("http://www.bbc.com"))).thenReturn(expectedBytes);
+        when(evidenceManagementService.download(URI.create("http://www.bbc.com"), null)).thenReturn(expectedBytes);
     }
 
     @After
