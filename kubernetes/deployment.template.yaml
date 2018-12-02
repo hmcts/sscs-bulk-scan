@@ -19,14 +19,10 @@ spec:
         ports:
           - containerPort: 8080
         env:
-          - name: IDAM.S2S-AUTH.MICROSERVICE
-            value: "sscs_bulkscan"
-          - name: IDAM.S2S-AUTH
-            value: "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+          - name: CORE_CASE_DATA_API_URL
+            value: "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
           - name: DOCUMENT_MANAGEMENT_URL
             value: "http://dm-store-aat.service.core-compute-aat.internal"
-          - name: S2S_SECRET
-            value: ${S2S_SECRET}
           - name: EMAIL_SERVER_HOST
             value: ${EMAIL_SERVER_HOST}
           - name: EMAIL_SERVER_PORT
@@ -35,6 +31,22 @@ spec:
             value: "*"
           - name: EMAIL_SMTP_TLS_ENABLED
             value: true
+          - name: IDAM_OAUTH2_CLIENT_ID
+            value: "bsp"
+          - name: IDAM_OAUTH2_CLIENT_SECRET
+            value: ${IDAM_OAUTH2_CLIENT_SECRET}
+          - name: IDAM_OAUTH2_REDIRECT_URL
+            value: "https://rpe-bulk-scan-processor*.service.core-compute-saat.internal/oauth2/callback"
+          - name: IDAM_OAUTH2_USER_EMAIL
+            value: ${IDAM_OAUTH2_USER_EMAIL}
+          - name: IDAM_OAUTH2_USER_PASSWORD
+            value: ${IDAM_OAUTH2_USER_PASSWORD}
+          - name: IDAM_S2S_AUTH
+            value: "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+          - name: IDAM_S2S_AUTH_MICROSERVICE
+            value: "sscs_bulkscan"
+          - name: IDAM_URL
+            value: "https://preprod-idamapi.reform.hmcts.net:3511"
           - name: LOGBACK_REQUIRE_ALERT_LEVEL
             value: false
           - name: LOGBACK_REQUIRE_ERROR_CODE
@@ -47,30 +59,18 @@ spec:
             value: ${ROBOTICS_EMAIL_TO}
           - name: ROBOTICS_EMAIL_SUBJECT
             value: "Robotics Data"
+          - name: ROBOTICS_EMAIL_MESSAGE
+            value: "Please find attached the robotics json file Please do not respond to this email"
+          - name: S2S_SECRET
+            value: ${S2S_SECRET}
           - name: WEBSITE_LOCAL_CACHE_OPTION
             value: "Always"
           - name: WEBSITE_LOCAL_CACHE_SIZEINMB
             value: 300
-          - name: ROBOTICS_EMAIL_MESSAGE
-            value: "Please find attached the robotics json file Please do not respond to this email"
           - name: WEBSITE_NODE_DEFAULT_VERSION
             value: "8.11.1"
           - name: WEBSITE_SLOT_POLL_WORKER_FOR_CHANGE_NOTIFICATION
             value: 0
-          - name: IDAM_API_URL
-            value: "https://preprod-idamapi.reform.hmcts.net:3511"
-          - name: IDAM_OAUTH2_CLIENT_ID
-            value: "bsp"
-          - name: CCD_SERVICE_API_URL
-            value: "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
-          - name: IDAM_OAUTH2_REDIRECT_URL
-            value: "https://rpe-bulk-scan-processor*.service.core-compute-saat.internal/oauth2/callback"
-          - name: IDAM_OAUTH2_USER_EMAIL
-            value: ${IDAM_OAUTH2_USER_EMAIL}
-          - name: IDAM_OAUTH2_USER_PASSWORD
-            value: ${IDAM_OAUTH2_USER_PASSWORD}
-          - name: IDAM_OAUTH2_CLIENT_SECRET
-            value: ${IDAM_OAUTH2_CLIENT_SECRET}
 
         resources:
           requests:
