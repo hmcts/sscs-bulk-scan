@@ -10,14 +10,20 @@ def product = "sscs"
 def component = "bulk-scan"
 
 List<LinkedHashMap<String, Object>> secrets = [
+
+  secret('sscs-s2s-secret', 'S2S_SECRET'),
+  secret('idam-api', 'DOCUMENT_MANAGEMENT_URL'),
+  secret('smtp-host', 'EMAIL_SERVER_HOST'),
+  secret('smtp-port', 'EMAIL_SERVER_PORT'),
+  secret('idam-api', 'ROBOTICS_EMAIL_FROM'),
+  secret('idam-redirect', 'ROBOTICS_EMAIL_TO'),
+
+  secret('idam-redirect', 'IDAM_OAUTH2_REDIRECT_URL'),
+
   secret('idam-sscs-systemupdate-user', 'IDAM_OAUTH2_USER_EMAIL'),
   secret('idam-sscs-systemupdate-password', 'IDAM_OAUTH2_USER_PASSWORD'),
   secret('idam-sscs-oauth2-client-secret', 'IDAM_OAUTH2_CLIENT_SECRET'),
 
-  // Used by Kubernetes
-  secret('idam-s2s-api', 'IDAM_S2S_AUTH'),
-  secret('sscs-s2s-secret', 'IDAM_S2S_AUTH_TOTP_SECRET'),
-  secret('s2s-micro', 'IDAM_S2S_AUTH_MICROSERVICE'),
 ]
 
 static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
