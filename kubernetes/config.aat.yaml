@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${SERVICE_NAME}-config
+  namespace: ${NAMESPACE}
+data:
+  IDAM_S2S_AUTH: "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+  CORE_CASE_DATA_API_URL: "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+  DOCUMENT_MANAGEMENT_URL: "http://dm-store-aat.service.core-compute-aat.internal"
+  IDAM_URL: "https://preprod-idamapi.reform.hmcts.net:3511"
+  EMAIL_SMTP_SSL_TRUST: "*"
+  EMAIL_SMTP_TLS_ENABLED: "true"
+  IDAM_OAUTH2_CLIENT_ID: "bsp"
+  IDAM_S2S_AUTH_MICROSERVICE: "sscs_bulkscan"
+  LOGBACK_REQUIRE_ALERT_LEVEL: "false"
+  LOGBACK_REQUIRE_ERROR_CODE: "false"
+  ROBOTICS_EMAIL_SUBJECT: "Robotics Data"
+  ROBOTICS_EMAIL_MESSAGE: "Please find attached the robotics json file Please do not respond to this email"
+  WEBSITE_LOCAL_CACHE_OPTION: "Always"
+  WEBSITE_LOCAL_CACHE_SIZEINMB: "300"
+  WEBSITE_NODE_DEFAULT_VERSION: "8.11.1"
+  WEBSITE_SLOT_POLL_WORKER_FOR_CHANGE_NOTIFICATION: "0"
+            

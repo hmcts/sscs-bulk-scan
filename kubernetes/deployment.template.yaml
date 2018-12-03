@@ -1,3 +1,19 @@
+# Example Kubernetes resource template
+#
+# All variables are replaced at deployment time with environment variables.
+#
+# The following variables are derived as follows by the pipeline. DO NOT CHANGE:
+#
+#   - NAMESPACE:    product
+#   - SERVICE_NAME: product-component-branch
+#   - IMAGE_NAME:   registry-name/hmcts/product-component:branch
+#
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${NAMESPACE}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,20 +33,6 @@ spec:
       - image: ${IMAGE_NAME}
         name: ${SERVICE_NAME}
         env:
-          - name: CORE_CASE_DATA_API_URL
-            value: "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
-          - name: DOCUMENT_MANAGEMENT_URL
-            value: "http://dm-store-aat.service.core-compute-aat.internal"
-          - name: EMAIL_SERVER_HOST
-            value: "${EMAIL_SERVER_HOST}"
-          - name: EMAIL_SERVER_PORT
-            value: "${EMAIL_SERVER_PORT}"
-          - name: EMAIL_SMTP_SSL_TRUST
-            value: "*"
-          - name: EMAIL_SMTP_TLS_ENABLED
-            value: "true"
-          - name: IDAM_OAUTH2_CLIENT_ID
-            value: "bsp"
           - name: IDAM_OAUTH2_CLIENT_SECRET
             value: "${IDAM_OAUTH2_CLIENT_SECRET}"
           - name: IDAM_OAUTH2_REDIRECT_URL
@@ -39,35 +41,20 @@ spec:
             value: "${IDAM_OAUTH2_USER_EMAIL}"
           - name: IDAM_OAUTH2_USER_PASSWORD
             value: "${IDAM_OAUTH2_USER_PASSWORD}"
-          - name: IDAM_S2S_AUTH
-            value: "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-          - name: IDAM_S2S_AUTH_MICROSERVICE
-            value: "sscs_bulkscan"
-          - name: IDAM_URL
-            value: "https://preprod-idamapi.reform.hmcts.net:3511"
-          - name: LOGBACK_REQUIRE_ALERT_LEVEL
-            value: "false"
-          - name: LOGBACK_REQUIRE_ERROR_CODE
-            value: "false"
+          - name: EMAIL_SERVER_HOST
+            value: "${EMAIL_SERVER_HOST}"
+          - name: EMAIL_SERVER_PORT
+            value: "${EMAIL_SERVER_PORT}"
           - name: ROBOTICS_EMAIL_FROM
             value: "${ROBOTICS_EMAIL_FROM}"
           - name: ROBOTICS_EMAIL_TO
             value: "${ROBOTICS_EMAIL_TO}"
-          - name: ROBOTICS_EMAIL_SUBJECT
-            value: "Robotics Data"
-          - name: ROBOTICS_EMAIL_MESSAGE
-            value: "Please find attached the robotics json file Please do not respond to this email"
           - name: S2S_SECRET
             value: "${S2S_SECRET}"
-          - name: WEBSITE_LOCAL_CACHE_OPTION
-            value: "Always"
-          - name: WEBSITE_LOCAL_CACHE_SIZEINMB
-            value: "300"
-          - name: WEBSITE_NODE_DEFAULT_VERSION
-            value: "8.11.1"
-          - name: WEBSITE_SLOT_POLL_WORKER_FOR_CHANGE_NOTIFICATION
-            value: "0"
-
+        envFrom:
+          - configMapRef:
+              name: ${SERVICE_NAME}-config
+              
         resources:
           requests:
             memory: "512Mi"
