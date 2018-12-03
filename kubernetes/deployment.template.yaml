@@ -1,3 +1,19 @@
+# Example Kubernetes resource template
+#
+# All variables are replaced at deployment time with environment variables.
+#
+# The following variables are derived as follows by the pipeline. DO NOT CHANGE:
+#
+#   - NAMESPACE:    product
+#   - SERVICE_NAME: product-component-branch
+#   - IMAGE_NAME:   registry-name/hmcts/product-component:branch
+#
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${NAMESPACE}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,8 +32,6 @@ spec:
       containers:
       - image: ${IMAGE_NAME}
         name: ${SERVICE_NAME}
-        ports:
-          - containerPort: 8080
         env:
           - name: CORE_CASE_DATA_API_URL
             value: "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
@@ -84,7 +98,13 @@ spec:
           periodSeconds: 10
           httpGet:
             path: /health
-            port: 8080
+            port: 8090
+
+        # This is the port your process is listening on in the container
+        ports:
+        - containerPort: 8090
+          name: http
+        imagePullPolicy: Always            
 ---
 apiVersion: v1
 kind: Service
@@ -97,7 +117,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8080
+      targetPort: 8090
   selector:
     app: ${SERVICE_NAME}
 ---
