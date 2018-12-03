@@ -13,11 +13,11 @@ def component = "bulk-scan"
 List<LinkedHashMap<String, Object>> secrets = [
 
   secret('sscs-s2s-secret', 'S2S_SECRET'),
-  secret('idam-api', 'DOCUMENT_MANAGEMENT_URL'),
   secret('smtp-host', 'EMAIL_SERVER_HOST'),
   secret('smtp-port', 'EMAIL_SERVER_PORT'),
-  secret('idam-api', 'ROBOTICS_EMAIL_FROM'),
-  secret('idam-redirect', 'ROBOTICS_EMAIL_TO'),
+
+  secret('robotics-email-from', 'ROBOTICS_EMAIL_FROM'),
+  secret('robotics-email-to', 'ROBOTICS_EMAIL_TO'),
 
   secret('idam-redirect', 'IDAM_OAUTH2_REDIRECT_URL'),
 
