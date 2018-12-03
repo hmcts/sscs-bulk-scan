@@ -6,6 +6,7 @@ properties([
 
 @Library("Infrastructure")
 
+def type = "java"
 def product = "sscs"
 def component = "bulk-scan"
 
@@ -51,6 +52,6 @@ withPipeline("java", product, component) {
 
   enableDockerBuild()
   enableDeployToAKS()
-  setVaultName('sscs')
+  setVaultName('sscs-bulk-scan')
 }
 
