@@ -27,7 +27,7 @@ core_case_data:
     url: http://localhost:4452
 
 idam:
-  url: ${IDAM_URL:http://localhost:4501}
+  url: ${IDAM_URL:"https://preprod-idamapi.reform.hmcts.net:3511"}
   s2s-auth:
     totp_secret: ${S2S_SECRET:AAAAAAAAAAAAAAAD}
     microservice: ${IDAM_S2S_AUTH_MICROSERVICE:sscs_bulkscan}
@@ -39,7 +39,7 @@ idam:
     client:
       id: ${IDAM_OAUTH2_CLIENT_ID:sscs}
       secret: ${IDAM_OAUTH2_CLIENT_SECRET:QM5RQQ53LZFOSIXJ}
-    redirectUrl: ${IDAM_OAUTH2_REDIRECT_URL:https://localhost:9000/poc}
+    redirectUrl: ${IDAM_OAUTH2_REDIRECT_URL:"https://rpe-bulk-scan-processor-aat.service.core-compute-aat.internal/oauth2/callback"}
 
 allowed-services-for-callback : ccd_data,sscs_bulkscan  # comma separated list of service names
 
