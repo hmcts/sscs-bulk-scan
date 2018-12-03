@@ -30,7 +30,7 @@ spec:
           - name: EMAIL_SMTP_SSL_TRUST
             value: "*"
           - name: EMAIL_SMTP_TLS_ENABLED
-            value: true
+            value: "true"
           - name: IDAM_OAUTH2_CLIENT_ID
             value: "bsp"
           - name: IDAM_OAUTH2_CLIENT_SECRET
@@ -48,9 +48,9 @@ spec:
           - name: IDAM_URL
             value: "https://preprod-idamapi.reform.hmcts.net:3511"
           - name: LOGBACK_REQUIRE_ALERT_LEVEL
-            value: false
+            value: "false"
           - name: LOGBACK_REQUIRE_ERROR_CODE
-            value: false
+            value: "false"
           - name: NODE_PATH
             value: "D:\\home\\site\\wwwroot"
           - name: ROBOTICS_EMAIL_FROM
@@ -66,11 +66,11 @@ spec:
           - name: WEBSITE_LOCAL_CACHE_OPTION
             value: "Always"
           - name: WEBSITE_LOCAL_CACHE_SIZEINMB
-            value: 300
+            value: "300"
           - name: WEBSITE_NODE_DEFAULT_VERSION
             value: "8.11.1"
           - name: WEBSITE_SLOT_POLL_WORKER_FOR_CHANGE_NOTIFICATION
-            value: 0
+            value: "0"
 
         resources:
           requests:
