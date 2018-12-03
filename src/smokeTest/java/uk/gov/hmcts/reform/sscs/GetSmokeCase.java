@@ -29,6 +29,7 @@ public class GetSmokeCase {
         RestAssured.baseURI = appUrl;
         RestAssured.useRelaxedHTTPSValidation();
 
+        System.exit(0);
         IdamTokens idamTokens = idamService.getIdamTokens();
 
         List<String> errors = RestAssured
