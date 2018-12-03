@@ -1,6 +1,10 @@
 FROM hmcts/cnp-java-base:openjdk-jre-8-alpine-1.4
 
-COPY build/libs/sscs-bulk-scan.jar /opt/app/lib/
+ENV APP sscs-bulk-scan.jar
+ENV APPLICATION_TOTAL_MEMORY 1024M
+ENV APPLICATION_SIZE_ON_DISK_IN_MB 56
+
+COPY build/libs/$APP /opt/app/
 
 WORKDIR /opt/app
 
@@ -8,4 +12,3 @@ HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD if [ `wget -qO- http:/
 
 EXPOSE 8090
 
-ENTRYPOINT ["/opt/app/bin/sscs-bulk-scan"]
