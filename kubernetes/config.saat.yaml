@@ -20,4 +20,5 @@ data:
   WEBSITE_LOCAL_CACHE_SIZEINMB: "300"
   WEBSITE_NODE_DEFAULT_VERSION: "8.11.1"
   WEBSITE_SLOT_POLL_WORKER_FOR_CHANGE_NOTIFICATION: "0"
+  IDAM_OAUTH2_REDIRECT_URL: "https://rpe-bulk-scan-processor*.service.core-compute-saat.internal/oauth2/callback"
             
