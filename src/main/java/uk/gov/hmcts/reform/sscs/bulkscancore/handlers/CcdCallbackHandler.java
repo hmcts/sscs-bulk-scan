@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
-import uk.gov.hmcts.reform.sscs.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 import uk.gov.hmcts.reform.sscs.handler.SscsRoboticsHandler;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
@@ -79,22 +79,22 @@ public class CcdCallbackHandler {
         }
     }
 
-    public CallbackResponse handleValidationAndUpdate(SscsCaseData exceptionCaseData) {
+    public CallbackResponse handleValidationAndUpdate(ValidateCaseData caseData) {
         Map<String, Object> appealData = new HashMap<>();
-        appealData.put("appeal", exceptionCaseData.getCaseDetails().getCaseData().getAppeal());
-        appealData.put("sscsDocument", exceptionCaseData.getCaseDetails().getCaseData().getSscsDocument());
-        appealData.put("evidencePresent", sscsDataHelper.hasEvidence(exceptionCaseData.getCaseDetails().getCaseData().getSscsDocument()));
+        appealData.put("appeal", caseData.getCaseDetails().getCaseData().getAppeal());
+        appealData.put("sscsDocument", caseData.getCaseDetails().getCaseData().getSscsDocument());
+        appealData.put("evidencePresent", sscsDataHelper.hasEvidence(caseData.getCaseDetails().getCaseData().getSscsDocument()));
 
         CaseResponse caseValidationResponse = caseValidator.validate(appealData);
 
-        AboutToStartOrSubmitCallbackResponse validationErrorResponse = convertWarningsToErrors(caseValidationResponse, exceptionCaseData.getCaseDetails().getCaseId());
+        AboutToStartOrSubmitCallbackResponse validationErrorResponse = convertWarningsToErrors(caseValidationResponse, caseData.getCaseDetails().getCaseId());
 
         if (validationErrorResponse != null) {
             return validationErrorResponse;
         } else {
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
 
-            roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionCaseData.getCaseDetails().getCaseId()), eventId);
+            roboticsHandler.handle(caseValidationResponse, Long.valueOf(caseData.getCaseDetails().getCaseId()), eventId);
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())

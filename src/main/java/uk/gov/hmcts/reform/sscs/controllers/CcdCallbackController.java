@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
-import uk.gov.hmcts.reform.sscs.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 
 @RestController
 public class CcdCallbackController {
@@ -62,9 +62,9 @@ public class CcdCallbackController {
         return ResponseEntity.ok(ccdCallbackResponse);
     }
 
-    @PostMapping(path = "/validation-record",
+    @PostMapping(path = "/validate-record",
         consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Handles callback from SSCS to change case to appeal created state")
+    @ApiOperation(value = "Handles callback from SSCS to check case meets validation to change state to appeal created")
     @ApiResponses(value = {
         @ApiResponse(code = 200,
             message = "Callback was processed successfully or in case of an error message is attached to the case",
@@ -76,7 +76,7 @@ public class CcdCallbackController {
         @RequestHeader(value = "Authorization") String userAuthToken,
         @RequestHeader(value = "serviceauthorization", required = false) String serviceAuthToken,
         @RequestHeader(value = "user-id") String userId,
-        @RequestBody @ApiParam("CaseData") SscsCaseData caseData) {
+        @RequestBody @ApiParam("CaseData") ValidateCaseData caseData) {
 
         String serviceName = authService.authenticate(serviceAuthToken);
 

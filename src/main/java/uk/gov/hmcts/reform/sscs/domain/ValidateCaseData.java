@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SscsCaseData {
+public class ValidateCaseData {
     private String token;
     @JsonProperty("event_id")
     private String eventId;
