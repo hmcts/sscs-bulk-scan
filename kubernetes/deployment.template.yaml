@@ -51,8 +51,6 @@ spec:
             value: "false"
           - name: LOGBACK_REQUIRE_ERROR_CODE
             value: "false"
-          - name: NODE_PATH
-            value: "D:\\home\\site\\wwwroot"
           - name: ROBOTICS_EMAIL_FROM
             value: ${ROBOTICS_EMAIL_FROM}
           - name: ROBOTICS_EMAIL_TO
