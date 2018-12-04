@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.collect.ImmutableMap;
@@ -52,40 +53,7 @@ import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock
 @TestPropertySource(locations = "classpath:application_it.yaml")
-public class SscsBulkScanCallbackIntegrationTest {
-
-    private static final String SERVICE_AUTHORIZATION_HEADER_KEY = "ServiceAuthorization";
-
-    private static final String BEARER = "Bearer ";
-
-    private static final String USER_AUTH_TOKEN = BEARER + "TEST_USER_AUTH_TOKEN";
-
-    private static final String SERVICE_AUTH_TOKEN = BEARER + "TEST_SERVICE_AUTH";
-
-    private static final String USER_TOKEN_WITHOUT_CASE_ACCESS = "USER_TOKEN_WITHOUT_CASE_ACCESS";
-
-    private static final String USER_ID = "1234";
-
-    private static final String START_EVENT_APPEAL_CREATED_URL =
-        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/appealCreated/token";
-
-    private static final String START_EVENT_INCOMPLETE_CASE_URL =
-        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/incompleteApplicationReceived/token";
-
-    private static final String START_EVENT_NON_COMPLIANT_CASE_URL =
-        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/nonCompliant/token";
-
-    private static final String SUBMIT_EVENT_URL =
-        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases?ignore-warning=true";
-
-    private static final String READ_EVENT_URL =
-        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756";
-
-    private static final String USER_ID_HEADER = "user-id";
-
-    private static final String KEY = "key";
-
-    private static final String VALUE = "value";
+public class SscsBulkScanExceptionRecordCallback {
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -609,13 +577,13 @@ public class SscsBulkScanCallbackIntegrationTest {
     private void submitForCaseworkerStub(String eventId) throws Exception {
         String createCaseRequest = "";
         switch (eventId) {
-            case "appealCreated": createCaseRequest = loadJson("mappings/case-creation-request.json");
+            case "appealCreated": createCaseRequest = loadJson("mappings/exception/case-creation-request.json");
                 break;
 
-            case "incompleteApplication": createCaseRequest = loadJson("mappings/case-incomplete-creation-request.json");
+            case "incompleteApplication": createCaseRequest = loadJson("mappings/exception/case-incomplete-creation-request.json");
                 break;
 
-            case "nonCompliant": createCaseRequest = loadJson("mappings/case-non-compliant-creation-request.json");
+            case "nonCompliant": createCaseRequest = loadJson("mappings/exception/case-non-compliant-creation-request.json");
                 break;
 
             default: break;

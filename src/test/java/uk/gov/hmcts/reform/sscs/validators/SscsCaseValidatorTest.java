@@ -165,10 +165,21 @@ public class SscsCaseValidatorTest {
     public void givenAnAppointeeExistsAndAnAppellantDoesNotContainANino_thenAddAWarningAboutPerson2() {
         Appellant appellant = buildAppellant(true);
         appellant.getIdentity().setNino(null);
+        appellant.getAppointee().setName(Name.builder().firstName("Jeff").build());
 
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
 
         assertEquals("person2_nino is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppointeeWithEmptyDetailsAndAnAppellantDoesNotContainANino_thenAddAWarningAboutPerson1() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getIdentity().setNino(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
+
+        assertEquals("person1_nino is empty", response.getWarnings().get(0));
     }
 
     @Test

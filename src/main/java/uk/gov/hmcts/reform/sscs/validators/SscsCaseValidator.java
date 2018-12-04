@@ -38,6 +38,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private List<String> validateAppeal(Map<String, Object> caseData) {
+
         Appeal appeal = (Appeal) caseData.get("appeal");
 
         Appellant appellant = appeal.getAppellant();
@@ -144,11 +145,18 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private String getPerson1OrPerson2(Appellant appellant) {
-        if (appellant == null || appellant.getAppointee() == null) {
+        if (appellant == null || appellant.getAppointee() == null || isAppointeeDetailsEmpty(appellant.getAppointee())) {
             return PERSON1_VALUE;
         } else {
             return PERSON2_VALUE;
         }
+    }
+
+    private Boolean isAppointeeDetailsEmpty(Appointee appointee) {
+        return (appointee.getAddress() == null
+            && appointee.getContact() == null
+            && appointee.getIdentity() == null
+            && appointee.getName() == null);
     }
 
     private void isBenefitTypeValid(Appeal appeal) {
