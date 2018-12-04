@@ -165,7 +165,6 @@ public class SscsCaseValidatorTest {
     public void givenAnAppointeeExistsAndAnAppellantDoesNotContainANino_thenAddAWarningAboutPerson2() {
         Appellant appellant = buildAppellant(true);
         appellant.getIdentity().setNino(null);
-        appellant.getAppointee().setName(Name.builder().firstName("Jeff").build());
 
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
 
@@ -176,6 +175,10 @@ public class SscsCaseValidatorTest {
     public void givenAnAppointeeWithEmptyDetailsAndAnAppellantDoesNotContainANino_thenAddAWarningAboutPerson1() {
         Appellant appellant = buildAppellant(true);
         appellant.getIdentity().setNino(null);
+        appellant.getAppointee().setName(null);
+        appellant.getAppointee().setAddress(null);
+        appellant.getAppointee().setContact(null);
+        appellant.getAppointee().setIdentity(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
 
@@ -341,6 +344,66 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppointeeDoesNotContainAFirstName_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getAppointee().getName().setFirstName(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
+
+        assertEquals("person1_first_name is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppointeeDoesNotContainALastName_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getAppointee().getName().setLastName(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
+
+        assertEquals("person1_last_name is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppointeeDoesNotContainAnAddressLine1_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getAppointee().getAddress().setLine1(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
+
+        assertEquals("person1_address_line1 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppointeeDoesNotContainAnAddressLine3_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getAppointee().getAddress().setTown(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
+
+        assertEquals("person1_address_line3 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppointeeDoesNotContainAnAddressLine4_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getAppointee().getAddress().setCounty(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
+
+        assertEquals("person1_address_line4 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppointeeDoesNotContainAnAddressLinePostcode_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getAppointee().getAddress().setPostcode(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant));
+
+        assertEquals("person1_postcode is empty", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAllMandatoryFieldsForAnAppellantExists_thenDoNotAddAWarning() {
         Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false));
 
@@ -389,7 +452,7 @@ public class SscsCaseValidatorTest {
     }
 
     private Appellant buildAppellantWithPhoneNumberAndPostcode(Boolean withAppointee, String phoneNumber, String postcode) {
-        Appointee appointee = withAppointee ? Appointee.builder().build() : null;
+        Appointee appointee = withAppointee ? buildAppointee() : null;
 
         return Appellant.builder()
             .name(Name.builder().firstName("Bob").lastName("Smith").build())
@@ -397,6 +460,14 @@ public class SscsCaseValidatorTest {
             .identity(Identity.builder().nino("JT01234567B").build())
             .contact(Contact.builder().phone(phoneNumber).build())
             .appointee(appointee).build();
+    }
+
+    private Appointee buildAppointee() {
+
+        return Appointee.builder()
+            .name(Name.builder().firstName("Tim").lastName("Garwood").build())
+            .address(Address.builder().line1("101 My Road").town("Gidea Park").county("Essex").postcode("CM13 0GD").build())
+            .build();
     }
 
     private Representative buildRepresentative() {
