@@ -122,6 +122,31 @@ public class SscsBulkScanValidateRecordCallback {
     }
 
     @Test
+    public void should_handle_callback_and_return_caseid_and_state_case_created_in_validate_interloc_record_data()
+        throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson = loadJson("mappings/validation/validate-interloc-appeal-created-case-request.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getWarnings()).isEmpty();
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
     public void should_return_error_when_appellant_details_are_partially_entered() throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");

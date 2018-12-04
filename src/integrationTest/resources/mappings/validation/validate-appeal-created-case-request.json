@@ -37,21 +37,11 @@
           "wantsToAttend": "Yes"
         },
         "mrnDetails": {
-          "mrnDate": "2018-05-24"
+          "mrnDate": "2048-05-24"
         },
         "signer": null
       },
-      "caseReference": "SC022/14/12423",
-      "events": [
-        {
-          "id": "b6c14bfe-c61f-4ce2-b685-174123e7d449",
-          "value": {
-            "date": "2017-05-24T14:01:18.243",
-            "description": "Some Events",
-            "type": "appealReceived"
-          }
-        }
-      ]
+      "caseReference": "SC022/14/12423"
     },
     "case_type_id": "Benefit",
     "created_date": [
@@ -65,5 +55,6 @@
     ],
     "state": "appealCreated",
     "id": "1234567"
-  }
+  },
+  "event_id": "validAppeal"
 }
