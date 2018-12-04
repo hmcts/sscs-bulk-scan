@@ -29,7 +29,7 @@ public class GetSmokeCase {
         RestAssured.baseURI = appUrl;
         RestAssured.useRelaxedHTTPSValidation();
 
-        System.out.println(System.getenv("ROBOTICS_EMAIL_SUBJECT") + " XXXXX " + System.getenv("IDAM_OAUTH2_USER_EMAIL"));
+        System.out.println(System.getenv("ROBOTICS_EMAIL_SUBJECT") + " XXXXX " + System.getenv("IDAM_OAUTH2_USER_EMAIL").substring(1,5));
         IdamTokens idamTokens = idamService.getIdamTokens();
 
         List<String> errors = RestAssured
