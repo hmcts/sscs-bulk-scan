@@ -281,6 +281,66 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenARepresentativeDoesNotContainAFirstName_thenAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getName().setFirstName(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative));
+
+        assertEquals("representative_first_name is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenARepresentativeDoesNotContainALastName_thenAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getName().setLastName(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative));
+
+        assertEquals("representative_last_name is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenARepresentativeDoesNotContainAnAddressLine1_thenAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getAddress().setLine1(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative));
+
+        assertEquals("representative_address_line1 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenARepresentativeDoesNotContainATown_thenAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getAddress().setTown(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative));
+
+        assertEquals("representative_address_line3 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenARepresentativeDoesNotContainACounty_thenAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getAddress().setCounty(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative));
+
+        assertEquals("representative_address_line4 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenARepresentativeDoesNotContainAPostcode_thenAddAWarningAndDoNotAddRegionalProcessingCenter() {
+        Representative representative = buildRepresentative();
+        representative.getAddress().setPostcode(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative));
+
+        assertEquals("representative_postcode is empty", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAllMandatoryFieldsForAnAppellantExists_thenDoNotAddAWarning() {
         Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false));
 
@@ -290,23 +350,28 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("12/12/2018", PIP.name(), appellant);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("12/12/2018", PIP.name(), appellant, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrnDate(String mrnDate, Appellant appellant) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrnDate, PIP.name(), appellant);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrnDate, PIP.name(), appellant, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("12/12/2018", benefitCode, appellant);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("12/12/2018", benefitCode, appellant, null);
     }
 
-    private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(String mrnDate, String benefitCode, Appellant appellant) {
+    private Map<String, Object> buildMinimumAppealDataWithRepresentative(Appellant appellant, Representative representative) {
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("12/12/2018", PIP.name(), appellant, representative);
+    }
+
+    private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(String mrnDate, String benefitCode, Appellant appellant, Representative representative) {
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("appeal", Appeal.builder()
             .mrnDetails(MrnDetails.builder().mrnDate(mrnDate).build())
             .benefitType(BenefitType.builder().code(benefitCode).build())
             .appellant(appellant)
+            .rep(representative)
             .build());
         return dataMap;
     }
@@ -332,6 +397,15 @@ public class SscsCaseValidatorTest {
             .identity(Identity.builder().nino("JT01234567B").build())
             .contact(Contact.builder().phone(phoneNumber).build())
             .appointee(appointee).build();
+    }
+
+    private Representative buildRepresentative() {
+
+        return Representative.builder()
+            .hasRepresentative("Yes")
+            .name(Name.builder().firstName("Bob").lastName("Smith").build())
+            .address(Address.builder().line1("101 My Road").town("Brentwood").county("Essex").postcode("CM13 1HG").build())
+            .build();
     }
 
 }

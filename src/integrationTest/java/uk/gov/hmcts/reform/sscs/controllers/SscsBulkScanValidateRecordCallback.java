@@ -126,7 +126,7 @@ public class SscsBulkScanValidateRecordCallback {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-data-request.json");
+        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-appellant-request.json");
 
         HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
 
@@ -143,6 +143,30 @@ public class SscsBulkScanValidateRecordCallback {
                 "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_first_name is empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_error_when_representative_details_are_only_partially_entered() throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-representative-request.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("representative_address_line1 is empty",
+                "representative_address_line3 is empty",
+                "representative_address_line4 is empty",
+                "representative_postcode is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
