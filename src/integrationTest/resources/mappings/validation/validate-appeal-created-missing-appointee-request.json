@@ -1,0 +1,86 @@
+{
+  "case_details": {
+    "after_submit_callback_response": null,
+    "callback_response_status": null,
+    "callback_response_status_code": null,
+    "case_data": {
+      "appeal": {
+        "appealReasons": {},
+        "appellant": {
+          "address": {
+            "line1": "45 The Road",
+            "town": "Brentwood",
+            "county": "Essex",
+            "postcode": "CM13 9HY"
+          },
+          "contact": {
+            "email": "mail@email.com",
+            "phone": "01234567890"
+          },
+          "identity": {
+            "dob": "1904-03-10",
+            "nino": "AB 22 55 66 B"
+          },
+          "name": {
+            "firstName": "User",
+            "lastName": "Test",
+            "title": "Mr"
+          },
+          "appointee": {
+            "address": {
+              "line1": "45 The Road",
+              "town": "Brentwood",
+              "county": "Essex",
+              "postcode": "CM13 9HY"
+            },
+            "contact": {
+              "email": "mail@email.com",
+              "phone": "01234567890"
+            },
+            "identity": {
+              "dob": "1904-03-10",
+              "nino": "AB 22 55 66 B"
+            },
+            "name": {}
+          }
+        },
+        "benefitType": {
+          "code": "ESA"
+        },
+        "hearingOptions": {
+          "languageInterpreter": "Yes",
+          "other": "No",
+          "wantsSupport": "Yes",
+          "wantsToAttend": "Yes"
+        },
+        "mrnDetails": {
+          "mrnDate": "2018-05-24"
+        },
+        "signer": null
+      },
+      "caseReference": "SC022/14/12423",
+      "events": [
+        {
+          "id": "b6c14bfe-c61f-4ce2-b685-174123e7d449",
+          "value": {
+            "date": "2017-05-24T14:01:18.243",
+            "description": "Some Events",
+            "type": "appealReceived"
+          }
+        }
+      ]
+    },
+    "case_type_id": "Benefit",
+    "created_date": [
+      2018,
+      7,
+      25,
+      15,
+      49,
+      48,
+      23000000
+    ],
+    "state": "appealCreated",
+    "id": "1234567"
+  }
+}

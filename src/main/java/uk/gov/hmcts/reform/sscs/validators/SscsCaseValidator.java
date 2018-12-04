@@ -41,40 +41,11 @@ public class SscsCaseValidator implements CaseValidator {
 
         Appeal appeal = (Appeal) caseData.get("appeal");
 
-        Appellant appellant = appeal.getAppellant();
+        checkAppellant(appeal, caseData);
+        checkRepresentative(appeal, caseData);
 
-        String personType = getPerson1OrPerson2(appellant);
-        if (!doesAppellantFirstNameExist(appellant)) {
-            warnings.add(personType + "_first_name is empty");
-        }
-        if (!doesAppellantLastNameExist(appellant)) {
-            warnings.add(personType + "_last_name is empty");
-        }
-        if (!doesAppellantAddressLine1Exist(appellant)) {
-            warnings.add(personType + "_address_line1 is empty");
-        }
-        if (!doesAppellantAddressTownExist(appellant)) {
-            warnings.add(personType + "_address_line3 is empty");
-        }
-        if (!doesAppellantAddressCountyExist(appellant)) {
-            warnings.add(personType + "_address_line4 is empty");
-        }
-        if (!doesAppellantNinoExist(appellant)) {
-            warnings.add(personType + "_nino is empty");
-        }
         if (!doesMrnDateExist(appeal)) {
             warnings.add("mrn_date is empty");
-        }
-
-        if (isAppellantAddressPostcodeValid(appellant, personType)) {
-            RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode());
-
-            caseData.put("region", rpc.getName());
-            caseData.put("regionalProcessingCenter", rpc);
-        }
-
-        if (!isPhoneNumberValid(appellant)) {
-            warnings.add(personType + "_phone is invalid");
         }
 
         isBenefitTypeValid(appeal);
@@ -82,44 +53,95 @@ public class SscsCaseValidator implements CaseValidator {
         return warnings;
     }
 
-    private Boolean doesAppellantFirstNameExist(Appellant appellant) {
-        if (appellant != null && appellant.getName() != null) {
-            return appellant.getName().getFirstName() != null;
+    private void checkAppellant(Appeal appeal, Map<String, Object> caseData) {
+        Appellant appellant = appeal.getAppellant();
+
+        String personType = getPerson1OrPerson2(appellant);
+
+        Name appellantName = appellant != null ? appellant.getName() : null;
+        Address appellantAddress = appellant != null ? appellant.getAddress() : null;
+
+        checkPerson(appellantName, appellantAddress, personType, caseData);
+
+        if (!doesAppellantNinoExist(appellant)) {
+            warnings.add(personType + "_nino is empty");
+        }
+
+        if (!isPhoneNumberValid(appellant)) {
+            warnings.add(personType + "_phone is invalid");
+        }
+    }
+
+    private void checkRepresentative(Appeal appeal, Map<String, Object> caseData) {
+        if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes")) {
+            checkPerson(appeal.getRep().getName(), appeal.getRep().getAddress(), "representative", caseData);
+        }
+    }
+
+    private void checkPerson(Name name, Address address, String personType, Map<String, Object> caseData) {
+        if (!doesFirstNameExist(name)) {
+            warnings.add(personType + "_first_name is empty");
+        }
+        if (!doesLastNameExist(name)) {
+            warnings.add(personType + "_last_name is empty");
+        }
+        if (!doesAddressLine1Exist(address)) {
+            warnings.add(personType + "_address_line1 is empty");
+        }
+        if (!doesAddressTownExist(address)) {
+            warnings.add(personType + "_address_line3 is empty");
+        }
+        if (!doesAddressCountyExist(address)) {
+            warnings.add(personType + "_address_line4 is empty");
+        }
+        if (isAddressPostcodeValid(address, personType) && address != null) {
+            RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
+
+            if (!personType.equals("representative")) {
+                caseData.put("region", rpc.getName());
+                caseData.put("regionalProcessingCenter", rpc);
+            }
+        }
+    }
+
+    private Boolean doesFirstNameExist(Name name) {
+        if (name != null) {
+            return name.getFirstName() != null;
         }
         return false;
     }
 
-    private Boolean doesAppellantLastNameExist(Appellant appellant) {
-        if (appellant != null && appellant.getName() != null) {
-            return appellant.getName().getLastName() != null;
+    private Boolean doesLastNameExist(Name name) {
+        if (name != null) {
+            return name.getLastName() != null;
         }
         return false;
     }
 
-    private Boolean doesAppellantAddressLine1Exist(Appellant appellant) {
-        if (appellant != null && appellant.getAddress() != null) {
-            return appellant.getAddress().getLine1() != null;
+    private Boolean doesAddressLine1Exist(Address address) {
+        if (address != null) {
+            return address.getLine1() != null;
         }
         return false;
     }
 
-    private Boolean doesAppellantAddressTownExist(Appellant appellant) {
-        if (appellant != null && appellant.getAddress() != null) {
-            return appellant.getAddress().getTown() != null;
+    private Boolean doesAddressTownExist(Address address) {
+        if (address != null) {
+            return address.getTown() != null;
         }
         return false;
     }
 
-    private Boolean doesAppellantAddressCountyExist(Appellant appellant) {
-        if (appellant != null && appellant.getAddress() != null) {
-            return appellant.getAddress().getCounty() != null;
+    private Boolean doesAddressCountyExist(Address address) {
+        if (address != null) {
+            return address.getCounty() != null;
         }
         return false;
     }
 
-    private Boolean isAppellantAddressPostcodeValid(Appellant appellant, String personType) {
-        if (appellant != null && appellant.getAddress() != null && appellant.getAddress().getPostcode() != null) {
-            if (appellant.getAddress().getPostcode().matches("^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$")) {
+    private Boolean isAddressPostcodeValid(Address address, String personType) {
+        if (address != null && address.getPostcode() != null) {
+            if (address.getPostcode().matches("^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$")) {
                 return true;
             } else {
                 warnings.add(personType + "_postcode is not a valid postcode");
