@@ -27,16 +27,6 @@
             "title": "Mr"
           }
         },
-        "rep": {
-          "hasRepresentative": "Yes",
-          "name": {
-            "firstName": "User",
-            "lastName": "Rep",
-            "title": "Mrs"
-          },
-          "address": {},
-          "contact": {}
-        },
         "benefitType": {
           "code": "ESA"
         },
@@ -47,7 +37,7 @@
           "wantsToAttend": "Yes"
         },
         "mrnDetails": {
-          "mrnDate": "2048-05-24"
+          "mrnDate": "2018-05-24"
         },
         "signer": null
       },
@@ -66,5 +56,5 @@
     "state": "appealCreated",
     "id": "1234567"
   },
-  "event_id": "validAppeal"
+  "event_id": "interlocValidAppeal"
 }
