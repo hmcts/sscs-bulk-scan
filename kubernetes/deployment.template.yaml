@@ -1,0 +1,108 @@
+# Example Kubernetes resource template
+#
+# All variables are replaced at deployment time with environment variables.
+#
+# The following variables are derived as follows by the pipeline. DO NOT CHANGE:
+#
+#   - NAMESPACE:    product
+#   - SERVICE_NAME: product-component-branch
+#   - IMAGE_NAME:   registry-name/hmcts/product-component:branch
+#
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${NAMESPACE}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${SERVICE_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${SERVICE_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${SERVICE_NAME}
+    spec:
+      containers:
+      - image: ${IMAGE_NAME}
+        name: ${SERVICE_NAME}
+        env:
+          - name: IDAM_OAUTH2_CLIENT_SECRET
+            value: "${IDAM_OAUTH2_CLIENT_SECRET}"
+          - name: IDAM_OAUTH2_USER_EMAIL
+            value: "${IDAM_OAUTH2_USER_EMAIL}"
+          - name: IDAM_OAUTH2_USER_PASSWORD
+            value: "${IDAM_OAUTH2_USER_PASSWORD}"
+          - name: EMAIL_SERVER_HOST
+            value: "${EMAIL_SERVER_HOST}"
+          - name: EMAIL_SERVER_PORT
+            value: "${EMAIL_SERVER_PORT}"
+          - name: ROBOTICS_EMAIL_FROM
+            value: "${ROBOTICS_EMAIL_FROM}"
+          - name: ROBOTICS_EMAIL_TO
+            value: "${ROBOTICS_EMAIL_TO}"
+          - name: S2S_SECRET
+            value: "${S2S_SECRET}"
+        envFrom:
+          - configMapRef:
+              name: ${SERVICE_NAME}-config
+
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "200m"
+          limits:
+            memory: "2048Mi"
+            cpu: "2500m"
+
+        readinessProbe:
+          timeoutSeconds: 10
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          httpGet:
+            path: /health
+            port: 8090
+
+        # This is the port your process is listening on in the container
+        ports:
+        - containerPort: 8090
+          name: http
+        imagePullPolicy: Always            
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${SERVICE_NAME}
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${SERVICE_NAME}
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8090
+  selector:
+    app: ${SERVICE_NAME}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ${SERVICE_NAME}
+  namespace: ${NAMESPACE}
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: ${SERVICE_FQDN}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: ${SERVICE_NAME}
+          servicePort: 80
