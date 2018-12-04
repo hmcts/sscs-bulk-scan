@@ -122,7 +122,7 @@ public class SscsBulkScanValidateRecordCallback {
     }
 
     @Test
-    public void should_return_error_when_appellant_details_are_not_available() throws IOException {
+    public void should_return_error_when_appellant_details_are_partially_entered() throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -143,6 +143,52 @@ public class SscsBulkScanValidateRecordCallback {
                 "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_first_name is empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_error_when_appointee_details_are_only_partially_entered() throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-appointee-request.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("person1_first_name is empty",
+                "person1_last_name is empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_error_when_appellant_and_appointee_details_are_only_partially_entered() throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-appellant-and-appointee-request.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("person1_first_name is empty",
+                "person1_last_name is empty",
+                "person2_first_name is empty",
+                "person2_last_name is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }

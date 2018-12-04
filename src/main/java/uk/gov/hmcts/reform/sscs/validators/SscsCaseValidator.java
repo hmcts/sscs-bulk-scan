@@ -63,12 +63,22 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkPerson(appellantName, appellantAddress, personType, caseData);
 
+        checkAppointee(personType, appellant, caseData);
+
         if (!doesAppellantNinoExist(appellant)) {
             warnings.add(personType + "_nino is empty");
         }
 
         if (!isPhoneNumberValid(appellant)) {
             warnings.add(personType + "_phone is invalid");
+        }
+    }
+
+    private void checkAppointee(String personType, Appellant appellant, Map<String, Object> caseData) {
+        boolean doesAppointeeExist = personType == PERSON2_VALUE;
+
+        if (doesAppointeeExist && appellant != null) {
+            checkPerson(appellant.getAppointee().getName(), appellant.getAppointee().getAddress(), PERSON1_VALUE, caseData);
         }
     }
 
@@ -94,13 +104,10 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesAddressCountyExist(address)) {
             warnings.add(personType + "_address_line4 is empty");
         }
-        if (isAddressPostcodeValid(address, personType) && address != null) {
+        if (isAddressPostcodeValid(address, personType) && address != null && personType.equals(PERSON1_VALUE)) {
             RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
-
-            if (!personType.equals("representative")) {
-                caseData.put("region", rpc.getName());
-                caseData.put("regionalProcessingCenter", rpc);
-            }
+            caseData.put("region", rpc.getName());
+            caseData.put("regionalProcessingCenter", rpc);
         }
     }
 
