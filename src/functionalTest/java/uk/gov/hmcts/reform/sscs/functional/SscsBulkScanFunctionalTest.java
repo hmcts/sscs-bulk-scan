@@ -17,8 +17,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
+import uk.gov.hmcts.reform.sscs.ccd.util.CaseDataUtils;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
@@ -36,6 +38,8 @@ public class SscsBulkScanFunctionalTest {
     @Autowired
     private CcdService ccdService;
 
+    private String ccdCaseId;
+
     @Before
     public void setup() {
         RestAssured.baseURI = appUrl;
@@ -43,24 +47,54 @@ public class SscsBulkScanFunctionalTest {
     }
 
     @Test
+    public void create_appeal_created_case_when_all_fields_entered() throws IOException {
+        Response response = exceptionRecordEndpointRequest(getJson("all_fields_entered.json"));
+
+        assertEquals("appealCreated", findStateOfCaseInCcd(response));
+    }
+
+    @Test
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
-        Response response = simulateCcdCallback("some_mandatory_fields_missing.json");
+        Response response = exceptionRecordEndpointRequest(getJson("some_mandatory_fields_missing.json"));
 
         assertEquals("incompleteApplication", findStateOfCaseInCcd(response));
     }
 
     @Test
     public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months() throws IOException {
-        Response response = simulateCcdCallback("mrn_date_greater_than_13_months.json");
+        Response response = exceptionRecordEndpointRequest(getJson("mrn_date_greater_than_13_months.json"));
 
         assertEquals("interlocutoryReviewState", findStateOfCaseInCcd(response));
     }
 
-    private Response simulateCcdCallback(String resource) throws IOException {
-        final String callbackUrl = appUrl + "/exception-record";
+    @Test
+    public void validate_and_update_incomplete_case_to_appeal_created_case() throws IOException {
+        createCase();
+        String json = getJson("validate_appeal_created_case_request.json");
+        json = json.replace("CASE_ID_TO_BE_REPLACED", ccdCaseId);
 
-        String path = getClass().getClassLoader().getResource("import/" + resource).getFile();
-        String json = FileUtils.readFileToString(new File(path), StandardCharsets.UTF_8.name());
+        validationEndpointRequest(json);
+
+        SscsCaseDetails caseDetails = ccdService.getByCaseId(Long.valueOf(ccdCaseId), idamTokens);
+
+        assertEquals("appealCreated", caseDetails.getState());
+    }
+
+    private Response exceptionRecordEndpointRequest(String json) throws IOException {
+        return simulateCcdCallback(json, "/exception-record");
+    }
+
+    private Response validationEndpointRequest(String json) throws IOException {
+        return simulateCcdCallback(json, "/validate-record");
+    }
+
+    private String getJson(String resource) throws IOException {
+        String file = getClass().getClassLoader().getResource("import/" + resource).getFile();
+        return FileUtils.readFileToString(new File(file), StandardCharsets.UTF_8.name());
+    }
+
+    private Response simulateCcdCallback(String json, String urlPath) {
+        final String callbackUrl = appUrl + urlPath;
 
         RestAssured.useRelaxedHTTPSValidation();
         Response response = RestAssured
@@ -76,6 +110,12 @@ public class SscsBulkScanFunctionalTest {
         assertEquals(200, response.getStatusCode());
 
         return response;
+    }
+
+    private void createCase() {
+        SscsCaseData caseData = CaseDataUtils.buildMinimalCaseData();
+        SscsCaseDetails caseDetails = ccdService.createCase(caseData, idamTokens);
+        ccdCaseId = String.valueOf(caseDetails.getId());
     }
 
     private String findStateOfCaseInCcd(Response response) {
