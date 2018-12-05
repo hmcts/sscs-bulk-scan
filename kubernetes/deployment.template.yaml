@@ -49,6 +49,11 @@ spec:
             value: "${ROBOTICS_EMAIL_TO}"
           - name: S2S_SECRET
             value: "${S2S_SECRET}"
+          - name: ROBOTICS_EMAIL_SUBJECT
+            value:  "Robotics Data"
+          - name: ROBOTICS_EMAIL_MESSAGE
+            value: "Please find attached the robotics json file Please do not respond to this email"
+
         envFrom:
           - configMapRef:
               name: ${SERVICE_NAME}-config

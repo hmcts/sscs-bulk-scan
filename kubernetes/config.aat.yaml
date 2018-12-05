@@ -15,8 +15,6 @@ data:
   IDAM_S2S_AUTH_MICROSERVICE: "sscs_bulkscan"
   LOGBACK_REQUIRE_ALERT_LEVEL: "false"
   LOGBACK_REQUIRE_ERROR_CODE: "false"
-  ROBOTICS_EMAIL_SUBJECT: "Robotics Data"
-  ROBOTICS_EMAIL_MESSAGE: "Please find attached the robotics json file Please do not respond to this email"
   WEBSITE_LOCAL_CACHE_OPTION: "Always"
   WEBSITE_LOCAL_CACHE_SIZEINMB: "300"
   WEBSITE_NODE_DEFAULT_VERSION: "8.11.1"
