@@ -58,6 +58,7 @@ public class SscsBulkScanFunctionalTest {
     private Response simulateCcdCallback(String resource) throws IOException {
         final String callbackUrl = appUrl + "/exception-record";
 
+        System.out.println("XXXXXXX" + System.getenv("IDAM_OAUTH2_REDIRECT_URL"));
         String path = getClass().getClassLoader().getResource("import/" + resource).getFile();
         String json = FileUtils.readFileToString(new File(path), StandardCharsets.UTF_8.name());
 
