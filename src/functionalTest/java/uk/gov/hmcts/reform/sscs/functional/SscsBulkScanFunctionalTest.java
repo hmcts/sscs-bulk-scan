@@ -65,7 +65,7 @@ public class SscsBulkScanFunctionalTest {
         RestAssured.useRelaxedHTTPSValidation();
         Response response = RestAssured
             .given()
-            .header("ServiceAuthorization", "" + idamTokens.getServiceAuthorization())
+            .header("serviceauthorization", idamTokens.getServiceAuthorization())
             .header(AUTHORIZATION, idamTokens.getIdamOauth2Token())
             .header("user-id", idamTokens.getUserId())
             .contentType("application/json")
