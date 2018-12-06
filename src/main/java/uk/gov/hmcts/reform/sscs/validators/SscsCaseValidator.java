@@ -182,10 +182,39 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private Boolean isAppointeeDetailsEmpty(Appointee appointee) {
-        return (appointee.getAddress() == null
-            && appointee.getContact() == null
-            && appointee.getIdentity() == null
-            && appointee.getName() == null);
+        return (isAddressEmpty(appointee.getAddress())
+            && isContactEmpty(appointee.getContact())
+            && isIdentityEmpty(appointee.getIdentity())
+            && isNameEmpty(appointee.getName()));
+    }
+
+    private Boolean isAddressEmpty(Address address) {
+        return address == null
+            || (address.getLine1() == null
+            && address.getLine2() == null
+            && address.getTown() == null
+            && address.getCounty() == null
+            && address.getPostcode() == null);
+    }
+
+    private Boolean isContactEmpty(Contact contact) {
+        return contact == null
+            || (contact.getEmail() == null
+            && contact.getPhone() == null
+            && contact.getMobile() == null);
+    }
+
+    private Boolean isIdentityEmpty(Identity identity) {
+        return identity == null
+            || (identity.getDob() == null
+            && identity.getNino() == null);
+    }
+
+    private Boolean isNameEmpty(Name name) {
+        return name == null
+            || (name.getFirstName() == null
+            && name.getLastName() == null
+            && name.getTitle() == null);
     }
 
     private void isBenefitTypeValid(Appeal appeal) {

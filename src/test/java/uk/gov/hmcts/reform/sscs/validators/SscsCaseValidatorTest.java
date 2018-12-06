@@ -72,6 +72,31 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantWithNoNameAndEmptyAppointeeDetails_thenAddWarnings() {
+        Map<String, Object> pairs = new HashMap<>();
+
+        Appointee appointee = Appointee.builder()
+            .address(Address.builder().build())
+            .name(Name.builder().build())
+            .contact(Contact.builder().build())
+            .identity(Identity.builder().build())
+            .build();
+
+        pairs.put("appeal", Appeal.builder().appellant(Appellant.builder()
+            .appointee(appointee)
+            .address(Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13 0GD").build())
+            .identity(Identity.builder().nino("JT1234567B").build()).build())
+            .benefitType(BenefitType.builder().code(PIP.name()).build())
+            .mrnDetails(MrnDetails.builder().mrnDate("12/12/2018").build()).build());
+
+        CaseResponse response = validator.validate(pairs);
+
+        assertThat(response.getWarnings())
+            .containsOnly("person1_first_name is empty",
+                "person1_last_name is empty");
+    }
+
+    @Test
     public void givenAnAppellantWithNoAddress_thenAddWarnings() {
         Map<String, Object> pairs = new HashMap<>();
 
