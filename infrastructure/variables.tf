@@ -48,11 +48,11 @@ variable "idam_s2s_auth_microservice" {
 }
 
 variable "idam_oauth2_client_id" {
-  default = "bsp"
+  default = "sscs"
 }
 
 variable "idam_redirect_url" {
-  default = "https://rpe-bulk-scan-processor*.service.core-compute-saat.internal/oauth2/callback"
+  default = "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
 }
 
 variable "idam_url" {
