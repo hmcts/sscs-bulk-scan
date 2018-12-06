@@ -1,14 +1,16 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import org.junit.Test;
@@ -19,6 +21,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
@@ -89,13 +92,17 @@ public class CcdCallbackControllerTest {
 
         doNothing().when(authService).assertIsAllowedToHandleCallback("some-service");
 
-        mockMvc.perform(post("/exception-record")
+        MvcResult result =  mockMvc.perform(post("/exception-record")
             .contentType(MediaType.APPLICATION_JSON_UTF8)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("serviceauthorization", TEST_SERVICE_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
             .content(exceptionRecord("exceptionrecord.json")))
-            .andExpect(status().is5xxServerError());
+            .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+
+        assertThat(content, containsString("There was an unknown error when processing the case. If the error persists, please contact the Bulk Scan development team"));
     }
 
     @Test
