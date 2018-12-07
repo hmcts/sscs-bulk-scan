@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
+import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 import uk.gov.hmcts.reform.sscs.handler.SscsRoboticsHandler;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -38,18 +39,22 @@ public class CcdCallbackHandler {
 
     private final SscsDataHelper sscsDataHelper;
 
+    private final CaseEvent caseEvent;
+
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         CaseDataHandler caseDataHandler,
         SscsRoboticsHandler roboticsHandler,
-        SscsDataHelper sscsDataHelper
+        SscsDataHelper sscsDataHelper,
+        CaseEvent caseEvent
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
         this.roboticsHandler = roboticsHandler;
         this.sscsDataHelper = sscsDataHelper;
+        this.caseEvent = caseEvent;
     }
 
     public CallbackResponse handle(
@@ -92,9 +97,7 @@ public class CcdCallbackHandler {
         if (validationErrorResponse != null) {
             return validationErrorResponse;
         } else {
-            String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
-
-            roboticsHandler.handle(caseValidationResponse, Long.valueOf(caseData.getCaseDetails().getCaseId()), eventId);
+            roboticsHandler.handle(caseValidationResponse, Long.valueOf(caseData.getCaseDetails().getCaseId()), caseEvent.getCaseCreatedEventId());
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())
@@ -134,12 +137,18 @@ public class CcdCallbackHandler {
     private AboutToStartOrSubmitCallbackResponse convertWarningsToErrors(CaseResponse caseResponse,
                                                                 String exceptionRecordId) {
 
+        List<String> appendedWarningsAndErrors = new ArrayList<>();
+
         if (!ObjectUtils.isEmpty(caseResponse.getWarnings())) {
-            log.info("Errors found while transforming exception record id {}", exceptionRecordId);
-
-            List<String> appendedWarningsAndErrors = new ArrayList<>(caseResponse.getErrors());
             appendedWarningsAndErrors.addAll(caseResponse.getWarnings());
+        }
 
+        if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
+            appendedWarningsAndErrors.addAll(caseResponse.getErrors());
+        }
+
+        if (appendedWarningsAndErrors.size() > 0) {
+            log.info("Errors found while validating exception record id {}", exceptionRecordId);
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(appendedWarningsAndErrors)
                 .build();
