@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.service.bulkscan;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
@@ -19,7 +20,11 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
+import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
+import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 import uk.gov.hmcts.reform.sscs.handler.SscsRoboticsHandler;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
@@ -47,7 +52,7 @@ public class CcdCallbackHandlerTest {
 
     @Before
     public void setUp() {
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"));
     }
 
 
@@ -114,7 +119,7 @@ public class CcdCallbackHandlerTest {
     }
 
     @Test
-    public void should_return_exc_data_and_errors_in_callback_when_transformation_success_and_validn_fails_with_errors() {
+    public void should_return_exc_data_and_errors_in_callback_when_transformation_success_and_validation_fails_with_errors() {
         // given
         CaseDetails caseDetails = CaseDetails
             .builder()
@@ -142,6 +147,70 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }
 
+    @Test
+    public void should_return_sscs_data_with_case_id_and_state_when_validation_endpoint_is_successful() {
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
+        when(caseValidator.validate(any())).thenReturn(caseValidationResponse);
+
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
+
+        assertThat(ccdCallbackResponse.getErrors()).isNull();
+        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+    }
+
+    @Test
+    public void should_return_exc_data_and_errors_in_callback_when_validation_endpoint_fails_with_errors() {
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        when(caseValidator.validate(any()))
+            .thenReturn(CaseResponse.builder()
+                .errors(ImmutableList.of("NI Number is invalid"))
+                .build());
+
+        // when
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
+
+        // then
+        assertThat(ccdCallbackResponse.getErrors()).containsOnly("NI Number is invalid");
+        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+    }
+
+    @Test
+    public void should_return_exc_data_and_errors_in_callback_when_validation_endpoint_fails_with_warnings() {
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        when(caseValidator.validate(any()))
+            .thenReturn(CaseResponse.builder()
+                .warnings(ImmutableList.of("Postcode is invalid"))
+                .build());
+
+        // when
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
+
+        // then
+        assertThat(ccdCallbackResponse.getErrors()).containsOnly("Postcode is invalid");
+        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+    }
 
     private void assertExceptionDataEntries(AboutToStartOrSubmitCallbackResponse ccdCallbackResponse) {
         assertThat(ccdCallbackResponse.getData()).contains(
@@ -160,6 +229,15 @@ public class CcdCallbackHandlerTest {
                 .eventId("createNewCase")
                 .build(),
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
+        );
+    }
+
+    private CallbackResponse invokeValidationCallbackHandler(SscsCaseDetails caseDetails) {
+        return ccdCallbackHandler.handleValidationAndUpdate(
+            ValidateCaseData.builder()
+                .caseDetails(caseDetails)
+                .eventId("validAppeal")
+                .build()
         );
     }
 
