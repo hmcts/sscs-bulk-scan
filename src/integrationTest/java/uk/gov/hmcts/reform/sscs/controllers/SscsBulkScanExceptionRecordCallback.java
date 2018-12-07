@@ -11,98 +11,30 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.util.*;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
 import org.apache.commons.codec.Charsets;
-import org.joda.time.DateTimeUtils;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.SocketUtils;
-import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.sscs.BaseTest;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
-import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWireMock
-@TestPropertySource(locations = "classpath:application_it.yaml")
-public class SscsBulkScanExceptionRecordCallback {
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    @LocalServerPort
-    private int randomServerPort;
-
-    @MockBean
-    private AuthTokenValidator authTokenValidator;
-
-    @MockBean
-    private EvidenceManagementService evidenceManagementService;
-
-    @MockBean
-    private JavaMailSender mailSender;
-
-    @Rule
-    public WireMockRule ccdServer;
-
-    private static int wiremockPort = 0;
-
-    private Session session = Session.getInstance(new Properties());
-
-    private String baseUrl;
-
-    private MimeMessage message;
-
-    static {
-        wiremockPort = SocketUtils.findAvailableTcpPort();
-        System.setProperty("core_case_data.api.url", "http://localhost:" + wiremockPort);
-    }
+public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     @Before
-    public void setUp() {
+    public void setup() {
         baseUrl = "http://localhost:" + randomServerPort + "/exception-record/";
-        ccdServer = new WireMockRule(wiremockPort);
-        ccdServer.start();
-        DateTimeUtils.setCurrentMillisFixed(1542820369000L);
-
-        message = new MimeMessage(session);
-        when(mailSender.createMimeMessage()).thenReturn(message);
-
-        byte[] expectedBytes = {1, 2, 3};
-        when(evidenceManagementService.download(URI.create("http://www.bbc.com"), null)).thenReturn(expectedBytes);
-    }
-
-    @After
-    public void tearDown() {
-        ccdServer.stop();
     }
 
     @Test
