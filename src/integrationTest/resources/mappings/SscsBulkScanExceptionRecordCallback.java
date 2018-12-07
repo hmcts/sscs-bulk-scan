@@ -105,274 +105,274 @@ public class SscsBulkScanExceptionRecordCallback {
         ccdServer.stop();
     }
 
-//    @Test
-//    public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
-//        throws Exception {
-//        // Given
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
-//
-//        submitForCaseworkerStub("appealCreated");
-//
-//        readForCaseworkerStub(READ_EVENT_URL, true);
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
-//
-//        // When
-//        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
-//            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-//
-//        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
-//
-//        assertThat(callbackResponse.getErrors()).isNull();
-//        assertThat(callbackResponse.getWarnings()).isEmpty();
-//        assertThat(callbackResponse.getData()).contains(
-//            entry("caseReference", "1539878003972756"),
-//            entry("state", "ScannedRecordCaseCreated")
-//        );
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_return_status_code_401_when_service_auth_token_is_missing() {
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set(AUTHORIZATION, USER_AUTH_TOKEN);
-//        headers.set(USER_ID_HEADER, USER_ID);
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
-//
-//        // When
-//        ResponseEntity<Void> result =
-//            this.restTemplate.postForEntity(baseUrl, request, Void.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(401);
-//    }
-//
-//    @Test
-//    public void should_return_status_code_403_when_service_auth_token_is_missing() {
-//        // Given
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("forbidden_service");
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
-//
-//        // When
-//        ResponseEntity<Void> result =
-//            this.restTemplate.postForEntity(baseUrl, request, Void.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(403);
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_return_error_list_populated_when_exception_record_transformation_fails() {
-//        // Given
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
-//            exceptionCaseData(caseDataWithContradictingValues()),
-//            httpHeaders()
-//        );
-//
-//        // When
-//        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
-//            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-//        assertThat(result.getBody().getErrors())
-//            .containsOnly("is_hearing_type_oral and is_hearing_type_paper have contradicting values");
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_return_error_list_populated_when_key_value_pair_validation_fails() {
-//        // Given
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
-//            exceptionCaseData(caseDataWithInvalidKey()),
-//            httpHeaders()
-//        );
-//
-//        // When
-//        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
-//            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-//        assertThat(result.getBody().getErrors())
-//            .containsOnly("#: extraneous key [invalid_key] is not permitted");
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_create_incomplete_case_when_warnings_are_ignored() throws Exception {
-//        // Given
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        startForCaseworkerStub(START_EVENT_INCOMPLETE_CASE_URL);
-//
-//        submitForCaseworkerStub("incompleteApplication");
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
-//            exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()),
-//            httpHeaders()
-//        );
-//
-//        // When
-//        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
-//            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-//
-//        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
-//
-//        assertThat(callbackResponse.getErrors()).isNull();
-//        assertThat(callbackResponse.getData()).contains(
-//            entry("caseReference", "1539878003972756"),
-//            entry("state", "ScannedRecordCaseCreated")
-//        );
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
-//        // Given
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        startForCaseworkerStub(START_EVENT_NON_COMPLIANT_CASE_URL);
-//
-//        submitForCaseworkerStub("nonCompliant");
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
-//            exceptionCaseData(caseDataWithMrnDate("01/01/2017")),
-//            httpHeaders()
-//        );
-//
-//        // When
-//        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
-//            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-//
-//        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
-//
-//        assertThat(callbackResponse.getErrors()).isNull();
-//        assertThat(callbackResponse.getData()).contains(
-//            entry("caseReference", "1539878003972756"),
-//            entry("state", "ScannedRecordCaseCreated")
-//        );
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_return_warnings_when_appellant_details_are_not_available() {
-//        // Given
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
-//            exceptionCaseData(caseDataWithMissingAppellantDetails()),
-//            httpHeaders()
-//        );
-//
-//        // When
-//        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
-//            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-//        assertThat(result.getBody().getWarnings())
-//            .containsOnly("person1_last_name is empty",
-//                "person1_address_line1 is empty",
-//                "person1_address_line3 is empty",
-//                "person1_address_line4 is empty",
-//                "person1_postcode is empty",
-//                "person1_nino is empty");
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_return_403_status_when_usertoken_does_not_have_access_to_jurisdiction() throws Exception {
-//        // Given
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set(AUTHORIZATION, USER_TOKEN_WITHOUT_CASE_ACCESS);
-//        headers.set(SERVICE_AUTHORIZATION_HEADER_KEY, SERVICE_AUTH_TOKEN);
-//        headers.set(USER_ID_HEADER, USER_ID);
-//
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        startForCaseworkerStubWithUserTokenHavingNoAccess(START_EVENT_APPEAL_CREATED_URL);
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
-//
-//        // When
-//        ResponseEntity<String> result =
-//            this.restTemplate.postForEntity(baseUrl, request, String.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(403);
-//        assertThat(result.getBody())
-//            .contains(
-//                " \"status\": 403,\n"
-//                    + "  \"error\": \"Forbidden\",\n"
-//                    + "  \"message\": \"Access Denied"
-//            );
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_return_503_status_when_ccd_service_is_not_available_when_creating_appeal() throws Exception {
-//        // Given
-//        startForCaseworkerStubWithCcdUnavailable(START_EVENT_APPEAL_CREATED_URL);
-//
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
-//
-//        // When
-//        ResponseEntity<Void> result =
-//            this.restTemplate.postForEntity(baseUrl, request, Void.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(503);
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
-//
-//    @Test
-//    public void should_return_503_status_when_ccd_service_is_not_available_when_creating_incomplete_appeal() throws Exception {
-//        // Given
-//        startForCaseworkerStubWithCcdUnavailable(START_EVENT_INCOMPLETE_CASE_URL);
-//
-//        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-//
-//        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()), httpHeaders());
-//
-//        // When
-//        ResponseEntity<Void> result =
-//            this.restTemplate.postForEntity(baseUrl, request, Void.class);
-//
-//        // Then
-//        assertThat(result.getStatusCodeValue()).isEqualTo(503);
-//
-//        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-//    }
+    @Test
+    public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
+        throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
+
+        submitForCaseworkerStub("appealCreated");
+
+        readForCaseworkerStub(READ_EVENT_URL, true);
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getWarnings()).isEmpty();
+        assertThat(callbackResponse.getData()).contains(
+            entry("caseReference", "1539878003972756"),
+            entry("state", "ScannedRecordCaseCreated")
+        );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_status_code_401_when_service_auth_token_is_missing() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, USER_AUTH_TOKEN);
+        headers.set(USER_ID_HEADER, USER_ID);
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(401);
+    }
+
+    @Test
+    public void should_return_status_code_403_when_service_auth_token_is_missing() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("forbidden_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(403);
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_error_list_populated_when_exception_record_transformation_fails() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithContradictingValues()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("is_hearing_type_oral and is_hearing_type_paper have contradicting values");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_error_list_populated_when_key_value_pair_validation_fails() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithInvalidKey()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("#: extraneous key [invalid_key] is not permitted");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_create_incomplete_case_when_warnings_are_ignored() throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        startForCaseworkerStub(START_EVENT_INCOMPLETE_CASE_URL);
+
+        submitForCaseworkerStub("incompleteApplication");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getData()).contains(
+            entry("caseReference", "1539878003972756"),
+            entry("state", "ScannedRecordCaseCreated")
+        );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        startForCaseworkerStub(START_EVENT_NON_COMPLIANT_CASE_URL);
+
+        submitForCaseworkerStub("nonCompliant");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithMrnDate("01/01/2017")),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getData()).contains(
+            entry("caseReference", "1539878003972756"),
+            entry("state", "ScannedRecordCaseCreated")
+        );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_warnings_when_appellant_details_are_not_available() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithMissingAppellantDetails()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getWarnings())
+            .containsOnly("person1_last_name is empty",
+                "person1_address_line1 is empty",
+                "person1_address_line3 is empty",
+                "person1_address_line4 is empty",
+                "person1_postcode is empty",
+                "person1_nino is empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_403_status_when_usertoken_does_not_have_access_to_jurisdiction() throws Exception {
+        // Given
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, USER_TOKEN_WITHOUT_CASE_ACCESS);
+        headers.set(SERVICE_AUTHORIZATION_HEADER_KEY, SERVICE_AUTH_TOKEN);
+        headers.set(USER_ID_HEADER, USER_ID);
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        startForCaseworkerStubWithUserTokenHavingNoAccess(START_EVENT_APPEAL_CREATED_URL);
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
+
+        // When
+        ResponseEntity<String> result =
+            this.restTemplate.postForEntity(baseUrl, request, String.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(403);
+        assertThat(result.getBody())
+            .contains(
+                " \"status\": 403,\n"
+                    + "  \"error\": \"Forbidden\",\n"
+                    + "  \"message\": \"Access Denied"
+            );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_503_status_when_ccd_service_is_not_available_when_creating_appeal() throws Exception {
+        // Given
+        startForCaseworkerStubWithCcdUnavailable(START_EVENT_APPEAL_CREATED_URL);
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(503);
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_503_status_when_ccd_service_is_not_available_when_creating_incomplete_appeal() throws Exception {
+        // Given
+        startForCaseworkerStubWithCcdUnavailable(START_EVENT_INCOMPLETE_CASE_URL);
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()), httpHeaders());
+
+        // When
+        ResponseEntity<Void> result =
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(503);
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
 
     private Map<String, Object> caseDataWithContradictingValues() {
         List<Object> ocrList = new ArrayList<>();
