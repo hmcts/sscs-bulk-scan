@@ -7,6 +7,12 @@
       "appeal": {
         "appealReasons": {},
         "appellant": {
+          "address": {
+            "line1": "45 The Road",
+            "town": "Brentwood",
+            "county": "Essex",
+            "postcode": "CM13 9HY"
+          },
           "contact": {
             "email": "mail@email.com",
             "phone": "01234567890"
@@ -14,6 +20,11 @@
           "identity": {
             "dob": "1904-03-10",
             "nino": "AB 22 55 66 B"
+          },
+          "name": {
+            "firstName": "User",
+            "lastName": "Test",
+            "title": "Mr"
           }
         },
         "benefitType": {
@@ -43,7 +54,7 @@
       23000000
     ],
     "state": "incompleteApplication",
-    "id": "1234567"
+    "id": "CASE_ID_TO_BE_REPLACED"
   },
   "event_id": "validAppeal"
 }

@@ -63,7 +63,7 @@
       48,
       23000000
     ],
-    "state": "appealCreated",
+    "state": "incompleteApplication",
     "id": "1234567"
   },
   "event_id": "validAppeal"

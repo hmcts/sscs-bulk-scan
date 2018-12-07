@@ -53,7 +53,7 @@
       48,
       23000000
     ],
-    "state": "appealCreated",
+    "state": "interlocutoryReviewState",
     "id": "1234567"
   },
   "event_id": "interlocValidAppeal"
