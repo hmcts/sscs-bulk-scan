@@ -6,14 +6,23 @@ properties([
 
 @Library("Infrastructure")
 
+def type = "java"
 def product = "sscs"
 def component = "bulk-scan"
 
 List<LinkedHashMap<String, Object>> secrets = [
+
   secret('sscs-s2s-secret', 'S2S_SECRET'),
+  secret('smtp-host', 'EMAIL_SERVER_HOST'),
+  secret('smtp-port', 'EMAIL_SERVER_PORT'),
+
+  secret('robotics-email-from', 'ROBOTICS_EMAIL_FROM'),
+  secret('robotics-email-to', 'ROBOTICS_EMAIL_TO'),
+
   secret('idam-sscs-systemupdate-user', 'IDAM_OAUTH2_USER_EMAIL'),
   secret('idam-sscs-systemupdate-password', 'IDAM_OAUTH2_USER_PASSWORD'),
   secret('idam-sscs-oauth2-client-secret', 'IDAM_OAUTH2_CLIENT_SECRET'),
+
 ]
 
 static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
@@ -27,6 +36,25 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 withPipeline("java", product, component) {
 
+   before('smoketest:aks') {
+    withAksClient('nonprod') {
+
+      // Vars needed for AKS testing
+      env.IDAM_S2S_AUTH = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+      env.IDAM_URL = "https://preprod-idamapi.reform.hmcts.net:3511"
+      env.IDAM_OAUTH2_REDIRECT_URL = "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
+      env.CORE_CASE_DATA_API_URL = "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+      env.DOCUMENT_MANAGEMENT_URL = 'http://dm-store-aat.service.core-compute-aat.internal'
+      env.EMAIL_SMTP_SSL_TRUST = "*"
+      env.EMAIL_SMTP_TLS_ENABLED = "true"
+      env.IDAM_OAUTH2_CLIENT_ID = "sscs"
+      env.IDAM_S2S_AUTH_MICROSERVICE = "sscs_bulkscan"
+      env.ROBOTICS_EMAIL_SUBJECT = "Robotics Data"
+      env.ROBOTICS_EMAIL_MESSAGE = "Please find attached the robotics json file \nPlease do not respond to this email"
+
+    }
+  }
+
   after('test') {
     try {
       sh './gradlew pitest'
@@ -38,5 +66,10 @@ withPipeline("java", product, component) {
 
   enableSlackNotifications('#sscs-tech')
   loadVaultSecrets(secrets)
+
+  enableDockerBuild()
+  enableDeployToAKS()
+
+  setVaultName('sscs-bulk-scan')
 }
 
