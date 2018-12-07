@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.sscs.exceptionhandlers;
 
 import feign.FeignException;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -8,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
 import uk.gov.hmcts.reform.sscs.exceptions.UnauthorizedException;
 
@@ -38,9 +41,13 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<Void> handleInternalException(Exception exception) {
+    protected ResponseEntity<CaseResponse> handleInternalException(Exception exception) {
         log.error(exception.getMessage(), exception);
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        List<String> errors = new ArrayList<>();
+
+        errors.add("There was an unknown error when processing the case. If the error persists, please contact the Bulk Scan development team");
+
+        return ResponseEntity.ok(CaseResponse.builder().errors(errors).build());
     }
 }
