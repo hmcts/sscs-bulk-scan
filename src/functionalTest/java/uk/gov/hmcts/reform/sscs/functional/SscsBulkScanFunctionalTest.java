@@ -38,6 +38,7 @@ public class SscsBulkScanFunctionalTest {
 
     @Before
     public void setup() {
+        RestAssured.baseURI = appUrl;
         idamTokens = idamService.getIdamTokens();
     }
 
@@ -78,6 +79,7 @@ public class SscsBulkScanFunctionalTest {
     }
 
     private String findStateOfCaseInCcd(Response response) {
+
         JsonPath jsonPathEvaluator = response.jsonPath();
         Long caseRef = Long.parseLong(((HashMap) jsonPathEvaluator.get("data")).get("caseReference").toString());
 
