@@ -11,7 +11,7 @@ data:
   IDAM_OAUTH2_REDIRECT_URL: "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
   EMAIL_SMTP_SSL_TRUST: "*"
   EMAIL_SMTP_TLS_ENABLED: "true"
-  IDAM_OAUTH2_CLIENT_ID: "bsp"
+  IDAM_OAUTH2_CLIENT_ID: "sscs"
   IDAM_S2S_AUTH_MICROSERVICE: "sscs_bulkscan"
   LOGBACK_REQUIRE_ALERT_LEVEL: "false"
   LOGBACK_REQUIRE_ERROR_CODE: "false"
@@ -20,4 +20,3 @@ data:
   WEBSITE_NODE_DEFAULT_VERSION: "8.11.1"
   WEBSITE_SLOT_POLL_WORKER_FOR_CHANGE_NOTIFICATION: "0"
   NODE_PATH: "D:\\home\\site\\wwwroot"
-            
