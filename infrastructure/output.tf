@@ -69,3 +69,7 @@ output "appeal_email_smtp_tls_enabled" {
 output "appeal_email_smtp_ssl_trust" {
   value = "${var.appeal_email_smtp_ssl_trust}"
 }
+
+output "core_case_data_api_url" {
+  value = "${local.ccdApiUrl}"
+}
