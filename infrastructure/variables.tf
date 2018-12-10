@@ -78,3 +78,8 @@ variable "appeal_email_smtp_ssl_trust" {
   type    = "string"
   default = "*"
 }
+
+variable "robotics_enabled" {
+  type    = "string"
+  default = "false"
+}

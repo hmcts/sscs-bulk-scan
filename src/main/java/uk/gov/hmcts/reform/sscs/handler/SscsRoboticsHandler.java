@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
@@ -26,21 +27,24 @@ public class SscsRoboticsHandler {
     private final SscsCcdConvertService convertService;
     private final EvidenceManagementService evidenceManagementService;
     private final CaseEvent caseEvent;
+    private final Boolean roboticsEnabled;
 
     public SscsRoboticsHandler(RoboticsService roboticsService,
                                RegionalProcessingCenterService regionalProcessingCenterService,
                                SscsCcdConvertService convertService,
                                EvidenceManagementService evidenceManagementService,
-                               CaseEvent caseEvent) {
+                               CaseEvent caseEvent,
+                               @Value("${robotics.email.enabled}") Boolean roboticsEnabled) {
         this.roboticsService = roboticsService;
         this.regionalProcessingCenterService = regionalProcessingCenterService;
         this.convertService = convertService;
         this.evidenceManagementService = evidenceManagementService;
         this.caseEvent = caseEvent;
+        this.roboticsEnabled = roboticsEnabled;
     }
 
     public void handle(CaseResponse caseValidationResponse, Long caseId, String eventId) {
-        if (eventId.equals(caseEvent.getCaseCreatedEventId())) {
+        if (roboticsEnabled && eventId.equals(caseEvent.getCaseCreatedEventId())) {
             SscsCaseData sscsCaseData = convertService.getCaseData(caseValidationResponse.getTransformedCase());
 
             Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);

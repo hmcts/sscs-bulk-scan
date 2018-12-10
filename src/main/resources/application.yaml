@@ -61,5 +61,6 @@ robotics:
     to: ${ROBOTICS_EMAIL_TO:receiver@hmcts.net}
     subject: ${ROBOTICS_EMAIL_SUBJECT:Robotics Data}
     message: ${ROBOTICS_EMAIL_MESSAGE:Please find attached the robotics json file \nPlease do not respond to this email}
+    enabled: ${ROBOTICS_ENABLED:false}
   schema.resource.location: /schema/sscs-robotics.json
 
