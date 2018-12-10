@@ -13,6 +13,7 @@ import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService;
@@ -47,7 +48,7 @@ public class SscsRoboticsHandlerTest {
         convertService = new SscsCcdConvertService();
 
         sscsRoboticsHandler = new SscsRoboticsHandler(roboticsService, regionalProcessingCenterService,
-            convertService, evidenceManagementService, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"));
+            convertService, evidenceManagementService, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"), true);
 
         localDate = LocalDate.now();
     }
@@ -76,6 +77,22 @@ public class SscsRoboticsHandlerTest {
         sscsRoboticsHandler.handle(caseValidationResponse, 1L, "appealCreated");
 
         verify(roboticsService).sendCaseToRobotics(sscsCaseData, 1L, "CM12", null, Collections.emptyMap());
+    }
+
+    @Test
+    public void givenACaseWithCaseCreatedEventAndFeatureFlagDisabled_thenDoNotCreateRoboticsFile() {
+        ReflectionTestUtils.setField(sscsRoboticsHandler, "roboticsEnabled", false);
+
+        Appeal appeal = Appeal.builder().build();
+
+        Map<String, Object> transformedCase = new HashMap<>();
+        transformedCase.put("appeal", appeal);
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
+
+        sscsRoboticsHandler.handle(caseValidationResponse, 1L, "appealCreated");
+
+        verifyNoMoreInteractions(roboticsService);
     }
 
     @Test

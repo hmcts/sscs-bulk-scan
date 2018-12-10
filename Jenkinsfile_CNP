@@ -51,6 +51,7 @@ withPipeline("java", product, component) {
       env.IDAM_S2S_AUTH_MICROSERVICE = "sscs_bulkscan"
       env.ROBOTICS_EMAIL_SUBJECT = "Robotics Data"
       env.ROBOTICS_EMAIL_MESSAGE = "Please find attached the robotics json file \nPlease do not respond to this email"
+      env.ROBOTICS_ENABLED = "false"
 
     }
   }
