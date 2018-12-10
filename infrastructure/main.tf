@@ -18,7 +18,8 @@ locals {
 
   # URI of vault that stores long-term secrets. It's the app's own Key Vault, except for (s)preview,
   # where vaults are short-lived and can only store secrets generated during deployment
-  permanent_vault_uri = "https://${var.raw_product}-${local.local_env}.vault.azure.net/"
+  preview_vault_name = "https://${var.raw_product}-aat.vault.azure.net/"
+  permanent_vault_uri = "${var.env != "preview" ? module.sscs-bulk-scan-vault.key_vault_uri : local.preview_vault_name}"
 }
 
 module "sscs-bulk-scan" {
