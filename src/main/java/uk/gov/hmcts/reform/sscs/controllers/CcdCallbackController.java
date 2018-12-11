@@ -42,7 +42,7 @@ public class CcdCallbackController {
             message = "Callback was processed successfully or in case of an error message is attached to the case",
             response = CallbackResponse.class),
         @ApiResponse(code = 400, message = "Bad Request"),
-        @ApiResponse(code = 500, message = "Internal Server Error")
+        @ApiResponse(code = 500, message = "Bla bla bla")
     })
     public ResponseEntity<CallbackResponse> handleExceptionRecordCallback(
         @RequestHeader(value = "Authorization") String userAuthToken,
@@ -70,7 +70,7 @@ public class CcdCallbackController {
             message = "Callback was processed successfully or in case of an error message is attached to the case",
             response = CallbackResponse.class),
         @ApiResponse(code = 400, message = "Bad Request"),
-        @ApiResponse(code = 500, message = "Internal Server Error")
+        @ApiResponse(code = 500, message = "Bla bla bla")
     })
     public ResponseEntity<CallbackResponse> handleValidationCallback(
         @RequestHeader(value = "Authorization") String userAuthToken,
