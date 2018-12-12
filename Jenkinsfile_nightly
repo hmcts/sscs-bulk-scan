@@ -8,7 +8,7 @@ properties([
   ])
 ])
 
-@Library("Infrastructure@securityscan")
+@Library("Infrastructure")
 
 def type = "java"
 def product = "sscs"
@@ -17,7 +17,7 @@ def component = "bulk-scan"
 withNightlyPipeline(type, product, component) {
   env.TEST_URL = params.URL_TO_TEST
 
-//  enableMutationTest()
+  enableMutationTest()
   enableSecurityScan()
-//  enableSlackNotifications('#sscs-tech')
+  enableSlackNotifications('#sscs-tech')
 }
