@@ -22,7 +22,18 @@ public final class SscsConstants {
     public static final String HEARING_SUPPORT_ARRANGEMENTS_LITERAL = "hearing_support_arrangements";
     public static final String DEFAULT_SIGN_LANGUAGE = "British Sign Language";
     public static final String BENEFIT_TYPE_DESCRIPTION = "benefit_type_description";
+    public static final String MRN_DATE = "mrn_date";
     public static final String YES_LITERAL = "Yes";
     public static final String NO_LITERAL = "No";
+    public static final String FIRST_NAME = "_first_name";
+    public static final String LAST_NAME = "_last_name";
+    public static final String ADDRESS_LINE1 = "_address_line1";
+    public static final String ADDRESS_LINE3 = "_address_line3";
+    public static final String ADDRESS_LINE4 = "_address_line4";
+    public static final String ADDRESS_POSTCODE = "_postcode";
+    public static final String PHONE = "_phone";
+    public static final String NINO = "_nino";
+    public static final String IS_EMPTY = "is empty";
+    public static final String IS_INVALID = "is invalid";
 
 }

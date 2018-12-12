@@ -17,7 +17,7 @@
           }
         },
         "benefitType": {
-          "code": "ESA"
+          "code": null
         },
         "hearingOptions": {
           "languageInterpreter": "Yes",
@@ -26,7 +26,7 @@
           "wantsToAttend": "Yes"
         },
         "mrnDetails": {
-          "mrnDate": "2048-05-24"
+          "mrnDate": null
         },
         "signer": null
       },
