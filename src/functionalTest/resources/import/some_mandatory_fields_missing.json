@@ -130,6 +130,27 @@
         },
         {
           "value": {
+            "key": "representative_title",
+            "value": "Mr"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_first_name",
+            "value": "Peter"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_last_name",
+            "value": "Hyland"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
             "key": "appeal_grounds",
             "value": "see scanned SSCS1 form"
           },
