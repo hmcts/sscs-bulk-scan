@@ -357,6 +357,19 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenExcludedDateRangeIsEmpty_thenBuildAnAppealWithEmptyExcludedDateRange() {
+
+        pairs.put("hearing_options_exclude_dates", "");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+
+        assertTrue(excludeDates.isEmpty());
+        assertTrue(result.getErrors().isEmpty());
+    }    
+
+    @Test
     public void givenSingleExcludedDateFollowedByRangeWithSpace_thenBuildAnAppealWithSingleExcludedStartDateAndADateRange() {
 
         pairs.put("hearing_options_exclude_dates", "12/12/2018, 16/12/2018 - 18/12/2018");

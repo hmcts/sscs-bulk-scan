@@ -1,0 +1,367 @@
+{
+  "token": null,
+  "event_id": "createNewCase",
+  "case_details": {
+    "case_data": {
+      "poBox": "SSCSPO",
+      "journeyClassification": "New Application",
+      "poBoxJurisdiction": "SSCS",
+      "scanRecords": [],
+      "scanOCRData": [
+        {
+          "value": {
+            "key": "contains_mrn",
+            "value": "TRUE"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "mrn_date",
+            "value": "20072018"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "benefit_type_description",
+            "value": "ATTENDANCE ALLOWANCE"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person1_title",
+            "value": "MR"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person1_first_name",
+            "value": "JOHN"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person1_last_name",
+            "value": "SMITH"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_address_line1",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_address_line2",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_address_line3",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_address_line4",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_postcode",
+            "value": "EW122NY"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_phone",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_mobile",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_dob",
+            "value": "17051962"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person1_nino",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_title",
+            "value": ""
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person2_first_name",
+            "value": ""
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "person2_last_name",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_address_line1",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_address_line2",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_address_line3",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_address_line4",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_postcode",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_dob",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "person2_nino",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_company",
+            "value": "PAUL EDWARDS"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_address_line1",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_address_line2",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_address_line3",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_address_line4",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_postcode",
+            "value": "EP224PY"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_phone",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_title",
+            "value": "MISS"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_first_name",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_last_name",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "appeal_grounds",
+            "value": "Y"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "appeal_late_reason",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "is_hearing_type_oral",
+            "value": "TRUE"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "is_hearing_type_paper",
+            "value": "TRUE"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_exclude_dates",
+            "value": " "
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_support_arrangements",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_hearing_loop",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_accessible_hearing_rooms",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_sign_language_interpreter",
+            "value": "Y"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_language_type",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_dialect",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_options_sign_language_type",
+            "value": ""
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "agree_less_hearing_notice",
+            "value": "TRUE"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "signature_name",
+            "value": "J SMITH"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "signature_appeal_date",
+            "value": "01082018"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        }
+      ],
+      "openingDate": "2018-02-11"
+    },
+    "id": "12222",
+    "state": "ScannedRecordReceived"
+  }
+}
