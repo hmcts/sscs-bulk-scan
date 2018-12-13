@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.MRN_DATE;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
