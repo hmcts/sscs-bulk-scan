@@ -80,10 +80,14 @@ public final class SscsOcrDataUtil {
     public static String getDateForCcd(String ocrField, List<String> errors, String errorMessage) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        try {
-            return LocalDate.parse(ocrField, formatter).toString();
-        } catch (DateTimeParseException ex) {
+        if (ocrField == null) {
             errors.add(errorMessage);
+        } else {
+            try {
+                return LocalDate.parse(ocrField, formatter).toString();
+            } catch (DateTimeParseException ex) {
+                errors.add(errorMessage);
+            }
         }
         return null;
     }
