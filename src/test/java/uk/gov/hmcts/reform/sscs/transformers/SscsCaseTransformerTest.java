@@ -244,8 +244,17 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenAnEmptyMrnDate_thenAddErrorToList() {
+    public void givenANullMrnDate_thenAddErrorToList() {
         pairs.put("mrn_date", null);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().contains("mrn_date is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+    }
+
+    @Test
+    public void givenAnEmptyStringMrnDate_thenAddErrorToList() {
+        pairs.put("mrn_date", "");
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
