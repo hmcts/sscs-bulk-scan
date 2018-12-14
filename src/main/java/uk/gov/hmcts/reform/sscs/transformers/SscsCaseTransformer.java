@@ -249,9 +249,10 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private List<ExcludeDate> extractExcludedDates(String excludedDatesList) {
         List<ExcludeDate> excludeDates = new ArrayList<>();
-        List<String> items = Arrays.asList(excludedDatesList.split(",\\s*"));
 
-        if (!excludedDatesList.isEmpty()) {
+        if (excludedDatesList != null && !excludedDatesList.isEmpty()) {
+            List<String> items = Arrays.asList(excludedDatesList.split(",\\s*"));
+
             for (String item : items) {
                 List<String> range = Arrays.asList(item.split("\\s*-\\s*"));
                 String errorMessage = "hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019";
