@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 
 public final class SscsOcrDataUtil {
 
@@ -80,10 +81,14 @@ public final class SscsOcrDataUtil {
     public static String getDateForCcd(String ocrField, List<String> errors, String errorMessage) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        try {
-            return LocalDate.parse(ocrField, formatter).toString();
-        } catch (DateTimeParseException ex) {
+        if (StringUtils.isEmpty(ocrField)) {
             errors.add(errorMessage);
+        } else {
+            try {
+                return LocalDate.parse(ocrField, formatter).toString();
+            } catch (DateTimeParseException ex) {
+                errors.add(errorMessage);
+            }
         }
         return null;
     }
