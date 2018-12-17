@@ -4,7 +4,7 @@ import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.APPELLANT_TITLE;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.ArrayList;
@@ -20,15 +20,79 @@ public class SscsOcrDataUtilTest {
     @Test
     public void givenAPersonExists_thenReturnTrue() {
         pairs.put("person1_title", APPELLANT_TITLE);
-
         assertTrue(hasPerson(pairs, "person1"));
     }
 
     @Test
     public void givenAPersonDoesNotExist_thenReturnTrue() {
         pairs.put("person1_title", APPELLANT_TITLE);
-
         assertFalse(hasPerson(pairs, "person2"));
+    }
+
+    @Test
+    public void givenAPersonFirstNameExists_thenReturnTrue() {
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonLastNameExists_thenReturnTrue() {
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressLine1Exists_thenReturnTrue() {
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressLine2Exists_thenReturnTrue() {
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressLine3Exists_thenReturnTrue() {
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressLine4Exists_thenReturnTrue() {
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressPostcodeExists_thenReturnTrue() {
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonDateOfBirthExists_thenReturnTrue() {
+        pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonNinoExists_thenReturnTrue() {
+        pairs.put("person1_nino", APPELLANT_NINO);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonCompanyExists_thenReturnTrue() {
+        pairs.put("person1_company", APPOINTEE_COMPANY);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonPhoneExists_thenReturnTrue() {
+        pairs.put("person1_phone", APPELLANT_PHONE);
+        assertTrue(hasPerson(pairs, "person1"));
     }
 
     @Test
