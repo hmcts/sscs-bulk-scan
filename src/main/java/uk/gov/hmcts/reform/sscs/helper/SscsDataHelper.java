@@ -4,6 +4,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
@@ -18,6 +19,22 @@ public class SscsDataHelper {
 
     public SscsDataHelper(CaseEvent caseEvent) {
         this.caseEvent = caseEvent;
+    }
+
+    public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal,  List<SscsDocument> sscsDocuments) {
+        appealData.put("appeal", appeal);
+        appealData.put("sscsDocument", sscsDocuments);
+        appealData.put("evidencePresent", hasEvidence(sscsDocuments));
+
+        if (appeal != null && appeal.getAppellant() != null) {
+            if (appeal.getAppellant().getName() != null) {
+                appealData.put("generatedSurname", appeal.getAppellant().getName().getLastName());
+            }
+            if (appeal.getAppellant().getIdentity() != null) {
+                appealData.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
+                appealData.put("generatedDOB", appeal.getAppellant().getIdentity().getDob());
+            }
+        }
     }
 
     public String findEventToCreateCase(CaseResponse caseValidationResponse) {

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
@@ -27,7 +28,18 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private SscsKeyValuePairValidator keyValuePairValidator;
 
+    @Autowired
+    private SscsDataHelper sscsDataHelper;
+
     private List<String> errors;
+
+    public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
+                               SscsKeyValuePairValidator keyValuePairValidator,
+                               SscsDataHelper sscsDataHelper) {
+        this.sscsJsonExtractor = sscsJsonExtractor;
+        this.keyValuePairValidator = keyValuePairValidator;
+        this.sscsDataHelper = sscsDataHelper;
+    }
 
     @Override
     public CaseResponse transformExceptionRecordToCase(CaseDetails caseDetails) {
@@ -46,19 +58,12 @@ public class SscsCaseTransformer implements CaseTransformer {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData());
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
 
-        transformed.put("appeal", appeal);
-        transformed.put("sscsDocument", sscsDocuments);
-        transformed.put("evidencePresent", hasEvidence(sscsDocuments));
+        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments);
+
         transformed.put("bulkScanCaseReference", caseDetails.getCaseId());
 
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
         transformed.put("caseCreated", dtfOut.print(new DateTime()));
-
-        if (appeal.getAppellant() != null) {
-            transformed.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
-            transformed.put("generatedSurname", appeal.getAppellant().getName().getLastName());
-            transformed.put("generatedDOB", appeal.getAppellant().getIdentity().getDob());
-        }
 
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
     }
@@ -304,9 +309,5 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         }
         return documentDetails;
-    }
-
-    private String hasEvidence(List<SscsDocument> sscsDocuments) {
-        return (null == sscsDocuments || sscsDocuments.isEmpty()) ? "No" : "Yes";
     }
 }

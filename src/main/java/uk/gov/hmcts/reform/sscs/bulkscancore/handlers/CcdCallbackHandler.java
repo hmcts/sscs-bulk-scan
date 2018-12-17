@@ -84,20 +84,19 @@ public class CcdCallbackHandler {
         }
     }
 
-    public CallbackResponse handleValidationAndUpdate(ValidateCaseData caseData) {
+    public CallbackResponse handleValidationAndUpdate(ValidateCaseData validateCaseData) {
         Map<String, Object> appealData = new HashMap<>();
-        appealData.put("appeal", caseData.getCaseDetails().getCaseData().getAppeal());
-        appealData.put("sscsDocument", caseData.getCaseDetails().getCaseData().getSscsDocument());
-        appealData.put("evidencePresent", sscsDataHelper.hasEvidence(caseData.getCaseDetails().getCaseData().getSscsDocument()));
+
+        sscsDataHelper.addSscsDataToMap(appealData, validateCaseData.getCaseDetails().getCaseData().getAppeal(), validateCaseData.getCaseDetails().getCaseData().getSscsDocument());
 
         CaseResponse caseValidationResponse = caseValidator.validate(appealData);
 
-        AboutToStartOrSubmitCallbackResponse validationErrorResponse = convertWarningsToErrors(caseValidationResponse, caseData.getCaseDetails().getCaseId());
+        AboutToStartOrSubmitCallbackResponse validationErrorResponse = convertWarningsToErrors(caseValidationResponse, validateCaseData.getCaseDetails().getCaseId());
 
         if (validationErrorResponse != null) {
             return validationErrorResponse;
         } else {
-            roboticsHandler.handle(caseValidationResponse, Long.valueOf(caseData.getCaseDetails().getCaseId()), caseEvent.getCaseCreatedEventId());
+            roboticsHandler.handle(caseValidationResponse, Long.valueOf(validateCaseData.getCaseDetails().getCaseId()), caseEvent.getCaseCreatedEventId());
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())
