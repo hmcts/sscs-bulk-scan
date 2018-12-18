@@ -28,7 +28,9 @@ public enum WarningMessage {
     BENEFIT_TYPE_DESCRIPTION(SscsConstants.BENEFIT_TYPE_DESCRIPTION, "Benefit type description"),
     MRN_DATE(SscsConstants.MRN_DATE, "Mrn date"),
     APPELLANT_NINO(NINO, "Appellant nino"),
-    APPELLANT_PHONE(PHONE, "Appellant phone");
+    APPELLANT_PHONE(PHONE, "Appellant phone"),
+    APPELLANT_DOB(DOB, "Appellant date of birth"),
+    APPOINTEE_DOB(DOB, "Appointee date of birth");
 
     private String exceptionRecordMessage;
     private String validationRecordMessage;

@@ -337,7 +337,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2048"))
+            ImmutableMap.of(KEY, "mrn_date", VALUE, "09/12/2018"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -397,7 +397,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     private Map<String, Object> caseData() {
-        return caseDataWithMrnDate("01/11/2048");
+        return caseDataWithMrnDate("09/12/2018");
     }
 
     private Map<String, Object> caseDataWithMrnDate(String mrnDate) {
