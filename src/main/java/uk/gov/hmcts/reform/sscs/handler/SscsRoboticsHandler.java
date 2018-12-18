@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.sscs.service.RoboticsService;
 @Slf4j
 public class SscsRoboticsHandler {
 
-
     private final RoboticsService roboticsService;
     private final RegionalProcessingCenterService regionalProcessingCenterService;
     private final SscsCcdConvertService convertService;
@@ -43,18 +42,25 @@ public class SscsRoboticsHandler {
         this.roboticsEnabled = roboticsEnabled;
     }
 
-    public void handle(CaseResponse caseValidationResponse, Long caseId, String eventId) {
+    public void handle(CaseResponse caseResponse, Long caseId, String eventId) {
         if (roboticsEnabled && eventId.equals(caseEvent.getCaseCreatedEventId())) {
-            SscsCaseData sscsCaseData = convertService.getCaseData(caseValidationResponse.getTransformedCase());
+            log.info("Sending case to robotics for caseId {}", caseId);
+            SscsCaseData sscsCaseData = convertService.getCaseData(caseResponse.getTransformedCase());
 
+            log.info("Downloading additional evidence to attach to robotics for caseId {}", caseId);
             Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);
+
+            if (additionalEvidence.size() > 0) {
+                log.info("Additional evidence downloaded ready to attach to robotics for caseId {}", caseId);
+            } else {
+                log.info("No additional evidence downloaded for caseId {}", caseId);
+            }
 
             roboticsService.sendCaseToRobotics(sscsCaseData,
                 caseId,
                 regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
                 null,
                 additionalEvidence);
-
         }
     }
 
