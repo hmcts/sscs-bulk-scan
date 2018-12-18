@@ -5,10 +5,14 @@ import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCall
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.VALIDATION_CALLBACK;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
@@ -57,6 +61,8 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (!doesMrnDateExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
+        } else {
+            checkDateInFuture(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "");
         }
 
         isBenefitTypeValid(appeal);
@@ -69,8 +75,9 @@ public class SscsCaseValidator implements CaseValidator {
 
         Name appellantName = appellant != null ? appellant.getName() : null;
         Address appellantAddress = appellant != null ? appellant.getAddress() : null;
+        Identity appellantIdentity = appellant != null ? appellant.getIdentity() : null;
 
-        checkPerson(appellantName, appellantAddress, personType, caseData, appellant);
+        checkPerson(appellantName, appellantAddress, appellantIdentity, personType, caseData, appellant);
 
         if (!doesAppellantNinoExist(appellant)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_EMPTY));
@@ -86,17 +93,17 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkAppointee(Appellant appellant, Map<String, Object> caseData) {
 
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
-            checkPerson(appellant.getAppointee().getName(), appellant.getAppointee().getAddress(), PERSON1_VALUE, caseData, appellant);
+            checkPerson(appellant.getAppointee().getName(), appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(), PERSON1_VALUE, caseData, appellant);
         }
     }
 
     private void checkRepresentative(Appeal appeal, Map<String, Object> caseData) {
         if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes")) {
-            checkPerson(appeal.getRep().getName(), appeal.getRep().getAddress(), REPRESENTATIVE_VALUE, caseData, appeal.getAppellant());
+            checkPerson(appeal.getRep().getName(), appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, caseData, appeal.getAppellant());
         }
     }
 
-    private void checkPerson(Name name, Address address, String personType, Map<String, Object> caseData, Appellant appellant) {
+    private void checkPerson(Name name, Address address, Identity identity, String personType, Map<String, Object> caseData, Appellant appellant) {
 
         if (!doesFirstNameExist(name)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + FIRST_NAME, IS_EMPTY));
@@ -118,6 +125,9 @@ public class SscsCaseValidator implements CaseValidator {
             RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
             caseData.put("region", rpc.getName());
             caseData.put("regionalProcessingCenter", rpc);
+        }
+        if (identity != null) {
+            checkDateInFuture(identity.getDob(), getWarningMessageName(personType, appellant) + DOB, personType);
         }
     }
 
@@ -174,6 +184,22 @@ public class SscsCaseValidator implements CaseValidator {
             return appellant.getIdentity().getNino() != null;
         }
         return false;
+    }
+
+    private void checkDateInFuture(String dateField, String fieldName, String personType) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        if (!StringUtils.isEmpty(dateField)) {
+            try {
+                LocalDate date = LocalDate.parse(dateField, formatter);
+
+                if (date.isAfter(LocalDate.now())) {
+                    warnings.add(getMessageByCallbackType(callbackType, personType, fieldName, IS_IN_FUTURE));
+                }
+            } catch (DateTimeParseException ex) {
+                log.error("Date time error", ex);
+            }
+        }
     }
 
     private Boolean doesMrnDateExist(Appeal appeal) {

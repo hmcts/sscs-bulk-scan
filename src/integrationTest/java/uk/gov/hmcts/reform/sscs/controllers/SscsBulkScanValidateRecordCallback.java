@@ -99,6 +99,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
                 "Appellant address county is empty",
                 "Appellant postcode is empty",
                 "Appellant first name is empty",
+                "Appellant date of birth is in future",
                 "Mrn date is empty",
                 "Benefit type description is empty");
 
