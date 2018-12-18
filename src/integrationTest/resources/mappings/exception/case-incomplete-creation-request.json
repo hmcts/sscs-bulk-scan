@@ -28,7 +28,8 @@
           "dob": null,
           "nino": null
         },
-        "appointee": null
+        "appointee": null,
+        "isAddressSameAsAppointee" : null
       },
       "benefitType": {
         "code": "ESA",

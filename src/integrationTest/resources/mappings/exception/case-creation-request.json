@@ -34,7 +34,8 @@
           "dob": "1976-11-11",
           "nino": "JT0123456B"
         },
-        "appointee": null
+        "appointee": null,
+        "isAddressSameAsAppointee" : null
       },
       "benefitType": {
         "code": "ESA",
