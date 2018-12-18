@@ -47,8 +47,7 @@ public class SscsRoboticsHandler {
             log.info("Sending case to robotics for caseId {}", caseId);
             SscsCaseData sscsCaseData = convertService.getCaseData(caseResponse.getTransformedCase());
 
-            log.info("Downloading additional evidence to attach to robotics for caseId {}", caseId);
-            Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);
+            Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData, caseId);
 
             if (additionalEvidence.size() > 0) {
                 log.info("Additional evidence downloaded ready to attach to robotics for caseId {}", caseId);
@@ -64,11 +63,12 @@ public class SscsRoboticsHandler {
         }
     }
 
-    private Map<String, byte[]> downloadEvidence(SscsCaseData sscsCaseData) {
+    private Map<String, byte[]> downloadEvidence(SscsCaseData sscsCaseData, Long caseId) {
         if (hasEvidence(sscsCaseData)) {
+            log.info("Evidence exists so will attempt download to attach to robotics for caseId {}", caseId);
             Map<String, byte[]> map = new LinkedHashMap<>();
             for (SscsDocument doc : sscsCaseData.getSscsDocument()) {
-                map.put(doc.getValue().getDocumentFileName(), downloadBinary(doc));
+                map.put(doc.getValue().getDocumentFileName(), downloadBinary(doc, caseId));
             }
             return map;
         } else {
@@ -80,7 +80,8 @@ public class SscsRoboticsHandler {
         return CollectionUtils.isNotEmpty(sscsCaseData.getSscsDocument());
     }
 
-    private byte[] downloadBinary(SscsDocument doc) {
+    private byte[] downloadBinary(SscsDocument doc, Long caseId) {
+        log.info("About to download binary to attach to robotics for caseId {}", caseId);
         return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()), null);
     }
 }
