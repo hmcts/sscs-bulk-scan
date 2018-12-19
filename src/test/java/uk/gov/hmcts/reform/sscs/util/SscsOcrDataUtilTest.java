@@ -224,6 +224,17 @@ public class SscsOcrDataUtilTest {
 
         generateDateForCcd(pairs, errors, "hearingDate");
 
-        assertEquals("hearingDate is an invalid date field. Needs to be in the format dd/mm/yyyy", errors.get(0));
+        assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
+    }
+
+    @Test
+    public void givenAnOcrInvalidDate_thenAddError() {
+        pairs.put("hearingDate", "29/02/2018");
+
+        List<String> errors = new ArrayList<>();
+
+        generateDateForCcd(pairs, errors, "hearingDate");
+
+        assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
     }
 }

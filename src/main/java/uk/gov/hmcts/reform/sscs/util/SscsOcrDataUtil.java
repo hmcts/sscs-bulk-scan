@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.util;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,13 +74,13 @@ public final class SscsOcrDataUtil {
 
     public static String generateDateForCcd(Map<String, Object> pairs, List<String> errors, String fieldName) {
         if (pairs.containsKey(fieldName)) {
-            return getDateForCcd(getField(pairs, fieldName), errors, fieldName + " is an invalid date field. Needs to be in the format dd/mm/yyyy");
+            return getDateForCcd(getField(pairs, fieldName), errors, fieldName + " is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy");
         }
         return null;
     }
 
     public static String getDateForCcd(String ocrField, List<String> errors, String errorMessage) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/uuuu").withResolverStyle(ResolverStyle.STRICT);
 
         if (!StringUtils.isEmpty(ocrField)) {
             try {
