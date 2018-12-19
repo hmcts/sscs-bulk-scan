@@ -12,7 +12,7 @@ public class SampleCaseDataCreator {
         exceptionRecord.put("poBoxJurisdiction", "SSCS");
         exceptionRecord.put("poBox", "SSCSPO");
         exceptionRecord.put("openingDate", "2018-01-11");
-        exceptionRecord.put("scanRecords", ocrData());
+        exceptionRecord.put("scannedDocuments", ocrData());
 
         return exceptionRecord;
     }

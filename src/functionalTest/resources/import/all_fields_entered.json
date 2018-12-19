@@ -6,7 +6,7 @@
       "poBox": "SSCSPO",
       "journeyClassification": "New Application",
       "poBoxJurisdiction": "SSCS",
-      "scanRecords": [],
+      "scannedDocuments": [],
       "scanOCRData": [
         {
           "value": {

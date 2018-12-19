@@ -44,20 +44,20 @@ public class SscsJsonExtractorTest {
 
         Map<String, Object> valueMap = new HashMap<>();
 
-        valueMap.put("filename", "Test_doc");
-        valueMap.put("docScanDate", "2018-08-10");
-        valueMap.put("documentType", "1");
-        valueMap.put("documentControlNumber", "4");
+        valueMap.put("fileName", "Test_doc");
+        valueMap.put("scannedDate", "2018-08-10");
+        valueMap.put("type", "1");
+        valueMap.put("controlNumber", "4");
         JSONObject item = new JSONObject();
         item.put("document_url", "www.test.com");
-        valueMap.put("documentLink", item);
+        valueMap.put("url", item);
 
-        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanRecords", valueMap);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scannedDocuments", valueMap);
 
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
         ScannedRecord expectedRecord = ScannedRecord.builder()
-            .documentType("1").filename("Test_doc").documentLink(DocumentLink.builder().documentUrl("www.test.com").build()).docScanDate("2018-08-10").build();
+            .type("1").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
 
         assertEquals(expectedRecord, result.getRecords().get(0));
     }
@@ -66,32 +66,32 @@ public class SscsJsonExtractorTest {
     public void givenMultipleDocumentData_thenExtractIntoSscsDocumentObject() {
 
         Map<String, Object> valueMap1 = new HashMap<>();
-        valueMap1.put("filename", "Test_doc");
-        valueMap1.put("docScanDate", "2018-08-10");
-        valueMap1.put("documentType", "1");
-        valueMap1.put("documentControlNumber", "4");
+        valueMap1.put("fileName", "Test_doc");
+        valueMap1.put("scannedDate", "2018-08-10");
+        valueMap1.put("type", "1");
+        valueMap1.put("controlNumber", "4");
         JSONObject item = new JSONObject();
         item.put("document_url", "www.test.com");
-        valueMap1.put("documentLink", item);
+        valueMap1.put("url", item);
 
         Map<String, Object> valueMap2 = new HashMap<>();
-        valueMap2.put("filename", "Second_test_doc");
-        valueMap2.put("docScanDate", "2018-10-29");
-        valueMap2.put("documentType", "2");
-        valueMap2.put("documentControlNumber", "3");
+        valueMap2.put("fileName", "Second_test_doc");
+        valueMap2.put("scannedDate", "2018-10-29");
+        valueMap2.put("type", "2");
+        valueMap2.put("controlNumber", "3");
         JSONObject item2 = new JSONObject();
         item2.put("document_url", "www.hello.com");
-        valueMap2.put("documentLink", item2);
+        valueMap2.put("url", item2);
 
-        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanRecords", valueMap1, valueMap2);
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scannedDocuments", valueMap1, valueMap2);
 
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
         ScannedRecord expectedRecord1 = ScannedRecord.builder()
-            .documentType("1").filename("Test_doc").documentLink(DocumentLink.builder().documentUrl("www.test.com").build()).docScanDate("2018-08-10").build();
+            .type("1").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
 
         ScannedRecord expectedRecord2 = ScannedRecord.builder()
-            .documentType("2").filename("Second_test_doc").documentLink(DocumentLink.builder().documentUrl("www.hello.com").build()).docScanDate("2018-10-29").build();
+            .type("2").fileName("Second_test_doc").url(DocumentLink.builder().documentUrl("www.hello.com").build()).scannedDate("2018-10-29").build();
 
         assertEquals(expectedRecord1, result.getRecords().get(0));
         assertEquals(expectedRecord2, result.getRecords().get(1));

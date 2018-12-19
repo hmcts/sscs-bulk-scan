@@ -375,7 +375,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         exceptionRecord.put("poBox", "SSCSPO");
         exceptionRecord.put("openingDate", "2018-01-11");
         exceptionRecord.put("scanOCRData", ocrList);
-        exceptionRecord.put("scanRecords", docList);
+        exceptionRecord.put("scannedDocuments", docList);
         return exceptionRecord;
     }
 
@@ -406,14 +406,14 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         docList.add(ocrEntry(
             VALUE,
-            ScannedRecord.builder().docScanDate("2018-10-10")
-                .documentControlNumber("11111")
-                .documentLink(DocumentLink.builder()
+            ScannedRecord.builder().scannedDate("2018-10-10")
+                .controlNumber("11111")
+                .url(DocumentLink.builder()
                     .documentUrl("http://www.bbc.com")
                     .documentBinaryUrl("http://www.bbc.com/binary")
                     .documentFilename("myfile.jpg").build())
-                .documentType("other")
-                .filename("11111.pdf")
+                .type("other")
+                .fileName("11111.pdf")
                 .build())
         );
 
