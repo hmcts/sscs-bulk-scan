@@ -79,7 +79,7 @@ public final class SscsOcrDataUtil {
     }
 
     public static String getDateForCcd(String ocrField, List<String> errors, String errorMessage) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
 
         if (!StringUtils.isEmpty(ocrField)) {
             try {
