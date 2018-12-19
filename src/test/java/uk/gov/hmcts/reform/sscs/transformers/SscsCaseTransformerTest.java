@@ -611,7 +611,7 @@ public class SscsCaseTransformerTest {
         Map<String, Object> transformedCase = result.getTransformedCase();
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
-        assertEquals(scannedRecord.getScannedDate(), docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord.getFileName(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
@@ -635,11 +635,11 @@ public class SscsCaseTransformerTest {
 
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
-        assertEquals(scannedRecord1.getScannedDate(), docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord1.getFileName(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord1.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
-        assertEquals(scannedRecord2.getScannedDate(), docs.get(1).getValue().getDocumentDateAdded());
+        assertEquals("2018-08-10", docs.get(1).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord2.getFileName(), docs.get(1).getValue().getDocumentFileName());
         assertEquals(scannedRecord2.getUrl().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(1).getValue().getDocumentType());
@@ -736,7 +736,7 @@ public class SscsCaseTransformerTest {
 
     private ScannedRecord buildTestScannedRecord(DocumentLink link) {
         return ScannedRecord.builder()
-            .scannedDate("2018-08-10")
+            .scannedDate("2018-08-10T10:11:12.000")
             .controlNumber("123")
             .url(link)
             .fileName("mrn.jpg")

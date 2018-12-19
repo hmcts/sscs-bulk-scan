@@ -5,6 +5,7 @@ import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.*;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -302,12 +303,17 @@ public class SscsCaseTransformer implements CaseTransformer {
             for (ScannedRecord record : records) {
                 SscsDocumentDetails details = SscsDocumentDetails.builder()
                     .documentLink(record.getUrl())
-                    .documentDateAdded(record.getScannedDate())
+                    .documentDateAdded(stripTimeFromDocumentDate(record.getScannedDate()))
                     .documentFileName(record.getFileName())
                     .documentType("Other document").build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
             }
         }
         return documentDetails;
+    }
+
+    private String stripTimeFromDocumentDate(String documentDate) {
+        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSS");
+        return LocalDate.parse(documentDate, dtf).toString();
     }
 }
