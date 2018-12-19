@@ -218,7 +218,7 @@ public class CcdCallbackHandlerTest {
             entry("poBoxJurisdiction", "SSCS"),
             entry("poBox", "SSCSPO"),
             entry("openingDate", "2018-01-11"),
-            entry("scanRecords", caseDataCreator.ocrData())
+            entry("scannedDocuments", caseDataCreator.ocrData())
         );
     }
 

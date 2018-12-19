@@ -605,9 +605,9 @@ public class SscsCaseTransformerTest {
         Map<String, Object> transformedCase = result.getTransformedCase();
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
-        assertEquals(scannedRecord.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
-        assertEquals(scannedRecord.getFilename(), docs.get(0).getValue().getDocumentFileName());
-        assertEquals(scannedRecord.getDocumentLink().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals(scannedRecord.getScannedDate(), docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord.getFileName(), docs.get(0).getValue().getDocumentFileName());
+        assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
 
         assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
@@ -629,13 +629,13 @@ public class SscsCaseTransformerTest {
 
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
-        assertEquals(scannedRecord1.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
-        assertEquals(scannedRecord1.getFilename(), docs.get(0).getValue().getDocumentFileName());
-        assertEquals(scannedRecord1.getDocumentLink().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals(scannedRecord1.getScannedDate(), docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord1.getFileName(), docs.get(0).getValue().getDocumentFileName());
+        assertEquals(scannedRecord1.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
-        assertEquals(scannedRecord2.getDocScanDate(), docs.get(1).getValue().getDocumentDateAdded());
-        assertEquals(scannedRecord2.getFilename(), docs.get(1).getValue().getDocumentFileName());
-        assertEquals(scannedRecord2.getDocumentLink().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals(scannedRecord2.getScannedDate(), docs.get(1).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord2.getFileName(), docs.get(1).getValue().getDocumentFileName());
+        assertEquals(scannedRecord2.getUrl().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(1).getValue().getDocumentType());
 
         assertTrue(result.getErrors().isEmpty());
@@ -730,11 +730,11 @@ public class SscsCaseTransformerTest {
 
     private ScannedRecord buildTestScannedRecord(DocumentLink link) {
         return ScannedRecord.builder()
-            .docScanDate("2018-08-10")
-            .documentControlNumber("123")
-            .documentLink(link)
-            .filename("mrn.jpg")
-            .documentType("Testing").build();
+            .scannedDate("2018-08-10")
+            .controlNumber("123")
+            .url(link)
+            .fileName("mrn.jpg")
+            .type("Testing").build();
     }
 
     private String formatDate(String date) {

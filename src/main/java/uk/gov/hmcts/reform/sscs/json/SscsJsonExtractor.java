@@ -20,7 +20,7 @@ public class SscsJsonExtractor {
 
     public ScannedData extractJson(Map<String, Object> exceptionCaseData) {
         Map<String, Object> ocrPairs = build(exceptionCaseData);
-        List<ScannedRecord> documents = buildScannedDocumentData(exceptionCaseData, "scanRecords");
+        List<ScannedRecord> documents = buildScannedDocumentData(exceptionCaseData, "scannedDocuments");
         return ScannedData.builder().ocrCaseData(ocrPairs).records(documents).build();
     }
 

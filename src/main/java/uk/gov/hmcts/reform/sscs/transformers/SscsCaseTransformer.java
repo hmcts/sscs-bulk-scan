@@ -296,9 +296,9 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (records != null) {
             for (ScannedRecord record : records) {
                 SscsDocumentDetails details = SscsDocumentDetails.builder()
-                    .documentLink(record.getDocumentLink())
-                    .documentDateAdded(record.getDocScanDate())
-                    .documentFileName(record.getFilename())
+                    .documentLink(record.getUrl())
+                    .documentDateAdded(record.getScannedDate())
+                    .documentFileName(record.getFileName())
                     .documentType("Other document").build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
             }
