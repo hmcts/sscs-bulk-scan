@@ -74,7 +74,7 @@ public final class SscsOcrDataUtil {
 
     public static String generateDateForCcd(Map<String, Object> pairs, List<String> errors, String fieldName) {
         if (pairs.containsKey(fieldName)) {
-            return getDateForCcd(getField(pairs, fieldName), errors, fieldName + " is an invalid date field. Needs to be in the format dd/mm/yyyy");
+            return getDateForCcd(getField(pairs, fieldName), errors, fieldName + " is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy");
         }
         return null;
     }
