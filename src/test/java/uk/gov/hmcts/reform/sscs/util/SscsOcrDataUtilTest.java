@@ -210,6 +210,13 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
+    public void givenAnOcrDateWithNoLeadingZero_thenConvertToCcdDateFormat() {
+        pairs.put("hearingDate", "1/1/2018");
+
+        assertEquals("2018-01-01", generateDateForCcd(pairs, new ArrayList<>(), "hearingDate"));
+    }
+
+    @Test
     public void givenAnOcrDateWithInvalidFormat_thenAddError() {
         pairs.put("hearingDate", "01/30/2018");
 
