@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
@@ -47,11 +47,11 @@ public class CcdCallbackHandlerTest {
     @Mock
     private SscsRoboticsHandler roboticsHandler;
 
-    @Mock
     private SscsDataHelper sscsDataHelper;
 
     @Before
     public void setUp() {
+        sscsDataHelper = new SscsDataHelper(null);
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"));
     }
 
@@ -149,9 +149,17 @@ public class CcdCallbackHandlerTest {
 
     @Test
     public void should_return_sscs_data_with_case_id_and_state_when_validation_endpoint_is_successful() {
+
+        Appeal appeal = Appeal.builder()
+            .appellant(Appellant.builder()
+                .name(Name.builder().firstName("Fred").lastName("Ward").build())
+                .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
+                .build())
+            .build();
+
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().build())
+            .caseData(SscsCaseData.builder().appeal(appeal).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -161,6 +169,14 @@ public class CcdCallbackHandlerTest {
 
         AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
             (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
+
+        assertThat(ccdCallbackResponse.getData()).contains(
+            entry("generatedSurname", "Ward"),
+            entry("generatedNino", "JT123456N"),
+            entry("generatedDOB", "12/08/1990"),
+            entry("evidencePresent", "No"),
+            entry("appeal", appeal)
+        );
 
         assertThat(ccdCallbackResponse.getErrors()).isNull();
         assertThat(ccdCallbackResponse.getWarnings()).isNull();

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.MRN_DATE;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
@@ -25,6 +24,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
@@ -35,6 +35,8 @@ public class SscsCaseTransformerTest {
 
     @Mock
     SscsKeyValuePairValidator keyValuePairValidator;
+
+    SscsDataHelper sscsDataHelper;
 
     @InjectMocks
     SscsCaseTransformer transformer;
@@ -48,6 +50,10 @@ public class SscsCaseTransformerTest {
     @Before
     public void setup() {
         initMocks(this);
+
+        sscsDataHelper = new SscsDataHelper(null);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper);
+
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
 
@@ -61,7 +67,7 @@ public class SscsCaseTransformerTest {
     public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
 
         pairs.put("benefit_type_description", BENEFIT_TYPE);
-        pairs.put("mrn_date", MRN_DATE);
+        pairs.put("mrn_date", MRN_DATE_VALUE);
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -713,7 +719,7 @@ public class SscsCaseTransformerTest {
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE).build())
             .appellant(appellant)
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
-            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE)).mrnLateReason(APPEAL_LATE_REASON).build())
+            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingOptions(HearingOptions.builder()
                 .scheduleHearing(YES_LITERAL)
