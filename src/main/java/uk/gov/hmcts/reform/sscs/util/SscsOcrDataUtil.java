@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.util;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ public final class SscsOcrDataUtil {
     }
 
     public static String getDateForCcd(String ocrField, List<String> errors, String errorMessage) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/uuuu").withResolverStyle(ResolverStyle.STRICT);
 
         if (!StringUtils.isEmpty(ocrField)) {
             try {
