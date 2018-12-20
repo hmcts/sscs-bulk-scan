@@ -736,7 +736,7 @@ public class SscsCaseTransformerTest {
 
     private ScannedRecord buildTestScannedRecord(DocumentLink link) {
         return ScannedRecord.builder()
-            .scannedDate("2018-08-10T10:11:12")
+            .scannedDate("2018-08-10T10:11:12.000")
             .controlNumber("123")
             .url(link)
             .fileName("mrn.jpg")
