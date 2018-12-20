@@ -406,7 +406,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         docList.add(ocrEntry(
             VALUE,
-            ScannedRecord.builder().scannedDate("2018-10-10T12:00:00.000")
+            ScannedRecord.builder().scannedDate("2018-10-10T12:00:00")
                 .controlNumber("11111")
                 .url(DocumentLink.builder()
                     .documentUrl("http://www.bbc.com")
