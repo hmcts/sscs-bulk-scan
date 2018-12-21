@@ -148,7 +148,7 @@ public class CcdCallbackHandlerTest {
     }
 
     @Test
-    public void should_return_sscs_data_with_case_id_and_state_when_validation_endpoint_is_successful() {
+    public void should_return_no_warnings_or_errors_or_data_when_validation_endpoint_is_successful() {
 
         Appeal appeal = Appeal.builder()
             .appellant(Appellant.builder()
@@ -170,14 +170,7 @@ public class CcdCallbackHandlerTest {
         AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
             (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
 
-        assertThat(ccdCallbackResponse.getData()).contains(
-            entry("generatedSurname", "Ward"),
-            entry("generatedNino", "JT123456N"),
-            entry("generatedDOB", "12/08/1990"),
-            entry("evidencePresent", "No"),
-            entry("appeal", appeal)
-        );
-
+        assertThat(ccdCallbackResponse.getData()).isNull();
         assertThat(ccdCallbackResponse.getErrors()).isNull();
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }

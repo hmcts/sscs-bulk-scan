@@ -100,7 +100,7 @@ public class CcdCallbackHandler {
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())
-                .data(appealData).build();
+                .build();
         }
     }
 
