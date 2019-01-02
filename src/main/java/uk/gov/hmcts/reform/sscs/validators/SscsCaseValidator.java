@@ -123,8 +123,11 @@ public class SscsCaseValidator implements CaseValidator {
         }
         if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(PERSON1_VALUE)) {
             RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
-            caseData.put("region", rpc.getName());
-            caseData.put("regionalProcessingCenter", rpc);
+
+            if (rpc != null) {
+                caseData.put("region", rpc.getName());
+                caseData.put("regionalProcessingCenter", rpc);
+            }
         }
         if (identity != null) {
             checkDateInFuture(identity.getDob(), getWarningMessageName(personType, appellant) + DOB, personType);
