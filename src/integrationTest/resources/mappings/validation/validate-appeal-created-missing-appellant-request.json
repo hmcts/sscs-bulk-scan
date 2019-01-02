@@ -23,7 +23,13 @@
           "languageInterpreter": "Yes",
           "other": "No",
           "wantsSupport": "Yes",
-          "wantsToAttend": "Yes"
+          "wantsToAttend": "Yes",
+          "excludeDates" : [{
+            "value" : {
+              "start" : "2018-12-01",
+              "end" : null
+            }
+          }]
         },
         "mrnDetails": {
           "mrnDate": null

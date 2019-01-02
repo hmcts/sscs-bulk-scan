@@ -62,8 +62,10 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesMrnDateExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
         } else {
-            checkDateInFuture(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "");
+            checkDateValidDate(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "", true);
         }
+
+        checkExcludedDates(appeal);
 
         isBenefitTypeValid(appeal);
 
@@ -130,7 +132,7 @@ public class SscsCaseValidator implements CaseValidator {
             }
         }
         if (identity != null) {
-            checkDateInFuture(identity.getDob(), getWarningMessageName(personType, appellant) + DOB, personType);
+            checkDateValidDate(identity.getDob(), getWarningMessageName(personType, appellant) + DOB, personType, true);
         }
     }
 
@@ -189,15 +191,18 @@ public class SscsCaseValidator implements CaseValidator {
         return false;
     }
 
-    private void checkDateInFuture(String dateField, String fieldName, String personType) {
+    private void checkDateValidDate(String dateField, String fieldName, String personType, Boolean isInFutureCheck) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         if (!StringUtils.isEmpty(dateField)) {
             try {
                 LocalDate date = LocalDate.parse(dateField, formatter);
 
-                if (date.isAfter(LocalDate.now())) {
+                if (isInFutureCheck && date.isAfter(LocalDate.now())) {
                     warnings.add(getMessageByCallbackType(callbackType, personType, fieldName, IS_IN_FUTURE));
+                } else if (!isInFutureCheck && date.isBefore(LocalDate.now())) {
+                    warnings.add(getMessageByCallbackType(callbackType, personType, fieldName, IS_IN_PAST));
+
                 }
             } catch (DateTimeParseException ex) {
                 log.error("Date time error", ex);
@@ -274,6 +279,14 @@ public class SscsCaseValidator implements CaseValidator {
             }
         } else {
             warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, IS_EMPTY));
+        }
+    }
+
+    private void checkExcludedDates(Appeal appeal) {
+        if (appeal.getHearingOptions() != null && appeal.getHearingOptions().getExcludeDates() != null) {
+            for (ExcludeDate excludeDate : appeal.getHearingOptions().getExcludeDates()) {
+                checkDateValidDate(excludeDate.getValue().getStart(), HEARING_OPTIONS_EXCLUDE_DATES, "", false);
+            }
         }
     }
 

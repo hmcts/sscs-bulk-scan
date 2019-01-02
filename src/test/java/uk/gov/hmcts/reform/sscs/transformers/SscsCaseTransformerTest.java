@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.HEARING_OPTIONS_EXCLUDE_DATES;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
@@ -321,7 +322,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertEquals("2018-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
 
         assertTrue(result.getErrors().isEmpty());
@@ -347,7 +348,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertEquals("2018-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
         assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
 
         assertTrue(result.getErrors().isEmpty());

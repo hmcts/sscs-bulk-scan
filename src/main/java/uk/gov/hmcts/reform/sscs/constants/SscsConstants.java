@@ -19,6 +19,7 @@ public final class SscsConstants {
     public static final String HEARING_OPTIONS_DIALECT_LITERAL = "hearing_options_dialect";
     public static final String HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL = "hearing_options_accessible_hearing_rooms";
     public static final String HEARING_OPTIONS_HEARING_LOOP_LITERAL = "hearing_options_hearing_loop";
+    public static final String HEARING_OPTIONS_EXCLUDE_DATES = "hearing_options_exclude_dates";
     public static final String HEARING_SUPPORT_ARRANGEMENTS_LITERAL = "hearing_support_arrangements";
     public static final String DEFAULT_SIGN_LANGUAGE = "British Sign Language";
     public static final String BENEFIT_TYPE_DESCRIPTION = "benefit_type_description";
@@ -37,5 +38,6 @@ public final class SscsConstants {
     public static final String IS_EMPTY = "is empty";
     public static final String IS_INVALID = "is invalid";
     public static final String IS_IN_FUTURE = "is in future";
+    public static final String IS_IN_PAST = "is in past";
 
 }
