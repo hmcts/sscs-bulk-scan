@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -178,6 +179,17 @@ public class SscsCaseValidatorTest {
 
         assertEquals("person1_postcode is empty", response.getWarnings().get(0));
         verifyZeroInteractions(regionalProcessingCenterService);
+    }
+
+    @Test
+    public void givenAnAppellantContainsPostcodeWithNoRegionalProcessingCenter_thenDoNotAddRegionalProcessingCenter() {
+        Appellant appellant = buildAppellant(false);
+        given(regionalProcessingCenterService.getByPostcode("CM13 0GD")).willReturn(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+
+        assertNull(response.getTransformedCase().get("regionalProcessingCenter"));
+        assertNull(response.getTransformedCase().get("region"));
     }
 
     @Test
