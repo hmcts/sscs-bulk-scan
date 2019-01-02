@@ -1,4 +1,6 @@
-provider "azurerm" {}
+provider "azurerm" {
+  version = "1.19.0"
+}
 
 # Make sure the resource group exists
 resource "azurerm_resource_group" "rg" {
