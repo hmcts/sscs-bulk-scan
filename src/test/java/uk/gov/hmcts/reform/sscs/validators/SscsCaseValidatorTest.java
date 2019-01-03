@@ -261,6 +261,15 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppealContainsAHearingExcludedDateInPast_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithExcludedDate("2018-10-10", appellant, true));
+
+        assertEquals("hearing_options_exclude_dates is in past", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAnAppealDoesNotContainABenefitTypeDescription_thenAddAWarning() {
         CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(null, buildAppellant(false), true));
 
@@ -493,28 +502,36 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", PIP.name(), appellant, null, exceptionCaseType);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", PIP.name(), appellant, null, null, exceptionCaseType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrnDate(String mrnDate, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrnDate, PIP.name(), appellant, null, exceptionCaseType);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrnDate, PIP.name(), appellant, null, null, exceptionCaseType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", benefitCode, appellant, null, exceptionCaseType);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", benefitCode, appellant, null, null, exceptionCaseType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithRepresentative(Appellant appellant, Representative representative, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", PIP.name(), appellant, representative, exceptionCaseType);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", PIP.name(), appellant, representative, null, exceptionCaseType);
     }
 
-    private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(String mrnDate, String benefitCode, Appellant appellant, Representative representative, Boolean exceptionCaseType) {
+    private Map<String, Object> buildMinimumAppealDataWithExcludedDate(String excludedDate, Appellant appellant, Boolean exceptionCaseType) {
+        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", PIP.name(), appellant, null, excludedDate, exceptionCaseType);
+    }
+
+    private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(String mrnDate, String benefitCode, Appellant appellant, Representative representative, String excludeDates, Boolean exceptionCaseType) {
         Map<String, Object> dataMap = new HashMap<>();
+        List<ExcludeDate> excludedDates = new ArrayList<>();
+        excludedDates.add(ExcludeDate.builder().value(DateRange.builder().start(excludeDates).build()).build());
+
         dataMap.put("appeal", Appeal.builder()
             .mrnDetails(MrnDetails.builder().mrnDate(mrnDate).build())
             .benefitType(BenefitType.builder().code(benefitCode).build())
             .appellant(appellant)
             .rep(representative)
+            .hearingOptions(HearingOptions.builder().excludeDates(excludedDates).build())
             .build());
         
         if (exceptionCaseType) {
