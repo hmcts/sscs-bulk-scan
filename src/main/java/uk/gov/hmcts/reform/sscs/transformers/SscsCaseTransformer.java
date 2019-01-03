@@ -313,7 +313,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String stripTimeFromDocumentDate(String documentDate) {
-        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSS");
+        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
         return LocalDate.parse(documentDate, dtf).toString();
     }
 }
