@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -18,8 +20,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
-
-import static org.slf4j.LoggerFactory.getLogger;
 
 @RestController
 public class CcdCallbackController {

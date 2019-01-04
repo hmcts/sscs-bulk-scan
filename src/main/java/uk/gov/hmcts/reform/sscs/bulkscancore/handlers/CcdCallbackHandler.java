@@ -1,13 +1,11 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;

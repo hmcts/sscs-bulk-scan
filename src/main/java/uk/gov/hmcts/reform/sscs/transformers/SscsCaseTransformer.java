@@ -51,8 +51,6 @@ public class SscsCaseTransformer implements CaseTransformer {
         String caseId = caseDetails.getCaseId();
         log.info("Transforming exception record {}", caseId);
 
-        Map<String, Object> transformed = new HashMap<>();
-
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseDetails.getCaseData());
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
@@ -67,6 +65,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseDetails.getCaseId());
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
+
+        Map<String, Object> transformed = new HashMap<>();
 
         sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments);
 
