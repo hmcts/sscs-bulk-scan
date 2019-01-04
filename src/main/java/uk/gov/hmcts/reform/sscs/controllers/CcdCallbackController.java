@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +19,12 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 @RestController
 public class CcdCallbackController {
+
+    private static final Logger logger = getLogger(CcdCallbackHandler.class);
 
     private final CcdCallbackHandler ccdCallbackHandler;
 
@@ -50,9 +55,17 @@ public class CcdCallbackController {
         @RequestHeader(value = "user-id") String userId,
         @RequestBody @ApiParam("CaseData") ExceptionCaseData caseData) {
 
+        String exceptionRecordId = caseData.getCaseDetails().getCaseId();
+
+        logger.info("Request received for to create CCD case for SSCS exception record id {}", exceptionRecordId);
+
         String serviceName = authService.authenticate(serviceAuthToken);
 
+        logger.info("Asserting that service {} is allowed to create CCD case from exception record id {}", serviceName, exceptionRecordId);
+
         authService.assertIsAllowedToHandleCallback(serviceName);
+
+        logger.info("Service {} allowed for exception record id {}, proceeding to create access token", serviceName, exceptionRecordId);
 
         Token token = Token.builder().serviceAuthToken(serviceAuthToken).userAuthToken(userAuthToken).userId(userId).build();
 
@@ -78,7 +91,13 @@ public class CcdCallbackController {
         @RequestHeader(value = "user-id") String userId,
         @RequestBody @ApiParam("CaseData") ValidateCaseData caseData) {
 
+        String exceptionRecordId = caseData.getCaseDetails().getCaseId();
+
+        logger.info("Request received for to validate SSCS exception record id {}", exceptionRecordId);
+
         String serviceName = authService.authenticate(serviceAuthToken);
+
+        logger.info("Asserting that service {} is allowed to request validation of exception record {}", serviceName, exceptionRecordId);
 
         authService.assertIsAllowedToHandleCallback(serviceName);
 
@@ -87,4 +106,5 @@ public class CcdCallbackController {
 
         return ResponseEntity.ok(ccdCallbackResponse);
     }
+
 }

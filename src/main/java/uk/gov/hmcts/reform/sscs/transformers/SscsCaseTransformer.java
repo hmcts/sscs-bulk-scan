@@ -4,6 +4,8 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.*;
+
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
@@ -21,6 +23,7 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @Component
+@Slf4j
 public class SscsCaseTransformer implements CaseTransformer {
 
     @Autowired
@@ -45,31 +48,41 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Override
     public CaseResponse transformExceptionRecordToCase(CaseDetails caseDetails) {
 
+        String caseId = caseDetails.getCaseId();
+        log.info("Transforming exception record {}", caseId);
+
         Map<String, Object> transformed = new HashMap<>();
 
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseDetails.getCaseData());
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
+            log.info("Errors found while validating key value pairs while transforming exception record {}", caseId);
             return CaseResponse.builder().errors(keyValuePairValidatorResponse.getErrors()).build();
         }
+
+        log.info("Key value pairs validated while transforming exception record {}", caseId);
 
         errors = new ArrayList<>();
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
-        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData());
+        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseDetails.getCaseId());
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
 
         sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments);
 
-        transformed.put("bulkScanCaseReference", caseDetails.getCaseId());
+        transformed.put("bulkScanCaseReference", caseId);
 
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
-        transformed.put("caseCreated", dtfOut.print(new DateTime()));
+
+        String caseCreated = dtfOut.print(new DateTime());
+        transformed.put("caseCreated", caseCreated);
+
+        log.info("Transformation complete for exception record id {}, caseCreated field set to ", caseId, caseCreated);
 
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
     }
 
-    private Appeal buildAppealFromData(Map<String, Object> pairs) {
+    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId) {
         Appellant appellant = null;
 
         if (pairs != null && pairs.size() != 0) {
@@ -104,7 +117,9 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .receivedVia("Paper")
                 .build();
         } else {
-            errors.add("No OCR data, case cannot be created");
+            String errorMessage = "No OCR data, case cannot be created";
+            log.info(errorMessage + " for exception record id {}", caseId);
+            errors.add(errorMessage);
             return Appeal.builder().build();
         }
     }
