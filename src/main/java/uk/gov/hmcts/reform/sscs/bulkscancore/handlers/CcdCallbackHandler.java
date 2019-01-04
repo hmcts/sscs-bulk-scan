@@ -25,6 +25,8 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 @Slf4j
 public class CcdCallbackHandler {
 
+    private static String LOGSTR_VALIDATION_ERRORS = "\"Errors found while validating exception record id {}\"";
+
     private final CaseTransformer caseTransformer;
 
     private final CaseValidator caseValidator;
@@ -80,7 +82,7 @@ public class CcdCallbackHandler {
         AboutToStartOrSubmitCallbackResponse validationErrorResponse = checkForErrors(caseValidationResponse, exceptionRecordId);
 
         if (validationErrorResponse != null) {
-            log.info("Errors found while validating exception record id {}", exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             return validationErrorResponse;
         } else {
             log.info("Exception record id {} validated successfully", exceptionRecordId);
@@ -102,7 +104,7 @@ public class CcdCallbackHandler {
         AboutToStartOrSubmitCallbackResponse validationErrorResponse = convertWarningsToErrors(caseValidationResponse, validateCaseData.getCaseDetails().getCaseId());
 
         if (validationErrorResponse != null) {
-            log.info("Errors found while validating exception record id {}", exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             return validationErrorResponse;
         } else {
             log.info("Exception record id {} validated successfully", exceptionRecordId);
@@ -159,7 +161,7 @@ public class CcdCallbackHandler {
         }
 
         if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
-            log.info("Errors found while validating exception record id {}", exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             appendedWarningsAndErrors.addAll(caseResponse.getErrors());
         }
 
