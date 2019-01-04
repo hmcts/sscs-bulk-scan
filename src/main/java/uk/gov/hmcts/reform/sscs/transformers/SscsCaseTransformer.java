@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
+import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
 import java.util.*;
 
@@ -63,12 +64,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         errors = new ArrayList<>();
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
+
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseDetails.getCaseId());
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
+        Subscriptions subscriptions = populateSubscriptions(appeal);
 
         Map<String, Object> transformed = new HashMap<>();
 
-        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments);
+        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions);
 
         transformed.put("bulkScanCaseReference", caseId);
 
@@ -80,6 +83,19 @@ public class SscsCaseTransformer implements CaseTransformer {
         log.info("Transformation complete for exception record id {}, caseCreated field set to ", caseId, caseCreated);
 
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
+    }
+
+    private static Subscriptions populateSubscriptions(Appeal appeal) {
+
+        return Subscriptions.builder()
+            .appellantSubscription(appeal.getAppellant() != null && appeal.getAppellant().getAppointee() == null ? generateSubscriptionWithAppealNumber() : null)
+            .appointeeSubscription(appeal.getAppellant() != null && appeal.getAppellant().getAppointee() != null ? generateSubscriptionWithAppealNumber() : null)
+            .representativeSubscription(appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes") ? generateSubscriptionWithAppealNumber() : null)
+            .build();
+    }
+
+    private static Subscription generateSubscriptionWithAppealNumber() {
+        return Subscription.builder().tya(generateAppealNumber()).build();
     }
 
     private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId) {

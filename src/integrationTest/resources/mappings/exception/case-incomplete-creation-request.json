@@ -55,6 +55,19 @@
       "receivedVia" : "Paper"
     },
     "sscsDocument" : [ ],
+    "subscriptions": {
+      "appellantSubscription": {
+        "wantSmsNotifications": null,
+        "email": null,
+        "mobile": null,
+        "subscribeEmail": null,
+        "subscribeSms": null,
+        "reason": null
+      },
+      "supporterSubscription" : null,
+      "representativeSubscription" : null,
+      "appointeeSubscription" : null
+    },
     "generatedNino" : null,
     "generatedSurname" : null,
     "generatedDOB" : null,

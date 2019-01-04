@@ -78,6 +78,19 @@
         }
       }
     } ],
+    "subscriptions": {
+      "appellantSubscription": {
+        "wantSmsNotifications": null,
+        "email": null,
+        "mobile": null,
+        "subscribeEmail": null,
+        "subscribeSms": null,
+        "reason": null
+      },
+      "supporterSubscription" : null,
+      "representativeSubscription" : null,
+      "appointeeSubscription" : null
+    },
     "region" : "BIRMINGHAM",
     "regionalProcessingCenter" : {
       "faxNumber" : "0126 434 7983",

@@ -97,7 +97,10 @@ public class CcdCallbackHandler {
 
         log.info("Processing validation and update request for SSCS exception record id {}", exceptionRecordId);
 
-        sscsDataHelper.addSscsDataToMap(appealData, validateCaseData.getCaseDetails().getCaseData().getAppeal(), validateCaseData.getCaseDetails().getCaseData().getSscsDocument());
+        sscsDataHelper.addSscsDataToMap(appealData,
+            validateCaseData.getCaseDetails().getCaseData().getAppeal(),
+            validateCaseData.getCaseDetails().getCaseData().getSscsDocument(),
+            validateCaseData.getCaseDetails().getCaseData().getSubscriptions());
 
         CaseResponse caseValidationResponse = caseValidator.validate(appealData);
 

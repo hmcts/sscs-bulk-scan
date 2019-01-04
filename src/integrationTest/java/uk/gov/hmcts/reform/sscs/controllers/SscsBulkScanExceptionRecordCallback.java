@@ -521,11 +521,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             default: break;
         }
 
+        //FIXME: ignore extra elements could cause false positives
         ccdServer.stubFor(post(concat(SUBMIT_EVENT_URL))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .withRequestBody(equalToJson(createCaseRequest))
+            .withRequestBody(equalToJson(createCaseRequest, false, true))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .withStatus(200)
