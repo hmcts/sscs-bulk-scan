@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 @Slf4j
 public class CcdCallbackHandler {
 
-    private static String LOGSTR_VALIDATION_ERRORS = "\"Errors found while validating exception record id {}\"";
+    private static final String LOGSTR_VALIDATION_ERRORS = "\"Errors found while validating exception record id {}\"";
 
     private final CaseTransformer caseTransformer;
 
