@@ -26,6 +26,7 @@ public final class SscsConstants {
     public static final String MRN_DATE = "mrn_date";
     public static final String YES_LITERAL = "Yes";
     public static final String NO_LITERAL = "No";
+    public static final String TITLE = "_title";
     public static final String FIRST_NAME = "_first_name";
     public static final String LAST_NAME = "_last_name";
     public static final String ADDRESS_LINE1 = "_address_line1";

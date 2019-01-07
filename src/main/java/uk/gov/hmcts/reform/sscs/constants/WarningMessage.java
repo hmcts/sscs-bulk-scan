@@ -7,6 +7,9 @@ import uk.gov.hmcts.reform.sscs.domain.CallbackType;
 
 public enum WarningMessage {
 
+    APPELLANT_TITLE(TITLE, "Appellant title"),
+    APPOINTEE_TITLE(TITLE, "Appointee title"),
+    REPRESENTATIVE_TITLE(TITLE, "Representative title"),
     APPELLANT_FIRST_NAME(FIRST_NAME, "Appellant first name"),
     APPOINTEE_FIRST_NAME(FIRST_NAME, "Appointee first name"),
     REPRESENTATIVE_FIRST_NAME(FIRST_NAME, "Representative first name"),
