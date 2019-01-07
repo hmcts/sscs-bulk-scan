@@ -37,7 +37,8 @@
           "wantsToAttend": "Yes"
         },
         "mrnDetails": {
-          "mrnDate": "2018-12-09"
+          "mrnDate": "2018-12-09",
+          "dwpIssuingOffice": "05"
         },
         "signer": null
       },

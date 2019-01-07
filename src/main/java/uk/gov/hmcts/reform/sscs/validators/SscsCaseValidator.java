@@ -58,12 +58,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkAppellant(appeal, caseData, appellantPersonType);
         checkRepresentative(appeal, caseData);
-
-        if (!doesMrnDateExist(appeal)) {
-            warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
-        } else {
-            checkDateValidDate(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "", true);
-        }
+        checkMrnDetails(appeal);
 
         checkExcludedDates(appeal);
 
@@ -93,7 +88,6 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkAppointee(Appellant appellant, Map<String, Object> caseData) {
-
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
             checkPerson(appellant.getAppointee().getName(), appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(), PERSON1_VALUE, caseData, appellant);
         }
@@ -102,6 +96,18 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkRepresentative(Appeal appeal, Map<String, Object> caseData) {
         if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes")) {
             checkPerson(appeal.getRep().getName(), appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, caseData, appeal.getAppellant());
+        }
+    }
+
+    private void checkMrnDetails(Appeal appeal) {
+        if (!doesMrnDateExist(appeal)) {
+            warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
+        } else {
+            checkDateValidDate(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "", true);
+        }
+
+        if (!doesIssuingOfficeExist(appeal)) {
+            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
         }
     }
 
@@ -213,6 +219,13 @@ public class SscsCaseValidator implements CaseValidator {
     private Boolean doesMrnDateExist(Appeal appeal) {
         if (appeal.getMrnDetails() != null) {
             return appeal.getMrnDetails().getMrnDate() != null;
+        }
+        return false;
+    }
+
+    private Boolean doesIssuingOfficeExist(Appeal appeal) {
+        if (appeal.getMrnDetails() != null) {
+            return appeal.getMrnDetails().getDwpIssuingOffice() != null;
         }
         return false;
     }

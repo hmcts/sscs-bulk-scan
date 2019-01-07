@@ -24,6 +24,7 @@ public final class SscsConstants {
     public static final String DEFAULT_SIGN_LANGUAGE = "British Sign Language";
     public static final String BENEFIT_TYPE_DESCRIPTION = "benefit_type_description";
     public static final String MRN_DATE = "mrn_date";
+    public static final String ISSUING_OFFICE = "office";
     public static final String YES_LITERAL = "Yes";
     public static final String NO_LITERAL = "No";
     public static final String FIRST_NAME = "_first_name";

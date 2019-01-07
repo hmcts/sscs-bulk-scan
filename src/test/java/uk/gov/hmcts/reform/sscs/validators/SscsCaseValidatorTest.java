@@ -27,10 +27,14 @@ public class SscsCaseValidatorTest {
 
     private SscsCaseValidator validator;
 
+    private MrnDetails defaultMrnDetails;
+
     @Before
     public void setup() {
         initMocks(this);
         validator = new SscsCaseValidator(regionalProcessingCenterService);
+
+        defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("05").mrnDate("2018-12-09").build();
 
         given(regionalProcessingCenterService.getByPostcode("CM13 0GD")).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
     }
@@ -53,6 +57,7 @@ public class SscsCaseValidatorTest {
                 "person1_postcode is empty",
                 "person1_nino is empty",
                 "mrn_date is empty",
+                "office is empty",
                 "benefit_type_description is empty");
     }
 
@@ -64,7 +69,7 @@ public class SscsCaseValidatorTest {
                 Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13 0GD").build())
                 .identity(Identity.builder().nino("JT1234567B").build()).build())
                 .benefitType(BenefitType.builder().code(PIP.name()).build())
-                .mrnDetails(MrnDetails.builder().mrnDate("2018-12-09").build()).build());
+                .mrnDetails(defaultMrnDetails).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validate(pairs);
@@ -90,7 +95,7 @@ public class SscsCaseValidatorTest {
             .address(Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13 0GD").build())
             .identity(Identity.builder().nino("JT1234567B").build()).build())
             .benefitType(BenefitType.builder().code(PIP.name()).build())
-            .mrnDetails(MrnDetails.builder().mrnDate("2018-12-09").build()).build());
+            .mrnDetails(defaultMrnDetails).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validate(pairs);
@@ -108,7 +113,7 @@ public class SscsCaseValidatorTest {
             Name.builder().firstName("Harry").lastName("Kane").build())
             .identity(Identity.builder().nino("JT1234567B").build()).build())
             .benefitType(BenefitType.builder().code(PIP.name()).build())
-            .mrnDetails(MrnDetails.builder().mrnDate("2018-12-09").build()).build());
+            .mrnDetails(defaultMrnDetails).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validate(pairs);
@@ -228,16 +233,23 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppealDoesNotContainAnMrnDate_thenAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrnDate(null, buildAppellant(false), true));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("05").build(), buildAppellant(false), true));
 
         assertEquals("mrn_date is empty", response.getWarnings().get(0));
     }
 
     @Test
     public void givenAnAppealContainsAnMrnDateInFuture_thenAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrnDate("2148-10-10", buildAppellant(false), true));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("05").mrnDate("2148-10-10").build(), buildAppellant(false), true));
 
         assertEquals("mrn_date is in future", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnMrnDoesNotContainADwpIssuingOffice_thenAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true));
+
+        assertEquals("office is empty", response.getWarnings().get(0));
     }
 
     @Test
@@ -502,32 +514,32 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", PIP.name(), appellant, null, null, exceptionCaseType);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, null, exceptionCaseType);
     }
 
-    private Map<String, Object> buildMinimumAppealDataWithMrnDate(String mrnDate, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrnDate, PIP.name(), appellant, null, null, exceptionCaseType);
+    private Map<String, Object> buildMinimumAppealDataWithMrn(MrnDetails mrn, Appellant appellant, Boolean exceptionCaseType) {
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, PIP.name(), appellant, null, null, exceptionCaseType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", benefitCode, appellant, null, null, exceptionCaseType);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant, null, null, exceptionCaseType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithRepresentative(Appellant appellant, Representative representative, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", PIP.name(), appellant, representative, null, exceptionCaseType);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, representative, null, exceptionCaseType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithExcludedDate(String excludedDate, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType("2018-12-09", PIP.name(), appellant, null, excludedDate, exceptionCaseType);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, excludedDate, exceptionCaseType);
     }
 
-    private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(String mrnDate, String benefitCode, Appellant appellant, Representative representative, String excludeDates, Boolean exceptionCaseType) {
+    private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(MrnDetails mrn, String benefitCode, Appellant appellant, Representative representative, String excludeDates, Boolean exceptionCaseType) {
         Map<String, Object> dataMap = new HashMap<>();
         List<ExcludeDate> excludedDates = new ArrayList<>();
         excludedDates.add(ExcludeDate.builder().value(DateRange.builder().start(excludeDates).build()).build());
 
         dataMap.put("appeal", Appeal.builder()
-            .mrnDetails(MrnDetails.builder().mrnDate(mrnDate).build())
+            .mrnDetails(MrnDetails.builder().mrnDate(mrn.getMrnDate()).dwpIssuingOffice(mrn.getDwpIssuingOffice()).build())
             .benefitType(BenefitType.builder().code(benefitCode).build())
             .appellant(appellant)
             .rep(representative)

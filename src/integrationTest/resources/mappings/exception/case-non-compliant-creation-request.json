@@ -7,7 +7,7 @@
   "data": {
     "appeal": {
       "mrnDetails": {
-        "dwpIssuingOffice": null,
+        "dwpIssuingOffice": "05",
         "mrnDate": "2017-01-01",
         "mrnLateReason": null,
         "mrnMissingReason": null
