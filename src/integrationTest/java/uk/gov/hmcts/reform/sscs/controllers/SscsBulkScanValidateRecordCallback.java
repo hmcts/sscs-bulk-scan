@@ -102,6 +102,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
                 "Appellant date of birth is in future",
                 "Hearing options exclude dates is in past",
                 "Mrn date is empty",
+                "DWP issuing office is empty",
                 "Benefit type description is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);

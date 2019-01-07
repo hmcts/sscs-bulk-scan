@@ -155,6 +155,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         return MrnDetails.builder()
             .mrnDate(generateDateForCcd(pairs, errors,"mrn_date"))
             .mrnLateReason(getField(pairs,"appeal_late_reason"))
+            .dwpIssuingOffice(getField(pairs,"office"))
         .build();
     }
 
