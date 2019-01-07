@@ -93,7 +93,9 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors())
-            .containsOnly("Appellant last name is empty",
+            .containsOnly(
+                "Appellant title is empty",
+                "Appellant last name is empty",
                 "Appellant address line 1 is empty",
                 "Appellant address town is empty",
                 "Appellant address county is empty",
@@ -124,7 +126,9 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors())
-            .containsOnly("Appointee first name is empty",
+            .containsOnly(
+                "Appointee title is empty",
+                "Appointee first name is empty",
                 "Appointee last name is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
@@ -146,8 +150,10 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors())
-            .containsOnly("Appointee first name is empty",
+            .containsOnly("Appointee title is empty",
+                "Appointee first name is empty",
                 "Appointee last name is empty",
+                "Appellant title is empty",
                 "Appellant first name is empty",
                 "Appellant last name is empty");
 

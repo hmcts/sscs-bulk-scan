@@ -113,6 +113,9 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkPerson(Name name, Address address, Identity identity, String personType, Map<String, Object> caseData, Appellant appellant) {
 
+        if (!doesTitleExist(name)) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE, IS_EMPTY));
+        }
         if (!doesFirstNameExist(name)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + FIRST_NAME, IS_EMPTY));
         }
@@ -140,6 +143,13 @@ public class SscsCaseValidator implements CaseValidator {
         if (identity != null) {
             checkDateValidDate(identity.getDob(), getWarningMessageName(personType, appellant) + DOB, personType, true);
         }
+    }
+
+    private Boolean doesTitleExist(Name name) {
+        if (name != null) {
+            return name.getTitle() != null;
+        }
+        return false;
     }
 
     private Boolean doesFirstNameExist(Name name) {
