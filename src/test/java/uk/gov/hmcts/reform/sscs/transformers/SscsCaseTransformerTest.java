@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
@@ -178,6 +177,39 @@ public class SscsCaseTransformerTest {
         assertEquals(expectedAppellant, appellantResult);
 
         assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenAnAppellant_thenAddAppealNumberToAppellantSubscription() {
+        pairs.put("person1_first_name", "Jeff");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Subscriptions subscriptions = ((Subscriptions) result.getTransformedCase().get("subscriptions"));
+        assertNotNull(subscriptions.getAppellantSubscription().getTya());
+        assertNull(subscriptions.getAppointeeSubscription());
+    }
+
+    @Test
+    public void givenAnAppellantAndAppointee_thenOnlyAddAppealNumberToAppointeeSubscription() {
+        pairs.put("person1_first_name", "Jeff");
+        pairs.put("person2_first_name", "Terry");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Subscriptions subscriptions = ((Subscriptions) result.getTransformedCase().get("subscriptions"));
+        assertNull(subscriptions.getAppellantSubscription());
+        assertNotNull(subscriptions.getAppointeeSubscription().getTya());
+    }
+
+    @Test
+    public void givenARepresentative_thenAddAppealNumberToRepresentativeSubscription() {
+        pairs.put("representative_first_name", "Wendy");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Subscriptions subscriptions = ((Subscriptions) result.getTransformedCase().get("subscriptions"));
+        assertNotNull(subscriptions.getRepresentativeSubscription().getTya());
     }
 
     @Test

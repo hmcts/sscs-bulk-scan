@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 
 @Component
@@ -21,10 +22,11 @@ public class SscsDataHelper {
         this.caseEvent = caseEvent;
     }
 
-    public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal,  List<SscsDocument> sscsDocuments) {
+    public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions) {
         appealData.put("appeal", appeal);
         appealData.put("sscsDocument", sscsDocuments);
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
+        appealData.put("subscriptions", subscriptions);
 
         if (appeal != null && appeal.getAppellant() != null) {
             if (appeal.getAppellant().getName() != null) {
