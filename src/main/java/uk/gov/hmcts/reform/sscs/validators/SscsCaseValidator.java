@@ -64,6 +64,8 @@ public class SscsCaseValidator implements CaseValidator {
 
         isBenefitTypeValid(appeal);
 
+        isHearingTypeValid(appeal);
+
         return warnings;
     }
 
@@ -302,6 +304,14 @@ public class SscsCaseValidator implements CaseValidator {
             }
         } else {
             warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, IS_EMPTY));
+        }
+    }
+
+    private void isHearingTypeValid(Appeal appeal) {
+        String hearingType = appeal.getHearingType();
+
+        if (hearingType == null || (!hearingType.equals(HEARING_TYPE_ORAL) && !hearingType.equals(HEARING_TYPE_PAPER))) {
+            warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_DESCRIPTION, IS_INVALID));
         }
     }
 

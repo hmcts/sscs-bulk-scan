@@ -30,6 +30,7 @@
         "benefitType": {
           "code": "ESA"
         },
+        "hearingType": "oral",
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
