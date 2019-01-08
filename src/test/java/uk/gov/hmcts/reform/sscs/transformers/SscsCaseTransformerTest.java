@@ -734,6 +734,35 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenOneDocumentWithNoDetails_thenBuildACase() {
+        List<ScannedRecord> records = new ArrayList<>();
+        ScannedRecord scannedRecord = ScannedRecord.builder()
+            .scannedDate(null)
+            .controlNumber(null)
+            .url(null)
+            .fileName(null)
+            .type(null).build();
+
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Map<String, Object> transformedCase = result.getTransformedCase();
+        @SuppressWarnings("unchecked")
+        List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
+        assertEquals(null, docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(null, docs.get(0).getValue().getDocumentFileName());
+        assertEquals(null, docs.get(0).getValue().getDocumentLink());
+        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+
+        assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     public void givenACaseWithNoDocuments_thenBuildACaseWithNoEvidencePresent() {
         List<ScannedRecord> records = new ArrayList<>();
 
