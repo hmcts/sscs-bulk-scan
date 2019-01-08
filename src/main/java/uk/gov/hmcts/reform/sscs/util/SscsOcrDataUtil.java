@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -49,22 +48,11 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
-    public static boolean areMandatoryBooleansValid(Map<String, Object> pairs, List<String> errors, String... values) {
-        List<String> booleanErrors = new ArrayList<>();
-        for (String value : values) {
-            if (!checkBooleanValue(pairs, value)) {
-                booleanErrors.add(value + " does not contain a valid boolean value. Needs to be true or false");
-            }
-        }
-        errors.addAll(booleanErrors);
-        return booleanErrors.isEmpty();
-    }
-
     public static boolean areBooleansValid(Map<String, Object> pairs, String... values) {
         return Stream.of(values).allMatch(value -> checkBooleanValue(pairs, value));
     }
 
-    private static boolean checkBooleanValue(Map<String, Object> pairs, String value) {
+    public static boolean checkBooleanValue(Map<String, Object> pairs, String value) {
         return pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
     }
 

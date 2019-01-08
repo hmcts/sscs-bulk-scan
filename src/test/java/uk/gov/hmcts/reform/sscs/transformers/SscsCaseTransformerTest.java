@@ -253,7 +253,59 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBooleanValueIsText_thenAddErrorToList() {
+    public void givenHearingTypeOralIsTrueAndHearingTypePaperIsEmpty_thenSetHearingTypeToOral() {
+        Map<String, Object> hearingTypePairs = new HashMap<>();
+        hearingTypePairs.put("is_hearing_type_oral", true);
+        hearingTypePairs.put("is_hearing_type_paper", "null");
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(hearingTypePairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(HEARING_TYPE_ORAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+    }
+
+    @Test
+    public void givenHearingTypePaperIsTrueAndHearingTypeOralIsEmpty_thenSetHearingTypeToPaper() {
+        Map<String, Object> hearingTypePairs = new HashMap<>();
+        hearingTypePairs.put("is_hearing_type_oral", "null");
+        hearingTypePairs.put("is_hearing_type_paper", true);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(hearingTypePairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(HEARING_TYPE_PAPER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+    }
+
+    @Test
+    public void givenHearingTypeOralIsFalseAndHearingTypePaperIsEmpty_thenSetHearingTypeToPaper() {
+        Map<String, Object> hearingTypePairs = new HashMap<>();
+        hearingTypePairs.put("is_hearing_type_oral", false);
+        hearingTypePairs.put("is_hearing_type_paper", "null");
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(hearingTypePairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(HEARING_TYPE_PAPER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+    }
+
+    @Test
+    public void givenHearingTypePaperIsFalseAndHearingTypeOralIsEmpty_thenSetHearingTypeToOral() {
+        Map<String, Object> hearingTypePairs = new HashMap<>();
+        hearingTypePairs.put("is_hearing_type_oral", "null");
+        hearingTypePairs.put("is_hearing_type_paper", false);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(hearingTypePairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(HEARING_TYPE_ORAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+    }
+
+    @Test
+    public void givenBooleanValueIsRandomText_thenSetHearingTypeToNull() {
         Map<String, Object> textBooleanValueMap = ImmutableMap.<String, Object>builder()
             .put("is_hearing_type_oral", "I am a text value")
             .put("is_hearing_type_paper", "true").build();
@@ -262,7 +314,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertTrue(result.getErrors().contains("is_hearing_type_oral does not contain a valid boolean value. Needs to be true or false"));
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
     }
 
     @Test
