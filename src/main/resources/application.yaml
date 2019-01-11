@@ -64,3 +64,6 @@ robotics:
     enabled: ${ROBOTICS_ENABLED:false}
   schema.resource.location: /schema/sscs-robotics.json
 
+validation:
+  titles: Doctor,Miss,Mr & Mrs,Mr,Mrs,Ms,Reverend,Sir / Madam
+  dwp_offices: 1,2,3,4,5,6,7,8,9,10

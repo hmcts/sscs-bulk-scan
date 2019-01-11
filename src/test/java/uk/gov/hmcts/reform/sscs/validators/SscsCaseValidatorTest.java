@@ -17,6 +17,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
@@ -30,12 +31,23 @@ public class SscsCaseValidatorTest {
 
     private MrnDetails defaultMrnDetails;
 
+    private List<String> titles = new ArrayList<>();
+    private List<String> offices = new ArrayList<>();
+
     @Before
     public void setup() {
         initMocks(this);
         validator = new SscsCaseValidator(regionalProcessingCenterService);
 
-        defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("05").mrnDate("2018-12-09").build();
+        defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2018-12-09").build();
+
+        titles.add("Mr");
+        titles.add("Mrs");
+        ReflectionTestUtils.setField(validator, "titles", titles);
+
+        offices.add("1");
+        offices.add("2");
+        ReflectionTestUtils.setField(validator, "offices", offices);
 
         given(regionalProcessingCenterService.getByPostcode("CM13 0GD")).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
     }
@@ -70,7 +82,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().address(
                 Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13 0GD").build())
-                .identity(Identity.builder().nino("JT1234567B").build()).build())
+                .identity(Identity.builder().nino("BB000000B").build()).build())
                 .benefitType(BenefitType.builder().code(PIP.name()).build())
                 .mrnDetails(defaultMrnDetails)
                 .hearingType(HEARING_TYPE_ORAL).build());
@@ -98,7 +110,7 @@ public class SscsCaseValidatorTest {
         pairs.put("appeal", Appeal.builder().appellant(Appellant.builder()
             .appointee(appointee)
             .address(Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13 0GD").build())
-            .identity(Identity.builder().nino("JT1234567B").build()).build())
+            .identity(Identity.builder().nino("BB000000B").build()).build())
             .benefitType(BenefitType.builder().code(PIP.name()).build())
             .mrnDetails(defaultMrnDetails)
             .hearingType(HEARING_TYPE_ORAL).build());
@@ -119,7 +131,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(
             Name.builder().firstName("Harry").lastName("Kane").build())
-            .identity(Identity.builder().nino("JT1234567B").build()).build())
+            .identity(Identity.builder().nino("BB000000B").build()).build())
             .benefitType(BenefitType.builder().code(PIP.name()).build())
             .mrnDetails(defaultMrnDetails)
             .hearingType(HEARING_TYPE_ORAL).build());
@@ -144,6 +156,27 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
 
         assertEquals("person1_title is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesNotContainAValidTitle_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getName().setTitle("Bla");
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+
+        assertEquals("person1_title is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesContainAValidTitle_thenDoNotAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getName().setTitle("Mr");
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
@@ -229,6 +262,27 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantDoesNotContainAValidNino_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setNino("Bla");
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+
+        assertEquals("person1_nino is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesContainANino_thenDoNotAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setNino("BB000000B");
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
     public void givenAnAppointeeExistsAndAnAppellantDoesNotContainANino_thenAddAWarningAboutPerson2() {
         Appellant appellant = buildAppellant(true);
         appellant.getIdentity().setNino(null);
@@ -254,14 +308,14 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppealDoesNotContainAnMrnDate_thenAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("05").build(), buildAppellant(false), true));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("2").build(), buildAppellant(false), true));
 
         assertEquals("mrn_date is empty", response.getWarnings().get(0));
     }
 
     @Test
     public void givenAnAppealContainsAnMrnDateInFuture_thenAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("05").mrnDate("2148-10-10").build(), buildAppellant(false), true));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2148-10-10").build(), buildAppellant(false), true));
 
         assertEquals("mrn_date is in future", response.getWarnings().get(0));
     }
@@ -271,6 +325,21 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true));
 
         assertEquals("office is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnMrnDoesNotContainAValidDwpIssuingOffice_thenAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Bla").build(), buildAppellant(false), true));
+
+        assertEquals("office is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnMrnContainsAValidDwpIssuingOffice_thenDoNotAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("1").build(), buildAppellant(false), true));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
@@ -623,7 +692,7 @@ public class SscsCaseValidatorTest {
         return Appellant.builder()
             .name(Name.builder().title("Mr").firstName("Bob").lastName("Smith").build())
             .address(Address.builder().line1("101 My Road").town("Brentwood").county("Essex").postcode(postcode).build())
-            .identity(Identity.builder().nino("JT01234567B").build())
+            .identity(Identity.builder().nino("BB000000B").build())
             .contact(Contact.builder().phone(phoneNumber).build())
             .appointee(appointee).build();
     }
