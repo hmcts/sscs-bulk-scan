@@ -87,11 +87,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkPerson(appellantName, appellantAddress, appellantIdentity, personType, caseData, appellant);
 
-        if (!doesAppellantNinoExist(appellant)) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_EMPTY));
-        } else if (!isNinoValid(appellant.getIdentity().getNino())) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_INVALID));
-        }
+        checkAppellantNino(appellant, personType);
 
         if (!isPhoneNumberValid(appellant)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + PHONE, IS_INVALID));
@@ -169,7 +165,8 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private boolean isTitleValid(String title) {
-        return titles.contains(title);
+        String strippedTitle = title.replaceAll("[-+.^:,'_]","");
+        return titles.stream().anyMatch(strippedTitle::equalsIgnoreCase);
     }
 
     private Boolean doesFirstNameExist(Name name) {
@@ -220,15 +217,14 @@ public class SscsCaseValidator implements CaseValidator {
         return false;
     }
 
-    private Boolean doesAppellantNinoExist(Appellant appellant) {
-        if (appellant != null && appellant.getIdentity() != null) {
-            return appellant.getIdentity().getNino() != null;
+    private void checkAppellantNino(Appellant appellant, String personType) {
+        if (appellant != null && appellant.getIdentity() != null && appellant.getIdentity().getNino() != null) {
+            if (!appellant.getIdentity().getNino().matches("^(?!BG)(?!GB)(?!NK)(?!KN)(?!TN)(?!NT)(?!ZZ)\\s?(?:[A-CEGHJ-PR-TW-Z]\\s?[A-CEGHJ-NPR-TW-Z])\\s?(?:\\d\\s?){6}([A-D]|\\s)\\s?$")) {
+                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_INVALID));
+            }
+        } else {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_EMPTY));
         }
-        return false;
-    }
-
-    private boolean isNinoValid(String nino) {
-        return nino.matches("^(?!BG)(?!GB)(?!NK)(?!KN)(?!TN)(?!NT)(?!ZZ)\\s?(?:[A-CEGHJ-PR-TW-Z]\\s?[A-CEGHJ-NPR-TW-Z])\\s?(?:\\d\\s?){6}([A-D]|\\s)\\s?$");
     }
 
     private void checkDateValidDate(String dateField, String fieldName, String personType, Boolean isInFutureCheck) {

@@ -169,6 +169,28 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantDoesContainAValidTitleWithFullStop_thenDoNotAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getName().setTitle("Mr.");
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppellantDoesContainAValidTitleLowercase_thenDoNotAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getName().setTitle("mr");
+
+        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
     public void givenAnAppellantDoesContainAValidTitle_thenDoNotAddAWarning() {
         Appellant appellant = buildAppellant(false);
         appellant.getName().setTitle("Mr");

@@ -116,7 +116,7 @@
         {
           "value": {
             "key": "person1_nino",
-            "value": "JJ123457A"
+            "value": "BB000000B"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },
@@ -186,7 +186,7 @@
         {
           "value": {
             "key": "person2_nino",
-            "value": "SD232321D"
+            "value": "JJ123457A"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },
