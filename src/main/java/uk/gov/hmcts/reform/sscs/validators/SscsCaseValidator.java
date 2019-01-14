@@ -72,6 +72,8 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkAppellant(Appeal appeal, Map<String, Object> caseData, String personType) {
         Appellant appellant = appeal.getAppellant();
 
+        checkAppointee(appellant, caseData);
+
         Name appellantName = appellant != null ? appellant.getName() : null;
         Address appellantAddress = appellant != null ? appellant.getAddress() : null;
         Identity appellantIdentity = appellant != null ? appellant.getIdentity() : null;
@@ -85,8 +87,6 @@ public class SscsCaseValidator implements CaseValidator {
         if (!isPhoneNumberValid(appellant)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + PHONE, IS_INVALID));
         }
-
-        checkAppointee(appellant, caseData);
     }
 
     private void checkAppointee(Appellant appellant, Map<String, Object> caseData) {
