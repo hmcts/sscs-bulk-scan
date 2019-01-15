@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
@@ -30,6 +31,12 @@ public class SscsCaseValidator implements CaseValidator {
     private CallbackType callbackType;
 
     private final RegionalProcessingCenterService regionalProcessingCenterService;
+
+    @Value("#{'${validation.titles}'.split(',')}")
+    private List<String> titles;
+
+    @Value("#{'${validation.dwp_offices}'.split(',')}")
+    private List<String> offices;
 
     public SscsCaseValidator(RegionalProcessingCenterService regionalProcessingCenterService) {
         this.regionalProcessingCenterService = regionalProcessingCenterService;
@@ -80,9 +87,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkPerson(appellantName, appellantAddress, appellantIdentity, personType, caseData, appellant);
 
-        if (!doesAppellantNinoExist(appellant)) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_EMPTY));
-        }
+        checkAppellantNino(appellant, personType);
 
         if (!isPhoneNumberValid(appellant)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + PHONE, IS_INVALID));
@@ -110,6 +115,8 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (!doesIssuingOfficeExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
+        } else if (!isIssuingOfficeValid(appeal.getMrnDetails().getDwpIssuingOffice())) {
+            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
         }
     }
 
@@ -117,7 +124,10 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (!doesTitleExist(name)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE, IS_EMPTY));
+        } else if (!isTitleValid(name.getTitle())) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE, IS_INVALID));
         }
+
         if (!doesFirstNameExist(name)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + FIRST_NAME, IS_EMPTY));
         }
@@ -152,6 +162,11 @@ public class SscsCaseValidator implements CaseValidator {
             return name.getTitle() != null;
         }
         return false;
+    }
+
+    private boolean isTitleValid(String title) {
+        String strippedTitle = title.replaceAll("[-+.^:,'_]","");
+        return titles.stream().anyMatch(strippedTitle::equalsIgnoreCase);
     }
 
     private Boolean doesFirstNameExist(Name name) {
@@ -202,11 +217,14 @@ public class SscsCaseValidator implements CaseValidator {
         return false;
     }
 
-    private Boolean doesAppellantNinoExist(Appellant appellant) {
-        if (appellant != null && appellant.getIdentity() != null) {
-            return appellant.getIdentity().getNino() != null;
+    private void checkAppellantNino(Appellant appellant, String personType) {
+        if (appellant != null && appellant.getIdentity() != null && appellant.getIdentity().getNino() != null) {
+            if (!appellant.getIdentity().getNino().matches("^(?!BG)(?!GB)(?!NK)(?!KN)(?!TN)(?!NT)(?!ZZ)\\s?(?:[A-CEGHJ-PR-TW-Z]\\s?[A-CEGHJ-NPR-TW-Z])\\s?(?:\\d\\s?){6}([A-D]|\\s)\\s?$")) {
+                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_INVALID));
+            }
+        } else {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_EMPTY));
         }
-        return false;
     }
 
     private void checkDateValidDate(String dateField, String fieldName, String personType, Boolean isInFutureCheck) {
@@ -240,6 +258,10 @@ public class SscsCaseValidator implements CaseValidator {
             return appeal.getMrnDetails().getDwpIssuingOffice() != null;
         }
         return false;
+    }
+
+    private boolean isIssuingOfficeValid(String dwpIssuingOffice) {
+        return offices.contains(dwpIssuingOffice);
     }
 
     private String getPerson1OrPerson2(Appellant appellant) {

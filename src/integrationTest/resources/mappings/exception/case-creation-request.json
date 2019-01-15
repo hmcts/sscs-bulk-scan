@@ -7,7 +7,7 @@
   "data": {
     "appeal": {
       "mrnDetails": {
-        "dwpIssuingOffice": "05",
+        "dwpIssuingOffice": "5",
         "mrnDate": "2018-12-09",
         "mrnLateReason": null,
         "mrnMissingReason": null
@@ -32,7 +32,7 @@
         },
         "identity": {
           "dob": "1976-11-11",
-          "nino": "JT0123456B"
+          "nino": "BB000000B"
         },
         "appointee": null,
         "isAddressSameAsAppointee" : null
@@ -103,7 +103,7 @@
       "postcode" : "B16 6FR",
       "city" : "BIRMINGHAM"
     },
-    "generatedNino" : "JT0123456B",
+    "generatedNino" : "BB000000B",
     "generatedSurname" : "Smith",
     "generatedDOB" : "1976-11-11",
     "evidencePresent" : "Yes",
