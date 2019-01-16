@@ -741,7 +741,8 @@ public class SscsCaseTransformerTest {
             .controlNumber(null)
             .url(null)
             .fileName(null)
-            .type(null).build();
+            .type(null)
+            .subtype(null).build();
 
         records.add(scannedRecord);
 
@@ -855,7 +856,8 @@ public class SscsCaseTransformerTest {
             .controlNumber("123")
             .url(link)
             .fileName("mrn.jpg")
-            .type("Testing").build();
+            .type("Testing")
+            .subtype("My subtype").build();
     }
 
     private String formatDate(String date) {

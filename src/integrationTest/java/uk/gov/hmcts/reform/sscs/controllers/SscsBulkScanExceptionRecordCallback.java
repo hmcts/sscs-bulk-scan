@@ -417,6 +417,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
                     .documentBinaryUrl("http://www.bbc.com/binary")
                     .documentFilename("myfile.jpg").build())
                 .type("other")
+                .subtype("my subtype")
                 .fileName("11111.pdf")
                 .build())
         );

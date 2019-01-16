@@ -47,6 +47,7 @@ public class SscsJsonExtractorTest {
         valueMap.put("fileName", "Test_doc");
         valueMap.put("scannedDate", "2018-08-10");
         valueMap.put("type", "1");
+        valueMap.put("subtype", "my subtype");
         valueMap.put("controlNumber", "4");
         JSONObject item = new JSONObject();
         item.put("document_url", "www.test.com");
@@ -57,7 +58,7 @@ public class SscsJsonExtractorTest {
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
         ScannedRecord expectedRecord = ScannedRecord.builder()
-            .type("1").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
+            .type("1").subtype("my subtype").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
 
         assertEquals(expectedRecord, result.getRecords().get(0));
     }
@@ -69,6 +70,7 @@ public class SscsJsonExtractorTest {
         valueMap1.put("fileName", "Test_doc");
         valueMap1.put("scannedDate", "2018-08-10");
         valueMap1.put("type", "1");
+        valueMap1.put("subtype", "my subtype1");
         valueMap1.put("controlNumber", "4");
         JSONObject item = new JSONObject();
         item.put("document_url", "www.test.com");
@@ -78,6 +80,7 @@ public class SscsJsonExtractorTest {
         valueMap2.put("fileName", "Second_test_doc");
         valueMap2.put("scannedDate", "2018-10-29");
         valueMap2.put("type", "2");
+        valueMap2.put("subtype", "my subtype2");
         valueMap2.put("controlNumber", "3");
         JSONObject item2 = new JSONObject();
         item2.put("document_url", "www.hello.com");
@@ -88,10 +91,10 @@ public class SscsJsonExtractorTest {
         ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
 
         ScannedRecord expectedRecord1 = ScannedRecord.builder()
-            .type("1").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
+            .type("1").subtype("my subtype1").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
 
         ScannedRecord expectedRecord2 = ScannedRecord.builder()
-            .type("2").fileName("Second_test_doc").url(DocumentLink.builder().documentUrl("www.hello.com").build()).scannedDate("2018-10-29").build();
+            .type("2").subtype("my subtype2").fileName("Second_test_doc").url(DocumentLink.builder().documentUrl("www.hello.com").build()).scannedDate("2018-10-29").build();
 
         assertEquals(expectedRecord1, result.getRecords().get(0));
         assertEquals(expectedRecord2, result.getRecords().get(1));
