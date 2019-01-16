@@ -17,6 +17,7 @@ public class ScannedRecord {
     private String scannedDate;
     private String fileName;
     private String type;
+    private String subtype;
 
     @JsonIgnore
     private String controlNumber;
