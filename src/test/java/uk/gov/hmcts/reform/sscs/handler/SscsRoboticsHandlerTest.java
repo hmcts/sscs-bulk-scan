@@ -70,7 +70,9 @@ public class SscsRoboticsHandlerTest {
 
         SscsCaseData sscsCaseData = SscsCaseData.builder().appeal(appeal).build();
 
-        doNothing().when(roboticsService).sendCaseToRobotics(sscsCaseData, 1L, "CM12", null, Collections.emptyMap());
+        when(roboticsService
+            .sendCaseToRobotics(sscsCaseData, 1L, "CM12", null, Collections.emptyMap()))
+            .thenReturn(null);
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
@@ -124,7 +126,9 @@ public class SscsRoboticsHandlerTest {
 
         Map<String, byte[]> expectedAdditionalEvidence = new HashMap<>();
         expectedAdditionalEvidence.put("test.jpg", expectedBytes);
-        doNothing().when(roboticsService).sendCaseToRobotics(sscsCaseData, 1L, "CM12", null, expectedAdditionalEvidence);
+        when(roboticsService
+            .sendCaseToRobotics(sscsCaseData, 1L, "CM12", null, expectedAdditionalEvidence))
+            .thenReturn(null);
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
