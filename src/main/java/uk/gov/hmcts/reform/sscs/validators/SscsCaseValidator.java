@@ -365,9 +365,9 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private String getWarningMessageName(String personType, Appellant appellant) {
-        if (personType == REPRESENTATIVE_VALUE) {
+        if (personType.equals(REPRESENTATIVE_VALUE)) {
             return "REPRESENTATIVE";
-        } else if (personType == PERSON2_VALUE || appellant == null || isAppointeeDetailsEmpty(appellant.getAppointee())) {
+        } else if (personType.equals(PERSON2_VALUE) || appellant == null || isAppointeeDetailsEmpty(appellant.getAppointee())) {
             return "APPELLANT";
         } else {
             return "APPOINTEE";
