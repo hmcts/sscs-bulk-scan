@@ -485,33 +485,68 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenARepresentativeDoesNotContainATitle_thenAddAWarning() {
+    public void givenARepresentativeDoesNotContainAFirstNameOrLastNameOrTitleOrCompany_thenAddAWarning() {
         Representative representative = buildRepresentative();
+        representative.getName().setFirstName(null);
+        representative.getName().setLastName(null);
+        representative.getName().setTitle(null);
+        representative.setOrganisation(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+
+        assertEquals("representative_company, representative_title, representative_first_name and representative_last_name are empty. At least one must be populated", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenARepresentativeContainsAFirstNameButDoesNotContainALastNameOrTitleOrCompany_thenDoNotAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getName().setLastName(null);
+        representative.getName().setTitle(null);
+        representative.setOrganisation(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenARepresentativeContainsALastNameButDoesNotContainAFirstNameOrTitleOrCompany_thenDoNotAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getName().setFirstName(null);
+        representative.getName().setTitle(null);
+        representative.setOrganisation(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenARepresentativeContainsATitleButDoesNotContainAFirstNameOrLastNameOrCompany_thenDoNotAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getName().setFirstName(null);
+        representative.getName().setLastName(null);
+        representative.setOrganisation(null);
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenARepresentativeContainsACompanyButDoesNotContainAFirstNameOrLastNameOrTitle_thenDoNotAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.getName().setFirstName(null);
+        representative.getName().setLastName(null);
         representative.getName().setTitle(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
-        assertEquals("representative_title is empty", response.getWarnings().get(0));
-    }
-
-    @Test
-    public void givenARepresentativeDoesNotContainAFirstName_thenAddAWarning() {
-        Representative representative = buildRepresentative();
-        representative.getName().setFirstName(null);
-
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
-
-        assertEquals("representative_first_name is empty", response.getWarnings().get(0));
-    }
-
-    @Test
-    public void givenARepresentativeDoesNotContainALastName_thenAddAWarning() {
-        Representative representative = buildRepresentative();
-        representative.getName().setLastName(null);
-
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
-
-        assertEquals("representative_last_name is empty", response.getWarnings().get(0));
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
@@ -732,6 +767,7 @@ public class SscsCaseValidatorTest {
 
         return Representative.builder()
             .hasRepresentative("Yes")
+            .organisation("Bob the builders Ltd")
             .name(Name.builder().title("Mr").firstName("Bob").lastName("Smith").build())
             .address(Address.builder().line1("101 My Road").town("Brentwood").county("Essex").postcode("CM13 1HG").build())
             .build();

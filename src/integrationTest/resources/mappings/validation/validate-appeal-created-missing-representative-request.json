@@ -29,12 +29,10 @@
         },
         "rep": {
           "hasRepresentative": "Yes",
-          "name": {
-            "firstName": "User",
-            "lastName": "Rep",
-            "title": "Mrs"
+          "name": {},
+          "address": {
+            "line1": "10 My Lane"
           },
-          "address": {},
           "contact": {}
         },
         "benefitType": {

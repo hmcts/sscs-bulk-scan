@@ -85,7 +85,8 @@ public class SscsCaseValidator implements CaseValidator {
         Address appellantAddress = appellant != null ? appellant.getAddress() : null;
         Identity appellantIdentity = appellant != null ? appellant.getIdentity() : null;
 
-        checkPerson(appellantName, appellantAddress, appellantIdentity, personType, caseData, appellant);
+        checkPersonName(appellantName, personType, appellant);
+        checkPersonAddressAndDob(appellantAddress, appellantIdentity, personType, caseData, appellant);
 
         checkAppellantNino(appellant, personType);
 
@@ -96,13 +97,20 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkAppointee(Appellant appellant, Map<String, Object> caseData) {
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
-            checkPerson(appellant.getAppointee().getName(), appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(), PERSON1_VALUE, caseData, appellant);
+            checkPersonName(appellant.getAppointee().getName(), PERSON1_VALUE, appellant);
+            checkPersonAddressAndDob(appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(), PERSON1_VALUE, caseData, appellant);
         }
     }
 
     private void checkRepresentative(Appeal appeal, Map<String, Object> caseData) {
         if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes")) {
-            checkPerson(appeal.getRep().getName(), appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, caseData, appeal.getAppellant());
+            checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, caseData, appeal.getAppellant());
+
+            Name name = appeal.getRep().getName();
+
+            if ((!doesTitleExist(name) || !isTitleValid(name.getTitle())) && !doesFirstNameExist(name) && !doesLastNameExist(name) && appeal.getRep().getOrganisation() == null) {
+                warnings.add(getMessageByCallbackType(callbackType, "", REPRESENTATIVE_NAME_OR_ORGANISATION_DESCRIPTION, ARE_EMPTY));
+            }
         }
     }
 
@@ -120,11 +128,11 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkPerson(Name name, Address address, Identity identity, String personType, Map<String, Object> caseData, Appellant appellant) {
+    private void checkPersonName(Name name, String personType, Appellant appellant) {
 
         if (!doesTitleExist(name)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE, IS_EMPTY));
-        } else if (!isTitleValid(name.getTitle())) {
+        } else if (name != null && !isTitleValid(name.getTitle())) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE, IS_INVALID));
         }
 
@@ -134,6 +142,10 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesLastNameExist(name)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + LAST_NAME, IS_EMPTY));
         }
+    }
+
+    private void checkPersonAddressAndDob(Address address, Identity identity, String personType, Map<String, Object> caseData, Appellant appellant) {
+
         if (!doesAddressLine1Exist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, IS_EMPTY));
         }
@@ -353,9 +365,9 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private String getWarningMessageName(String personType, Appellant appellant) {
-        if (personType == REPRESENTATIVE_VALUE) {
+        if (personType.equals(REPRESENTATIVE_VALUE)) {
             return "REPRESENTATIVE";
-        } else if (personType == PERSON2_VALUE || appellant == null || isAppointeeDetailsEmpty(appellant.getAppointee())) {
+        } else if (personType.equals(PERSON2_VALUE) || appellant == null || isAppointeeDetailsEmpty(appellant.getAppointee())) {
             return "APPELLANT";
         } else {
             return "APPOINTEE";

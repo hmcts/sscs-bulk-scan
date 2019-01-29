@@ -9,6 +9,8 @@ management:
 spring:
   application:
     name: SscsBulkScan
+  main:
+    allow-bean-definition-overriding: true
 
 ccd:
  case:
