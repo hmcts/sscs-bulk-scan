@@ -82,6 +82,10 @@ public class SscsRoboticsHandler {
 
     private byte[] downloadBinary(SscsDocument doc, Long caseId) {
         log.info("About to download binary to attach to robotics for caseId {}", caseId);
-        return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()), null);
+        if (doc.getValue().getDocumentLink() != null) {
+            return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()), null);
+        } else {
+            return new byte[0];
+        }
     }
 }
