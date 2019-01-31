@@ -177,7 +177,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors())
-            .containsOnly("Representative organisation, Representative title, Representative first name and Representative last name are empty. At least one must be populated",
+            .containsOnly("Representative organisation, Representative first name and Representative last name are empty. At least one must be populated",
                 "Representative address town is empty",
                 "Representative address county is empty",
                 "Representative postcode is empty");
