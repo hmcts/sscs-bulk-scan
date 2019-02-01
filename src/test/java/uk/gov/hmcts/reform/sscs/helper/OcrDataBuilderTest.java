@@ -36,6 +36,18 @@ public class OcrDataBuilderTest {
     }
 
     @Test
+    public void givenExceptionDataWithEmptyStringValue_thenConvertIntoKeyValuePairsWithNullValue() {
+        Map<String, Object> valueMap = new HashMap<>();
+
+        valueMap.put("key", "person1_first_name");
+        valueMap.put("value", "");
+
+        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap));
+
+        assertNull(result.get("person1_first_name"));
+    }
+
+    @Test
     public void givenExceptionDataWithNullKeyAndNullValue_thenConvertIntoKeyValuePairs() {
         Map<String, Object> valueMap = new HashMap<>();
 
