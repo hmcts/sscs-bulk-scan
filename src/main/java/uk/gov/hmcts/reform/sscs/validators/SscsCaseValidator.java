@@ -108,7 +108,11 @@ public class SscsCaseValidator implements CaseValidator {
 
             Name name = appeal.getRep().getName();
 
-            if ((!doesTitleExist(name) || !isTitleValid(name.getTitle())) && !doesFirstNameExist(name) && !doesLastNameExist(name) && appeal.getRep().getOrganisation() == null) {
+            if (!isTitleValid(name.getTitle())) {
+                warnings.add(getMessageByCallbackType(callbackType, REPRESENTATIVE_VALUE, getWarningMessageName(REPRESENTATIVE_VALUE, null) + TITLE, IS_INVALID));
+            }
+
+            if (!doesFirstNameExist(name) && !doesLastNameExist(name) && appeal.getRep().getOrganisation() == null) {
                 warnings.add(getMessageByCallbackType(callbackType, "", REPRESENTATIVE_NAME_OR_ORGANISATION_DESCRIPTION, ARE_EMPTY));
             }
         }
@@ -177,8 +181,11 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private boolean isTitleValid(String title) {
-        String strippedTitle = title.replaceAll("[-+.^:,'_]","");
-        return titles.stream().anyMatch(strippedTitle::equalsIgnoreCase);
+        if (title != null) {
+            String strippedTitle = title.replaceAll("[-+.^:,'_]", "");
+            return titles.stream().anyMatch(strippedTitle::equalsIgnoreCase);
+        }
+        return true;
     }
 
     private Boolean doesFirstNameExist(Name name) {

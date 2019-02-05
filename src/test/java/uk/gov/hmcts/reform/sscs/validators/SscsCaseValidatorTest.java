@@ -494,7 +494,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
-        assertEquals("representative_company, representative_title, representative_first_name and representative_last_name are empty. At least one must be populated", response.getWarnings().get(0));
+        assertEquals("representative_company, representative_first_name and representative_last_name are empty. At least one must be populated", response.getWarnings().get(0));
     }
 
     @Test
@@ -524,7 +524,7 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenARepresentativeContainsATitleButDoesNotContainAFirstNameOrLastNameOrCompany_thenDoNotAddAWarning() {
+    public void givenARepresentativeContainsATitleButDoesNotContainAFirstNameOrLastNameOrCompany_thenAddAWarning() {
         Representative representative = buildRepresentative();
         representative.getName().setFirstName(null);
         representative.getName().setLastName(null);
@@ -532,8 +532,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
-        assertEquals(0, response.getWarnings().size());
-        assertEquals(0, response.getErrors().size());
+        assertEquals("representative_company, representative_first_name and representative_last_name are empty. At least one must be populated", response.getWarnings().get(0));
     }
 
     @Test
