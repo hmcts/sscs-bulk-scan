@@ -12,3 +12,4 @@ HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD if [ `wget -qO- http:/
 
 EXPOSE 8090
 
+CMD ["sscs-bulk-scan.jar"]
