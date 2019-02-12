@@ -1,4 +1,4 @@
-FROM hmcts/cnp-java-base:openjdk-jre-8-alpine-1.4
+FROM hmcts/cnp-java-base:openjdk-8u191-jre-alpine3.9-1.0
 
 ENV APP sscs-bulk-scan.jar
 ENV APPLICATION_TOTAL_MEMORY 1024M
@@ -12,3 +12,4 @@ HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD if [ `wget -qO- http:/
 
 EXPOSE 8090
 
+CMD ["sscs-bulk-scan.jar"]
