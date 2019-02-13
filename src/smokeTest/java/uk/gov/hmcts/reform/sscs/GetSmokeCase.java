@@ -37,7 +37,6 @@ public class GetSmokeCase {
             .header("Authorization", idamTokens.getIdamOauth2Token())
             .header("serviceauthorization", idamTokens.getServiceAuthorization())
             .header("user-id", idamTokens.getUserId())
-            .header("Content-Length", 0)
             .body(exceptionRecord("smokeRecord.json"))
             .when()
             .post("/exception-record/")
