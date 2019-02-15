@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.validators;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -47,6 +48,8 @@ public class SscsCaseValidatorTest {
 
         offices.add("1");
         offices.add("2");
+        offices.add("Balham DRT");
+        offices.add("Milton Keynes DRT");
         ReflectionTestUtils.setField(validator, "offices", offices);
 
         given(regionalProcessingCenterService.getByPostcode("CM13 0GD")).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
@@ -354,6 +357,20 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Bla").build(), buildAppellant(false), true));
 
         assertEquals("office is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnMrnDoesContainValidUpperCaseDwpIssuingOffice_thenNoWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("BALHAM DRT").build(), buildAppellant(false), true));
+
+        assertTrue(response.getWarnings().isEmpty());
+    }
+
+    @Test
+    public void givenAnMrnDoesContainValidCapitaliseDwpIssuingOffice_thenNoWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Balham DRT").build(), buildAppellant(false), true));
+
+        assertTrue(response.getWarnings().isEmpty());
     }
 
     @Test
@@ -723,7 +740,7 @@ public class SscsCaseValidatorTest {
             .hearingOptions(HearingOptions.builder().excludeDates(excludedDates).build())
             .hearingType(hearingType)
             .build());
-        
+
         if (exceptionCaseType) {
             dataMap.put("bulkScanCaseReference", 123);
         }

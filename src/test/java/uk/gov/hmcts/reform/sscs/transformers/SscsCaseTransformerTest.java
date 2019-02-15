@@ -734,7 +734,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenOneDocumentWithNoDetails_thenBuildACase() {
+    public void givenOneDocumentWithNoDetails_thenShowAnError() {
         List<ScannedRecord> records = new ArrayList<>();
         ScannedRecord scannedRecord = ScannedRecord.builder()
             .scannedDate(null)
@@ -750,17 +750,47 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        Map<String, Object> transformedCase = result.getTransformedCase();
-        @SuppressWarnings("unchecked")
-        List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
-        assertEquals(null, docs.get(0).getValue().getDocumentDateAdded());
-        assertEquals(null, docs.get(0).getValue().getDocumentFileName());
-        assertEquals(null, docs.get(0).getValue().getDocumentLink());
-        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+        assertTrue(result.getErrors().contains("File name field must not be empty"));
+    }
 
-        assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
+    @Test
+    public void givenOneDocumentWithNoFileExtension_thenShowAnError() {
+        List<ScannedRecord> records = new ArrayList<>();
 
-        assertTrue(result.getErrors().isEmpty());
+        ScannedRecord scannedRecord = ScannedRecord.builder()
+            .scannedDate("2018-08-10T20:11:12.000")
+            .controlNumber("123")
+            .url(DocumentLink.builder().documentUrl("www.test.com").build())
+            .fileName("mrn details")
+            .type("Testing")
+            .subtype("My subtype").build();
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().contains("Evidence file type 'mrn details' unknown"));
+    }
+
+    @Test
+    public void givenOneDocumentWithInvalidFileExtension_thenShowAnError() {
+        List<ScannedRecord> records = new ArrayList<>();
+
+        ScannedRecord scannedRecord = ScannedRecord.builder()
+            .scannedDate("2018-08-10T20:11:12.000")
+            .controlNumber("123")
+            .url(DocumentLink.builder().documentUrl("www.test.com").build())
+            .fileName("mrn_details.xyz")
+            .type("Testing")
+            .subtype("My subtype").build();
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().contains("Evidence file type 'xyz' unknown"));
     }
 
     @Test

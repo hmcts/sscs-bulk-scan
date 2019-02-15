@@ -280,7 +280,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private boolean isIssuingOfficeValid(String dwpIssuingOffice) {
-        return offices.contains(dwpIssuingOffice);
+        return offices.stream().anyMatch(o -> o.equalsIgnoreCase(dwpIssuingOffice));
     }
 
     private String getPerson1OrPerson2(Appellant appellant) {
