@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
+import static uk.gov.hmcts.reform.sscs.domain.email.EmailAttachment.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
-import static uk.gov.hmcts.reform.sscs.domain.email.EmailAttachment.*;
 
 import java.util.*;
 
@@ -82,7 +82,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         String caseCreated = dtfOut.print(new DateTime());
         transformed.put("caseCreated", caseCreated);
 
-        log.info("Transformation complete for exception record id {}, caseCreated field set to ", caseId, caseCreated);
+        log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
     }
@@ -136,7 +136,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .build();
         } else {
             String errorMessage = "No OCR data, case cannot be created";
-            log.info(errorMessage + " for exception record id {}", caseId);
+            log.info("{} for exception record id {}", errorMessage, caseId);
             errors.add(errorMessage);
             return Appeal.builder().build();
         }
@@ -356,10 +356,14 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private void checkFileExtensionValid(String fileName) {
-        try {
-            getContentTypeForFileName(fileName);
-        } catch (UnknownFileTypeException ex) {
-            errors.add(ex.getCause().getMessage());
+        if (fileName != null) {
+            try {
+                getContentTypeForFileName(fileName);
+            } catch (UnknownFileTypeException ex) {
+                errors.add(ex.getCause().getMessage());
+            }
+        } else {
+            errors.add("File name field must not be empty");
         }
     }
 

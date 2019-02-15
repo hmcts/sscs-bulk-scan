@@ -734,7 +734,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenOneDocumentWithNoDetails_thenBuildACase() {
+    public void givenOneDocumentWithNoDetails_thenShowAnError() {
         List<ScannedRecord> records = new ArrayList<>();
         ScannedRecord scannedRecord = ScannedRecord.builder()
             .scannedDate(null)
@@ -750,17 +750,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        Map<String, Object> transformedCase = result.getTransformedCase();
-        @SuppressWarnings("unchecked")
-        List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
-        assertEquals(null, docs.get(0).getValue().getDocumentDateAdded());
-        assertEquals(null, docs.get(0).getValue().getDocumentFileName());
-        assertEquals(null, docs.get(0).getValue().getDocumentLink());
-        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
-
-        assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
-
-        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getErrors().contains("File name field must not be empty"));
     }
 
     @Test
