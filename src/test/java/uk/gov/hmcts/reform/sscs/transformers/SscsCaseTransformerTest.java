@@ -764,6 +764,46 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenOneDocumentWithNoFileExtension_thenShowAnError() {
+        List<ScannedRecord> records = new ArrayList<>();
+
+        ScannedRecord scannedRecord = ScannedRecord.builder()
+            .scannedDate("2018-08-10T20:11:12.000")
+            .controlNumber("123")
+            .url(DocumentLink.builder().documentUrl("www.test.com").build())
+            .fileName("mrn details")
+            .type("Testing")
+            .subtype("My subtype").build();
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().contains("Evidence file type 'mrn details' unknown"));
+    }
+
+    @Test
+    public void givenOneDocumentWithInvalidFileExtension_thenShowAnError() {
+        List<ScannedRecord> records = new ArrayList<>();
+
+        ScannedRecord scannedRecord = ScannedRecord.builder()
+            .scannedDate("2018-08-10T20:11:12.000")
+            .controlNumber("123")
+            .url(DocumentLink.builder().documentUrl("www.test.com").build())
+            .fileName("mrn_details.xyz")
+            .type("Testing")
+            .subtype("My subtype").build();
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().contains("Evidence file type 'xyz' unknown"));
+    }
+
+    @Test
     public void givenACaseWithNoDocuments_thenBuildACaseWithNoEvidencePresent() {
         List<ScannedRecord> records = new ArrayList<>();
 
