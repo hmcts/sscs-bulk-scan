@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
+import static uk.gov.hmcts.reform.sscs.domain.email.EmailAttachment.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
@@ -80,7 +82,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         String caseCreated = dtfOut.print(new DateTime());
         transformed.put("caseCreated", caseCreated);
 
-        log.info("Transformation complete for exception record id {}, caseCreated field set to ", caseId, caseCreated);
+        log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
     }
@@ -134,7 +136,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .build();
         } else {
             String errorMessage = "No OCR data, case cannot be created";
-            log.info(errorMessage + " for exception record id {}", caseId);
+            log.info("{} for exception record id {}", errorMessage, caseId);
             errors.add(errorMessage);
             return Appeal.builder().build();
         }
@@ -340,6 +342,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<SscsDocument> documentDetails = new ArrayList<>();
         if (records != null) {
             for (ScannedRecord record : records) {
+                checkFileExtensionValid(record.getFileName());
+
                 SscsDocumentDetails details = SscsDocumentDetails.builder()
                     .documentLink(record.getUrl())
                     .documentDateAdded(stripTimeFromDocumentDate(record.getScannedDate()))
@@ -350,6 +354,19 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
         return documentDetails;
     }
+
+    private void checkFileExtensionValid(String fileName) {
+        if (fileName != null) {
+            try {
+                getContentTypeForFileName(fileName);
+            } catch (UnknownFileTypeException ex) {
+                errors.add(ex.getCause().getMessage());
+            }
+        } else {
+            errors.add("File name field must not be empty");
+        }
+    }
+
 
     private String stripTimeFromDocumentDate(String documentDate) {
         DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
