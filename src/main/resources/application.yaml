@@ -69,3 +69,13 @@ robotics:
 validation:
   titles: Cllr,Count,DC,Dr,DS,Insp,Lady,Lord,Miss,Mr & Mrs,Mr,Mrs,Ms,PC,Rev,S/M,Sgt
   dwp_offices: 1,2,3,4,5,6,7,8,9,10
+
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: full
+
+logging.level:
+  org.springframework.web: ${LOG_LEVEL_SPRING_WEB:debug}
+  uk.gov.hmcts.reform.sscs: ${LOG_LEVEL_SSCS:debug}

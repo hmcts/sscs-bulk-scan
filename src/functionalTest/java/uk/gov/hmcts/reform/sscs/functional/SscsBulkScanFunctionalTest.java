@@ -12,15 +12,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
-import uk.gov.hmcts.reform.sscs.ccd.util.CaseDataUtils;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
@@ -68,8 +67,8 @@ public class SscsBulkScanFunctionalTest {
     }
 
     @Test
+    @Ignore
     public void validate_and_update_incomplete_case_to_appeal_created_case() throws IOException {
-        createCase();
         String json = getJson("validate_appeal_created_case_request.json");
         json = json.replace("CASE_ID_TO_BE_REPLACED", ccdCaseId);
 
@@ -110,12 +109,6 @@ public class SscsBulkScanFunctionalTest {
         assertEquals(200, response.getStatusCode());
 
         return response;
-    }
-
-    private void createCase() {
-        SscsCaseData caseData = CaseDataUtils.buildMinimalCaseData();
-        SscsCaseDetails caseDetails = ccdService.createCase(caseData, idamTokens);
-        ccdCaseId = String.valueOf(caseDetails.getId());
     }
 
     private String findStateOfCaseInCcd(Response response) {
