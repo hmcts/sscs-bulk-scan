@@ -115,7 +115,7 @@ public class SscsBulkScanFunctionalTest {
     private void createCase() {
         SscsCaseData caseData = CaseDataUtils.buildMinimalCaseData();
         SscsCaseDetails caseDetails = ccdService.createCase(caseData, "appealCreated",
-            "Bulk Scan appeal created", "Bulk Scan appeal appeal created in test", idamTokens);
+            "Bulk Scan appeal created", "Bulk Scan appeal created in test", idamTokens);
         ccdCaseId = String.valueOf(caseDetails.getId());
     }
 
