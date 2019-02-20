@@ -5,11 +5,11 @@ import static uk.gov.hmcts.reform.sscs.domain.email.EmailAttachment.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -369,7 +369,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
 
     private String stripTimeFromDocumentDate(String documentDate) {
-        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        return documentDate != null ? LocalDate.parse(documentDate, dtf).toString() : null;
+        return documentDate == null
+            ? null
+            : LocalDateTime.parse(documentDate).toLocalDate().toString();
     }
 }

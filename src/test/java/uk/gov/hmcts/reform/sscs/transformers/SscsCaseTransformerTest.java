@@ -15,6 +15,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -705,6 +707,43 @@ public class SscsCaseTransformerTest {
         assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
 
         assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void should_handle_datetimes_with_and_without_milliseconds() {
+        // given
+        List<ScannedRecord> scannedRecords = Arrays.asList(
+            ScannedRecord.builder()
+                .scannedDate("2019-02-20T11:22:33") // no millis
+                .controlNumber("123")
+                .url(DocumentLink.builder().documentUrl("www.test.com").build())
+                .fileName("mrn.jpg")
+                .type("Testing")
+                .subtype("My subtype").build(),
+            ScannedRecord.builder()
+                .scannedDate("2019-02-19T11:22:33.123") // with millis
+                .controlNumber("567")
+                .url(DocumentLink.builder().documentUrl("www.test.com").build())
+                .fileName("mrn.jpg")
+                .type("Testing")
+                .subtype("My subtype").build()
+        );
+        given(sscsJsonExtractor.extractJson(ocrMap))
+            .willReturn(ScannedData.builder().ocrCaseData(pairs).records(scannedRecords).build());
+
+        // when
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        // then
+        @SuppressWarnings("unchecked")
+        List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
+
+        Assertions.assertThat(docs)
+            .extracting(doc -> doc.getValue().getDocumentDateAdded())
+            .containsExactlyInAnyOrder(
+                "2019-02-20",
+                "2019-02-19"
+            );
     }
 
     @Test
