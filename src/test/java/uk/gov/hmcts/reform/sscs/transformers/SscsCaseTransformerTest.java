@@ -710,7 +710,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void should_handle_datetimes__with_and_without_milliseconds() {
+    public void should_handle_datetimes_with_and_without_milliseconds() {
         // given
         List<ScannedRecord> scannedRecords = Arrays.asList(
             ScannedRecord.builder()
