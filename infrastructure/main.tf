@@ -95,11 +95,6 @@ data "azurerm_key_vault_secret" "idam_sscs_systemupdate_user" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-data "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_user" {
-  name      = "test-idam-sscs-systemupdate-user"
-  vault_uri = "${local.permanent_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
   name      = "idam-sscs-systemupdate-password"
   vault_uri = "${local.permanent_vault_uri}"
