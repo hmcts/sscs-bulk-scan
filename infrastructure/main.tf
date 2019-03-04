@@ -46,8 +46,8 @@ module "sscs-bulk-scan" {
     IDAM_URL = "${var.idam_url}"
 
     IDAM_OAUTH2_USER_EMAIL    = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
-    IDAM_OAUTH2_USER_PASSWORD = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
-    IDAM_OAUTH2_CLIENT_SECRET = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
+    IDAM_OAUTH2_USER_PASSWORD = "${data.azurerm_key_vault_secret.test_idam_sscs_systemupdate_password.value}"
+    IDAM_OAUTH2_CLIENT_SECRET = "${data.azurerm_key_vault_secret.test_idam_sscs_oauth2_client_secret.value}"
     IDAM_OAUTH2_CLIENT_ID     = "${var.idam_oauth2_client_id}"
     IDAM_OAUTH2_REDIRECT_URL  = "${var.idam_redirect_url}"
 
