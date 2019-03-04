@@ -95,10 +95,9 @@ data "azurerm_key_vault_secret" "idam_sscs_systemupdate_user" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_user" {
+data "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_user" {
   name      = "test-idam-sscs-systemupdate-user"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+  vault_uri = "${local.permanent_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
@@ -106,10 +105,9 @@ data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_password" {
+data "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_password" {
   name      = "test-idam-sscs-systemupdate-password"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+  vault_uri = "${local.permanent_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "idam_sscs_oauth2_client_secret" {
@@ -117,10 +115,9 @@ data "azurerm_key_vault_secret" "idam_sscs_oauth2_client_secret" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_idam_sscs_oauth2_client_secret" {
+data "azurerm_key_vault_secret" "test_idam_sscs_oauth2_client_secret" {
   name      = "test-idam-sscs-oauth2-client-secret"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+  vault_uri = "${local.permanent_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "robotics_email_from" {
