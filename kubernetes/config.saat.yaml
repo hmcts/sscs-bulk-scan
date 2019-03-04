@@ -7,7 +7,7 @@ data:
   IDAM_S2S_AUTH: "http://rpe-service-auth-provider-saat.service.core-compute-saat.internal"
   CORE_CASE_DATA_API_URL: "http://ccd-data-store-api-saat.service.core-compute-saat.internal"
   DOCUMENT_MANAGEMENT_URL: "http://dm-store-saat.service.core-compute-saat.internal"
-  IDAM_URL: "http://idam-api-idam-saat.service.core-compute-idam-saat.internal/"
+  IDAM_URL: "https://idam-test.dev.ccidam.reform.hmcts.net"
   IDAM_OAUTH2_REDIRECT_URL: "https://sscs-case-loader-saat.service.core-compute-saat.internal"
   EMAIL_SMTP_SSL_TRUST: "*"
   EMAIL_SMTP_TLS_ENABLED: "true"
