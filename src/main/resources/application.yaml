@@ -45,7 +45,7 @@ idam:
 
 allowed-services-for-callback : ccd_data,sscs_bulkscan  # comma separated list of service names
 
-document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://localhost:4506}
+document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://dm-store:4506}
 
 schema.location: /schema/sscs-bulk-scan-schema.json
 
