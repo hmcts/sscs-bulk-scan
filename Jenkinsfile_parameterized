@@ -4,9 +4,9 @@
 properties([
   parameters([
     string(name: 'PRODUCT_NAME', defaultValue: 'sscs', description: ''),
-    string(name: 'APP', defaultValue: 'sscs-bulk-scan', description: ''),
+    string(name: 'APP', defaultValue: 'bulk-scan', description: ''),
     string(name: 'TYPE', defaultValue: 'java', description: ''),
-    string(name: 'ENVIRONMENT', defaultValue: 'sandbox', description: 'Environment where code should be build and deployed'),
+    string(name: 'ENVIRONMENT', defaultValue: 'saat', description: 'Environment where code should be build and deployed'),
     choice(name: 'SUBSCRIPTION', choices: 'sandbox\nnonprod\nprod', description: 'Azure subscriptions available to build in')
   ]),
   [$class: 'GithubProjectProperty', projectUrlStr: 'https://github.com/hmcts/sscs-bulk-scan.git'],
