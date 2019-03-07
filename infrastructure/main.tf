@@ -47,7 +47,7 @@ module "sscs-bulk-scan" {
 
     IDAM_OAUTH2_USER_EMAIL    = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
     IDAM_OAUTH2_USER_PASSWORD = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
-    IDAM_OAUTH2_CLIENT_SECRET = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
+    IDAM_OAUTH2_CLIENT_SECRET = "${data.azurerm_key_vault_secret.test_idam_sscs_oauth2_client_secret.value}"
     IDAM_OAUTH2_CLIENT_ID     = "${var.idam_oauth2_client_id}"
     IDAM_OAUTH2_REDIRECT_URL  = "${var.idam_redirect_url}"
 
@@ -84,21 +84,9 @@ data "azurerm_key_vault_secret" "sscs_s2s_secret" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_sscs_s2s_secret" {
-  name      = "test-sscs-s2s-secret"
-  value     = "${data.azurerm_key_vault_secret.sscs_s2s_secret.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "idam_sscs_systemupdate_user" {
   name      = "idam-sscs-systemupdate-user"
   vault_uri = "${local.permanent_vault_uri}"
-}
-
-resource "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_user" {
-  name      = "test-idam-sscs-systemupdate-user"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
@@ -106,10 +94,9 @@ data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_password" {
+data "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_password" {
   name      = "test-idam-sscs-systemupdate-password"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+  vault_uri = "${local.permanent_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "idam_sscs_oauth2_client_secret" {
@@ -117,10 +104,9 @@ data "azurerm_key_vault_secret" "idam_sscs_oauth2_client_secret" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_idam_sscs_oauth2_client_secret" {
+data "azurerm_key_vault_secret" "test_idam_sscs_oauth2_client_secret" {
   name      = "test-idam-sscs-oauth2-client-secret"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+  vault_uri = "${local.permanent_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "robotics_email_from" {
@@ -128,21 +114,9 @@ data "azurerm_key_vault_secret" "robotics_email_from" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_robotics_email_from" {
-  name      = "test-robotics-email-from"
-  value     = "${data.azurerm_key_vault_secret.robotics_email_from.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "robotics_email_to" {
   name      = "robotics-email-to"
   vault_uri = "${local.permanent_vault_uri}"
-}
-
-resource "azurerm_key_vault_secret" "test_robotics_email_to" {
-  name      = "test-robotics-email-to"
-  value     = "${data.azurerm_key_vault_secret.robotics_email_to.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "smtp_host" {
@@ -150,19 +124,7 @@ data "azurerm_key_vault_secret" "smtp_host" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_smtp_host" {
-  name      = "test-smtp-host"
-  value     = "${data.azurerm_key_vault_secret.smtp_host.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "smtp_port" {
   name      = "smtp-port"
   vault_uri = "${local.permanent_vault_uri}"
-}
-
-resource "azurerm_key_vault_secret" "test_smtp_port" {
-  name      = "test-smtp-port"
-  value     = "${data.azurerm_key_vault_secret.smtp_port.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }
