@@ -94,20 +94,8 @@ data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-# duplicate secret to point to tidam or sidam when needed
-data "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_password" {
-  name      = "test-idam-sscs-systemupdate-password"
-  vault_uri = "${local.permanent_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "idam_sscs_oauth2_client_secret" {
   name      = "idam-sscs-oauth2-client-secret"
-  vault_uri = "${local.permanent_vault_uri}"
-}
-
-# duplicate secret to point to tidam or sidam when needed
-data "azurerm_key_vault_secret" "test_idam_sscs_oauth2_client_secret" {
-  name      = "test-idam-sscs-oauth2-client-secret"
   vault_uri = "${local.permanent_vault_uri}"
 }
 
