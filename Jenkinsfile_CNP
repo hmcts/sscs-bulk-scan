@@ -38,27 +38,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 GradleBuilder builder = new GradleBuilder(this, product)
 
-withPipeline("java", product, component) {
-
-   before('smoketest:aks') {
-    withAksClient('nonprod') {
-
-      // Vars needed for AKS testing
-      env.IDAM_S2S_AUTH = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-      env.IDAM_URL = "https://preprod-idamapi.reform.hmcts.net:3511"
-      env.IDAM_OAUTH2_REDIRECT_URL = "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
-      env.CORE_CASE_DATA_API_URL = "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
-      env.DOCUMENT_MANAGEMENT_URL = 'http://dm-store-aat.service.core-compute-aat.internal'
-      env.EMAIL_SMTP_SSL_TRUST = "*"
-      env.EMAIL_SMTP_TLS_ENABLED = "true"
-      env.IDAM_OAUTH2_CLIENT_ID = "sscs"
-      env.IDAM_S2S_AUTH_MICROSERVICE = "sscs_bulkscan"
-      env.ROBOTICS_EMAIL_SUBJECT = "Robotics Data"
-      env.ROBOTICS_EMAIL_MESSAGE = "Please find attached the robotics json file \nPlease do not respond to this email"
-      env.ROBOTICS_ENABLED = "false"
-
-    }
-  }
+withPipeline(type, product, component) {
 
   after('test') {
     builder.gradle('integration')
@@ -70,12 +50,12 @@ withPipeline("java", product, component) {
     }
   }
 
+  if (env.CHANGE_TITLE && !env.CHANGE_TITLE.startsWith('Bump')) {
+    enableDockerBuild()
+    enableDeployToAKS()
+  }
   enableSlackNotifications('#sscs-tech')
   loadVaultSecrets(secrets)
-
-  enableDockerBuild()
-  enableDeployToAKS()
-
   setVaultName('sscs-bulk-scan')
 }
 

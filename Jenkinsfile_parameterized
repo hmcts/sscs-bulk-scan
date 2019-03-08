@@ -35,8 +35,14 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   ]
 }
 
-withParameterizedPipeline(params.TYPE, params.PRODUCT_NAME, params.APP, params.ENVIRONMENT, params.SUBSCRIPTION) {
+withPipeline(type, product, component) {
+  if (env.CHANGE_TITLE && !env.CHANGE_TITLE.startsWith('Bump')) {
+    enableDockerBuild()
+    enableDeployToAKS()
+  }
   enableSlackNotifications('#sscs-tech')
   loadVaultSecrets(secrets)
+  setVaultName('sscs-bulk-scan')
 }
+
 
