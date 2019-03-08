@@ -6,8 +6,6 @@ properties([
 
 @Library("Infrastructure")
 
-import uk.gov.hmcts.contino.GradleBuilder
-
 def type = "java"
 def product = "sscs"
 def component = "bulk-scan"
@@ -36,19 +34,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   ]
 }
 
-GradleBuilder builder = new GradleBuilder(this, product)
-
 withPipeline(type, product, component) {
-
-  after('test') {
-    builder.gradle('integration')
-    try {
-      sh './gradlew pitest'
-    }
-    finally {
-      steps.archiveArtifacts 'build/reports/pitest/**/*.*'
-    }
-  }
 
   if (env.CHANGE_TITLE && !env.CHANGE_TITLE.startsWith('Bump')) {
     enableDockerBuild()
