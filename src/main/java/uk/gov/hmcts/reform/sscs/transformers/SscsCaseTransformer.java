@@ -1,9 +1,14 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
+import static uk.gov.hmcts.reform.sscs.domain.email.EmailAttachment.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
+import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
+import java.time.LocalDateTime;
 import java.util.*;
+
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -15,10 +20,13 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
+import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @Component
+@Slf4j
 public class SscsCaseTransformer implements CaseTransformer {
 
     @Autowired
@@ -27,43 +35,72 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private SscsKeyValuePairValidator keyValuePairValidator;
 
+    @Autowired
+    private SscsDataHelper sscsDataHelper;
+
     private List<String> errors;
+
+    public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
+                               SscsKeyValuePairValidator keyValuePairValidator,
+                               SscsDataHelper sscsDataHelper) {
+        this.sscsJsonExtractor = sscsJsonExtractor;
+        this.keyValuePairValidator = keyValuePairValidator;
+        this.sscsDataHelper = sscsDataHelper;
+    }
 
     @Override
     public CaseResponse transformExceptionRecordToCase(CaseDetails caseDetails) {
 
-        Map<String, Object> transformed = new HashMap<>();
+        String caseId = caseDetails.getCaseId();
+        log.info("Transforming exception record {}", caseId);
 
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseDetails.getCaseData());
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
+            log.info("Errors found while validating key value pairs while transforming exception record {}", caseId);
             return CaseResponse.builder().errors(keyValuePairValidatorResponse.getErrors()).build();
         }
+
+        log.info("Key value pairs validated while transforming exception record {}", caseId);
 
         errors = new ArrayList<>();
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
-        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData());
-        List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
 
-        transformed.put("appeal", appeal);
-        transformed.put("sscsDocument", sscsDocuments);
-        transformed.put("evidencePresent", hasEvidence(sscsDocuments));
-        transformed.put("bulkScanCaseReference", caseDetails.getCaseId());
+        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseDetails.getCaseId());
+        List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
+        Subscriptions subscriptions = populateSubscriptions(appeal);
+
+        Map<String, Object> transformed = new HashMap<>();
+
+        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions);
+
+        transformed.put("bulkScanCaseReference", caseId);
 
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
-        transformed.put("caseCreated", dtfOut.print(new DateTime()));
 
-        if (appeal.getAppellant() != null) {
-            transformed.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
-            transformed.put("generatedSurname", appeal.getAppellant().getName().getLastName());
-            transformed.put("generatedDOB", appeal.getAppellant().getIdentity().getDob());
-        }
+        String caseCreated = dtfOut.print(new DateTime());
+        transformed.put("caseCreated", caseCreated);
+
+        log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
     }
 
-    private Appeal buildAppealFromData(Map<String, Object> pairs) {
+    private static Subscriptions populateSubscriptions(Appeal appeal) {
+
+        return Subscriptions.builder()
+            .appellantSubscription(appeal.getAppellant() != null && appeal.getAppellant().getAppointee() == null ? generateSubscriptionWithAppealNumber() : null)
+            .appointeeSubscription(appeal.getAppellant() != null && appeal.getAppellant().getAppointee() != null ? generateSubscriptionWithAppealNumber() : null)
+            .representativeSubscription(appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes") ? generateSubscriptionWithAppealNumber() : null)
+            .build();
+    }
+
+    private static Subscription generateSubscriptionWithAppealNumber() {
+        return Subscription.builder().tya(generateAppealNumber()).build();
+    }
+
+    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId) {
         Appellant appellant = null;
 
         if (pairs != null && pairs.size() != 0) {
@@ -98,7 +135,9 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .receivedVia("Paper")
                 .build();
         } else {
-            errors.add("No OCR data, case cannot be created");
+            String errorMessage = "No OCR data, case cannot be created";
+            log.info("{} for exception record id {}", errorMessage, caseId);
+            errors.add(errorMessage);
             return Appeal.builder().build();
         }
     }
@@ -134,6 +173,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         return MrnDetails.builder()
             .mrnDate(generateDateForCcd(pairs, errors,"mrn_date"))
             .mrnLateReason(getField(pairs,"appeal_late_reason"))
+            .dwpIssuingOffice(getField(pairs,"office"))
         .build();
     }
 
@@ -170,7 +210,14 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String findHearingType(Map<String, Object> pairs) {
-        if (areMandatoryBooleansValid(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL) && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
+
+        if (checkBooleanValue(pairs, IS_HEARING_TYPE_ORAL_LITERAL) && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
+            pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()));
+        } else if (checkBooleanValue(pairs, IS_HEARING_TYPE_PAPER_LITERAL) && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
+            pairs.put(IS_HEARING_TYPE_ORAL_LITERAL,!Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).toString()));
+        }
+
+        if (areBooleansValid(pairs, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL) && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
             return Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
         }
         return null;
@@ -249,24 +296,27 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private List<ExcludeDate> extractExcludedDates(String excludedDatesList) {
         List<ExcludeDate> excludeDates = new ArrayList<>();
-        List<String> items = Arrays.asList(excludedDatesList.split(",\\s*"));
 
-        for (String item : items) {
-            List<String> range = Arrays.asList(item.split("\\s*-\\s*"));
-            String errorMessage = "hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019";
+        if (excludedDatesList != null && !excludedDatesList.isEmpty()) {
+            List<String> items = Arrays.asList(excludedDatesList.split(",\\s*"));
 
-            if (range.size() > 2) {
-                errors.add(errorMessage);
-                return excludeDates;
+            for (String item : items) {
+                List<String> range = Arrays.asList(item.split("\\s*-\\s*"));
+                String errorMessage = "hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019";
+
+                if (range.size() > 2) {
+                    errors.add(errorMessage);
+                    return excludeDates;
+                }
+
+                String startDate = getDateForCcd(range.get(0), errors, errorMessage);
+                String endDate = null;
+
+                if (2 == range.size()) {
+                    endDate = getDateForCcd(range.get(1), errors, errorMessage);
+                }
+                excludeDates.add(ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
             }
-
-            String startDate = getDateForCcd(range.get(0), errors, errorMessage);
-            String endDate = null;
-
-            if (2 == range.size()) {
-                endDate = getDateForCcd(range.get(1), errors, errorMessage);
-            }
-            excludeDates.add(ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
         }
         return excludeDates;
     }
@@ -292,10 +342,12 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<SscsDocument> documentDetails = new ArrayList<>();
         if (records != null) {
             for (ScannedRecord record : records) {
+                checkFileExtensionValid(record.getFileName());
+
                 SscsDocumentDetails details = SscsDocumentDetails.builder()
-                    .documentLink(record.getDocumentLink())
-                    .documentDateAdded(record.getDocScanDate())
-                    .documentFileName(record.getFilename())
+                    .documentLink(record.getUrl())
+                    .documentDateAdded(stripTimeFromDocumentDate(record.getScannedDate()))
+                    .documentFileName(record.getFileName())
                     .documentType("Other document").build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
             }
@@ -303,7 +355,22 @@ public class SscsCaseTransformer implements CaseTransformer {
         return documentDetails;
     }
 
-    private String hasEvidence(List<SscsDocument> sscsDocuments) {
-        return (null == sscsDocuments || sscsDocuments.isEmpty()) ? "No" : "Yes";
+    private void checkFileExtensionValid(String fileName) {
+        if (fileName != null) {
+            try {
+                getContentTypeForFileName(fileName);
+            } catch (UnknownFileTypeException ex) {
+                errors.add(ex.getCause().getMessage());
+            }
+        } else {
+            errors.add("File name field must not be empty");
+        }
+    }
+
+
+    private String stripTimeFromDocumentDate(String documentDate) {
+        return documentDate == null
+            ? null
+            : LocalDateTime.parse(documentDate).toLocalDate().toString();
     }
 }

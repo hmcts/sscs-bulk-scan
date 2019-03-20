@@ -9,6 +9,8 @@ management:
 spring:
   application:
     name: SscsBulkScan
+  main:
+    allow-bean-definition-overriding: true
 
 ccd:
  case:
@@ -43,7 +45,7 @@ idam:
 
 allowed-services-for-callback : ccd_data,sscs_bulkscan  # comma separated list of service names
 
-document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://localhost:4506}
+document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://dm-store:4506}
 
 schema.location: /schema/sscs-bulk-scan-schema.json
 
@@ -64,3 +66,23 @@ robotics:
     enabled: ${ROBOTICS_ENABLED:false}
   schema.resource.location: /schema/sscs-robotics.json
 
+validation:
+  titles: Cllr,Count,DC,Dr,DS,Insp,Lady,Lord,Miss,Mr & Mrs,Mr,Mrs,Ms,PC,Rev,S/M,Sgt
+  dwp_offices: 1,2,3,4,5,6,7,8,9,10,Balham DRT,Birkenhead LM DRT,Chesterfield DRT,Coatbridge Benefit Centre,Inverness DRT,Lowestoft DRT,Milton Keynes DRT,Norwich DRT,Sheffield DRT,Springburn DRT,Watford DRT,Wellingborough DRT
+
+---
+spring:
+  profiles: dev
+logging.level:
+  org.springframework.web: ${LOG_LEVEL_SPRING_WEB:debug}
+  uk.gov.hmcts.reform.sscs: ${LOG_LEVEL_SSCS:debug}
+  uk.gov.hmcts.reform.sscs.idam.IdamApiClient: DEBUG
+  uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi: DEBUG
+
+feign:
+  client:
+    config:
+      idam-api:
+        loggerLevel: full
+      core-case-data-api:
+        loggerLevel: full

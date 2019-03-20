@@ -337,7 +337,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "mrn_date", VALUE, "01/11/2048"))
+            ImmutableMap.of(KEY, "mrn_date", VALUE, "09/12/2018"))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "office", VALUE, "5"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -375,7 +379,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         exceptionRecord.put("poBox", "SSCSPO");
         exceptionRecord.put("openingDate", "2018-01-11");
         exceptionRecord.put("scanOCRData", ocrList);
-        exceptionRecord.put("scanRecords", docList);
+        exceptionRecord.put("scannedDocuments", docList);
         return exceptionRecord;
     }
 
@@ -397,7 +401,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     private Map<String, Object> caseData() {
-        return caseDataWithMrnDate("01/11/2048");
+        return caseDataWithMrnDate("09/12/2018");
     }
 
     private Map<String, Object> caseDataWithMrnDate(String mrnDate) {
@@ -406,20 +410,25 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         docList.add(ocrEntry(
             VALUE,
-            ScannedRecord.builder().docScanDate("2018-10-10")
-                .documentControlNumber("11111")
-                .documentLink(DocumentLink.builder()
+            ScannedRecord.builder().scannedDate("2018-10-10T12:00:00.000")
+                .controlNumber("11111")
+                .url(DocumentLink.builder()
                     .documentUrl("http://www.bbc.com")
                     .documentBinaryUrl("http://www.bbc.com/binary")
                     .documentFilename("myfile.jpg").build())
-                .documentType("other")
-                .filename("11111.pdf")
+                .type("other")
+                .subtype("my subtype")
+                .fileName("11111.pdf")
                 .build())
         );
 
         ocrList.add(ocrEntry(
             VALUE,
             ImmutableMap.of(KEY, "mrn_date", VALUE, mrnDate))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "office", VALUE, "5"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -475,7 +484,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_nino", VALUE, "JT0123456B"))
+            ImmutableMap.of(KEY, "person1_nino", VALUE, "BB000000B"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -487,7 +496,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "hearing_options_exclude_dates", VALUE, "01/12/2018"))
+            ImmutableMap.of(KEY, "hearing_options_exclude_dates", VALUE, "01/12/2030"))
         );
 
         return exceptionRecord(ocrList, docList);
@@ -521,11 +530,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             default: break;
         }
 
+        //FIXME: ignore extra elements could cause false positives
         ccdServer.stubFor(post(concat(SUBMIT_EVENT_URL))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .withRequestBody(equalToJson(createCaseRequest))
+            .withRequestBody(equalToJson(createCaseRequest, false, true))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .withStatus(200)

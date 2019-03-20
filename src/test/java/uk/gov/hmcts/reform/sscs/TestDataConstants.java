@@ -7,7 +7,8 @@ public class TestDataConstants {
     }
 
     public static final String BENEFIT_TYPE = "PIP";
-    public static final String MRN_DATE = "01/11/2048";
+    public static final String MRN_DATE_VALUE = "01/11/2048";
+    public static final String OFFICE = "05";
     public static final String APPELLANT_TITLE = "Mr";
     public static final String APPELLANT_FIRST_NAME = "Henry";
     public static final String APPELLANT_LAST_NAME = "White";
@@ -32,6 +33,7 @@ public class TestDataConstants {
     public static final String APPOINTEE_NINO = "BA 07 23 19 B";
     public static final String APPOINTEE_PHONE = "01874505050";
     public static final String APPOINTEE_MOBILE = "07929295555";
+    public static final String APPOINTEE_COMPANY = "Monsters Inc";
     public static final String REPRESENTATIVE_NAME = "IBM";
     public static final String REPRESENTATIVE_ADDRESS_LINE1 = "63 Grovehill Road";
     public static final String REPRESENTATIVE_ADDRESS_LINE2 = "The Square";
@@ -45,7 +47,7 @@ public class TestDataConstants {
     public static final String APPEAL_LATE_REASON = "On holiday";
     public static final String IS_HEARING_TYPE_ORAL = "true";
     public static final String IS_HEARING_TYPE_PAPER = "false";
-    public static final String HEARING_OPTIONS_EXCLUDE_DATES = "01/12/2018";
+    public static final String HEARING_OPTIONS_EXCLUDE_DATES = "01/12/2030";
     public static final Boolean HEARING_LOOP = true;
     public static final Boolean DISABLED_ACCESS = true;
     public static final Boolean SIGN_LANGUAGE_REQUIRED = true;

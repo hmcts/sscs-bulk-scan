@@ -6,7 +6,7 @@
       "poBox": "SSCSPO",
       "journeyClassification": "New Application",
       "poBoxJurisdiction": "SSCS",
-      "scanRecords": [],
+      "scannedDocuments": [],
       "scanOCRData": [
         {
           "value": {
@@ -21,6 +21,13 @@
             "value": "09/06/2017"
           },
           "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
+        },
+        {
+          "value": {
+            "key": "office",
+            "value": "5"
+          },
+          "id": "7591499c-7c85-4fb4-b3f4-c73619f6b939"
         },
         {
           "value": {
@@ -109,7 +116,7 @@
         {
           "value": {
             "key": "person1_nino",
-            "value": "JJ123457A"
+            "value": "BB000000B"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },
@@ -179,7 +186,7 @@
         {
           "value": {
             "key": "person2_nino",
-            "value": "SD232321D"
+            "value": "JJ123457A"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },
@@ -284,7 +291,7 @@
         {
           "value": {
             "key": "hearing_options_exclude_dates",
-            "value": "01/11/2018,01/12/2018"
+            "value": "01/11/2030,01/12/2030"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },

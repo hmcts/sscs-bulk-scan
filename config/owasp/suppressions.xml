@@ -21,6 +21,14 @@
     <cve>CVE-2017-9735</cve>
     <cve>CVE-2018-5968</cve>
     <cve>CVE-2018-7489</cve>
+    <cve>CVE-2018-1000873</cve>
+    <cve>CVE-2018-14718</cve>
+    <cve>CVE-2018-14719</cve>
+    <cve>CVE-2018-14720</cve>
+    <cve>CVE-2018-14721</cve>
+    <cve>CVE-2018-19360</cve>
+    <cve>CVE-2018-19361</cve>
+    <cve>CVE-2018-19362</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
@@ -28,6 +36,10 @@
    ]]></notes>
     <gav regex="true">^com\.google\.guava:guava:.*$</gav>
     <cve>CVE-2018-10237</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[ slf4j ]]></notes>
+    <cve>CVE-2018-8088</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[

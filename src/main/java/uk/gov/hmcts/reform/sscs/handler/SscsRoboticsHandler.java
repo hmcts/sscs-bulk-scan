@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.sscs.service.RoboticsService;
 @Slf4j
 public class SscsRoboticsHandler {
 
-
     private final RoboticsService roboticsService;
     private final RegionalProcessingCenterService regionalProcessingCenterService;
     private final SscsCcdConvertService convertService;
@@ -43,26 +42,33 @@ public class SscsRoboticsHandler {
         this.roboticsEnabled = roboticsEnabled;
     }
 
-    public void handle(CaseResponse caseValidationResponse, Long caseId, String eventId) {
+    public void handle(CaseResponse caseResponse, Long caseId, String eventId) {
         if (roboticsEnabled && eventId.equals(caseEvent.getCaseCreatedEventId())) {
-            SscsCaseData sscsCaseData = convertService.getCaseData(caseValidationResponse.getTransformedCase());
+            log.info("Sending case to robotics for caseId {}", caseId);
+            SscsCaseData sscsCaseData = convertService.getCaseData(caseResponse.getTransformedCase());
 
-            Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData);
+            Map<String, byte[]> additionalEvidence = downloadEvidence(sscsCaseData, caseId);
+
+            if (additionalEvidence.size() > 0) {
+                log.info("Additional evidence downloaded ready to attach to robotics for caseId {}", caseId);
+            } else {
+                log.info("No additional evidence downloaded for caseId {}", caseId);
+            }
 
             roboticsService.sendCaseToRobotics(sscsCaseData,
                 caseId,
                 regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
                 null,
                 additionalEvidence);
-
         }
     }
 
-    private Map<String, byte[]> downloadEvidence(SscsCaseData sscsCaseData) {
+    private Map<String, byte[]> downloadEvidence(SscsCaseData sscsCaseData, Long caseId) {
         if (hasEvidence(sscsCaseData)) {
+            log.info("Evidence exists so will attempt download to attach to robotics for caseId {}", caseId);
             Map<String, byte[]> map = new LinkedHashMap<>();
             for (SscsDocument doc : sscsCaseData.getSscsDocument()) {
-                map.put(doc.getValue().getDocumentFileName(), downloadBinary(doc));
+                map.put(doc.getValue().getDocumentFileName(), downloadBinary(doc, caseId));
             }
             return map;
         } else {
@@ -74,7 +80,12 @@ public class SscsRoboticsHandler {
         return CollectionUtils.isNotEmpty(sscsCaseData.getSscsDocument());
     }
 
-    private byte[] downloadBinary(SscsDocument doc) {
-        return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()), null);
+    private byte[] downloadBinary(SscsDocument doc, Long caseId) {
+        log.info("About to download binary to attach to robotics for caseId {}", caseId);
+        if (doc.getValue().getDocumentLink() != null) {
+            return evidenceManagementService.download(URI.create(doc.getValue().getDocumentLink().getDocumentUrl()), null);
+        } else {
+            return new byte[0];
+        }
     }
 }

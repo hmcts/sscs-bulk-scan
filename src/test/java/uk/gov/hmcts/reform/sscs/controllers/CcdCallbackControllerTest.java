@@ -71,13 +71,13 @@ public class CcdCallbackControllerTest {
             .andExpect(jsonPath("$['data'].poBox", is("SSCSPO")))
             .andExpect(jsonPath("$['data'].openingDate", is("2018-01-11")))
 
-            .andExpect(jsonPath("$['data'].scanRecords[0].value.key", is("firstName")))
-            .andExpect(jsonPath("$['data'].scanRecords[0].value.value", is("John")))
-            .andExpect(jsonPath("$['data'].scanRecords[0].id", is("d55a7f14-92c3-4134-af78-f2aa2b201841")))
+            .andExpect(jsonPath("$['data'].scannedDocuments[0].value.key", is("firstName")))
+            .andExpect(jsonPath("$['data'].scannedDocuments[0].value.value", is("John")))
+            .andExpect(jsonPath("$['data'].scannedDocuments[0].id", is("d55a7f14-92c3-4134-af78-f2aa2b201841")))
 
-            .andExpect(jsonPath("$['data'].scanRecords[1].value.key", is("lastName")))
-            .andExpect(jsonPath("$['data'].scanRecords[1].value.value", is("Smith")))
-            .andExpect(jsonPath("$['data'].scanRecords[1].id", is("d55a7f14-92c3-4134-af78-f2aa2b201841")));
+            .andExpect(jsonPath("$['data'].scannedDocuments[1].value.key", is("lastName")))
+            .andExpect(jsonPath("$['data'].scannedDocuments[1].value.value", is("Smith")))
+            .andExpect(jsonPath("$['data'].scannedDocuments[1].id", is("d55a7f14-92c3-4134-af78-f2aa2b201841")));
     }
 
     @Test

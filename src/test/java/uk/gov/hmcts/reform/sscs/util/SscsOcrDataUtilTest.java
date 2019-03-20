@@ -4,7 +4,7 @@ import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.APPELLANT_TITLE;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.ArrayList;
@@ -20,15 +20,79 @@ public class SscsOcrDataUtilTest {
     @Test
     public void givenAPersonExists_thenReturnTrue() {
         pairs.put("person1_title", APPELLANT_TITLE);
-
         assertTrue(hasPerson(pairs, "person1"));
     }
 
     @Test
     public void givenAPersonDoesNotExist_thenReturnTrue() {
         pairs.put("person1_title", APPELLANT_TITLE);
-
         assertFalse(hasPerson(pairs, "person2"));
+    }
+
+    @Test
+    public void givenAPersonFirstNameExists_thenReturnTrue() {
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonLastNameExists_thenReturnTrue() {
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressLine1Exists_thenReturnTrue() {
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressLine2Exists_thenReturnTrue() {
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressLine3Exists_thenReturnTrue() {
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressLine4Exists_thenReturnTrue() {
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonAddressPostcodeExists_thenReturnTrue() {
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonDateOfBirthExists_thenReturnTrue() {
+        pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonNinoExists_thenReturnTrue() {
+        pairs.put("person1_nino", APPELLANT_NINO);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonCompanyExists_thenReturnTrue() {
+        pairs.put("person1_company", APPOINTEE_COMPANY);
+        assertTrue(hasPerson(pairs, "person1"));
+    }
+
+    @Test
+    public void givenAPersonPhoneExists_thenReturnTrue() {
+        pairs.put("person1_phone", APPELLANT_PHONE);
+        assertTrue(hasPerson(pairs, "person1"));
     }
 
     @Test
@@ -94,41 +158,6 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
-    public void givenAMandatoryBooleanValueWithText_thenReturnFalseAndAddError() {
-        pairs.put("hearing_type_oral", "blue");
-
-        List<String> errors = new ArrayList<>();
-
-        assertFalse(areMandatoryBooleansValid(pairs, errors,  "hearing_type_oral"));
-        assertEquals("hearing_type_oral does not contain a valid boolean value. Needs to be true or false", errors.get(0));
-    }
-
-    @Test
-    public void givenMultipleMandatoryBooleanValuesOneBooleanOneText_thenReturnFalseAndAddOneError() {
-        pairs.put("hearing_type_oral", false);
-        pairs.put("hearing_type_paper", "blue");
-
-        List<String> errors = new ArrayList<>();
-
-        assertFalse(areMandatoryBooleansValid(pairs, errors,  "hearing_type_oral", "hearing_type_paper"));
-        assertEquals(1, errors.size());
-        assertEquals("hearing_type_paper does not contain a valid boolean value. Needs to be true or false", errors.get(0));
-    }
-
-    @Test
-    public void givenMultipleMandatoryBooleanValuesWithText_thenReturnFalseAndAddTwoErrors() {
-        pairs.put("hearing_type_oral", "red");
-        pairs.put("hearing_type_paper", "blue");
-
-        List<String> errors = new ArrayList<>();
-
-        assertFalse(areMandatoryBooleansValid(pairs, errors,  "hearing_type_oral", "hearing_type_paper"));
-        assertEquals(2, errors.size());
-        assertEquals("hearing_type_oral does not contain a valid boolean value. Needs to be true or false", errors.get(0));
-        assertEquals("hearing_type_paper does not contain a valid boolean value. Needs to be true or false", errors.get(1));
-    }
-
-    @Test
     public void givenTrue_thenReturnYes() {
         assertEquals("Yes", convertBooleanToYesNoString(true));
     }
@@ -146,6 +175,13 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
+    public void givenAnOcrDateWithNoLeadingZero_thenConvertToCcdDateFormat() {
+        pairs.put("hearingDate", "1/1/2018");
+
+        assertEquals("2018-01-01", generateDateForCcd(pairs, new ArrayList<>(), "hearingDate"));
+    }
+
+    @Test
     public void givenAnOcrDateWithInvalidFormat_thenAddError() {
         pairs.put("hearingDate", "01/30/2018");
 
@@ -153,6 +189,17 @@ public class SscsOcrDataUtilTest {
 
         generateDateForCcd(pairs, errors, "hearingDate");
 
-        assertEquals("hearingDate is an invalid date field. Needs to be in the format dd/mm/yyyy", errors.get(0));
+        assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
+    }
+
+    @Test
+    public void givenAnOcrInvalidDate_thenAddError() {
+        pairs.put("hearingDate", "29/02/2018");
+
+        List<String> errors = new ArrayList<>();
+
+        generateDateForCcd(pairs, errors, "hearingDate");
+
+        assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
     }
 }

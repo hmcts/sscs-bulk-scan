@@ -6,7 +6,7 @@ plugins {
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.3.0'
   id 'io.spring.dependency-management' version '1.0.5.RELEASE'
-  id 'org.springframework.boot' version '2.0.3.RELEASE'
+  id 'org.springframework.boot' version '2.1.2.RELEASE'
   id 'org.owasp.dependencycheck' version '3.2.1'
   id 'com.github.ben-manes.versions' version '0.20.0'
 }
@@ -185,11 +185,16 @@ dependencies {
 
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging-appinsights', version: versions.reformLogging
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '0.0.122'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-pdf-robotics-email-common', version: '0.0.91'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '0.0.138'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-pdf-email-common', version: '0.0.103-PATCH'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '0.1.1'
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '1.0.4'
 
   compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.0.1.RELEASE'
+
+  //Remove when our dependencies pull in this version or later
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+  integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 

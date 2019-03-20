@@ -7,7 +7,7 @@
       "poBox": "SSCSPO",
       "journeyClassification": "New Application",
       "poBoxJurisdiction": "SSCS",
-      "scanRecords": [],
+      "scannedDocuments": [],
       "scanOCRData": [
         {
           "value": {
@@ -19,7 +19,7 @@
         {
           "value": {
             "key": "mrn_date",
-            "value": "09/11/2018"
+            "value": "09/12/2018"
           },
           "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
         },
@@ -130,6 +130,27 @@
         },
         {
           "value": {
+            "key": "representative_title",
+            "value": "Mr"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_first_name",
+            "value": "Peter"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "representative_last_name",
+            "value": "Hyland"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
             "key": "appeal_grounds",
             "value": "see scanned SSCS1 form"
           },
@@ -159,7 +180,7 @@
         {
           "value": {
             "key": "hearing_options_exclude_dates",
-            "value": "01/11/2018,01/12/2018"
+            "value": "01/11/2030,01/12/2030"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },

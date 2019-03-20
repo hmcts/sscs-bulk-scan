@@ -7,7 +7,7 @@
   "data": {
     "appeal": {
       "mrnDetails": {
-        "dwpIssuingOffice": null,
+        "dwpIssuingOffice": "5",
         "mrnDate": "2017-01-01",
         "mrnLateReason": null,
         "mrnMissingReason": null
@@ -32,9 +32,10 @@
         },
         "identity": {
           "dob": "1976-11-11",
-          "nino": "JT0123456B"
+          "nino": "BB000000B"
         },
-        "appointee": null
+        "appointee": null,
+        "isAddressSameAsAppointee" : null
       },
       "benefitType": {
         "code": "ESA",
@@ -48,7 +49,7 @@
         "scheduleHearing" : "Yes",
         "excludeDates" : [{
           "value" : {
-            "start" : "2018-12-01",
+            "start" : "2030-12-01",
             "end" : null
           }
         }]
@@ -77,6 +78,19 @@
         }
       }
     } ],
+    "subscriptions": {
+      "appellantSubscription": {
+        "wantSmsNotifications": null,
+        "email": null,
+        "mobile": null,
+        "subscribeEmail": null,
+        "subscribeSms": null,
+        "reason": null
+      },
+      "supporterSubscription" : null,
+      "representativeSubscription" : null,
+      "appointeeSubscription" : null
+    },
     "region" : "BIRMINGHAM",
     "regionalProcessingCenter" : {
       "faxNumber" : "0126 434 7983",
@@ -89,7 +103,7 @@
       "postcode" : "B16 6FR",
       "city" : "BIRMINGHAM"
     },
-    "generatedNino" : "JT0123456B",
+    "generatedNino" : "BB000000B",
     "generatedSurname" : "Smith",
     "generatedDOB" : "1976-11-11",
     "evidencePresent" : "Yes",

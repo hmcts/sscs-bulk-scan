@@ -7,8 +7,8 @@
   "data": {
     "appeal": {
       "mrnDetails": {
-        "dwpIssuingOffice": null,
-        "mrnDate": "2048-11-01",
+        "dwpIssuingOffice": "5",
+        "mrnDate": "2018-12-09",
         "mrnLateReason": null,
         "mrnMissingReason": null
       },
@@ -28,7 +28,8 @@
           "dob": null,
           "nino": null
         },
-        "appointee": null
+        "appointee": null,
+        "isAddressSameAsAppointee" : null
       },
       "benefitType": {
         "code": "ESA",
@@ -54,6 +55,19 @@
       "receivedVia" : "Paper"
     },
     "sscsDocument" : [ ],
+    "subscriptions": {
+      "appellantSubscription": {
+        "wantSmsNotifications": null,
+        "email": null,
+        "mobile": null,
+        "subscribeEmail": null,
+        "subscribeSms": null,
+        "reason": null
+      },
+      "supporterSubscription" : null,
+      "representativeSubscription" : null,
+      "appointeeSubscription" : null
+    },
     "generatedNino" : null,
     "generatedSurname" : null,
     "generatedDOB" : null,

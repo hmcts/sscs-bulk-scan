@@ -1,4 +1,6 @@
-provider "azurerm" {}
+provider "azurerm" {
+  version = "1.19.0"
+}
 
 # Make sure the resource group exists
 resource "azurerm_resource_group" "rg" {
@@ -7,7 +9,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 locals {
-  ase_name  = "${data.terraform_remote_state.core_apps_compute.ase_name[0]}"
+  ase_name  = "core-compute-${var.env}"
   local_env = "${(var.env == "preview" || var.env == "spreview") ? (var.env == "preview" ) ? "aat" : "saat" : var.env}"
 
   s2s_url   = "http://rpe-service-auth-provider-${local.local_env}.service.core-compute-${local.local_env}.internal"
@@ -18,7 +20,8 @@ locals {
 
   # URI of vault that stores long-term secrets. It's the app's own Key Vault, except for (s)preview,
   # where vaults are short-lived and can only store secrets generated during deployment
-  permanent_vault_uri = "https://${var.raw_product}-${local.local_env}.vault.azure.net/"
+  preview_vault_name = "https://${var.raw_product}-aat.vault.azure.net/"
+  permanent_vault_uri = "${var.env != "preview" ? module.sscs-bulk-scan-vault.key_vault_uri : local.preview_vault_name}"
 }
 
 module "sscs-bulk-scan" {
@@ -81,21 +84,9 @@ data "azurerm_key_vault_secret" "sscs_s2s_secret" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_sscs_s2s_secret" {
-  name      = "test-sscs-s2s-secret"
-  value     = "${data.azurerm_key_vault_secret.sscs_s2s_secret.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "idam_sscs_systemupdate_user" {
   name      = "idam-sscs-systemupdate-user"
   vault_uri = "${local.permanent_vault_uri}"
-}
-
-resource "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_user" {
-  name      = "test-idam-sscs-systemupdate-user"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
@@ -103,21 +94,9 @@ data "azurerm_key_vault_secret" "idam_sscs_systemupdate_password" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_idam_sscs_systemupdate_password" {
-  name      = "test-idam-sscs-systemupdate-password"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "idam_sscs_oauth2_client_secret" {
   name      = "idam-sscs-oauth2-client-secret"
   vault_uri = "${local.permanent_vault_uri}"
-}
-
-resource "azurerm_key_vault_secret" "test_idam_sscs_oauth2_client_secret" {
-  name      = "test-idam-sscs-oauth2-client-secret"
-  value     = "${data.azurerm_key_vault_secret.idam_sscs_oauth2_client_secret.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "robotics_email_from" {
@@ -125,21 +104,9 @@ data "azurerm_key_vault_secret" "robotics_email_from" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_robotics_email_from" {
-  name      = "test-robotics-email-from"
-  value     = "${data.azurerm_key_vault_secret.robotics_email_from.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "robotics_email_to" {
   name      = "robotics-email-to"
   vault_uri = "${local.permanent_vault_uri}"
-}
-
-resource "azurerm_key_vault_secret" "test_robotics_email_to" {
-  name      = "test-robotics-email-to"
-  value     = "${data.azurerm_key_vault_secret.robotics_email_to.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }
 
 data "azurerm_key_vault_secret" "smtp_host" {
@@ -147,19 +114,7 @@ data "azurerm_key_vault_secret" "smtp_host" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-resource "azurerm_key_vault_secret" "test_smtp_host" {
-  name      = "test-smtp-host"
-  value     = "${data.azurerm_key_vault_secret.smtp_host.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
-}
-
 data "azurerm_key_vault_secret" "smtp_port" {
   name      = "smtp-port"
   vault_uri = "${local.permanent_vault_uri}"
-}
-
-resource "azurerm_key_vault_secret" "test_smtp_port" {
-  name      = "test-smtp-port"
-  value     = "${data.azurerm_key_vault_secret.smtp_port.value}"
-  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }

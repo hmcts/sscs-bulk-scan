@@ -4,11 +4,13 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 
 @Component
@@ -18,6 +20,23 @@ public class SscsDataHelper {
 
     public SscsDataHelper(CaseEvent caseEvent) {
         this.caseEvent = caseEvent;
+    }
+
+    public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions) {
+        appealData.put("appeal", appeal);
+        appealData.put("sscsDocument", sscsDocuments);
+        appealData.put("evidencePresent", hasEvidence(sscsDocuments));
+        appealData.put("subscriptions", subscriptions);
+
+        if (appeal != null && appeal.getAppellant() != null) {
+            if (appeal.getAppellant().getName() != null) {
+                appealData.put("generatedSurname", appeal.getAppellant().getName().getLastName());
+            }
+            if (appeal.getAppellant().getIdentity() != null) {
+                appealData.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
+                appealData.put("generatedDOB", appeal.getAppellant().getIdentity().getDob());
+            }
+        }
     }
 
     public String findEventToCreateCase(CaseResponse caseValidationResponse) {

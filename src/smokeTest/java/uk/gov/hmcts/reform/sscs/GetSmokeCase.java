@@ -45,6 +45,6 @@ public class GetSmokeCase {
             .and()
             .extract().path("errors");
 
-        assertEquals("mrn_date is an invalid date field. Needs to be in the format dd/mm/yyyy", errors.get(0));
+        assertEquals("mrn_date is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
     }
 }

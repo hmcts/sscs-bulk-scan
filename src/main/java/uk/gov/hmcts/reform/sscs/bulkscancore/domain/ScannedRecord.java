@@ -13,12 +13,13 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 @AllArgsConstructor
 public class ScannedRecord {
 
-    private DocumentLink documentLink;
-    private String docScanDate;
-    private String filename;
-    private String documentType;
+    private DocumentLink url;
+    private String scannedDate;
+    private String fileName;
+    private String type;
+    private String subtype;
 
     @JsonIgnore
-    private String documentControlNumber;
+    private String controlNumber;
 
 }

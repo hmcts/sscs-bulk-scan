@@ -1,13 +1,11 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -27,7 +25,7 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 @Slf4j
 public class CcdCallbackHandler {
 
-    private static final Logger logger = getLogger(CcdCallbackHandler.class);
+    private static final String LOGSTR_VALIDATION_ERRORS = "\"Errors found while validating exception record id {}\"";
 
     private final CaseTransformer caseTransformer;
 
@@ -63,45 +61,61 @@ public class CcdCallbackHandler {
 
         String exceptionRecordId = exceptionCaseData.getCaseDetails().getCaseId();
 
-        logger.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
+        log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionCaseData.getCaseDetails());
         AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrors(caseTransformationResponse, exceptionRecordId);
 
         if (transformErrorResponse != null) {
+            log.info("Errors found while transforming exception record id {}", exceptionRecordId);
             return transformErrorResponse;
         }
 
+        log.info("Exception record id {} transformed successfully", exceptionRecordId);
+
         Map<String, Object> transformedCase = caseTransformationResponse.getTransformedCase();
+
+        log.info("About to validate transformed case from exception id {}", exceptionRecordId);
+
         CaseResponse caseValidationResponse = caseValidator.validate(transformedCase);
 
         AboutToStartOrSubmitCallbackResponse validationErrorResponse = checkForErrors(caseValidationResponse, exceptionRecordId);
 
         if (validationErrorResponse != null) {
+            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             return validationErrorResponse;
         } else {
+            log.info("Exception record id {} validated successfully", exceptionRecordId);
             return update(caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token, exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
         }
     }
 
-    public CallbackResponse handleValidationAndUpdate(ValidateCaseData caseData) {
+    public CallbackResponse handleValidationAndUpdate(ValidateCaseData validateCaseData) {
         Map<String, Object> appealData = new HashMap<>();
-        appealData.put("appeal", caseData.getCaseDetails().getCaseData().getAppeal());
-        appealData.put("sscsDocument", caseData.getCaseDetails().getCaseData().getSscsDocument());
-        appealData.put("evidencePresent", sscsDataHelper.hasEvidence(caseData.getCaseDetails().getCaseData().getSscsDocument()));
+
+        String exceptionRecordId = validateCaseData.getCaseDetails().getCaseId();
+
+        log.info("Processing validation and update request for SSCS exception record id {}", exceptionRecordId);
+
+        sscsDataHelper.addSscsDataToMap(appealData,
+            validateCaseData.getCaseDetails().getCaseData().getAppeal(),
+            validateCaseData.getCaseDetails().getCaseData().getSscsDocument(),
+            validateCaseData.getCaseDetails().getCaseData().getSubscriptions());
 
         CaseResponse caseValidationResponse = caseValidator.validate(appealData);
 
-        AboutToStartOrSubmitCallbackResponse validationErrorResponse = convertWarningsToErrors(caseValidationResponse, caseData.getCaseDetails().getCaseId());
+        AboutToStartOrSubmitCallbackResponse validationErrorResponse = convertWarningsToErrors(caseValidationResponse, validateCaseData.getCaseDetails().getCaseId());
 
         if (validationErrorResponse != null) {
+            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             return validationErrorResponse;
         } else {
-            roboticsHandler.handle(caseValidationResponse, Long.valueOf(caseData.getCaseDetails().getCaseId()), caseEvent.getCaseCreatedEventId());
+            log.info("Exception record id {} validated successfully", exceptionRecordId);
+            roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId), caseEvent.getCaseCreatedEventId());
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())
-                .data(appealData).build();
+                .build();
         }
     }
 
@@ -113,8 +127,13 @@ public class CcdCallbackHandler {
             exceptionRecordId);
 
         if (handlerResponse != null) {
-            exceptionRecordData.put("state", (handlerResponse.getState()));
-            exceptionRecordData.put("caseReference", String.valueOf((handlerResponse.getCaseId())));
+            String state = handlerResponse.getState();
+            String caseReference = String.valueOf(handlerResponse.getCaseId());
+
+            log.info("Setting exception record state to {} - caseReference {}", state, caseReference);
+
+            exceptionRecordData.put("state", state);
+            exceptionRecordData.put("caseReference", caseReference);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -140,15 +159,16 @@ public class CcdCallbackHandler {
         List<String> appendedWarningsAndErrors = new ArrayList<>();
 
         if (!ObjectUtils.isEmpty(caseResponse.getWarnings())) {
+            log.info("Warnings found while validating exception record id {}", exceptionRecordId);
             appendedWarningsAndErrors.addAll(caseResponse.getWarnings());
         }
 
         if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
+            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             appendedWarningsAndErrors.addAll(caseResponse.getErrors());
         }
 
         if (appendedWarningsAndErrors.size() > 0) {
-            log.info("Errors found while validating exception record id {}", exceptionRecordId);
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(appendedWarningsAndErrors)
                 .build();

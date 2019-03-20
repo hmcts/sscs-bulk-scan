@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.HEARING_OPTIONS_EXCLUDE_DATES;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
@@ -15,6 +15,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -24,6 +26,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
@@ -34,6 +37,8 @@ public class SscsCaseTransformerTest {
 
     @Mock
     SscsKeyValuePairValidator keyValuePairValidator;
+
+    SscsDataHelper sscsDataHelper;
 
     @InjectMocks
     SscsCaseTransformer transformer;
@@ -47,6 +52,10 @@ public class SscsCaseTransformerTest {
     @Before
     public void setup() {
         initMocks(this);
+
+        sscsDataHelper = new SscsDataHelper(null);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper);
+
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
 
@@ -60,7 +69,8 @@ public class SscsCaseTransformerTest {
     public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
 
         pairs.put("benefit_type_description", BENEFIT_TYPE);
-        pairs.put("mrn_date", MRN_DATE);
+        pairs.put("mrn_date", MRN_DATE_VALUE);
+        pairs.put("office", OFFICE);
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -172,6 +182,39 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenAnAppellant_thenAddAppealNumberToAppellantSubscription() {
+        pairs.put("person1_first_name", "Jeff");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Subscriptions subscriptions = ((Subscriptions) result.getTransformedCase().get("subscriptions"));
+        assertNotNull(subscriptions.getAppellantSubscription().getTya());
+        assertNull(subscriptions.getAppointeeSubscription());
+    }
+
+    @Test
+    public void givenAnAppellantAndAppointee_thenOnlyAddAppealNumberToAppointeeSubscription() {
+        pairs.put("person1_first_name", "Jeff");
+        pairs.put("person2_first_name", "Terry");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Subscriptions subscriptions = ((Subscriptions) result.getTransformedCase().get("subscriptions"));
+        assertNull(subscriptions.getAppellantSubscription());
+        assertNotNull(subscriptions.getAppointeeSubscription().getTya());
+    }
+
+    @Test
+    public void givenARepresentative_thenAddAppealNumberToRepresentativeSubscription() {
+        pairs.put("representative_first_name", "Wendy");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Subscriptions subscriptions = ((Subscriptions) result.getTransformedCase().get("subscriptions"));
+        assertNotNull(subscriptions.getRepresentativeSubscription().getTya());
+    }
+
+    @Test
     public void givenOralHearingType_thenBuildAnAppealWithWantsToAttendYes() {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -212,7 +255,59 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBooleanValueIsText_thenAddErrorToList() {
+    public void givenHearingTypeOralIsTrueAndHearingTypePaperIsEmpty_thenSetHearingTypeToOral() {
+        Map<String, Object> hearingTypePairs = new HashMap<>();
+        hearingTypePairs.put("is_hearing_type_oral", true);
+        hearingTypePairs.put("is_hearing_type_paper", "null");
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(hearingTypePairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(HEARING_TYPE_ORAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+    }
+
+    @Test
+    public void givenHearingTypePaperIsTrueAndHearingTypeOralIsEmpty_thenSetHearingTypeToPaper() {
+        Map<String, Object> hearingTypePairs = new HashMap<>();
+        hearingTypePairs.put("is_hearing_type_oral", "null");
+        hearingTypePairs.put("is_hearing_type_paper", true);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(hearingTypePairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(HEARING_TYPE_PAPER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+    }
+
+    @Test
+    public void givenHearingTypeOralIsFalseAndHearingTypePaperIsEmpty_thenSetHearingTypeToPaper() {
+        Map<String, Object> hearingTypePairs = new HashMap<>();
+        hearingTypePairs.put("is_hearing_type_oral", false);
+        hearingTypePairs.put("is_hearing_type_paper", "null");
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(hearingTypePairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(HEARING_TYPE_PAPER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+    }
+
+    @Test
+    public void givenHearingTypePaperIsFalseAndHearingTypeOralIsEmpty_thenSetHearingTypeToOral() {
+        Map<String, Object> hearingTypePairs = new HashMap<>();
+        hearingTypePairs.put("is_hearing_type_oral", "null");
+        hearingTypePairs.put("is_hearing_type_paper", false);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(hearingTypePairs).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(HEARING_TYPE_ORAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+    }
+
+    @Test
+    public void givenBooleanValueIsRandomText_thenSetHearingTypeToNull() {
         Map<String, Object> textBooleanValueMap = ImmutableMap.<String, Object>builder()
             .put("is_hearing_type_oral", "I am a text value")
             .put("is_hearing_type_paper", "true").build();
@@ -221,7 +316,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertTrue(result.getErrors().contains("is_hearing_type_oral does not contain a valid boolean value. Needs to be true or false"));
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
     }
 
     @Test
@@ -230,7 +325,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertTrue(result.getErrors().contains("person1_dob is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+        assertTrue(result.getErrors().contains("person1_dob is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy"));
     }
 
     @Test
@@ -239,7 +334,25 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertTrue(result.getErrors().contains("mrn_date is an invalid date field. Needs to be in the format dd/mm/yyyy"));
+        assertTrue(result.getErrors().contains("mrn_date is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy"));
+    }
+
+    @Test
+    public void givenANullMrnDate_thenAddErrorToList() {
+        pairs.put("mrn_date", null);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenAnEmptyStringMrnDate_thenAddErrorToList() {
+        pairs.put("mrn_date", "");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
@@ -296,7 +409,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertEquals("2018-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
 
         assertTrue(result.getErrors().isEmpty());
@@ -322,7 +435,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertEquals("2018-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
         assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
 
         assertTrue(result.getErrors().isEmpty());
@@ -355,6 +468,32 @@ public class SscsCaseTransformerTest {
 
         assertTrue(result.getErrors().isEmpty());
     }
+
+    @Test
+    public void givenExcludedDateRangeIsEmpty_thenBuildAnAppealWithEmptyExcludedDateRange() {
+
+        pairs.put("hearing_options_exclude_dates", "");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+
+        assertTrue(excludeDates.isEmpty());
+        assertTrue(result.getErrors().isEmpty());
+    }    
+
+    @Test
+    public void givenExcludedDateRangeIsNull_thenBuildAnAppealWithEmptyExcludedDateRange() {
+
+        pairs.put("hearing_options_exclude_dates", null);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+
+        assertTrue(excludeDates.isEmpty());
+        assertTrue(result.getErrors().isEmpty());
+    }    
 
     @Test
     public void givenSingleExcludedDateFollowedByRangeWithSpace_thenBuildAnAppealWithSingleExcludedStartDateAndADateRange() {
@@ -560,14 +699,51 @@ public class SscsCaseTransformerTest {
         Map<String, Object> transformedCase = result.getTransformedCase();
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
-        assertEquals(scannedRecord.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
-        assertEquals(scannedRecord.getFilename(), docs.get(0).getValue().getDocumentFileName());
-        assertEquals(scannedRecord.getDocumentLink().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord.getFileName(), docs.get(0).getValue().getDocumentFileName());
+        assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
 
         assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
 
         assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void should_handle_datetimes_with_and_without_milliseconds() {
+        // given
+        List<ScannedRecord> scannedRecords = Arrays.asList(
+            ScannedRecord.builder()
+                .scannedDate("2019-02-20T11:22:33") // no millis
+                .controlNumber("123")
+                .url(DocumentLink.builder().documentUrl("www.test.com").build())
+                .fileName("mrn.jpg")
+                .type("Testing")
+                .subtype("My subtype").build(),
+            ScannedRecord.builder()
+                .scannedDate("2019-02-19T11:22:33.123") // with millis
+                .controlNumber("567")
+                .url(DocumentLink.builder().documentUrl("www.test.com").build())
+                .fileName("mrn.jpg")
+                .type("Testing")
+                .subtype("My subtype").build()
+        );
+        given(sscsJsonExtractor.extractJson(ocrMap))
+            .willReturn(ScannedData.builder().ocrCaseData(pairs).records(scannedRecords).build());
+
+        // when
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        // then
+        @SuppressWarnings("unchecked")
+        List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
+
+        Assertions.assertThat(docs)
+            .extracting(doc -> doc.getValue().getDocumentDateAdded())
+            .containsExactlyInAnyOrder(
+                "2019-02-20",
+                "2019-02-19"
+            );
     }
 
     @Test
@@ -584,16 +760,76 @@ public class SscsCaseTransformerTest {
 
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
-        assertEquals(scannedRecord1.getDocScanDate(), docs.get(0).getValue().getDocumentDateAdded());
-        assertEquals(scannedRecord1.getFilename(), docs.get(0).getValue().getDocumentFileName());
-        assertEquals(scannedRecord1.getDocumentLink().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord1.getFileName(), docs.get(0).getValue().getDocumentFileName());
+        assertEquals(scannedRecord1.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(0).getValue().getDocumentType());
-        assertEquals(scannedRecord2.getDocScanDate(), docs.get(1).getValue().getDocumentDateAdded());
-        assertEquals(scannedRecord2.getFilename(), docs.get(1).getValue().getDocumentFileName());
-        assertEquals(scannedRecord2.getDocumentLink().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals("2018-08-10", docs.get(1).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord2.getFileName(), docs.get(1).getValue().getDocumentFileName());
+        assertEquals(scannedRecord2.getUrl().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("Other document", docs.get(1).getValue().getDocumentType());
 
         assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenOneDocumentWithNoDetails_thenShowAnError() {
+        List<ScannedRecord> records = new ArrayList<>();
+        ScannedRecord scannedRecord = ScannedRecord.builder()
+            .scannedDate(null)
+            .controlNumber(null)
+            .url(null)
+            .fileName(null)
+            .type(null)
+            .subtype(null).build();
+
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().contains("File name field must not be empty"));
+    }
+
+    @Test
+    public void givenOneDocumentWithNoFileExtension_thenShowAnError() {
+        List<ScannedRecord> records = new ArrayList<>();
+
+        ScannedRecord scannedRecord = ScannedRecord.builder()
+            .scannedDate("2018-08-10T20:11:12.000")
+            .controlNumber("123")
+            .url(DocumentLink.builder().documentUrl("www.test.com").build())
+            .fileName("mrn details")
+            .type("Testing")
+            .subtype("My subtype").build();
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().contains("Evidence file type 'mrn details' unknown"));
+    }
+
+    @Test
+    public void givenOneDocumentWithInvalidFileExtension_thenShowAnError() {
+        List<ScannedRecord> records = new ArrayList<>();
+
+        ScannedRecord scannedRecord = ScannedRecord.builder()
+            .scannedDate("2018-08-10T20:11:12.000")
+            .controlNumber("123")
+            .url(DocumentLink.builder().documentUrl("www.test.com").build())
+            .fileName("mrn_details.xyz")
+            .type("Testing")
+            .subtype("My subtype").build();
+        records.add(scannedRecord);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertTrue(result.getErrors().contains("Evidence file type 'xyz' unknown"));
     }
 
     @Test
@@ -668,7 +904,7 @@ public class SscsCaseTransformerTest {
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE).build())
             .appellant(appellant)
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
-            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE)).mrnLateReason(APPEAL_LATE_REASON).build())
+            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice(OFFICE).mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingOptions(HearingOptions.builder()
                 .scheduleHearing(YES_LITERAL)
@@ -685,11 +921,12 @@ public class SscsCaseTransformerTest {
 
     private ScannedRecord buildTestScannedRecord(DocumentLink link) {
         return ScannedRecord.builder()
-            .docScanDate("2018-08-10")
-            .documentControlNumber("123")
-            .documentLink(link)
-            .filename("mrn.jpg")
-            .documentType("Testing").build();
+            .scannedDate("2018-08-10T20:11:12.000")
+            .controlNumber("123")
+            .url(link)
+            .fileName("mrn.jpg")
+            .type("Testing")
+            .subtype("My subtype").build();
     }
 
     private String formatDate(String date) {

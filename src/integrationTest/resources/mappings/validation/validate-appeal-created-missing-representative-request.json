@@ -29,17 +29,16 @@
         },
         "rep": {
           "hasRepresentative": "Yes",
-          "name": {
-            "firstName": "User",
-            "lastName": "Rep",
-            "title": "Mrs"
+          "name": {},
+          "address": {
+            "line1": "10 My Lane"
           },
-          "address": {},
           "contact": {}
         },
         "benefitType": {
           "code": "ESA"
         },
+        "hearingType": "oral",
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
@@ -47,7 +46,8 @@
           "wantsToAttend": "Yes"
         },
         "mrnDetails": {
-          "mrnDate": "2048-05-24"
+          "mrnDate": "2018-12-09",
+          "dwpIssuingOffice": "5"
         },
         "signer": null
       },

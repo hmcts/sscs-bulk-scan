@@ -12,21 +12,27 @@
             "phone": "01234567890"
           },
           "identity": {
-            "dob": "1904-03-10",
+            "dob": "2148-03-10",
             "nino": "AB 22 55 66 B"
           }
         },
         "benefitType": {
-          "code": "ESA"
+          "code": null
         },
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
           "wantsSupport": "Yes",
-          "wantsToAttend": "Yes"
+          "wantsToAttend": "Yes",
+          "excludeDates" : [{
+            "value" : {
+              "start" : "2018-12-01",
+              "end" : null
+            }
+          }]
         },
         "mrnDetails": {
-          "mrnDate": "2048-05-24"
+          "mrnDate": null
         },
         "signer": null
       },
