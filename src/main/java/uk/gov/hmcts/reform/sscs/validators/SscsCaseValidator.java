@@ -371,7 +371,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private boolean isPhoneNumberValid(Appellant appellant) {
         if (appellant != null && appellant.getContact() != null && appellant.getContact().getPhone() != null) {
-            return PhoneNumbersUtil.isValidLandLineNumber(appellant.getContact().getPhone());
+            return appellant.getContact().getPhone().matches("^[0-9\\-+ ]{10,17}$");
         }
         return true;
     }
