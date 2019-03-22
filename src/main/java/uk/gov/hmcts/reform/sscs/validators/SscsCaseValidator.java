@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
+import uk.gov.hmcts.reform.sscs.utility.PhoneNumbersUtil;
 
 @Component
 @Slf4j
@@ -92,6 +93,10 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (!isPhoneNumberValid(appellant)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + PHONE, IS_INVALID));
+        }
+
+        if (!isMobileNumberValid(appellant)) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + MOBILE, IS_INVALID));
         }
     }
 
@@ -366,7 +371,14 @@ public class SscsCaseValidator implements CaseValidator {
 
     private boolean isPhoneNumberValid(Appellant appellant) {
         if (appellant != null && appellant.getContact() != null && appellant.getContact().getPhone() != null) {
-            return appellant.getContact().getPhone().matches("^[0-9\\-+ ]{10,17}$");
+            return PhoneNumbersUtil.isValidLandLineNumber(appellant.getContact().getPhone());
+        }
+        return true;
+    }
+
+    private boolean isMobileNumberValid(Appellant appellant) {
+        if (appellant != null && appellant.getContact() != null && appellant.getContact().getMobile() != null) {
+            return PhoneNumbersUtil.isValidUkMobileNumber(appellant.getContact().getMobile());
         }
         return true;
     }

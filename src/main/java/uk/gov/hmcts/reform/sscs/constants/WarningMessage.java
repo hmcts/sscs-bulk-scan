@@ -34,6 +34,7 @@ public enum WarningMessage {
     HEARING_OPTIONS_EXCLUDE_DATES(SscsConstants.HEARING_OPTIONS_EXCLUDE_DATES, "Hearing options exclude dates"),
     APPELLANT_NINO(NINO, "Appellant nino"),
     APPELLANT_PHONE(PHONE, "Appellant phone"),
+    APPELLANT_MOBILE(MOBILE, "Appellant mobile"),
     APPELLANT_DOB(DOB, "Appellant date of birth"),
     APPOINTEE_DOB(DOB, "Appointee date of birth"),
     HEARING_TYPE("is_hearing_type_oral and/or is_hearing_type_paper", "Hearing type"),
