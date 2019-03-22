@@ -29,6 +29,8 @@
     <cve>CVE-2018-19360</cve>
     <cve>CVE-2018-19361</cve>
     <cve>CVE-2018-19362</cve>
+    <cve>CVE-2018-12023</cve>
+    <cve>CVE-2018-12022</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
