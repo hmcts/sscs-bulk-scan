@@ -20,11 +20,12 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
-import uk.gov.hmcts.reform.sscs.utility.PhoneNumbersUtil;
 
 @Component
 @Slf4j
 public class SscsCaseValidator implements CaseValidator {
+
+    private static final String PHONE_REGEX = "^[0-9\\-+ ]{10,17}$";
 
     List<String> warnings;
     List<String> errors;
@@ -371,14 +372,14 @@ public class SscsCaseValidator implements CaseValidator {
 
     private boolean isPhoneNumberValid(Appellant appellant) {
         if (appellant != null && appellant.getContact() != null && appellant.getContact().getPhone() != null) {
-            return appellant.getContact().getPhone().matches("^[0-9\\-+ ]{10,17}$");
+            return appellant.getContact().getPhone().matches(PHONE_REGEX);
         }
         return true;
     }
 
     private boolean isMobileNumberValid(Appellant appellant) {
         if (appellant != null && appellant.getContact() != null && appellant.getContact().getMobile() != null) {
-            return PhoneNumbersUtil.isValidUkMobileNumber(appellant.getContact().getMobile());
+            return appellant.getContact().getMobile().matches(PHONE_REGEX);
         }
         return true;
     }
