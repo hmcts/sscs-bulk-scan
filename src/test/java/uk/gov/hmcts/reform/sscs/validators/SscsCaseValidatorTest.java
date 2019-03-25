@@ -488,8 +488,8 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantMobileNumberGreaterThan10Digits_thenAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("07776156000000"), true));
+    public void givenAnAppealContainsAnInvalidAppellantMobileNumberGreaterThan17Digits_thenAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("077761560000000010"), true));
 
         assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
     }
