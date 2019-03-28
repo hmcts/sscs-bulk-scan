@@ -501,8 +501,8 @@ public class SscsCaseValidatorTest {
         appellant.setAppointee(buildAppointeeWithMobileNumber("07776156"));
         CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
 
-        assertEquals("person2_mobile is invalid", response.getWarnings().get(0));
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(1));
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person2_mobile is invalid", response.getWarnings().get(1));
     }
 
     @Test
@@ -534,14 +534,14 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInValidAppellantAnInvalidAppointeeMobileNumberGreaterThan17Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidAppellantAnInvalidAppointeeMobileNumberGreaterThan17Digits_thenAddAWarning() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile("077761560000000011");
         appellant.setAppointee(buildAppointeeWithMobileNumber("077761560000000010"));
         CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
 
-        assertEquals("person2_mobile is invalid", response.getWarnings().get(0));
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(1));
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person2_mobile is invalid", response.getWarnings().get(1));
     }
 
     @Test

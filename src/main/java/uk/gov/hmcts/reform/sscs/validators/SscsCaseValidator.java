@@ -86,13 +86,14 @@ public class SscsCaseValidator implements CaseValidator {
         Name appellantName = appellant != null ? appellant.getName() : null;
         Address appellantAddress = appellant != null ? appellant.getAddress() : null;
         Identity appellantIdentity = appellant != null ? appellant.getIdentity() : null;
+        Contact appellantContact = appellant != null ? appellant.getContact() : null;
 
         checkPersonName(appellantName, personType, appellant);
         checkPersonAddressAndDob(appellantAddress, appellantIdentity, personType, caseData, appellant);
 
         checkAppellantNino(appellant, personType);
 
-        checkMobileNumber(appeal, personType);
+        checkMobileNumber(appellantContact, personType);
 
     }
 
@@ -100,6 +101,7 @@ public class SscsCaseValidator implements CaseValidator {
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
             checkPersonName(appellant.getAppointee().getName(), PERSON1_VALUE, appellant);
             checkPersonAddressAndDob(appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(), PERSON1_VALUE, caseData, appellant);
+            checkMobileNumber(appellant.getAppointee().getContact(), PERSON1_VALUE);
         }
     }
 
@@ -117,7 +119,7 @@ public class SscsCaseValidator implements CaseValidator {
                 warnings.add(getMessageByCallbackType(callbackType, "", REPRESENTATIVE_NAME_OR_ORGANISATION_DESCRIPTION, ARE_EMPTY));
             }
 
-            checkMobileNumber(appeal, REPRESENTATIVE_VALUE);
+            checkMobileNumber(appeal.getRep().getContact(), REPRESENTATIVE_VALUE);
         }
     }
 
@@ -367,28 +369,9 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkMobileNumber(Appeal appeal, String personType) {
-        if (personType.equals(REPRESENTATIVE_VALUE)) {
-            if (appeal != null && appeal.getRep() != null
-                    && appeal.getRep().getContact() != null
-                    && appeal.getRep().getContact().getMobile() != null
-                    && !isMobileNumberValid(appeal.getRep().getContact().getMobile())) {
-                warnings.add(getMessageByCallbackType(callbackType, REPRESENTATIVE_VALUE, getWarningMessageName(REPRESENTATIVE_VALUE, null) + MOBILE, IS_INVALID));
-            }
-        } else {
-            if (appeal != null && appeal.getAppellant() != null
-                    && appeal.getAppellant().getContact() != null
-                    && appeal.getAppellant().getContact().getMobile() != null
-                    && !isMobileNumberValid(appeal.getAppellant().getContact().getMobile())) {
-                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appeal.getAppellant()) + MOBILE, IS_INVALID));
-            }
-            if (appeal != null && appeal.getAppellant() != null
-                    && appeal.getAppellant().getAppointee() != null
-                    && appeal.getAppellant().getAppointee().getContact() != null
-                    && appeal.getAppellant().getAppointee().getContact().getMobile() != null
-                    && !isMobileNumberValid(appeal.getAppellant().getAppointee().getContact().getMobile())) {
-                warnings.add(getMessageByCallbackType(callbackType, PERSON1_VALUE, getWarningMessageName(PERSON1_VALUE, appeal.getAppellant()) + MOBILE, IS_INVALID));
-            }
+    private void checkMobileNumber(Contact contact, String personType) {
+        if (contact != null && contact.getMobile() != null && !isMobileNumberValid(contact.getMobile())) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + MOBILE, IS_INVALID));
         }
     }
 
