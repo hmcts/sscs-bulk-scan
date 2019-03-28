@@ -368,11 +368,13 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkMobileNumber(Appeal appeal, String personType) {
-        if (personType.equals(REPRESENTATIVE_VALUE) && appeal != null && appeal.getRep() != null
-                && appeal.getRep().getContact() != null
-                && appeal.getRep().getContact().getMobile() != null
-                && !isMobileNumberValid(appeal.getRep().getContact().getMobile())) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + MOBILE, IS_INVALID));
+        if (personType.equals(REPRESENTATIVE_VALUE)) {
+            if (appeal != null && appeal.getRep() != null
+                    && appeal.getRep().getContact() != null
+                    && appeal.getRep().getContact().getMobile() != null
+                    && !isMobileNumberValid(appeal.getRep().getContact().getMobile())) {
+                warnings.add(getMessageByCallbackType(callbackType, REPRESENTATIVE_VALUE, getWarningMessageName(REPRESENTATIVE_VALUE, null) + MOBILE, IS_INVALID));
+            }
         } else {
             if (appeal != null && appeal.getAppellant() != null
                     && appeal.getAppellant().getContact() != null
