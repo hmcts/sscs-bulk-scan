@@ -77,6 +77,7 @@ module "sscs-bulk-scan-vault" {
   object_id               = "${var.jenkins_AAD_objectId}"
   resource_group_name     = "${azurerm_resource_group.rg.name}"
   product_group_object_id = "70de400b-4f47-4f25-a4f0-45e1ee4e4ae3"
+  common_tags             = "${var.common_tags}"
 }
 
 data "azurerm_key_vault_secret" "sscs_s2s_secret" {
