@@ -33,7 +33,6 @@ public enum WarningMessage {
     OFFICE(ISSUING_OFFICE, "DWP issuing office"),
     HEARING_OPTIONS_EXCLUDE_DATES(SscsConstants.HEARING_OPTIONS_EXCLUDE_DATES, "Hearing options exclude dates"),
     APPELLANT_NINO(NINO, "Appellant nino"),
-    APPELLANT_PHONE(PHONE, "Appellant phone"),
     APPELLANT_MOBILE(MOBILE, "Appellant mobile"),
     APPOINTEE_MOBILE(MOBILE, "Appointee mobile"),
     REPRESENTATIVE_MOBILE(MOBILE, "Representative mobile"),
