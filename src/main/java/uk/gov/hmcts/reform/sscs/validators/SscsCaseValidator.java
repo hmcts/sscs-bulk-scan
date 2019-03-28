@@ -92,13 +92,8 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkAppellantNino(appellant, personType);
 
-        if (!isPhoneNumberValid(appellant)) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + PHONE, IS_INVALID));
-        }
+        checkMobileNumber(appeal, personType);
 
-        if (!isMobileNumberValid(appellant)) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + MOBILE, IS_INVALID));
-        }
     }
 
     private void checkAppointee(Appellant appellant, Map<String, Object> caseData) {
@@ -121,6 +116,8 @@ public class SscsCaseValidator implements CaseValidator {
             if (!doesFirstNameExist(name) && !doesLastNameExist(name) && appeal.getRep().getOrganisation() == null) {
                 warnings.add(getMessageByCallbackType(callbackType, "", REPRESENTATIVE_NAME_OR_ORGANISATION_DESCRIPTION, ARE_EMPTY));
             }
+
+            checkMobileNumber(appeal, REPRESENTATIVE_VALUE);
         }
     }
 
@@ -370,16 +367,32 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private boolean isPhoneNumberValid(Appellant appellant) {
-        if (appellant != null && appellant.getContact() != null && appellant.getContact().getPhone() != null) {
-            return appellant.getContact().getPhone().matches(PHONE_REGEX);
+    private void checkMobileNumber(Appeal appeal, String personType) {
+        if (personType.equals(REPRESENTATIVE_VALUE) && appeal != null && appeal.getRep() != null
+                && appeal.getRep().getContact() != null
+                && appeal.getRep().getContact().getMobile() != null
+                && !isMobileNumberValid(appeal.getRep().getContact().getMobile())) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + MOBILE, IS_INVALID));
+        } else {
+            if (appeal != null && appeal.getAppellant() != null
+                    && appeal.getAppellant().getContact() != null
+                    && appeal.getAppellant().getContact().getMobile() != null
+                    && !isMobileNumberValid(appeal.getAppellant().getContact().getMobile())) {
+                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appeal.getAppellant()) + MOBILE, IS_INVALID));
+            }
+            if (appeal != null && appeal.getAppellant() != null
+                    && appeal.getAppellant().getAppointee() != null
+                    && appeal.getAppellant().getAppointee().getContact() != null
+                    && appeal.getAppellant().getAppointee().getContact().getMobile() != null
+                    && !isMobileNumberValid(appeal.getAppellant().getAppointee().getContact().getMobile())) {
+                warnings.add(getMessageByCallbackType(callbackType, PERSON1_VALUE, getWarningMessageName(PERSON1_VALUE, appeal.getAppellant()) + MOBILE, IS_INVALID));
+            }
         }
-        return true;
     }
 
-    private boolean isMobileNumberValid(Appellant appellant) {
-        if (appellant != null && appellant.getContact() != null && appellant.getContact().getMobile() != null) {
-            return appellant.getContact().getMobile().matches(PHONE_REGEX);
+    private boolean isMobileNumberValid(String mobileNumber) {
+        if (mobileNumber != null) {
+            return mobileNumber.matches(PHONE_REGEX);
         }
         return true;
     }
