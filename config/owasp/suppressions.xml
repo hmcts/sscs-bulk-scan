@@ -31,7 +31,6 @@
     <cve>CVE-2018-19362</cve>
     <cve>CVE-2018-12022</cve>
     <cve>CVE-2018-12023</cve>
-    <cve>CVE-2018-1258</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
@@ -57,5 +56,12 @@
    ]]></notes>
     <gav regex="true">^org\.codehaus\.groovy:groovy-json:.*$</gav>
     <cve>CVE-2016-6497</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   Unauthorized Access with Spring Security Method Security
+   ]]></notes>
+    <gav regex="true">.*</gav>
+    <cve>CVE-2018-1258</cve>
   </suppress>
 </suppressions>
