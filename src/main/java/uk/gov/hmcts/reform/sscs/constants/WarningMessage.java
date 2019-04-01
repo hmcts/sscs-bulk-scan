@@ -35,7 +35,7 @@ public enum WarningMessage {
     APPELLANT_NINO(NINO, "Appellant nino"),
     APPELLANT_MOBILE(MOBILE, "Appellant mobile"),
     APPOINTEE_MOBILE(MOBILE, "Appointee mobile"),
-    REPRESENTATIVE_MOBILE(MOBILE, "Representative mobile"),
+    REPRESENTATIVE_PHONE(PHONE, "Representative phone"),
     APPELLANT_DOB(DOB, "Appellant date of birth"),
     APPOINTEE_DOB(DOB, "Appointee date of birth"),
     HEARING_TYPE("is_hearing_type_oral and/or is_hearing_type_paper", "Hearing type"),

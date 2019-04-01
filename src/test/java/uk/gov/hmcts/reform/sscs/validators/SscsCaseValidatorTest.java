@@ -474,14 +474,14 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidRepresentativeMobileNumberLessThan10Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidRepresentativePhoneNumberLessThan10Digits_thenAddAWarning() {
         Representative representative = buildRepresentative();
         representative.setContact(Contact.builder().build());
-        representative.getContact().setMobile("07776156");
+        representative.getContact().setPhone("0123456");
 
         CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
-        assertEquals("representative_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("representative_phone is invalid", response.getWarnings().get(0));
     }
 
     @Test
@@ -513,14 +513,14 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidRepresentativeMobileNumberGreaterThan17Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidRepresentativePhoneNumberGreaterThan17Digits_thenAddAWarning() {
         Representative representative = buildRepresentative();
         representative.setContact(Contact.builder().build());
-        representative.getContact().setMobile("077761560000000010");
+        representative.getContact().setPhone("0123456789000000000");
 
         CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
-        assertEquals("representative_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("representative_phone is invalid", response.getWarnings().get(0));
     }
 
     @Test
