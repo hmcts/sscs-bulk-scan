@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
-import uk.gov.hmcts.reform.sscs.domain.email.EmailAttachment;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 @Component
@@ -74,7 +73,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         isHearingTypeValid(appeal);
 
-        if(caseData.get("sscsDocument") != null) {
+        if (caseData.get("sscsDocument") != null) {
             @SuppressWarnings("unchecked")
             List<SscsDocument> lists = ((List<SscsDocument>) caseData.get("sscsDocument"));
             checkAdditionalEvidence(lists);
@@ -89,12 +88,12 @@ public class SscsCaseValidator implements CaseValidator {
             errors.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, errorMessage));
         });
 
-        sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentFileName() != null &&
-            sscsDocument.getValue().getDocumentFileName().indexOf('.') == -1).forEach(sscsDocument -> {
-            String errorMessage = "There is a file attached to the case called " + sscsDocument.getValue().getDocumentFileName() +
-                ", filenames must have extension, e.g. filename.pdf";
-            errors.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, errorMessage));
-        });
+        sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentFileName() != null
+            && sscsDocument.getValue().getDocumentFileName().indexOf('.') == -1).forEach(sscsDocument -> {
+                String errorMessage = "There is a file attached to the case called " + sscsDocument.getValue().getDocumentFileName()
+                    + ", filenames must have extension, e.g. filename.pdf";
+                errors.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, errorMessage));
+            });
     }
 
 
