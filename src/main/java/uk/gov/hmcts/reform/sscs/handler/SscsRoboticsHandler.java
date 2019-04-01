@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.RoboticsService;
@@ -55,11 +56,16 @@ public class SscsRoboticsHandler {
                 log.info("No additional evidence downloaded for caseId {}", caseId);
             }
 
-            roboticsService.sendCaseToRobotics(sscsCaseData,
-                caseId,
-                regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
-                null,
-                additionalEvidence);
+            try {
+                roboticsService.sendCaseToRobotics(sscsCaseData,
+                    caseId,
+                    regionalProcessingCenterService.getFirstHalfOfPostcode(sscsCaseData.getAppeal().getAppellant().getAddress().getPostcode()),
+                    null,
+                    additionalEvidence);
+            } catch (UnknownFileTypeException e) {
+                log.error("Case {} is missing a valid filename on one of its SSCSDocuments", caseId, e);
+                throw e;
+            }
         }
     }
 
