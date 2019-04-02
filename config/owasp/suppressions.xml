@@ -8,6 +8,13 @@
     <gav regex="true">^commons-collections:commons-collections:.*$</gav>
     <cpe>cpe:/a:apache:commons_collections</cpe>
   </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: spring-security-crypto-5.1.3.RELEASE.jar
+   ]]></notes>
+    <gav regex="true">^org\.springframework\.security:spring-.*:.*$</gav>
+    <cve>CVE-2018-1258</cve>
+  </suppress>
   <!-- this is for the TEST jar wiremock-standalone -->
   <suppress>
     <notes><![CDATA[
