@@ -724,20 +724,6 @@ public class SscsCaseValidatorTest {
         assertEquals("Evidence name There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf", response.getErrors().get(0));
     }
 
-    private Object buildDocument(String filename) {
-        List<SscsDocument> documentDetails = new ArrayList<>();
-
-        SscsDocumentDetails details = SscsDocumentDetails.builder()
-            .documentFileName(filename).build();
-            //.documentLink(record.getUrl())
-            //.documentDateAdded(stripTimeFromDocumentDate(record.getScannedDate()))
-
-            //.documentType("Other document").build();
-        documentDetails.add(SscsDocument.builder().value(details).build());
-
-        return documentDetails;
-    }
-
     @Test
     public void givenAValidationCallbackTypeWithIncompleteDetails_thenAddAWarningWithCorrectMessage() {
 
@@ -748,6 +734,16 @@ public class SscsCaseValidatorTest {
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
         verifyZeroInteractions(regionalProcessingCenterService);
+    }
+
+    private Object buildDocument(String filename) {
+        List<SscsDocument> documentDetails = new ArrayList<>();
+
+        SscsDocumentDetails details = SscsDocumentDetails.builder()
+            .documentFileName(filename).build();
+        documentDetails.add(SscsDocument.builder().value(details).build());
+
+        return documentDetails;
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant, Boolean exceptionCaseType) {
