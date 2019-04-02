@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
@@ -689,6 +690,53 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validate(pairs);
 
         assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAllMandatoryFieldsAndValidDocumentDoNotAddAnError() {
+        Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false), false);
+
+        pairs.put("sscsDocument", buildDocument("myfile.pdf"));
+
+        CaseResponse response = validator.validate(pairs);
+
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAllMandatoryFieldsAndDocumentNameIsNullAddAnError() {
+        Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false), false);
+
+        pairs.put("sscsDocument", buildDocument(null));
+
+        CaseResponse response = validator.validate(pairs);
+
+        assertEquals("Evidence name There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf", response.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAllMandatoryFieldsAndDocumentNameNoExtensionAddAnError() {
+        Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false), false);
+
+        pairs.put("sscsDocument", buildDocument("Waiver"));
+
+        CaseResponse response = validator.validate(pairs);
+
+        assertEquals("Evidence name There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf", response.getErrors().get(0));
+    }
+
+    private Object buildDocument(String filename) {
+        List<SscsDocument> documentDetails = new ArrayList<>();
+
+        SscsDocumentDetails details = SscsDocumentDetails.builder()
+            .documentFileName(filename).build();
+            //.documentLink(record.getUrl())
+            //.documentDateAdded(stripTimeFromDocumentDate(record.getScannedDate()))
+
+            //.documentType("Other document").build();
+        documentDetails.add(SscsDocument.builder().value(details).build());
+
+        return documentDetails;
     }
 
     @Test

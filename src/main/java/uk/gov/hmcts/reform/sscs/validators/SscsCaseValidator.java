@@ -85,14 +85,14 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkAdditionalEvidence(List<SscsDocument> sscsDocuments) {
         sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentFileName() == null).forEach(sscsDocument -> {
             String errorMessage = "There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf";
-            errors.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, errorMessage));
+            errors.add(getMessageByCallbackType(callbackType, "", EVIDENCE_NAME, errorMessage));
         });
 
         sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentFileName() != null
             && sscsDocument.getValue().getDocumentFileName().indexOf('.') == -1).forEach(sscsDocument -> {
                 String errorMessage = "There is a file attached to the case called " + sscsDocument.getValue().getDocumentFileName()
                     + ", filenames must have extension, e.g. filename.pdf";
-                errors.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, errorMessage));
+                errors.add(getMessageByCallbackType(callbackType, "", EVIDENCE_NAME, errorMessage));
             });
     }
 
