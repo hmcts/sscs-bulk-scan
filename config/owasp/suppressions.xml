@@ -3,6 +3,25 @@
   <!--Currently need to suppress this due to pipeline issue-->
   <suppress>
     <notes><![CDATA[
+   CVE-2018-1257: we do not use STOMP message broker, so this does not affect us
+   CVE-2018-1258: we do not use Spring Method Security, so this does not affect us
+   ]]></notes>
+    <gav regex="true">^org\.springframework:spring-.*:.*$</gav>
+    <cve>CVE-2018-1257</cve>
+    <cve>CVE-2018-1258</cve>
+    <cve>CVE-2018-11039</cve>
+    <cve>CVE-2018-11040</cve>
+    <cve>CVE-2018-10237</cve><!-- shaded guava dependency v20.0 -->
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   CVE-2018-1258: we do not use Spring Method Security, so this does not affect us
+   ]]></notes>
+    <gav regex="true">^org\.springframework\.security:spring-.*:.*$</gav>
+    <cve>CVE-2018-1258</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
    file name: commons-collections-3.2.1.jar
    ]]></notes>
     <gav regex="true">^commons-collections:commons-collections:.*$</gav>
