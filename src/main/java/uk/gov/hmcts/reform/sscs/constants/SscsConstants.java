@@ -44,6 +44,4 @@ public final class SscsConstants {
     public static final String IS_INVALID = "is invalid";
     public static final String IS_IN_FUTURE = "is in future";
     public static final String IS_IN_PAST = "is in past";
-    public static final String EVIDENCE_NAME = "Evidence_file_name";
-
 }

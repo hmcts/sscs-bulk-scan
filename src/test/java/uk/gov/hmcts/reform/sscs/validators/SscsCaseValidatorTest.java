@@ -710,7 +710,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validate(pairs);
 
-        assertEquals("Evidence name There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf", response.getErrors().get(0));
+        assertEquals("There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf", response.getErrors().get(0));
     }
 
     @Test
@@ -721,7 +721,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validate(pairs);
 
-        assertEquals("Evidence name There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf", response.getErrors().get(0));
+        assertEquals("There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf", response.getErrors().get(0));
     }
 
     @Test

@@ -37,8 +37,7 @@ public enum WarningMessage {
     APPELLANT_DOB(DOB, "Appellant date of birth"),
     APPOINTEE_DOB(DOB, "Appointee date of birth"),
     HEARING_TYPE("is_hearing_type_oral and/or is_hearing_type_paper", "Hearing type"),
-    REPRESENTATIVE_NAME_OR_ORGANISATION("representative_company, representative_first_name and representative_last_name", "Representative organisation, Representative first name and Representative last name"),
-    EVIDENCE_FILE_NAME(EVIDENCE_NAME, "Evidence name");
+    REPRESENTATIVE_NAME_OR_ORGANISATION("representative_company, representative_first_name and representative_last_name", "Representative organisation, Representative first name and Representative last name");
 
 
     private String exceptionRecordMessage;
