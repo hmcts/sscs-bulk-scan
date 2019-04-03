@@ -476,7 +476,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "person1_mobile", VALUE, "01234567899"))
+            ImmutableMap.of(KEY, "person1_mobile", VALUE, "07411222222"))
         );
         ocrList.add(ocrEntry(
             VALUE,

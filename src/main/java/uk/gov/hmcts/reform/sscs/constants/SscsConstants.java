@@ -37,6 +37,7 @@ public final class SscsConstants {
     public static final String ADDRESS_LINE4 = "_address_line4";
     public static final String ADDRESS_POSTCODE = "_postcode";
     public static final String PHONE = "_phone";
+    public static final String MOBILE = "_mobile";
     public static final String NINO = "_nino";
     public static final String DOB = "_dob";
     public static final String IS_EMPTY = "is empty";
