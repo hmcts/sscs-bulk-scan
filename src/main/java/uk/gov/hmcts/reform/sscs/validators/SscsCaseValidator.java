@@ -25,6 +25,8 @@ import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 @Slf4j
 public class SscsCaseValidator implements CaseValidator {
 
+    private static final String PHONE_REGEX = "^[0-9\\-+ ]{10,17}$";
+
     List<String> warnings;
     List<String> errors;
 
@@ -103,26 +105,26 @@ public class SscsCaseValidator implements CaseValidator {
         Name appellantName = appellant != null ? appellant.getName() : null;
         Address appellantAddress = appellant != null ? appellant.getAddress() : null;
         Identity appellantIdentity = appellant != null ? appellant.getIdentity() : null;
+        final Contact appellantContact = appellant != null ? appellant.getContact() : null;
 
         checkPersonName(appellantName, personType, appellant);
         checkPersonAddressAndDob(appellantAddress, appellantIdentity, personType, caseData, appellant);
-
         checkAppellantNino(appellant, personType);
+        checkMobileNumber(appellantContact, personType);
 
-        if (!isPhoneNumberValid(appellant)) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + PHONE, IS_INVALID));
-        }
     }
 
     private void checkAppointee(Appellant appellant, Map<String, Object> caseData) {
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
             checkPersonName(appellant.getAppointee().getName(), PERSON1_VALUE, appellant);
             checkPersonAddressAndDob(appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(), PERSON1_VALUE, caseData, appellant);
+            checkMobileNumber(appellant.getAppointee().getContact(), PERSON1_VALUE);
         }
     }
 
     private void checkRepresentative(Appeal appeal, Map<String, Object> caseData) {
         if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes")) {
+            final Contact repsContact = appeal.getRep().getContact();
             checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, caseData, appeal.getAppellant());
 
             Name name = appeal.getRep().getName();
@@ -134,6 +136,9 @@ public class SscsCaseValidator implements CaseValidator {
             if (!doesFirstNameExist(name) && !doesLastNameExist(name) && appeal.getRep().getOrganisation() == null) {
                 warnings.add(getMessageByCallbackType(callbackType, "", REPRESENTATIVE_NAME_OR_ORGANISATION_DESCRIPTION, ARE_EMPTY));
             }
+
+            checkPhoneNumber(repsContact, REPRESENTATIVE_VALUE);
+            checkMobileNumber(repsContact, REPRESENTATIVE_VALUE);
         }
     }
 
@@ -383,9 +388,21 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private boolean isPhoneNumberValid(Appellant appellant) {
-        if (appellant != null && appellant.getContact() != null && appellant.getContact().getPhone() != null) {
-            return appellant.getContact().getPhone().matches("^[0-9\\-+ ]{10,17}$");
+    private void checkMobileNumber(Contact contact, String personType) {
+        if (contact != null && contact.getMobile() != null && !isPhoneOrMobileNumberValid(contact.getMobile())) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + MOBILE, IS_INVALID));
+        }
+    }
+
+    private void checkPhoneNumber(Contact contact, String personType) {
+        if (contact != null && contact.getPhone() != null && !isPhoneOrMobileNumberValid(contact.getPhone())) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + PHONE, IS_INVALID));
+        }
+    }
+
+    private boolean isPhoneOrMobileNumberValid(String number) {
+        if (number != null) {
+            return number.matches(PHONE_REGEX);
         }
         return true;
     }
