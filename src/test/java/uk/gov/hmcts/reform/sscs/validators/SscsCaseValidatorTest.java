@@ -25,6 +25,10 @@ import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 public class SscsCaseValidatorTest {
 
+    private static final String VALID_MOBILE = "07832882849";
+    private static final String VALID_PHONE_NUMBER = "01234567898";
+    private static final String VALID_POSTCODE = "CM13 0GD";
+
     @Mock
     RegionalProcessingCenterService regionalProcessingCenterService;
 
@@ -52,7 +56,7 @@ public class SscsCaseValidatorTest {
         offices.add("Milton Keynes DRT");
         ReflectionTestUtils.setField(validator, "offices", offices);
 
-        given(regionalProcessingCenterService.getByPostcode("CM13 0GD")).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
+        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
     }
 
     @Test
@@ -84,7 +88,7 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = new HashMap<>();
 
         pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().address(
-                Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13 0GD").build())
+                Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode(VALID_POSTCODE).build())
                 .identity(Identity.builder().nino("BB000000B").build()).build())
                 .benefitType(BenefitType.builder().code(PIP.name()).build())
                 .mrnDetails(defaultMrnDetails)
@@ -112,7 +116,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("appeal", Appeal.builder().appellant(Appellant.builder()
             .appointee(appointee)
-            .address(Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode("CM13 0GD").build())
+            .address(Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode(VALID_POSTCODE).build())
             .identity(Identity.builder().nino("BB000000B").build()).build())
             .benefitType(BenefitType.builder().code(PIP.name()).build())
             .mrnDetails(defaultMrnDetails)
@@ -268,7 +272,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppellantContainsPostcodeWithNoRegionalProcessingCenter_thenDoNotAddRegionalProcessingCenter() {
         Appellant appellant = buildAppellant(false);
-        given(regionalProcessingCenterService.getByPostcode("CM13 0GD")).willReturn(null);
+        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
 
@@ -463,24 +467,88 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantPhoneNumberLessThan10Digits_thenAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithPhoneNumber("012345678"), true));
+    public void givenAnAppealContainsAnInvalidAppellantMobileNumberLessThan10Digits_thenAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("07776156"), true));
 
-        assertEquals("person1_phone is invalid", response.getWarnings().get(0));
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantPhoneNumberMoreThan17Digits_thenAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(PIP.name().toLowerCase(), buildAppellantWithPhoneNumber("012345678987654322"), true));
+    public void givenAnAppealContainsAnInvalidRepresentativePhoneNumberLessThan10Digits_thenAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.setContact(Contact.builder().build());
+        representative.getContact().setPhone("0123456");
 
-        assertEquals("person1_phone is invalid", response.getWarnings().get(0));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+
+        assertEquals("representative_phone is invalid", response.getWarnings().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsAValidAppellantPhoneNumber_thenDoNotAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellantWithPhoneNumber("01234567891"), true));
+    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getContact().setMobile(VALID_MOBILE);
+        appellant.setAppointee(buildAppointeeWithMobileNumber("07776156"));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
 
-        assertEquals("01234567891", ((Appeal) response.getTransformedCase().get("appeal")).getAppellant().getContact().getPhone());
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsAnInValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getContact().setMobile("07776157");
+        appellant.setAppointee(buildAppointeeWithMobileNumber("07776156"));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
+
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person2_mobile is invalid", response.getWarnings().get(1));
+    }
+
+    @Test
+    public void givenAnAppealContainsAnInvalidAppellantMobileNumberGreaterThan17Digits_thenAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("077761560000000010"), true));
+
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsAnInvalidRepresentativePhoneNumberGreaterThan17Digits_thenAddAWarning() {
+        Representative representative = buildRepresentative();
+        representative.setContact(Contact.builder().build());
+        representative.getContact().setPhone("0123456789000000000");
+
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+
+        assertEquals("representative_phone is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberGreaterThan17Digits_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getContact().setMobile(VALID_MOBILE);
+        appellant.setAppointee(buildAppointeeWithMobileNumber("077761560000000010"));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
+
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsAnInvalidAppellantAnInvalidAppointeeMobileNumberGreaterThan17Digits_thenAddAWarning() {
+        Appellant appellant = buildAppellant(true);
+        appellant.getContact().setMobile("077761560000000011");
+        appellant.setAppointee(buildAppointeeWithMobileNumber("077761560000000010"));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
+
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person2_mobile is invalid", response.getWarnings().get(1));
+    }
+
+    @Test
+    public void givenAnAppealContainsAValidAppellantMobileNumber_thenDoNotAddAWarning() {
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellantWithMobileNumber(VALID_MOBILE), true));
+
+        assertEquals(VALID_MOBILE, ((Appeal) response.getTransformedCase().get("appeal")).getAppellant().getContact().getMobile());
         assertEquals(0, response.getWarnings().size());
         assertEquals(0, response.getErrors().size());
     }
@@ -494,9 +562,9 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppealContainsAValidPostcode_thenDoNotAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellantWithPostcode("CM13 0GD"), true));
+        CaseResponse response = validator.validate(buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellantWithPostcode(VALID_POSTCODE), true));
 
-        assertEquals("CM13 0GD", ((Appeal) response.getTransformedCase().get("appeal")).getAppellant().getAddress().getPostcode());
+        assertEquals(VALID_POSTCODE, ((Appeal) response.getTransformedCase().get("appeal")).getAppellant().getAddress().getPostcode());
         assertEquals(0, response.getWarnings().size());
         assertEquals(0, response.getErrors().size());
     }
@@ -748,34 +816,39 @@ public class SscsCaseValidatorTest {
     }
 
     private Appellant buildAppellant(Boolean withAppointee) {
-        return buildAppellantWithPhoneNumberAndPostcode(withAppointee, "01234567898", "CM13 0GD");
+        return buildAppellantWithMobileNumberAndPostcode(withAppointee, VALID_MOBILE, VALID_POSTCODE);
     }
 
     private Appellant buildAppellantWithPostcode(String postcode) {
-        return buildAppellantWithPhoneNumberAndPostcode(false, "01234567898", postcode);
+        return buildAppellantWithMobileNumberAndPostcode(false, VALID_MOBILE, postcode);
     }
 
-    private Appellant buildAppellantWithPhoneNumber(String phoneNumber) {
-        return buildAppellantWithPhoneNumberAndPostcode(false, phoneNumber, "CM13 0GD");
+    private Appellant buildAppellantWithMobileNumber(String mobileNumber) {
+        return buildAppellantWithMobileNumberAndPostcode(false, mobileNumber, VALID_POSTCODE);
     }
 
-    private Appellant buildAppellantWithPhoneNumberAndPostcode(Boolean withAppointee, String phoneNumber, String postcode) {
-        Appointee appointee = withAppointee ? buildAppointee() : null;
+    private Appellant buildAppellantWithMobileNumberAndPostcode(Boolean withAppointee, String mobileNumber, String postcode) {
+        Appointee appointee = withAppointee ? buildAppointee(VALID_MOBILE) : null;
 
         return Appellant.builder()
             .name(Name.builder().title("Mr").firstName("Bob").lastName("Smith").build())
             .address(Address.builder().line1("101 My Road").town("Brentwood").county("Essex").postcode(postcode).build())
             .identity(Identity.builder().nino("BB000000B").build())
-            .contact(Contact.builder().phone(phoneNumber).build())
+            .contact(Contact.builder().mobile(mobileNumber).build())
             .appointee(appointee).build();
     }
 
-    private Appointee buildAppointee() {
+    private Appointee buildAppointeeWithMobileNumber(String mobileNumber) {
+        return buildAppointee(mobileNumber);
+    }
+
+    private Appointee buildAppointee(String mobileNumber) {
 
         return Appointee.builder()
             .name(Name.builder().title("Mr").firstName("Tim").lastName("Garwood").build())
-            .address(Address.builder().line1("101 My Road").town("Gidea Park").county("Essex").postcode("CM13 0GD").build())
+            .address(Address.builder().line1("101 My Road").town("Gidea Park").county("Essex").postcode(VALID_POSTCODE).build())
             .identity(Identity.builder().build())
+            .contact(Contact.builder().mobile(mobileNumber).build())
             .build();
     }
 
