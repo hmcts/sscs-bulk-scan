@@ -702,7 +702,7 @@ public class SscsCaseTransformerTest {
         assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord.getFileName(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
-        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+        assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
 
         assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
 
@@ -763,11 +763,11 @@ public class SscsCaseTransformerTest {
         assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord1.getFileName(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord1.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
-        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+        assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
         assertEquals("2018-08-10", docs.get(1).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord2.getFileName(), docs.get(1).getValue().getDocumentFileName());
         assertEquals(scannedRecord2.getUrl().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
-        assertEquals("Other document", docs.get(1).getValue().getDocumentType());
+        assertEquals("appellantEvidence", docs.get(1).getValue().getDocumentType());
 
         assertTrue(result.getErrors().isEmpty());
     }

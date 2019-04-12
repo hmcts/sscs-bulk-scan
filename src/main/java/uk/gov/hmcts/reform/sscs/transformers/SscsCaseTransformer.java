@@ -348,7 +348,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .documentLink(record.getUrl())
                     .documentDateAdded(stripTimeFromDocumentDate(record.getScannedDate()))
                     .documentFileName(record.getFileName())
-                    .documentType("Other document").build();
+                    .documentType("appellantEvidence").build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
             }
         }

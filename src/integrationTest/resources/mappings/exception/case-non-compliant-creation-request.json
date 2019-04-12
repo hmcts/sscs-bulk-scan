@@ -68,7 +68,7 @@
     },
     "sscsDocument" : [ {
       "value" : {
-        "documentType" : "Other document",
+        "documentType" : "appellantEvidence",
         "documentFileName" : "11111.pdf",
         "documentDateAdded" : "2018-10-10",
         "documentLink" : {
