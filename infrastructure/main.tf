@@ -1,5 +1,5 @@
 provider "azurerm" {
-  version = "1.19.0"
+  version = "1.22.1"
 }
 
 # Make sure the resource group exists
@@ -34,6 +34,8 @@ module "sscs-bulk-scan" {
   subscription        = "${var.subscription}"
   capacity            = "${var.capacity}"
   common_tags         = "${var.common_tags}"
+
+  appinsights_instrumentation_key = "${var.appinsights_instrumentation_key}"
 
   app_settings = {
     LOGBACK_REQUIRE_ALERT_LEVEL = "false"
