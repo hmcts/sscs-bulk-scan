@@ -258,12 +258,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(403);
-        assertThat(result.getBody())
-            .contains(
-                " \"status\": 403,\n"
-                    + "  \"error\": \"Forbidden\",\n"
-                    + "  \"message\": \"Access Denied"
-            );
+        assertThat(result.getBody()).contains("status 403");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
