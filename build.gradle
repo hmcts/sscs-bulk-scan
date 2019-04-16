@@ -184,9 +184,9 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging-appinsights', version: versions.reformLogging
 
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '1.4.0_RC1_SSCS3936_APPINSIGHTS'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-pdf-email-common', version: '0.1.4_RC1_SSCS3936_APPINSIGHTS'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '0.2.1_RC1_SSCS3936_APPINSIGHTS'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '2.0.0'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-pdf-email-common', version: '1.0.1'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '1.0.1'
 
   compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.1.1.RELEASE'
 
