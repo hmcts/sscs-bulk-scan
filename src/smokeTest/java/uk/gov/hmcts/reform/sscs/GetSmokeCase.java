@@ -8,10 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -22,32 +19,17 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 @RunWith(SpringRunner.class)
 public class GetSmokeCase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GetSmokeCase.class);
-
     private final String appUrl = System.getenv("TEST_URL");
 
     @Autowired
     private IdamService idamService;
 
-    @Value("${idam.oauth2.user.email}")
-    private String idamOauth2UserEmail;
-
-    @Value("${idam.oauth2.user.password}")
-    private String idamOauth2UserPassword;
-
-    @Value("${idam.oauth2.client.id}")
-    private String idamOauth2ClientId;
-
-    @Value("${idam.oauth2.client.secret}")
-    private String idamOauth2ClientSecret;
-
-    @Value("${idam.oauth2.redirectUrl}")
-    private String idamOauth2RedirectUrl;
-
     @Test
     public void givenASmokeCase_retrieveFromCcd() throws IOException {
         RestAssured.baseURI = appUrl;
         RestAssured.useRelaxedHTTPSValidation();
+
+        IdamTokens idamTokens = idamService.getIdamTokens();
 
         List<String> errors = RestAssured
             .given()
