@@ -35,6 +35,8 @@ module "sscs-bulk-scan" {
   capacity            = "${var.capacity}"
   common_tags         = "${var.common_tags}"
 
+  appinsights_instrumentation_key = "${var.appinsights_instrumentation_key}"
+
   app_settings = {
     LOGBACK_REQUIRE_ALERT_LEVEL = "false"
     LOGBACK_REQUIRE_ERROR_CODE  = "false"
