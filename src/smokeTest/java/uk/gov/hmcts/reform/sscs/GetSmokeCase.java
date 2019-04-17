@@ -49,11 +49,6 @@ public class GetSmokeCase {
         RestAssured.baseURI = appUrl;
         RestAssured.useRelaxedHTTPSValidation();
 
-        LOG.info("values are idamOauth2UserEmail {}, idamOauth2UserPassword {}, "
-                + "idamOauth2ClientId {}, idamOauth2ClientSecret {}, idamOauth2RedirectUrl {}",
-            idamOauth2UserEmail, idamOauth2UserPassword, idamOauth2ClientId, idamOauth2ClientSecret, idamOauth2RedirectUrl);
-        IdamTokens idamTokens = idamService.getIdamTokens();
-
         List<String> errors = RestAssured
             .given()
             .contentType("application/json")
