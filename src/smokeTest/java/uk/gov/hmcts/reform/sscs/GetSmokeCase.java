@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @SpringBootTest
@@ -33,21 +33,14 @@ public class GetSmokeCase {
     private AuthTokenGenerator authTokenGenerator;
 
     @Autowired
-    private IdamClient idamClient;
+    private IdamService idamService;
 
     @Test
     public void givenASmokeCase_retrieveFromCcd() throws IOException {
         RestAssured.baseURI = appUrl;
         RestAssured.useRelaxedHTTPSValidation();
 
-        String userToken = idamClient.authenticateUser(idamOauth2UserEmail, idamOauth2UserPassword);
-        String userId = idamClient.getUserDetails(userToken).getId();
-
-        IdamTokens idamTokens = IdamTokens.builder()
-            .idamOauth2Token(userToken)
-            .serviceAuthorization(authTokenGenerator.generate())
-            .userId(userId)
-            .build();
+        IdamTokens idamTokens = idamService.getIdamTokens();
 
         List<String> errors = RestAssured
             .given()

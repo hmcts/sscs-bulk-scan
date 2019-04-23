@@ -176,24 +176,20 @@ dependencies {
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.springBoot
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
-  compile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
-  compile group: 'io.github.openfeign', name: 'feign-jackson', version: '10.2.0'
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.1.1.RELEASE'
 
+  compile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
 
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging-appinsights', version: versions.reformLogging
-  compile group: 'uk.gov.hmcts.reform', name: 'idam-client', version: "1.0.2"
-
-
+  
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '2.0.3'
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-pdf-email-common', version: '1.0.3'
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '1.0.1'
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
-
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.1.1.RELEASE'
-
+  
   //Remove when our dependencies pull in this version or later
   compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
   integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
