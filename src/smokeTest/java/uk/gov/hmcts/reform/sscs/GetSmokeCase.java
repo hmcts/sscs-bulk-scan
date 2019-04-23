@@ -9,10 +9,12 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.reform.sscs.idam.IdamService;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @SpringBootTest
@@ -21,15 +23,31 @@ public class GetSmokeCase {
 
     private final String appUrl = System.getenv("TEST_URL");
 
+    @Value("${idam.oauth2.user.email}")
+    private String idamOauth2UserEmail;
+
+    @Value("${idam.oauth2.user.password}")
+    private String idamOauth2UserPassword;
+
     @Autowired
-    private IdamService idamService;
+    private AuthTokenGenerator authTokenGenerator;
+
+    @Autowired
+    private IdamClient idamClient;
 
     @Test
     public void givenASmokeCase_retrieveFromCcd() throws IOException {
         RestAssured.baseURI = appUrl;
         RestAssured.useRelaxedHTTPSValidation();
 
-        IdamTokens idamTokens = idamService.getIdamTokens();
+        String userToken = idamClient.authenticateUser(idamOauth2UserEmail, idamOauth2UserPassword);
+        String userId = idamClient.getUserDetails(userToken).getId();
+
+        IdamTokens idamTokens = IdamTokens.builder()
+            .idamOauth2Token(userToken)
+            .serviceAuthorization(authTokenGenerator.generate())
+            .userId(userId)
+            .build();
 
         List<String> errors = RestAssured
             .given()
