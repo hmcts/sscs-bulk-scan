@@ -30,12 +30,6 @@ core_case_data:
 
 idam:
   url: ${IDAM_URL:http://localhost:4501}
-  api:
-    url: ${IDAM_URL:http://localhost:4501}
-  client:
-    id: ${IDAM_OAUTH2_CLIENT_ID:sscs}
-    secret: ${IDAM_OAUTH2_CLIENT_SECRET:QM5RQQ53LZFOSIXJ}
-    redirect_uri: ${IDAM_OAUTH2_REDIRECT_URL:https://localhost:3000/authenticated}
   s2s-auth:
     totp_secret: ${S2S_SECRET:AAAAAAAAAAAAAAAD}
     microservice: ${IDAM_S2S_AUTH_MICROSERVICE:sscs_bulkscan}
