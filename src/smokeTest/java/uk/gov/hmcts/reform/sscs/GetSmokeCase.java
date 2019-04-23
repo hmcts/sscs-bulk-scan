@@ -9,11 +9,9 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
@@ -22,15 +20,6 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 public class GetSmokeCase {
 
     private final String appUrl = System.getenv("TEST_URL");
-
-    @Value("${idam.oauth2.user.email}")
-    private String idamOauth2UserEmail;
-
-    @Value("${idam.oauth2.user.password}")
-    private String idamOauth2UserPassword;
-
-    @Autowired
-    private AuthTokenGenerator authTokenGenerator;
 
     @Autowired
     private IdamService idamService;
