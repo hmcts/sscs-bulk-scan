@@ -184,12 +184,12 @@ dependencies {
 
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging-appinsights', version: versions.reformLogging
-  
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '2.0.3'
+
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '2.0.4'
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-pdf-email-common', version: '1.0.3'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '1.0.1'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '1.0.2'
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
-  
+
   //Remove when our dependencies pull in this version or later
   compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
   integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
