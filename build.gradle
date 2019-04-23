@@ -186,7 +186,7 @@ dependencies {
 
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '2.0.3'
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-pdf-email-common', version: '1.0.3'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '1.0.1'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '1.0.2'
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '2.0.0'
 
   compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.1.1.RELEASE'
