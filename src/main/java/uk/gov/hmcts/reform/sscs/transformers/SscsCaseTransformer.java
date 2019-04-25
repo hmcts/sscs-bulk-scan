@@ -342,13 +342,16 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<SscsDocument> documentDetails = new ArrayList<>();
         if (records != null) {
             for (ScannedRecord record : records) {
+
+                String documentType = record.getSubtype() != null && record.getSubtype().equalsIgnoreCase("sscs1") ? "sscs1" : "appellantEvidence";
+
                 checkFileExtensionValid(record.getFileName());
 
                 SscsDocumentDetails details = SscsDocumentDetails.builder()
                     .documentLink(record.getUrl())
                     .documentDateAdded(stripTimeFromDocumentDate(record.getScannedDate()))
                     .documentFileName(record.getFileName())
-                    .documentType("appellantEvidence").build();
+                    .documentType(documentType).build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
             }
         }
