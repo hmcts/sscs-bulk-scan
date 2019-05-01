@@ -1,7 +1,7 @@
 spring:
   cloud:
     propertiesvolume:
-      paths: /mnt/secrets/sscs-bulk-scan
+      paths: /mnt/secrets/sscs
       prefixed: false
       aliases:
         sscs-s2s-secret: IDAM_S2S_AUTH_TOTP_SECRET
