@@ -1,7 +1,7 @@
 java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
-  applicationPort: 8080
+  applicationPort: 8090
   keyVaults:
     sscs:
       resourceGroup: sscs-bulk-scan
@@ -16,7 +16,7 @@ java:
         - idam-sscs-oauth2-client-secret
   environment:
     REFORM_TEAM: sscs
-    REFORM_SERVICE_NAME: sscs-tribunals-api
+    REFORM_SERVICE_NAME: bulk-scan
     REFORM_SERVICE_TYPE: java
     REFORM_ENVIRONMENT: preview
     ROOT_LOGGING_LEVEL: INFO
