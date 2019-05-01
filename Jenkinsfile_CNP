@@ -40,7 +40,7 @@ GradleBuilder builder = new GradleBuilder(this, product)
 
 withPipeline("java", product, component) {
 
-   before('smoketest:aks') {
+   before('smoketest:preview') {
     withAksClient('nonprod') {
 
       // Vars needed for AKS testing
