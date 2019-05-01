@@ -75,6 +75,7 @@ withPipeline("java", product, component) {
   enableDockerBuild()
   installCharts()
   loadVaultSecrets(secrets)
+  setVaultName('sscs-bulk-scan')
   enableSlackNotifications('#sscs-tech')
 }
 
