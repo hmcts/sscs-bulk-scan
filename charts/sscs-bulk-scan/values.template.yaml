@@ -4,7 +4,7 @@ java:
   applicationPort: 8090
   keyVaults:
     sscs:
-      resourceGroup: sscs-bulk-scan
+      resourceGroup: sscs
       secrets:
         - sscs-s2s-secret
         - smtp-host
