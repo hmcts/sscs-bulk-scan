@@ -1,0 +1,34 @@
+java:
+  image: ${IMAGE_NAME}
+  ingressHost: ${SERVICE_FQDN}
+  applicationPort: 8080
+  keyVaults:
+    sscs:
+      resourceGroup: sscs-bulk-scan
+      secrets:
+        - sscs-s2s-secret
+        - smtp-host
+        - smtp-port
+        - robotics-email-from
+        - robotics-email-to
+        - idam-sscs-systemupdate-user
+        - idam-sscs-systemupdate-password
+        - idam-sscs-oauth2-client-secret
+  environment:
+    REFORM_TEAM: sscs
+    REFORM_SERVICE_NAME: sscs-tribunals-api
+    REFORM_SERVICE_TYPE: java
+    REFORM_ENVIRONMENT: preview
+    ROOT_LOGGING_LEVEL: INFO
+    LOG_OUTPUT: single
+    IDAM_OAUTH2_CLIENT_SECRET: ${IDAM_OAUTH2_CLIENT_SECRET}
+    IDAM_OAUTH2_USER_EMAIL: ${IDAM_OAUTH2_USER_EMAIL}
+    IDAM_OAUTH2_USER_PASSWORD: ${IDAM_OAUTH2_USER_PASSWORD}
+    IDAM_OAUTH2_REDIRECT_URL: "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
+    EMAIL_SERVER_HOST: ${EMAIL_SERVER_HOST}
+    EMAIL_SERVER_PORT: ${EMAIL_SERVER_PORT}
+    ROBOTICS_EMAIL_FROM: ${ROBOTICS_EMAIL_FROM}
+    ROBOTICS_EMAIL_TO: ${ROBOTICS_EMAIL_TO}
+    S2S_SECRET: ${S2S_SECRET}
+    ROBOTICS_EMAIL_SUBJECT: "Robotics Data"
+    ROBOTICS_EMAIL_MESSAGE: "Please find attached the robotics json file Please do not respond to this email"
