@@ -48,6 +48,7 @@
     <cve>CVE-2018-5968</cve>
     <cve>CVE-2018-7489</cve>
     <cve>CVE-2018-1000873</cve>
+    <cve>CVE-2018-12536</cve>
     <cve>CVE-2018-14718</cve>
     <cve>CVE-2018-14719</cve>
     <cve>CVE-2018-14720</cve>
@@ -103,5 +104,13 @@
 	   file name: stax-api-1.0.1.jar
 	   ]]></notes>
     <cve>CVE-2017-16224</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[No fix is available]]></notes>
+    <gav regex="true">^org\.springframework\.security:spring-security-rsa:1\.0\.7\.RELEASE$</gav>
+    <cve>CVE-2011-2731</cve>
+    <cve>CVE-2011-2732</cve>
+    <cve>CVE-2012-5055</cve>
+    <cve>CVE-2018-1260</cve>
   </suppress>
 </suppressions>
