@@ -3,8 +3,8 @@ java:
   ingressHost: ${SERVICE_FQDN}
   applicationPort: 8090
   keyVaults:
-    sscs:
-      resourceGroup: sscs
+    sscs-bulk-scan:
+      resourceGroup: sscs-bulk-scan
       secrets:
         - sscs-s2s-secret
         - smtp-host
