@@ -71,11 +71,10 @@ withPipeline("java", product, component) {
   }
 
   enableSlackNotifications('#sscs-tech')
-  loadVaultSecrets(secrets)
 
   enableDockerBuild()
   installCharts()
-
+  loadVaultSecrets(secrets)
   enableSlackNotifications('#sscs-tech')
 }
 
