@@ -689,7 +689,7 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenOneDocument_thenBuildACase() {
         List<ScannedRecord> records = new ArrayList<>();
-        ScannedRecord scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build());
+        ScannedRecord scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "My subtype");
         records.add(scannedRecord);
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
@@ -702,7 +702,7 @@ public class SscsCaseTransformerTest {
         assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord.getFileName(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
-        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+        assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
 
         assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
 
@@ -747,10 +747,10 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenMultipleDocuments_thenBuildACase() {
+    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes() {
         List<ScannedRecord> records = new ArrayList<>();
-        ScannedRecord scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build());
-        ScannedRecord scannedRecord2 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test2.com").build());
+        ScannedRecord scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build(), "SSCS1");
+        ScannedRecord scannedRecord2 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test2.com").build(), "My subtype");
         records.add(scannedRecord1);
         records.add(scannedRecord2);
 
@@ -763,11 +763,11 @@ public class SscsCaseTransformerTest {
         assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord1.getFileName(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord1.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
-        assertEquals("Other document", docs.get(0).getValue().getDocumentType());
+        assertEquals("sscs1", docs.get(0).getValue().getDocumentType());
         assertEquals("2018-08-10", docs.get(1).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord2.getFileName(), docs.get(1).getValue().getDocumentFileName());
         assertEquals(scannedRecord2.getUrl().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
-        assertEquals("Other document", docs.get(1).getValue().getDocumentType());
+        assertEquals("appellantEvidence", docs.get(1).getValue().getDocumentType());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -919,14 +919,14 @@ public class SscsCaseTransformerTest {
             .build();
     }
 
-    private ScannedRecord buildTestScannedRecord(DocumentLink link) {
+    private ScannedRecord buildTestScannedRecord(DocumentLink link, String subType) {
         return ScannedRecord.builder()
             .scannedDate("2018-08-10T20:11:12.000")
             .controlNumber("123")
             .url(link)
             .fileName("mrn.jpg")
-            .type("Testing")
-            .subtype("My subtype").build();
+            .type("Form")
+            .subtype(subType).build();
     }
 
     private String formatDate(String date) {
