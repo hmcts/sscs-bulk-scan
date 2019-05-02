@@ -12,19 +12,19 @@ def type = "java"
 def product = "sscs"
 def component = "bulk-scan"
 
-List<LinkedHashMap<String, Object>> secrets = [
+def secrets = [
+  'sscs-${env}'      : [
+    secret('sscs-s2s-secret', 'S2S_SECRET'),
+    secret('smtp-host', 'EMAIL_SERVER_HOST'),
+    secret('smtp-port', 'EMAIL_SERVER_PORT'),
 
-  secret('sscs-s2s-secret', 'S2S_SECRET'),
-  secret('smtp-host', 'EMAIL_SERVER_HOST'),
-  secret('smtp-port', 'EMAIL_SERVER_PORT'),
+    secret('robotics-email-from', 'ROBOTICS_EMAIL_FROM'),
+    secret('robotics-email-to', 'ROBOTICS_EMAIL_TO'),
 
-  secret('robotics-email-from', 'ROBOTICS_EMAIL_FROM'),
-  secret('robotics-email-to', 'ROBOTICS_EMAIL_TO'),
-
-  secret('idam-sscs-systemupdate-user', 'IDAM_OAUTH2_USER_EMAIL'),
-  secret('idam-sscs-systemupdate-password', 'IDAM_OAUTH2_USER_PASSWORD'),
-  secret('idam-sscs-oauth2-client-secret', 'IDAM_OAUTH2_CLIENT_SECRET'),
-
+    secret('idam-sscs-systemupdate-user', 'IDAM_OAUTH2_USER_EMAIL'),
+    secret('idam-sscs-systemupdate-password', 'IDAM_OAUTH2_USER_PASSWORD'),
+    secret('idam-sscs-oauth2-client-secret', 'IDAM_OAUTH2_CLIENT_SECRET'),
+  ]
 ]
 
 static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
@@ -71,11 +71,11 @@ withPipeline("java", product, component) {
   }
 
   enableSlackNotifications('#sscs-tech')
-  loadVaultSecrets(secrets)
 
   enableDockerBuild()
-  enableDeployToAKS()
-
+  installCharts()
+  loadVaultSecrets(secrets)
   setVaultName('sscs-bulk-scan')
+  enableSlackNotifications('#sscs-tech')
 }
 
