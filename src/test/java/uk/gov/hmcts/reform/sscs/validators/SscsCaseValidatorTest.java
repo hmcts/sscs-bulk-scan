@@ -760,6 +760,39 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAllMandatoryFieldsAndValidDocumentDoNotAddAnError() {
+        Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false), false);
+
+        pairs.put("sscsDocument", buildDocument("myfile.pdf"));
+
+        CaseResponse response = validator.validate(pairs);
+
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAllMandatoryFieldsAndDocumentNameIsNullAddAnError() {
+        Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false), false);
+
+        pairs.put("sscsDocument", buildDocument(null));
+
+        CaseResponse response = validator.validate(pairs);
+
+        assertEquals("There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf", response.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAllMandatoryFieldsAndDocumentNameNoExtensionAddAnError() {
+        Map<String, Object> pairs = buildMinimumAppealData(buildAppellant(false), false);
+
+        pairs.put("sscsDocument", buildDocument("Waiver"));
+
+        CaseResponse response = validator.validate(pairs);
+
+        assertEquals("There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf", response.getErrors().get(0));
+    }
+
+    @Test
     public void givenAValidationCallbackTypeWithIncompleteDetails_thenAddAWarningWithCorrectMessage() {
 
         Appellant appellant = buildAppellant(false);
@@ -769,6 +802,16 @@ public class SscsCaseValidatorTest {
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
         verifyZeroInteractions(regionalProcessingCenterService);
+    }
+
+    private Object buildDocument(String filename) {
+        List<SscsDocument> documentDetails = new ArrayList<>();
+
+        SscsDocumentDetails details = SscsDocumentDetails.builder()
+            .documentFileName(filename).build();
+        documentDetails.add(SscsDocument.builder().value(details).build());
+
+        return documentDetails;
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant, Boolean exceptionCaseType) {

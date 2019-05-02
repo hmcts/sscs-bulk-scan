@@ -75,8 +75,27 @@ public class SscsCaseValidator implements CaseValidator {
 
         isHearingTypeValid(appeal);
 
+        if (caseData.get("sscsDocument") != null) {
+            @SuppressWarnings("unchecked")
+            List<SscsDocument> lists = ((List<SscsDocument>) caseData.get("sscsDocument"));
+            checkAdditionalEvidence(lists);
+        }
+
         return warnings;
     }
+
+    private void checkAdditionalEvidence(List<SscsDocument> sscsDocuments) {
+        sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentFileName() == null).forEach(sscsDocument -> {
+            errors.add("There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf");
+        });
+
+        sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentFileName() != null
+            && sscsDocument.getValue().getDocumentFileName().indexOf('.') == -1).forEach(sscsDocument -> {
+                errors.add("There is a file attached to the case called " + sscsDocument.getValue().getDocumentFileName()
+                    + ", filenames must have extension, e.g. filename.pdf");
+            });
+    }
+
 
     private void checkAppellant(Appeal appeal, Map<String, Object> caseData, String personType) {
         Appellant appellant = appeal.getAppellant();
