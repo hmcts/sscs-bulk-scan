@@ -60,6 +60,7 @@
     <cve>CVE-2018-12023</cve>
     <cve>CVE-2019-10241</cve>
     <cve>CVE-2019-10246</cve>
+    <cve>CVE-2019-10247</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
