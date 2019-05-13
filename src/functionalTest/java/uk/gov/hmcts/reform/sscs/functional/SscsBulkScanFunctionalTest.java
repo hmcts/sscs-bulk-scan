@@ -50,7 +50,7 @@ public class SscsBulkScanFunctionalTest {
     public void create_appeal_created_case_when_all_fields_entered() throws IOException {
         Response response = exceptionRecordEndpointRequest(getJson("all_fields_entered.json"));
 
-        assertEquals("appealCreated", findStateOfCaseInCcd(response));
+        assertEquals("sendingToDwp", findStateOfCaseInCcd(response));
     }
 
     @Test

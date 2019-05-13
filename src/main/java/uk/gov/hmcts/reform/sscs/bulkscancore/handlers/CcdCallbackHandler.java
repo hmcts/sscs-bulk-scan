@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -16,7 +15,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
-import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 import uk.gov.hmcts.reform.sscs.handler.SscsRoboticsHandler;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -37,22 +35,18 @@ public class CcdCallbackHandler {
 
     private final SscsDataHelper sscsDataHelper;
 
-    private final CaseEvent caseEvent;
-
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         CaseDataHandler caseDataHandler,
         SscsRoboticsHandler roboticsHandler,
-        SscsDataHelper sscsDataHelper,
-        CaseEvent caseEvent
+        SscsDataHelper sscsDataHelper
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
         this.roboticsHandler = roboticsHandler;
         this.sscsDataHelper = sscsDataHelper;
-        this.caseEvent = caseEvent;
     }
 
     public CallbackResponse handle(
@@ -111,7 +105,7 @@ public class CcdCallbackHandler {
             return validationErrorResponse;
         } else {
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-            roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId), caseEvent.getCaseCreatedEventId());
+            roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId));
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())

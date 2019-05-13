@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
-import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 import uk.gov.hmcts.reform.sscs.handler.SscsRoboticsHandler;
@@ -53,9 +52,8 @@ public class CcdCallbackHandlerTest {
     @Before
     public void setUp() {
         sscsDataHelper = new SscsDataHelper(null);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"));
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper);
     }
-
 
     @Test
     public void should_return_exception_data_with_case_id_and_state_when_transformation_and_validation_are_successful() {

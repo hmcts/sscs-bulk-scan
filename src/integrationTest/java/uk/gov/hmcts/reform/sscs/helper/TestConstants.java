@@ -23,6 +23,9 @@ public class TestConstants {
     public static final String START_EVENT_APPEAL_CREATED_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/appealCreated/token";
 
+    public static final String UPDATE_EVENT_SEND_TO_DWP_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756/event-triggers/sendToDwp/token";
+
     public static final String START_EVENT_INCOMPLETE_CASE_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/incompleteApplicationReceived/token";
 
@@ -31,6 +34,9 @@ public class TestConstants {
 
     public static final String SUBMIT_EVENT_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases?ignore-warning=true";
+
+    public static final String SUBMIT_UPDATE_EVENT_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756/events?ignore-warning=true";
 
     public static final String READ_EVENT_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756";

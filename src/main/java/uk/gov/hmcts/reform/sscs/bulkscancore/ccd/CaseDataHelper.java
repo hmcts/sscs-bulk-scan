@@ -38,6 +38,18 @@ public class CaseDataHelper {
         return caseDetails.getId();
     }
 
+    public void updateCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId, String eventId, Long caseId) {
+        StartEventResponse startEventResponse = coreCaseDataApi.startEventForCaseWorker(
+            userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, String.valueOf(caseId), eventId
+        );
+
+        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId);
+
+        coreCaseDataApi.submitEventForCaseWorker(
+            userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, String.valueOf(caseId),true, caseDataContent
+        );
+    }
+
     private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken, String eventId) {
         return CaseDataContent.builder()
             .data(sscsCaseData)

@@ -46,6 +46,10 @@ output "robotics_enabled" {
   value = "${var.robotics_enabled}"
 }
 
+output "send_to_dwp_enabled" {
+  value = "${var.send_to_dwp_enabled}"
+}
+
 output "smtp_host" {
   value = "${data.azurerm_key_vault_secret.smtp_host.value}"
 }

@@ -61,6 +61,8 @@ module "sscs-bulk-scan" {
     ROBOTICS_EMAIL_MESSAGE = "${var.robotics_email_message}"
     ROBOTICS_ENABLED       = "${var.robotics_enabled}"
 
+    SEND_TO_DWP_ENABLED    = "${var.send_to_dwp_enabled}"
+
     EMAIL_SERVER_HOST      = "${data.azurerm_key_vault_secret.smtp_host.value}"
     EMAIL_SERVER_PORT      = "${data.azurerm_key_vault_secret.smtp_port.value}"
     EMAIL_SMTP_TLS_ENABLED = "${var.appeal_email_smtp_tls_enabled}"

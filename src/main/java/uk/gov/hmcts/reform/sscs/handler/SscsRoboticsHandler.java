@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService;
-import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
@@ -26,25 +25,22 @@ public class SscsRoboticsHandler {
     private final RegionalProcessingCenterService regionalProcessingCenterService;
     private final SscsCcdConvertService convertService;
     private final EvidenceManagementService evidenceManagementService;
-    private final CaseEvent caseEvent;
     private final Boolean roboticsEnabled;
 
     public SscsRoboticsHandler(RoboticsService roboticsService,
                                RegionalProcessingCenterService regionalProcessingCenterService,
                                SscsCcdConvertService convertService,
                                EvidenceManagementService evidenceManagementService,
-                               CaseEvent caseEvent,
                                @Value("${robotics.email.enabled}") Boolean roboticsEnabled) {
         this.roboticsService = roboticsService;
         this.regionalProcessingCenterService = regionalProcessingCenterService;
         this.convertService = convertService;
         this.evidenceManagementService = evidenceManagementService;
-        this.caseEvent = caseEvent;
         this.roboticsEnabled = roboticsEnabled;
     }
 
-    public void handle(CaseResponse caseResponse, Long caseId, String eventId) {
-        if (roboticsEnabled && eventId.equals(caseEvent.getCaseCreatedEventId())) {
+    public void handle(CaseResponse caseResponse, Long caseId) {
+        if (roboticsEnabled) {
             log.info("Sending case to robotics for caseId {}", caseId);
             SscsCaseData sscsCaseData = convertService.getCaseData(caseResponse.getTransformedCase());
 

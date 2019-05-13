@@ -17,7 +17,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService;
-import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.service.EvidenceManagementService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.RoboticsService;
@@ -48,7 +47,7 @@ public class SscsRoboticsHandlerTest {
         convertService = new SscsCcdConvertService();
 
         sscsRoboticsHandler = new SscsRoboticsHandler(roboticsService, regionalProcessingCenterService,
-            convertService, evidenceManagementService, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"), true);
+            convertService, evidenceManagementService, true);
 
         localDate = LocalDate.now();
     }
@@ -76,7 +75,7 @@ public class SscsRoboticsHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        sscsRoboticsHandler.handle(caseValidationResponse, 1L, "appealCreated");
+        sscsRoboticsHandler.handle(caseValidationResponse, 1L);
 
         verify(roboticsService).sendCaseToRobotics(sscsCaseData, 1L, "CM12", null, Collections.emptyMap());
     }
@@ -92,7 +91,7 @@ public class SscsRoboticsHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        sscsRoboticsHandler.handle(caseValidationResponse, 1L, "appealCreated");
+        sscsRoboticsHandler.handle(caseValidationResponse, 1L);
 
         verifyNoMoreInteractions(roboticsService);
     }
@@ -132,18 +131,8 @@ public class SscsRoboticsHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        sscsRoboticsHandler.handle(caseValidationResponse, 1L, "appealCreated");
+        sscsRoboticsHandler.handle(caseValidationResponse, 1L);
 
         verify(roboticsService).sendCaseToRobotics(sscsCaseData, 1L, "CM12", null, expectedAdditionalEvidence);
     }
-
-    @Test
-    public void givenACaseWithNoCaseCreatedEvent_thenDoNotInteractWithRoboticsService() {
-        CaseResponse caseValidationResponse = CaseResponse.builder().build();
-
-        sscsRoboticsHandler.handle(caseValidationResponse, 1L, "incompleteApplicationReceived");
-
-        verifyNoMoreInteractions(roboticsService);
-    }
-
 }
