@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.functional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
@@ -10,7 +11,10 @@ import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +54,9 @@ public class SscsBulkScanFunctionalTest {
     public void create_appeal_created_case_when_all_fields_entered() throws IOException {
         Response response = exceptionRecordEndpointRequest(getJson("all_fields_entered.json"));
 
-        assertEquals("sendingToDwp", findStateOfCaseInCcd(response));
+        //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be
+        List<String> possibleStates = new ArrayList<>(Arrays.asList("appealCreated", "sendingToDwp", "withDwp"));
+        assertTrue(possibleStates.contains(findStateOfCaseInCcd(response)));
     }
 
     @Test

@@ -29,7 +29,7 @@ public class CaseDataHelper {
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, eventId
         );
 
-        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId);
+        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId, "Case created", "Case created from exception record");
 
         CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, true, caseDataContent
@@ -38,29 +38,29 @@ public class CaseDataHelper {
         return caseDetails.getId();
     }
 
-    public void updateCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId, String eventId, Long caseId) {
+    public void updateCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId, String eventId, Long caseId, String description) {
         StartEventResponse startEventResponse = coreCaseDataApi.startEventForCaseWorker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, String.valueOf(caseId), eventId
         );
 
-        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId);
+        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId, "Case updated", description);
 
         coreCaseDataApi.submitEventForCaseWorker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, String.valueOf(caseId),true, caseDataContent
         );
     }
 
-    private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken, String eventId) {
+    private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken, String eventId, String summary, String description) {
         return CaseDataContent.builder()
             .data(sscsCaseData)
             .eventToken(eventToken)
             .securityClassification(Classification.PUBLIC)
             .event(Event.builder()
-                .description("Case created from exception record")
+                .summary(summary)
+                .description(description)
                 .id(eventId)
                 .build()
             )
             .build();
     }
-
 }

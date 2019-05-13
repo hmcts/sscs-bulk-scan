@@ -57,9 +57,8 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
                     if (sendToDwpFeature) {
                         log.info("About to update case with sendToDwp event for id {}", caseId);
-                        caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId);
+                        caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId, "Send to DWP event has been triggered");
                         log.info("Case updated with sendToDwp event for id {}", caseId);
-
                     }
                 }
 

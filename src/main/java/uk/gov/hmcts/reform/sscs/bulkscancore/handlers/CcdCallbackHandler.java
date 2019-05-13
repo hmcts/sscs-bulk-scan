@@ -1,14 +1,18 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
+import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.SEND_TO_DWP;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
@@ -35,18 +39,25 @@ public class CcdCallbackHandler {
 
     private final SscsDataHelper sscsDataHelper;
 
+    private final CaseDataHelper caseDataHelper;
+
+    @Value("${feature.send_to_dwp}")
+    private Boolean sendToDwpFeature;
+
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         CaseDataHandler caseDataHandler,
         SscsRoboticsHandler roboticsHandler,
-        SscsDataHelper sscsDataHelper
+        SscsDataHelper sscsDataHelper,
+        CaseDataHelper caseDataHelper
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
         this.roboticsHandler = roboticsHandler;
         this.sscsDataHelper = sscsDataHelper;
+        this.caseDataHelper = caseDataHelper;
     }
 
     public CallbackResponse handle(
@@ -106,6 +117,12 @@ public class CcdCallbackHandler {
         } else {
             log.info("Exception record id {} validated successfully", exceptionRecordId);
             roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId));
+
+            if (sendToDwpFeature) {
+                log.info("About to update case with sendToDwp event for id {}", exceptionRecordId);
+                caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), exceptionRecordId, "Send to DWP event has been triggered");
+                log.info("Case updated with sendToDwp event for id {}", exceptionRecordId);
+            }
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())
