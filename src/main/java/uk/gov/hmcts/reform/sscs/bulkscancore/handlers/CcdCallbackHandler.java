@@ -95,7 +95,7 @@ public class CcdCallbackHandler {
         }
     }
 
-    public CallbackResponse handleValidationAndUpdate(ValidateCaseData validateCaseData) {
+    public CallbackResponse handleValidationAndUpdate(ValidateCaseData validateCaseData, Token token) {
         Map<String, Object> appealData = new HashMap<>();
 
         String exceptionRecordId = validateCaseData.getCaseDetails().getCaseId();
@@ -120,7 +120,7 @@ public class CcdCallbackHandler {
 
             if (sendToDwpFeature) {
                 log.info("About to update case with sendToDwp event for id {}", exceptionRecordId);
-                caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), exceptionRecordId, "Send to DWP event has been triggered");
+                caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), Long.valueOf(exceptionRecordId), "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
                 log.info("Case updated with sendToDwp event for id {}", exceptionRecordId);
             }
 

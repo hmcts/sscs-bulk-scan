@@ -13,8 +13,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
@@ -45,6 +47,9 @@ public class CcdCallbackHandlerTest {
     private CaseDataHandler caseDataHandler;
 
     @Mock
+    private CaseDataHelper caseDataHelper;
+
+    @Mock
     private SscsRoboticsHandler roboticsHandler;
 
     private SscsDataHelper sscsDataHelper;
@@ -52,7 +57,8 @@ public class CcdCallbackHandlerTest {
     @Before
     public void setUp() {
         sscsDataHelper = new SscsDataHelper(null);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper, caseDataHelper);
+        ReflectionTestUtils.setField(ccdCallbackHandler, "sendToDwpFeature", true);
     }
 
     @Test
@@ -245,7 +251,8 @@ public class CcdCallbackHandlerTest {
             ValidateCaseData.builder()
                 .caseDetails(caseDetails)
                 .eventId("validAppeal")
-                .build()
+                .build(),
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
         );
     }
 

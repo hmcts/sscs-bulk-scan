@@ -62,7 +62,7 @@ public class CaseDataHelperTest {
             "SSCS",
             "Benefit",
             true,
-            sscsCaseDataContent("appealCreated"))
+            sscsCaseDataContent("appealCreated", "Case created", "Case created from exception record"))
         ).thenReturn(CaseDetails.builder()
             .id(CASE_ID)
             .securityClassification(Classification.PUBLIC)
@@ -132,7 +132,7 @@ public class CaseDataHelperTest {
             "Benefit",
             "123",
             true,
-            sscsCaseDataContent("sendToDwp"))
+            sscsCaseDataContent("sendToDwp", "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service"))
         ).thenReturn(CaseDetails.builder()
             .id(CASE_ID)
             .securityClassification(Classification.PUBLIC)
@@ -147,20 +147,23 @@ public class CaseDataHelperTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_USER_ID,
             "sendToDwp",
-            123L
+            123L,
+            "Send to DWP",
+            "Send to DWP event has been triggered from Bulk Scan service"
         );
 
         // Then
-        verify(coreCaseDataApi).submitEventForCaseWorker(TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "SSCS", "Benefit", "123", true, sscsCaseDataContent("sendToDwp"));
+        verify(coreCaseDataApi).submitEventForCaseWorker(TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "SSCS", "Benefit", "123", true, sscsCaseDataContent("sendToDwp", "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service"));
     }
 
 
-    private CaseDataContent sscsCaseDataContent(String event) {
+    private CaseDataContent sscsCaseDataContent(String event, String summary, String description) {
         return CaseDataContent.builder()
             .data(caseDataCreator.sscsCaseData())
             .eventToken(EVENT_TOKEN)
             .event(Event.builder()
-                .description("Case created from exception record")
+                .summary(summary)
+                .description(description)
                 .id(event)
                 .build()
             )
