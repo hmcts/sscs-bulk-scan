@@ -195,7 +195,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
 
   //Remove when our dependencies pull in this version or later
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
   integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
