@@ -1,7 +1,7 @@
 {
   "event": {
     "id": "nonCompliant",
-    "summary": null,
+    "summary": "Case created",
     "description": "Case created from exception record"
   },
   "data": {
