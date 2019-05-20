@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
-import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.SEND_TO_DWP;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,12 +115,6 @@ public class CcdCallbackHandler {
         } else {
             log.info("Exception record id {} validated successfully", exceptionRecordId);
             roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId));
-
-            if (sendToDwpFeature) {
-                log.info("About to update case with sendToDwp event for id {}", exceptionRecordId);
-                caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), Long.valueOf(exceptionRecordId), "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
-                log.info("Case updated with sendToDwp event for id {}", exceptionRecordId);
-            }
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())
