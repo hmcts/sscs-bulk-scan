@@ -54,7 +54,7 @@ public class SscsBulkScanFunctionalTest {
     public void create_appeal_created_case_when_all_fields_entered() throws IOException {
         Response response = exceptionRecordEndpointRequest(getJson("all_fields_entered.json"));
 
-        //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be
+        //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
         List<String> possibleStates = new ArrayList<>(Arrays.asList("appealCreated", "sendingToDwp", "withDwp"));
         assertTrue(possibleStates.contains(findStateOfCaseInCcd(response)));
     }
