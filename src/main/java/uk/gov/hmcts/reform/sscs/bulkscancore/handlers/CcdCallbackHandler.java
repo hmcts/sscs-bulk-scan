@@ -4,19 +4,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
-import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 import uk.gov.hmcts.reform.sscs.handler.SscsRoboticsHandler;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -37,7 +37,10 @@ public class CcdCallbackHandler {
 
     private final SscsDataHelper sscsDataHelper;
 
-    private final CaseEvent caseEvent;
+    private final CaseDataHelper caseDataHelper;
+
+    @Value("${feature.send_to_dwp}")
+    private Boolean sendToDwpFeature;
 
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
@@ -45,14 +48,14 @@ public class CcdCallbackHandler {
         CaseDataHandler caseDataHandler,
         SscsRoboticsHandler roboticsHandler,
         SscsDataHelper sscsDataHelper,
-        CaseEvent caseEvent
+        CaseDataHelper caseDataHelper
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
         this.roboticsHandler = roboticsHandler;
         this.sscsDataHelper = sscsDataHelper;
-        this.caseEvent = caseEvent;
+        this.caseDataHelper = caseDataHelper;
     }
 
     public CallbackResponse handle(
@@ -90,7 +93,7 @@ public class CcdCallbackHandler {
         }
     }
 
-    public CallbackResponse handleValidationAndUpdate(ValidateCaseData validateCaseData) {
+    public CallbackResponse handleValidationAndUpdate(ValidateCaseData validateCaseData, Token token) {
         Map<String, Object> appealData = new HashMap<>();
 
         String exceptionRecordId = validateCaseData.getCaseDetails().getCaseId();
@@ -111,7 +114,7 @@ public class CcdCallbackHandler {
             return validationErrorResponse;
         } else {
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-            roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId), caseEvent.getCaseCreatedEventId());
+            roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId));
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())

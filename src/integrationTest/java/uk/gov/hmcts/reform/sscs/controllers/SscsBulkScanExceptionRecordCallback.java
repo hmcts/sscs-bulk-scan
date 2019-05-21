@@ -44,10 +44,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
-
         submitForCaseworkerStub("appealCreated");
-
         readForCaseworkerStub(READ_EVENT_URL, true);
+
+        startForCaseworkerStub(UPDATE_EVENT_SEND_TO_DWP_URL);
+        submitEventForCaseworkerStub("sendToDwp");
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
 
@@ -513,7 +514,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     private void submitForCaseworkerStub(String eventId) throws Exception {
         String createCaseRequest = "";
         switch (eventId) {
-            case "appealCreated": createCaseRequest = loadJson("mappings/exception/case-creation-request.json");
+            case "appealCreated":
+                createCaseRequest = loadJson("mappings/exception/case-creation-request.json");
                 break;
 
             case "incompleteApplication": createCaseRequest = loadJson("mappings/exception/case-incomplete-creation-request.json");
@@ -527,6 +529,26 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         //FIXME: ignore extra elements could cause false positives
         ccdServer.stubFor(post(concat(SUBMIT_EVENT_URL))
+            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .withRequestBody(equalToJson(createCaseRequest, false, true))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(200)
+                .withBody(loadJson("mappings/create-case-200-response.json"))));
+    }
+
+    private void submitEventForCaseworkerStub(String eventId) throws Exception {
+        String createCaseRequest = "";
+        switch (eventId) {
+            case "sendToDwp":
+                createCaseRequest = loadJson("mappings/update-case-request.json");
+                break;
+            default: break;
+        }
+
+        ccdServer.stubFor(post(concat(SUBMIT_UPDATE_EVENT_URL))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))

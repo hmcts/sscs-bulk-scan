@@ -29,7 +29,7 @@ public class CaseDataHelper {
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, eventId
         );
 
-        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId);
+        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId, "Case created", "Case created from exception record");
 
         CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, true, caseDataContent
@@ -38,17 +38,29 @@ public class CaseDataHelper {
         return caseDetails.getId();
     }
 
-    private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken, String eventId) {
+    public void updateCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId, String eventId, Long caseId, String summary, String description) {
+        StartEventResponse startEventResponse = coreCaseDataApi.startEventForCaseWorker(
+            userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, String.valueOf(caseId), eventId
+        );
+
+        CaseDataContent caseDataContent = caseDataContent(sscsCaseData, startEventResponse.getToken(), eventId, summary, description);
+
+        coreCaseDataApi.submitEventForCaseWorker(
+            userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, String.valueOf(caseId),true, caseDataContent
+        );
+    }
+
+    private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken, String eventId, String summary, String description) {
         return CaseDataContent.builder()
             .data(sscsCaseData)
             .eventToken(eventToken)
             .securityClassification(Classification.PUBLIC)
             .event(Event.builder()
-                .description("Case created from exception record")
+                .summary(summary)
+                .description(description)
                 .id(eventId)
                 .build()
             )
             .build();
     }
-
 }

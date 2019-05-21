@@ -1,14 +1,14 @@
 {
   "event": {
-    "id": "nonCompliant",
-    "summary": "Case created",
+    "id": "sendToDwp",
+    "summary": null,
     "description": "Case created from exception record"
   },
   "data": {
     "appeal": {
       "mrnDetails": {
         "dwpIssuingOffice": "5",
-        "mrnDate": "2017-01-01",
+        "mrnDate": "2018-12-09",
         "mrnLateReason": null,
         "mrnMissingReason": null
       },
@@ -49,10 +49,10 @@
         "scheduleHearing" : "Yes",
         "excludeDates" : [{
           "value" : {
-            "start" : "2030-12-01",
-            "end" : null
-          }
-        }]
+              "start" : "2030-12-01",
+              "end" : null
+            }
+         }]
       },
       "appealReasons": null,
       "rep": {

@@ -3,9 +3,9 @@ package uk.gov.hmcts.reform.sscs.handler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.SEND_TO_DWP;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import java.time.LocalDate;
@@ -17,6 +17,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
@@ -50,7 +52,9 @@ public class SscsCaseDataHandlerTest {
     public void setup() {
         initMocks(this);
 
-        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, sscsRoboticsHandler);
+        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, sscsRoboticsHandler, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"));
+
+        ReflectionTestUtils.setField(sscsCaseDataHandler, "sendToDwpFeature", true);
 
         localDate = LocalDate.now();
     }
@@ -75,6 +79,8 @@ public class SscsCaseDataHandlerTest {
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived");
+        verifyZeroInteractions(caseDataHelper);
+
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
     }
@@ -101,7 +107,7 @@ public class SscsCaseDataHandlerTest {
     }
 
     @Test
-    public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEvent() {
+    public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwp() {
 
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
             .appellant(Appellant.builder().address(
@@ -122,6 +128,37 @@ public class SscsCaseDataHandlerTest {
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
+        verify(caseDataHelper).updateCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(), 1L, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
+
+        assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
+        assertEquals("1", ((HandlerResponse) response).getCaseId());
+    }
+
+    @Test
+    public void givenACaseWithNoWarningsAndSendToDwpFeatureFlagIsFalse_thenCreateCaseWithAppealCreatedEventAndDoNotSendToDwp() {
+        ReflectionTestUtils.setField(sscsCaseDataHandler, "sendToDwpFeature", false);
+
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
+            .appellant(Appellant.builder().address(
+                Address.builder().postcode("CM120HN").build())
+                .build()).build();
+
+        Map<String, Object> transformedCase = new HashMap<>();
+        transformedCase.put("appeal", appeal);
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
+
+        given(caseDataHelper.createCase(
+            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
+
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
+
+        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+
+        verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
+        verifyZeroInteractions(caseDataHelper);
+
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
     }
@@ -146,6 +183,8 @@ public class SscsCaseDataHandlerTest {
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "nonCompliant");
+        verifyZeroInteractions(caseDataHelper);
+
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
     }
@@ -173,32 +212,8 @@ public class SscsCaseDataHandlerTest {
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived");
-        assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
-        assertEquals("1", ((HandlerResponse) response).getCaseId());
-    }
+        verifyZeroInteractions(caseDataHelper);
 
-    @Test
-    public void givenACaseWithNoWarningsAndNoMrnDate_thenCreateCaseWithAppealCreatedEventAndSendRoboticsByEmailWithEvidence() {
-
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().build())
-            .appellant(Appellant.builder().address(
-                Address.builder().postcode("CM120HN").build())
-                .build())
-            .build();
-        Map<String, Object> transformedCase = new HashMap<>();
-        transformedCase.put("appeal", appeal);
-
-        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
-
-        given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
-
-        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
-
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
-
-        verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
     }

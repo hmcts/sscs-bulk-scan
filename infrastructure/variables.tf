@@ -84,6 +84,11 @@ variable "robotics_enabled" {
   default = "false"
 }
 
+variable "send_to_dwp_enabled" {
+  type    = "string"
+  default = "false"
+}
+
 variable "appinsights_instrumentation_key" {
   description = "Instrumentation key of the App Insights instance this webapp should use. Module will create own App Insights resource if this is not provided"
   default     = ""

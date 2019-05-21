@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.ccd;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
@@ -61,7 +62,7 @@ public class CaseDataHelperTest {
             "SSCS",
             "Benefit",
             true,
-            sscsCaseDataContent())
+            sscsCaseDataContent("appealCreated", "Case created", "Case created from exception record"))
         ).thenReturn(CaseDetails.builder()
             .id(CASE_ID)
             .securityClassification(Classification.PUBLIC)
@@ -108,14 +109,62 @@ public class CaseDataHelperTest {
         assertThat(exception).hasMessage("503 SERVICE_UNAVAILABLE");
     }
 
+    @Test
+    public void should_update_case_in_ccd() {
+        // Given
+        when(coreCaseDataApi.startEventForCaseWorker(
+            TEST_USER_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_USER_ID,
+            "SSCS",
+            "Benefit",
+            "123",
+            "sendToDwp")
+        ).thenReturn(StartEventResponse.builder()
+            .token(EVENT_TOKEN)
+            .build());
 
-    private CaseDataContent sscsCaseDataContent() {
+        when(coreCaseDataApi.submitEventForCaseWorker(
+            TEST_USER_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_USER_ID,
+            "SSCS",
+            "Benefit",
+            "123",
+            true,
+            sscsCaseDataContent("sendToDwp", "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service"))
+        ).thenReturn(CaseDetails.builder()
+            .id(CASE_ID)
+            .securityClassification(Classification.PUBLIC)
+            .data(caseDataCreator.sscsCaseData())
+            .createdDate(LocalDateTime.of(2018, 1, 1, 0, 0))
+            .build());
+
+        // When
+        caseDataHelper.updateCase(
+            caseDataCreator.sscsCaseData(),
+            TEST_USER_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_USER_ID,
+            "sendToDwp",
+            123L,
+            "Send to DWP",
+            "Send to DWP event has been triggered from Bulk Scan service"
+        );
+
+        // Then
+        verify(coreCaseDataApi).submitEventForCaseWorker(TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "SSCS", "Benefit", "123", true, sscsCaseDataContent("sendToDwp", "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service"));
+    }
+
+
+    private CaseDataContent sscsCaseDataContent(String event, String summary, String description) {
         return CaseDataContent.builder()
             .data(caseDataCreator.sscsCaseData())
             .eventToken(EVENT_TOKEN)
             .event(Event.builder()
-                .description("Case created from exception record")
-                .id("appealCreated")
+                .summary(summary)
+                .description(description)
+                .id(event)
                 .build()
             )
             .securityClassification(Classification.PUBLIC)
