@@ -2,7 +2,8 @@ package uk.gov.hmcts.reform.sscs.service.bulkscan;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import com.google.common.collect.ImmutableList;
@@ -178,6 +179,43 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData()).isNull();
         assertThat(ccdCallbackResponse.getErrors()).isNull();
         assertThat(ccdCallbackResponse.getWarnings()).isNull();
+        verifyZeroInteractions(roboticsHandler);
+    }
+
+    @Test
+    public void should_return_no_warnings_or_errors_or_data_when_validation_endpoint_is_successful_and_send_to_robotics_when_dwp_feature_false() {
+        ReflectionTestUtils.setField(ccdCallbackHandler, "sendToDwpFeature", false);
+
+        Appeal appeal = Appeal.builder()
+            .appellant(Appellant.builder()
+                .name(Name.builder().firstName("Fred").lastName("Ward").build())
+                .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
+                .build())
+            .build();
+
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().appeal(appeal).build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
+        when(caseValidator.validate(any())).thenReturn(caseValidationResponse);
+
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
+
+        assertThat(ccdCallbackResponse.getData()).isNull();
+        assertThat(ccdCallbackResponse.getErrors()).isNull();
+        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+
+        ValidateCaseData v = ValidateCaseData.builder()
+            .caseDetails(caseDetails)
+            .eventId("validAppeal")
+            .build();
+
+        verify(roboticsHandler).handle(any(), eq(1234L));
     }
 
     @Test
