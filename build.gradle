@@ -196,7 +196,7 @@ dependencies {
 
   //Remove when our dependencies pull in this version or later
   compile 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
-  integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+  integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 

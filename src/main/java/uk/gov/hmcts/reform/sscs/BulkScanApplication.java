@@ -38,6 +38,7 @@ public class BulkScanApplication {
         return new RestTemplate();
     }
 
+    //FIXME: Remove once robotics removed from Bulk Scan
     @Bean
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
