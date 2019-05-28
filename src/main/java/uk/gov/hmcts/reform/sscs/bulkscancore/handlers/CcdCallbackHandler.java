@@ -114,7 +114,11 @@ public class CcdCallbackHandler {
             return validationErrorResponse;
         } else {
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-            roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId));
+
+            if (!sendToDwpFeature) {
+                //FIXME: Remove this line along with all robotics code once Dwp feature flag switched on
+                roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId));
+            }
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())

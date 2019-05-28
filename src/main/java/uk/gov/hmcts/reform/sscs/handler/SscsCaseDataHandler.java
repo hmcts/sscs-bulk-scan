@@ -53,12 +53,14 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
                 if (isCaseCreatedEvent(eventId)) {
-                    roboticsHandler.handle(caseValidationResponse, caseId);
 
                     if (sendToDwpFeature) {
                         log.info("About to update case with sendToDwp event for id {}", caseId);
                         caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
                         log.info("Case updated with sendToDwp event for id {}", caseId);
+                    } else {
+                        //FIXME: Remove this line along with all robotics code once Dwp feature flag switched on
+                        roboticsHandler.handle(caseValidationResponse, caseId);
                     }
                 }
 
