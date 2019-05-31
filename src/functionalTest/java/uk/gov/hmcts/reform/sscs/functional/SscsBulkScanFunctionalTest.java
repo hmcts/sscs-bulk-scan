@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +34,9 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 @RunWith(SpringRunner.class)
 public class SscsBulkScanFunctionalTest {
 
-    private final String appUrl = System.getenv("TEST_URL");
+    private final String envUrl = System.getenv("TEST_URL");
+    private final String localUrl = "http://localhost:8090";
+    private final String appUrl = StringUtils.isNotBlank(envUrl) ? envUrl : localUrl;
 
     @Autowired
     private IdamService idamService;

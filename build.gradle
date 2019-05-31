@@ -6,7 +6,7 @@ plugins {
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.4.0'
   id 'io.spring.dependency-management' version '1.0.7.RELEASE'
-  id 'org.springframework.boot' version '2.1.4.RELEASE'
+  id 'org.springframework.boot' version '2.1.5.RELEASE'
   id 'org.owasp.dependencycheck' version '4.0.2'
   id 'com.github.ben-manes.versions' version '0.21.0'
 }
@@ -200,7 +200,9 @@ dependencies {
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
-  testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
+  testCompile (group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot) {
+    exclude group: "com.vaadin.external.google", module:"android-json"
+  }
 
   testCompile 'pl.pragmatists:JUnitParams:1.1.1'
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
@@ -228,6 +230,13 @@ dependencyManagement {
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
     }
+  }
+}
+
+run {
+  def debug = System.getProperty("debug")
+  if (debug == 'true') {
+    jvmArgs = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005']
   }
 }
 
