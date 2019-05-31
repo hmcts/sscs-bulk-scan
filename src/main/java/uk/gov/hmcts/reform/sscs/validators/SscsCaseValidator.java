@@ -383,7 +383,7 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkExcludedDates(Appeal appeal) {
         if (appeal.getHearingOptions() != null && appeal.getHearingOptions().getExcludeDates() != null) {
             for (ExcludeDate excludeDate : appeal.getHearingOptions().getExcludeDates()) {
-                checkDateValidDate(excludeDate.getValue().getStart(), HEARING_OPTIONS_EXCLUDE_DATES, "", false);
+                checkDateValidDate(excludeDate.getValue().getStart(), HEARING_OPTIONS_EXCLUDE_DATES_LITERAL, "", false);
             }
         }
     }

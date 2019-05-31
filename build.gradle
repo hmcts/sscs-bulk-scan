@@ -189,7 +189,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging-appinsights', version: versions.reformLogging
 
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '2.0.12'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '2.0.15-RC-SSCS5608'
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-pdf-email-common', version: '1.0.4'
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-robotics-common', version: '1.0.3'
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
@@ -202,6 +202,7 @@ dependencies {
 
   testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
 
+  testCompile 'pl.pragmatists:JUnitParams:1.1.1'
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
   testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.0'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
