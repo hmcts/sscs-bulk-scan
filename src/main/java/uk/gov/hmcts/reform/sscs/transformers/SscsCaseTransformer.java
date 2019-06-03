@@ -275,7 +275,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
 
-        boolean isLanguageInterpreterRequired = (findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL))) && !isSignLanguageInterpreterRequired;
+        boolean isLanguageInterpreterRequired = (findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL))) && !findSignLanguageInterpreterRequiredInOldForm(pairs).orElse(Boolean.FALSE);
 
         String languageType = isLanguageInterpreterRequired ? findLanguageTypeString(pairs) : null;
 
@@ -319,9 +319,17 @@ public class SscsCaseTransformer implements CaseTransformer {
         return buildLanguageType.toString();
     }
 
-    private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
+    private Optional<Boolean> findSignLanguageInterpreterRequiredInOldForm(Map<String, Object> pairs) {
         if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
-            return Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString());
+            return Optional.of(Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString()));
+        }
+        return Optional.empty();
+    }
+
+    private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
+        Optional<Boolean> fromOldVersionForm = findSignLanguageInterpreterRequiredInOldForm(pairs);
+        if (fromOldVersionForm.isPresent()) {
+            return fromOldVersionForm.get();
         }
         return StringUtils.isNotBlank(getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL));
     }
