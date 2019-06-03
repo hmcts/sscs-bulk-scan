@@ -53,7 +53,7 @@ public class SscsCaseDataHandlerTest {
     public void setup() {
         initMocks(this);
 
-        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, roboticsHandler, new CaseEvent("appealCreated", "incompleteApplicationReceived", "nonCompliant"));
+        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, roboticsHandler, new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"));
 
         ReflectionTestUtils.setField(sscsCaseDataHandler, "sendToDwpFeature", true);
 

@@ -23,6 +23,9 @@ public class TestConstants {
     public static final String START_EVENT_APPEAL_CREATED_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/appealCreated/token";
 
+    public static final String START_EVENT_VALID_APPEAL_CREATED_URL =
+        "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/event-triggers/validAppealCreated/token";
+
     public static final String UPDATE_EVENT_SEND_TO_DWP_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756/event-triggers/sendToDwp/token";
 
