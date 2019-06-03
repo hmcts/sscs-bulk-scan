@@ -738,6 +738,20 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenASignLanguageInterpreterIsEntered_thenBuildAnAppealWithSignLanguageInterpreter() {
+
+        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL, SIGN_LANGUAGE_TYPE);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+        assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
+        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     public void givenACaseWithNullOcrData_thenAddErrorToList() {
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(null).build());

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -280,7 +281,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String wantsToAttend = hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) ? YES_LITERAL : NO_LITERAL;
 
-        List<String> arrangements = buildArrangements(pairs);
+        List<String> arrangements = buildArrangements(pairs, isSignLanguageInterpreterRequired);
 
         String wantsSupport = !arrangements.isEmpty() ? YES_LITERAL : NO_LITERAL;
 
@@ -321,9 +322,8 @@ public class SscsCaseTransformer implements CaseTransformer {
     private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
         if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
             return Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString());
-        } else {
-            return false;
         }
+        return StringUtils.isNotBlank(getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL));
     }
 
     private String findSignLanguageType(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
@@ -370,7 +370,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         return excludeDates;
     }
 
-    private List<String> buildArrangements(Map<String, Object> pairs) {
+    private List<String> buildArrangements(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
 
         List<String> arrangements = new ArrayList<>();
 
@@ -380,7 +380,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (areBooleansValid(pairs, HEARING_OPTIONS_HEARING_LOOP_LITERAL) && Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
             arrangements.add("hearingLoop");
         }
-        if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL) && Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString())) {
+        if (isSignLanguageInterpreterRequired) {
             arrangements.add("signLanguageInterpreter");
         }
         return arrangements;
