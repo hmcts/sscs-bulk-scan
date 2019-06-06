@@ -124,9 +124,9 @@ public class SscsCaseDataHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
         given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
+            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "validAppealCreated")).willReturn(1L);
 
-        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("validAppealCreated");
 
         CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
@@ -134,7 +134,7 @@ public class SscsCaseDataHandlerTest {
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
 
-        verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
+        verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "validAppealCreated");
         verify(caseDataHelper).updateCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(), 1L, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
         verifyZeroInteractions(roboticsHandler);
     }
