@@ -758,7 +758,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals("British Sign Language", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
-        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " "+ HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
+        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
     }
 
     @Test
