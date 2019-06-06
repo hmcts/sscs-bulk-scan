@@ -275,7 +275,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
 
-        boolean isLanguageInterpreterRequired = (findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL))) && !findSignLanguageInterpreterRequiredInOldForm(pairs).orElse(Boolean.FALSE);
+        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL));
 
         String languageType = isLanguageInterpreterRequired ? findLanguageTypeString(pairs) : null;
 

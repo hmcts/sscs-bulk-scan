@@ -722,22 +722,6 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenASignLanguageInterpreterAndLanguageInterpreterIsEntered_thenBuildAnAppealWithSignLanguageAndIgnoreLanguageInterpreter() {
-
-        pairs.put(HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL, HEARING_OPTIONS_LANGUAGE_TYPE);
-        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, SIGN_LANGUAGE_REQUIRED);
-        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL, SIGN_LANGUAGE_TYPE);
-
-        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
-
-        assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
-        assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
-        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
-
-        assertTrue(result.getErrors().isEmpty());
-    }
-
-    @Test
     public void givenASignLanguageInterpreterIsEntered_thenBuildAnAppealWithSignLanguageInterpreter() {
 
         pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL, SIGN_LANGUAGE_TYPE);
@@ -761,6 +745,20 @@ public class SscsCaseTransformerTest {
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
         assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
+    }
+
+    @Test
+    public void givenASignLanguageInterpreterAndLanguageInterpreterIsEntered_thenBuildAnAppealWithSignLanguageAndLanguageInterpreter() {
+        pairs.put(IS_HEARING_TYPE_ORAL_LITERAL, true);
+        pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, false);
+        pairs.put(HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL, HEARING_OPTIONS_LANGUAGE_TYPE);
+        pairs.put(HEARING_OPTIONS_DIALECT_LITERAL, HEARING_OPTIONS_DIALECT_TYPE);
+        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, true);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+        assertEquals("British Sign Language", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
+        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " "+ HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
     }
 
     @Test
