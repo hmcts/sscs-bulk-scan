@@ -43,8 +43,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        startForCaseworkerStub(START_EVENT_APPEAL_CREATED_URL);
-        submitForCaseworkerStub("appealCreated");
+        startForCaseworkerStub(START_EVENT_VALID_APPEAL_CREATED_URL);
+        submitForCaseworkerStub("validAppealCreated");
         readForCaseworkerStub(READ_EVENT_URL, true);
 
         startForCaseworkerStub(UPDATE_EVENT_SEND_TO_DWP_URL);
@@ -249,7 +249,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        startForCaseworkerStubWithUserTokenHavingNoAccess(START_EVENT_APPEAL_CREATED_URL);
+        startForCaseworkerStubWithUserTokenHavingNoAccess(START_EVENT_VALID_APPEAL_CREATED_URL);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
 
@@ -267,7 +267,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     @Test
     public void should_return_503_status_when_ccd_service_is_not_available_when_creating_appeal() throws Exception {
         // Given
-        startForCaseworkerStubWithCcdUnavailable(START_EVENT_APPEAL_CREATED_URL);
+        startForCaseworkerStubWithCcdUnavailable(START_EVENT_VALID_APPEAL_CREATED_URL);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -516,6 +516,10 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         switch (eventId) {
             case "appealCreated":
                 createCaseRequest = loadJson("mappings/exception/case-creation-request.json");
+                break;
+
+            case "validAppealCreated":
+                createCaseRequest = loadJson("mappings/exception/valid-appeal-request.json");
                 break;
 
             case "incompleteApplication": createCaseRequest = loadJson("mappings/exception/case-incomplete-creation-request.json");

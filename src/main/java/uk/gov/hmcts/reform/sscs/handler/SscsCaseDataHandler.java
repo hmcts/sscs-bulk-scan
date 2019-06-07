@@ -75,7 +75,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     }
 
     private boolean isCaseCreatedEvent(String eventId) {
-        return eventId.equals(caseEvent.getCaseCreatedEventId());
+        return eventId.equals(caseEvent.getCaseCreatedEventId()) || eventId.equals(caseEvent.getValidAppealCreatedEventId());
     }
 
     private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings) {
