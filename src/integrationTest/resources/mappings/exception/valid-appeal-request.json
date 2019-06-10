@@ -80,11 +80,11 @@
     } ],
     "subscriptions": {
       "appellantSubscription": {
-        "wantSmsNotifications": null,
+        "wantSmsNotifications": "No",
         "email": null,
-        "mobile": null,
+        "mobile": "07411222222",
         "subscribeEmail": null,
-        "subscribeSms": null,
+        "subscribeSms": "No",
         "reason": null
       },
       "supporterSubscription" : null,
