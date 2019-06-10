@@ -59,7 +59,7 @@ public class SscsBulkScanFunctionalTest {
         Response response = exceptionRecordEndpointRequest(getJson("all_fields_entered.json"));
 
         //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
-        List<String> possibleStates = new ArrayList<>(Arrays.asList("appealCreated", "sendingToDwp", "withDwp"));
+        List<String> possibleStates = new ArrayList<>(Arrays.asList("validAppeal", "withDwp"));
         assertTrue(possibleStates.contains(findStateOfCaseInCcd(response)));
     }
 

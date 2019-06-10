@@ -1,8 +1,8 @@
 {
   "event": {
-    "id": "sendToDwp",
-    "summary": "Send to DWP",
-    "description": "Send to DWP event has been triggered from Bulk Scan service"
+    "id": "validAppealCreated",
+    "summary": "Case created",
+    "description": "Case created from exception record"
   },
   "data": {
     "appeal": {
@@ -35,7 +35,6 @@
           "nino": "BB000000B"
         },
         "appointee": null,
-        "isAppointee" : null,
         "isAddressSameAsAppointee" : null
       },
       "benefitType": {
