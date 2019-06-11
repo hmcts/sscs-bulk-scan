@@ -6,6 +6,10 @@ public final class SscsConstants {
 
     }
 
+    public static final String AGREE_LESS_HEARING_NOTICE_LITERAL = "agree_less_hearing_notice";
+    public static final String APPEAL_GROUNDS = "appeal_grounds";
+    public static final String IS_BENEFIT_TYPE_PIP = "is_benefit_type_pip";
+    public static final String IS_BENEFIT_TYPE_ESA = "is_benefit_type_esa";
     public static final String PERSON1_VALUE = "person1";
     public static final String PERSON2_VALUE = "person2";
     public static final String REPRESENTATIVE_VALUE = "representative";
@@ -19,7 +23,7 @@ public final class SscsConstants {
     public static final String HEARING_OPTIONS_DIALECT_LITERAL = "hearing_options_dialect";
     public static final String HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL = "hearing_options_accessible_hearing_rooms";
     public static final String HEARING_OPTIONS_HEARING_LOOP_LITERAL = "hearing_options_hearing_loop";
-    public static final String HEARING_OPTIONS_EXCLUDE_DATES = "hearing_options_exclude_dates";
+    public static final String HEARING_OPTIONS_EXCLUDE_DATES_LITERAL = "hearing_options_exclude_dates";
     public static final String HEARING_SUPPORT_ARRANGEMENTS_LITERAL = "hearing_support_arrangements";
     public static final String DEFAULT_SIGN_LANGUAGE = "British Sign Language";
     public static final String BENEFIT_TYPE_DESCRIPTION = "benefit_type_description";

@@ -14,6 +14,30 @@ public class SscsKeyValuePairValidatorTest {
     SscsKeyValuePairValidator validator = new SscsKeyValuePairValidator("/schema/sscs-bulk-scan-schema.json");
 
     @Test
+    public void givenNewFieldsInV2OfTheForm_thenNoErrorsAreGiven() {
+        Map<String, Object> pairs = new HashMap<>();
+        pairs.put("is_benefit_type_pip", true);
+        pairs.put("is_benefit_type_esa", false);
+        pairs.put("person1_email", "me@example.com");
+        pairs.put("person1_want_sms_notifications", false);
+        pairs.put("representative_email", "me@example.com");
+        pairs.put("representative_mobile", "07770583222");
+        pairs.put("representative_want_sms_notifications", true);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> scanOcrData = buildScannedOcrData("scanOCRData", pairs.entrySet().stream().map(f -> {
+            HashMap<String, Object> valueMap = new HashMap<>();
+            valueMap.put("key", f.getKey());
+            valueMap.put("value", f.getValue());
+            return valueMap;
+        }).toArray(HashMap[]::new));
+
+        CaseResponse response = validator.validate(scanOcrData);
+        assertNull(response.getErrors());
+    }
+
+
+    @Test
     public void givenAValidKeyValuePair_thenReturnAnEmptyCaseResponse() {
         Map<String, Object> valueMap = new HashMap<>();
 

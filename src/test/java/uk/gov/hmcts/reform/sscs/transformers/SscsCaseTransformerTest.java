@@ -5,7 +5,8 @@ import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.HEARING_OPTIONS_EXCLUDE_DATES;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
@@ -16,9 +17,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
@@ -30,6 +34,7 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
+@RunWith(JUnitParamsRunner.class)
 public class SscsCaseTransformerTest {
 
     @Mock
@@ -66,6 +71,92 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    @Parameters({"true", "false"})
+    public void givenInvalidBenefitTypePairings_thenReturnAnError(boolean value) {
+        pairs.put(IS_BENEFIT_TYPE_ESA, value);
+        pairs.put(IS_BENEFIT_TYPE_PIP, value);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_benefit_type_esa and is_benefit_type_pip have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    @Parameters({"true", "false"})
+    public void benefitTypeIsDefinedIfIsEsaOrIsPipValuesAreUsed(boolean isPip) {
+        pairs.put(IS_BENEFIT_TYPE_PIP, isPip);
+        pairs.put(IS_BENEFIT_TYPE_ESA, !isPip);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Benefit expectedBenefit = isPip ? PIP : ESA;
+        assertEquals(expectedBenefit.name(),  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    public void benefitTypeIsDefinedByDescriptionFieldWhenIsEsaOrIsPipIsNotSet() {
+        pairs.put("benefit_type_description", BENEFIT_TYPE);
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals(BENEFIT_TYPE,  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void canHandleAddressWithoutAddressLine4(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .town("town")
+            .county("county")
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", expectedAddress.getTown());
+            pairs.put(person + "_address_line3", expectedAddress.getCounty());
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
+    @Parameters({"Yes", "No"})
+    public void willGenerateSubscriptionsWithEmailAndPhone(String subscribeSms) {
+
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+
+        pairs.put("person1_want_sms_notifications", subscribeSms.equals("Yes"));
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        Subscriptions subscriptions = (Subscriptions) result.getTransformedCase().get("subscriptions");
+
+        Subscription expectedSubscription = Subscription.builder()
+            .wantSmsNotifications(subscribeSms)
+            .subscribeSms(subscribeSms)
+            .mobile(APPELLANT_MOBILE)
+            .email(APPELLANT_EMAIL)
+            .tya(subscriptions.getAppellantSubscription().getTya())
+            .build();
+
+        assertEquals(expectedSubscription, subscriptions.getAppellantSubscription());
+    }
+
+    @Test
     public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
 
         pairs.put("benefit_type_description", BENEFIT_TYPE);
@@ -82,6 +173,8 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_phone", APPELLANT_PHONE);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put(APPEAL_GROUNDS, APPEAL_REASON);
         pairs.put("person1_nino", APPELLANT_NINO);
         pairs.put("representative_company", REPRESENTATIVE_NAME);
         pairs.put("representative_address_line1", REPRESENTATIVE_ADDRESS_LINE1);
@@ -90,6 +183,7 @@ public class SscsCaseTransformerTest {
         pairs.put("representative_address_line4", REPRESENTATIVE_ADDRESS_LINE4);
         pairs.put("representative_postcode", REPRESENTATIVE_POSTCODE);
         pairs.put("representative_phone", REPRESENTATIVE_PHONE_NUMBER);
+        pairs.put("representative_email", REPRESENTATIVE_EMAIL);
         pairs.put("representative_title", REPRESENTATIVE_PERSON_TITLE);
         pairs.put("representative_first_name", REPRESENTATIVE_PERSON_FIRST_NAME);
         pairs.put("representative_last_name", REPRESENTATIVE_PERSON_LAST_NAME);
@@ -145,7 +239,7 @@ public class SscsCaseTransformerTest {
         Contact appointeeContact = Contact.builder().phone(APPOINTEE_PHONE).mobile(APPOINTEE_MOBILE).build();
         Appointee appointee = Appointee.builder().name(appointeeName).address(appointeeAddress).contact(appointeeContact).identity(appointeeIdentity).build();
 
-        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).appointee(appointee).contact(Contact.builder().build()).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("Yes").address(appellantAddress).appointee(appointee).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
         assertEquals(expectedAppellant, appellantResult);
@@ -173,7 +267,7 @@ public class SscsCaseTransformerTest {
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob("1987-08-12").build();
 
-        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).contact(Contact.builder().build()).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
         assertEquals(expectedAppellant, appellantResult);
@@ -480,7 +574,7 @@ public class SscsCaseTransformerTest {
 
         assertTrue(excludeDates.isEmpty());
         assertTrue(result.getErrors().isEmpty());
-    }    
+    }
 
     @Test
     public void givenExcludedDateRangeIsNull_thenBuildAnAppealWithEmptyExcludedDateRange() {
@@ -493,7 +587,7 @@ public class SscsCaseTransformerTest {
 
         assertTrue(excludeDates.isEmpty());
         assertTrue(result.getErrors().isEmpty());
-    }    
+    }
 
     @Test
     public void givenSingleExcludedDateFollowedByRangeWithSpace_thenBuildAnAppealWithSingleExcludedStartDateAndADateRange() {
@@ -628,10 +722,8 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenASignLanguageInterpreterAndLanguageInterpreterIsEntered_thenBuildAnAppealWithSignLanguageAndIgnoreLanguageInterpreter() {
+    public void givenASignLanguageInterpreterIsEntered_thenBuildAnAppealWithSignLanguageInterpreter() {
 
-        pairs.put(HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL, HEARING_OPTIONS_LANGUAGE_TYPE);
-        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, SIGN_LANGUAGE_REQUIRED);
         pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL, SIGN_LANGUAGE_TYPE);
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
@@ -641,6 +733,32 @@ public class SscsCaseTransformerTest {
         assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
 
         assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenASignLanguageAndLanguageIsEntered_thenBuildAnAppealWithSignLanguageAndLanguageRequirements() {
+        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL, SIGN_LANGUAGE_TYPE);
+        pairs.put(HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL, HEARING_OPTIONS_LANGUAGE_TYPE);
+        pairs.put(HEARING_OPTIONS_DIALECT_LITERAL, HEARING_OPTIONS_DIALECT_TYPE);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+        assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
+        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
+    }
+
+    @Test
+    public void givenASignLanguageInterpreterAndLanguageInterpreterIsEntered_thenBuildAnAppealWithSignLanguageAndLanguageInterpreter() {
+        pairs.put(IS_HEARING_TYPE_ORAL_LITERAL, true);
+        pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, false);
+        pairs.put(HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL, HEARING_OPTIONS_LANGUAGE_TYPE);
+        pairs.put(HEARING_OPTIONS_DIALECT_LITERAL, HEARING_OPTIONS_DIALECT_TYPE);
+        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, true);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+        assertEquals("British Sign Language", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
+        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
     }
 
     @Test
@@ -886,12 +1004,12 @@ public class SscsCaseTransformerTest {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob(formatDate(APPELLANT_DATE_OF_BIRTH)).build();
-        Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).build();
-        Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).address(appellantAddress).contact(appellantContact).build();
+        Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).email(APPELLANT_EMAIL).build();
+        Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(appellantContact).build();
 
         Name repName = Name.builder().title(REPRESENTATIVE_PERSON_TITLE).firstName(REPRESENTATIVE_PERSON_FIRST_NAME).lastName(REPRESENTATIVE_PERSON_LAST_NAME).build();
         Address repAddress = Address.builder().line1(REPRESENTATIVE_ADDRESS_LINE1).line2(REPRESENTATIVE_ADDRESS_LINE2).town(REPRESENTATIVE_ADDRESS_LINE3).county(REPRESENTATIVE_ADDRESS_LINE4).postcode(REPRESENTATIVE_POSTCODE).build();
-        Contact repContact = Contact.builder().phone(REPRESENTATIVE_PHONE_NUMBER).build();
+        Contact repContact = Contact.builder().phone(REPRESENTATIVE_PHONE_NUMBER).email(REPRESENTATIVE_EMAIL).build();
 
         ExcludeDate excludeDate = ExcludeDate.builder().value(DateRange.builder().start(formatDate(HEARING_OPTIONS_EXCLUDE_DATES)).build()).build();
         List<ExcludeDate> excludedDates = new ArrayList<>();
@@ -903,12 +1021,14 @@ public class SscsCaseTransformerTest {
         return Appeal.builder()
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE).build())
             .appellant(appellant)
+            .appealReasons(AppealReasons.builder().reasons(Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(APPEAL_REASON).build()).build())).build())
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice(OFFICE).mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingOptions(HearingOptions.builder()
                 .scheduleHearing(YES_LITERAL)
                 .excludeDates(excludedDates)
+                .agreeLessNotice(YES_LITERAL)
                 .arrangements(hearingSupportArrangements)
                 .languageInterpreter(YES_LITERAL)
                 .languages(HEARING_OPTIONS_LANGUAGE_TYPE)

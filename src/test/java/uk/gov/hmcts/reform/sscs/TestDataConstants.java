@@ -19,6 +19,7 @@ public class TestDataConstants {
     public static final String APPELLANT_POSTCODE = "CM13 1BA";
     public static final String APPELLANT_PHONE = "01234505050";
     public static final String APPELLANT_MOBILE = "07929292929";
+    public static final String APPELLANT_EMAIL = "appellant@example.com";
     public static final String APPELLANT_DATE_OF_BIRTH = "12/08/1987";
     public static final String APPELLANT_NINO = "JT 07 23 19 B";
     public static final String APPOINTEE_TITLE = "Mrs";
@@ -41,10 +42,12 @@ public class TestDataConstants {
     public static final String REPRESENTATIVE_ADDRESS_LINE4 = "Surrey";
     public static final String REPRESENTATIVE_POSTCODE = "RH1 4TR";
     public static final String REPRESENTATIVE_PHONE_NUMBER = "01540 234050";
+    public static final String REPRESENTATIVE_EMAIL = "rep@example.com";
     public static final String REPRESENTATIVE_PERSON_TITLE = "Mr";
     public static final String REPRESENTATIVE_PERSON_FIRST_NAME = "David";
     public static final String REPRESENTATIVE_PERSON_LAST_NAME = "North";
     public static final String APPEAL_LATE_REASON = "On holiday";
+    public static final String APPEAL_REASON = "This is the reason of the appeal";
     public static final String IS_HEARING_TYPE_ORAL = "true";
     public static final String IS_HEARING_TYPE_PAPER = "false";
     public static final String HEARING_OPTIONS_EXCLUDE_DATES = "01/12/2030";
