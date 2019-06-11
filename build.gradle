@@ -177,7 +177,7 @@ dependencies {
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
 
-  compile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
+  compile group: 'io.rest-assured', name: 'rest-assured', version: '4.0.0'
   compile group: 'io.github.openfeign', name: 'feign-jackson', version: '10.1.0'
 
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
