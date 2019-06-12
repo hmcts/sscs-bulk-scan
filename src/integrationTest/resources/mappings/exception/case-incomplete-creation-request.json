@@ -28,6 +28,7 @@
           "dob": null,
           "nino": null
         },
+        "isAppointee" : "No",
         "appointee": null,
         "isAddressSameAsAppointee" : null
       },
@@ -57,11 +58,11 @@
     "sscsDocument" : [ ],
     "subscriptions": {
       "appellantSubscription": {
-        "wantSmsNotifications": null,
+        "wantSmsNotifications": "No",
         "email": null,
         "mobile": null,
         "subscribeEmail": null,
-        "subscribeSms": null,
+        "subscribeSms": "No",
         "reason": null
       },
       "supporterSubscription" : null,

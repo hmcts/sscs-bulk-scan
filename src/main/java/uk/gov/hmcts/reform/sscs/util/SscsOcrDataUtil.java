@@ -56,6 +56,10 @@ public final class SscsOcrDataUtil {
         return pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
     }
 
+    public static boolean getBoolean(Map<String, Object> pairs, String value) {
+        return checkBooleanValue(pairs, value) && Boolean.parseBoolean(pairs.get(value).toString());
+    }
+
     public static String convertBooleanToYesNoString(boolean value) {
         return value ? YES : NO;
     }

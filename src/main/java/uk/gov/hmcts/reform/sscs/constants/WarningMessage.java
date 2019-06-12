@@ -31,7 +31,7 @@ public enum WarningMessage {
     BENEFIT_TYPE_DESCRIPTION(SscsConstants.BENEFIT_TYPE_DESCRIPTION, "Benefit type description"),
     MRN_DATE(SscsConstants.MRN_DATE, "Mrn date"),
     OFFICE(ISSUING_OFFICE, "DWP issuing office"),
-    HEARING_OPTIONS_EXCLUDE_DATES(SscsConstants.HEARING_OPTIONS_EXCLUDE_DATES, "Hearing options exclude dates"),
+    HEARING_OPTIONS_EXCLUDE_DATES(HEARING_OPTIONS_EXCLUDE_DATES_LITERAL, "Hearing options exclude dates"),
     APPELLANT_NINO(NINO, "Appellant nino"),
     APPELLANT_MOBILE(MOBILE, "Appellant mobile"),
     APPOINTEE_MOBILE(MOBILE, "Appointee mobile"),

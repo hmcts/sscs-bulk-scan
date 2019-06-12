@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -69,7 +70,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseDetails.getCaseId());
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
-        Subscriptions subscriptions = populateSubscriptions(appeal);
+        Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
         Map<String, Object> transformed = new HashMap<>();
 
@@ -87,17 +88,28 @@ public class SscsCaseTransformer implements CaseTransformer {
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
     }
 
-    private static Subscriptions populateSubscriptions(Appeal appeal) {
+    private static Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {
 
         return Subscriptions.builder()
-            .appellantSubscription(appeal.getAppellant() != null && appeal.getAppellant().getAppointee() == null ? generateSubscriptionWithAppealNumber() : null)
-            .appointeeSubscription(appeal.getAppellant() != null && appeal.getAppellant().getAppointee() != null ? generateSubscriptionWithAppealNumber() : null)
-            .representativeSubscription(appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes") ? generateSubscriptionWithAppealNumber() : null)
+            .appellantSubscription(appeal.getAppellant() != null
+                && appeal.getAppellant().getAppointee() == null
+                ? generateSubscriptionWithAppealNumber(ocrCaseData, PERSON1_VALUE) : null)
+            .appointeeSubscription(appeal.getAppellant() != null
+                && appeal.getAppellant().getAppointee() != null
+                ? generateSubscriptionWithAppealNumber(ocrCaseData, PERSON1_VALUE) : null)
+            .representativeSubscription(appeal.getRep() != null
+                && appeal.getRep().getHasRepresentative().equals("Yes")
+                ? generateSubscriptionWithAppealNumber(ocrCaseData, REPRESENTATIVE_VALUE) : null)
             .build();
     }
 
-    private static Subscription generateSubscriptionWithAppealNumber() {
-        return Subscription.builder().tya(generateAppealNumber()).build();
+    private static Subscription generateSubscriptionWithAppealNumber(Map<String, Object> pairs, String personType) {
+        boolean wantsSms = getBoolean(pairs, personType + "_want_sms_notifications");
+        String email = getField(pairs,personType + "_email");
+        String mobile = getField(pairs,personType + "_mobile");
+
+        return Subscription.builder().email(email).mobile(mobile).subscribeSms(convertBooleanToYesNoString(wantsSms))
+            .wantSmsNotifications(convertBooleanToYesNoString(wantsSms)).tya(generateAppealNumber()).build();
     }
 
     private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId) {
@@ -121,12 +133,14 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
 
             String hearingType = findHearingType(pairs);
+            AppealReasons appealReasons = findAppealReasons(pairs);
 
-            BenefitType benefitType = getField(pairs, BENEFIT_TYPE_DESCRIPTION) != null ? BenefitType.builder().code(getField(pairs, BENEFIT_TYPE_DESCRIPTION).toUpperCase()).build() : null;
+            BenefitType benefitType = getBenefitType(pairs);
 
             return Appeal.builder()
                 .benefitType(benefitType)
                 .appellant(appellant)
+                .appealReasons(appealReasons)
                 .rep(buildRepresentative(pairs))
                 .mrnDetails(buildMrnDetails(pairs))
                 .hearingType(hearingType)
@@ -142,9 +156,32 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
     }
 
+    private AppealReasons findAppealReasons(Map<String, Object> pairs) {
+        String appealReason = getField(pairs, APPEAL_GROUNDS);
+        if (appealReason != null) {
+            List<AppealReason> reasons = Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(appealReason).build()).build());
+            return AppealReasons.builder().reasons(reasons).build();
+        }
+        return null;
+    }
+
+    private BenefitType getBenefitType(Map<String, Object> pairs) {
+        String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
+        if (areBooleansValid(pairs, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP)) {
+            doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP);
+        }
+        if (checkBooleanValue(pairs, IS_BENEFIT_TYPE_PIP) && Boolean.parseBoolean(pairs.get(IS_BENEFIT_TYPE_PIP).toString())) {
+            code = Benefit.PIP.name();
+        } else if (checkBooleanValue(pairs, IS_BENEFIT_TYPE_ESA) && Boolean.parseBoolean(pairs.get(IS_BENEFIT_TYPE_ESA).toString())) {
+            code = Benefit.ESA.name();
+        }
+        return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
+    }
+
     private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee, Contact contact) {
         return Appellant.builder()
             .name(buildPersonName(pairs, personType))
+            .isAppointee(convertBooleanToYesNoString(appointee !=  null))
             .address(buildPersonAddress(pairs, personType))
             .identity(buildPersonIdentity(pairs, personType))
             .contact(contact)
@@ -157,14 +194,14 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         if (doesRepExist) {
             return Representative.builder()
-                .hasRepresentative(convertBooleanToYesNoString(doesRepExist))
+                .hasRepresentative(YES_LITERAL)
                 .name(buildPersonName(pairs, REPRESENTATIVE_VALUE))
                 .address(buildPersonAddress(pairs, REPRESENTATIVE_VALUE))
                 .organisation(getField(pairs,"representative_company"))
                 .contact(buildPersonContact(pairs, REPRESENTATIVE_VALUE))
                 .build();
         } else {
-            return Representative.builder().hasRepresentative(convertBooleanToYesNoString(doesRepExist)).build();
+            return Representative.builder().hasRepresentative(NO_LITERAL).build();
         }
     }
 
@@ -186,13 +223,21 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Address buildPersonAddress(Map<String, Object> pairs, String personType) {
+        if (findBooleanExists(getField(pairs,personType + "_address_line4"))) {
+            return Address.builder()
+                .line1(getField(pairs, personType + "_address_line1"))
+                .line2(getField(pairs, personType + "_address_line2"))
+                .town(getField(pairs, personType + "_address_line3"))
+                .county(getField(pairs, personType + "_address_line4"))
+                .postcode(getField(pairs, personType + "_postcode"))
+                .build();
+        }
         return Address.builder()
-            .line1(getField(pairs,personType + "_address_line1"))
-            .line2(getField(pairs,personType + "_address_line2"))
-            .town(getField(pairs,personType + "_address_line3"))
-            .county(getField(pairs,personType + "_address_line4"))
-            .postcode(getField(pairs,personType + "_postcode"))
-        .build();
+            .line1(getField(pairs, personType + "_address_line1"))
+            .town(getField(pairs, personType + "_address_line2"))
+            .county(getField(pairs, personType + "_address_line3"))
+            .postcode(getField(pairs, personType + "_postcode"))
+            .build();
     }
 
     private Identity buildPersonIdentity(Map<String, Object> pairs, String personType) {
@@ -206,6 +251,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         return Contact.builder()
             .phone(getField(pairs,personType + "_phone"))
             .mobile(getField(pairs,personType + "_mobile"))
+            .email(getField(pairs,personType + "_email"))
         .build();
     }
 
@@ -229,23 +275,26 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
 
-        boolean isLanguageInterpreterRequired = (findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL))) && !isSignLanguageInterpreterRequired;
+        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL));
 
         String languageType = isLanguageInterpreterRequired ? findLanguageTypeString(pairs) : null;
 
         String wantsToAttend = hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) ? YES_LITERAL : NO_LITERAL;
 
-        List<String> arrangements = buildArrangements(pairs);
+        List<String> arrangements = buildArrangements(pairs, isSignLanguageInterpreterRequired);
 
         String wantsSupport = !arrangements.isEmpty() ? YES_LITERAL : NO_LITERAL;
 
         List<ExcludeDate> excludedDates = buildExcludedDates(pairs);
+
+        String agreeLessNotice = checkBooleanValue(pairs, AGREE_LESS_HEARING_NOTICE_LITERAL) ? convertBooleanToYesNoString(getBoolean(pairs, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
 
         String scheduleHearing = excludedDates != null && !excludedDates.isEmpty() && wantsToAttend.equals(YES_LITERAL) ? YES_LITERAL : NO_LITERAL;
 
         return HearingOptions.builder()
             .wantsToAttend(wantsToAttend)
             .wantsSupport(wantsSupport)
+            .agreeLessNotice(agreeLessNotice)
             .scheduleHearing(scheduleHearing)
             .excludeDates(excludedDates)
             .arrangements(arrangements)
@@ -270,25 +319,33 @@ public class SscsCaseTransformer implements CaseTransformer {
         return buildLanguageType.toString();
     }
 
-    private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
+    private Optional<Boolean> findSignLanguageInterpreterRequiredInOldForm(Map<String, Object> pairs) {
         if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
-            return Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString());
-        } else {
-            return false;
+            return Optional.of(Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString()));
         }
+        return Optional.empty();
+    }
+
+    private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
+        Optional<Boolean> fromOldVersionForm = findSignLanguageInterpreterRequiredInOldForm(pairs);
+        if (fromOldVersionForm.isPresent()) {
+            return fromOldVersionForm.get();
+        }
+        return StringUtils.isNotBlank(getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL));
     }
 
     private String findSignLanguageType(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
         if (isSignLanguageInterpreterRequired) {
-            return getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL) != null ? getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL) : DEFAULT_SIGN_LANGUAGE;
+            String signLanguageType = getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL);
+            return signLanguageType != null ? signLanguageType : DEFAULT_SIGN_LANGUAGE;
         }
         return null;
     }
 
     private List<ExcludeDate> buildExcludedDates(Map<String, Object> pairs) {
 
-        if (pairs.containsKey("hearing_options_exclude_dates")) {
-            return extractExcludedDates(getField(pairs,"hearing_options_exclude_dates"));
+        if (pairs.containsKey(HEARING_OPTIONS_EXCLUDE_DATES_LITERAL)) {
+            return extractExcludedDates(getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));
         } else {
             return null;
         }
@@ -321,7 +378,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         return excludeDates;
     }
 
-    private List<String> buildArrangements(Map<String, Object> pairs) {
+    private List<String> buildArrangements(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
 
         List<String> arrangements = new ArrayList<>();
 
@@ -331,7 +388,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (areBooleansValid(pairs, HEARING_OPTIONS_HEARING_LOOP_LITERAL) && Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
             arrangements.add("hearingLoop");
         }
-        if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL) && Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString())) {
+        if (isSignLanguageInterpreterRequired) {
             arrangements.add("signLanguageInterpreter");
         }
         return arrangements;
