@@ -7,6 +7,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
+import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.removeSpacesFromNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
@@ -215,7 +216,6 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_phone", APPOINTEE_PHONE);
         pairs.put("person1_mobile", APPOINTEE_MOBILE);
         pairs.put("person1_dob", APPOINTEE_DATE_OF_BIRTH);
-        pairs.put("person1_nino", APPOINTEE_NINO);
         pairs.put("person2_title", APPELLANT_TITLE);
         pairs.put("person2_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person2_last_name", APPELLANT_LAST_NAME);
@@ -231,11 +231,11 @@ public class SscsCaseTransformerTest {
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
-        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob("1987-08-12").build();
+        Identity appellantIdentity = Identity.builder().nino(removeSpacesFromNino(APPELLANT_NINO)).dob("1987-08-12").build();
 
         Name appointeeName = Name.builder().title(APPOINTEE_TITLE).firstName(APPOINTEE_FIRST_NAME).lastName(APPOINTEE_LAST_NAME).build();
         Address appointeeAddress = Address.builder().line1(APPOINTEE_ADDRESS_LINE1).line2(APPOINTEE_ADDRESS_LINE2).town(APPOINTEE_ADDRESS_LINE3).county(APPOINTEE_ADDRESS_LINE4).postcode(APPOINTEE_POSTCODE).build();
-        Identity appointeeIdentity = Identity.builder().nino(APPOINTEE_NINO).dob("1990-12-03").build();
+        Identity appointeeIdentity = Identity.builder().dob("1990-12-03").build();
         Contact appointeeContact = Contact.builder().phone(APPOINTEE_PHONE).mobile(APPOINTEE_MOBILE).build();
         Appointee appointee = Appointee.builder().name(appointeeName).address(appointeeAddress).contact(appointeeContact).identity(appointeeIdentity).build();
 
@@ -265,7 +265,7 @@ public class SscsCaseTransformerTest {
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
-        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob("1987-08-12").build();
+        Identity appellantIdentity = Identity.builder().nino(removeSpacesFromNino(APPELLANT_NINO)).dob("1987-08-12").build();
 
         Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(Contact.builder().build()).build();
 
@@ -1003,7 +1003,7 @@ public class SscsCaseTransformerTest {
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
-        Identity appellantIdentity = Identity.builder().nino(APPELLANT_NINO).dob(formatDate(APPELLANT_DATE_OF_BIRTH)).build();
+        Identity appellantIdentity = Identity.builder().nino(removeSpacesFromNino(APPELLANT_NINO)).dob(formatDate(APPELLANT_DATE_OF_BIRTH)).build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).email(APPELLANT_EMAIL).build();
         Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(appellantContact).build();
 
