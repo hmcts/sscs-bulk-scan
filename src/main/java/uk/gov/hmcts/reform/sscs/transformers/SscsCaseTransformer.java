@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
-import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.removeSpacesFromNino;
+import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.domain.email.EmailAttachment.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
@@ -244,7 +244,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private Identity buildPersonIdentity(Map<String, Object> pairs, String personType) {
         return Identity.builder()
             .dob(generateDateForCcd(pairs, errors,personType + "_dob"))
-            .nino(removeSpacesFromNino(getField(pairs,personType + "_nino")))
+            .nino(normaliseNino(getField(pairs,personType + "_nino")))
         .build();
     }
 
