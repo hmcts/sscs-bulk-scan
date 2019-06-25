@@ -76,6 +76,8 @@ validation:
 
 feature:
   send_to_dwp: ${SEND_TO_DWP_ENABLED:true}
+  rpc_email_robotics: ${FEATURE_RPC_EMAIL_ROBOTICS:true}
+
 
 ---
 spring:
