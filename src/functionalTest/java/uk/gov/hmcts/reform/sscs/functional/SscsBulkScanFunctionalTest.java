@@ -78,6 +78,19 @@ public class SscsBulkScanFunctionalTest {
     }
 
     @Test
+    public void validate_nino_normalised() throws IOException {
+        createCase();
+        String json = getJson("validate_appeal_created_case_request.json");
+        json = json.replace("CASE_ID_TO_BE_REPLACED", ccdCaseId);
+
+        validationEndpointRequest(json);
+
+        SscsCaseDetails caseDetails = ccdService.getByCaseId(Long.valueOf(ccdCaseId), idamTokens);
+
+        assertEquals("AB225566B", caseDetails.getData().getAppeal().getAppellant().getIdentity().getNino());
+    }
+
+    @Test
     public void validate_and_update_incomplete_case_to_appeal_created_case() throws IOException {
         createCase();
         String json = getJson("validate_appeal_created_case_request.json");
