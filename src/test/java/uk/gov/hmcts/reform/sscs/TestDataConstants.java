@@ -31,7 +31,6 @@ public class TestDataConstants {
     public static final String APPOINTEE_ADDRESS_LINE4 = "Essex";
     public static final String APPOINTEE_POSTCODE = "RM1 2KJ";
     public static final String APPOINTEE_DATE_OF_BIRTH = "03/12/1990";
-    public static final String APPOINTEE_NINO = "BA 07 23 19 B";
     public static final String APPOINTEE_PHONE = "01874505050";
     public static final String APPOINTEE_MOBILE = "07929295555";
     public static final String APPOINTEE_COMPANY = "Monsters Inc";
