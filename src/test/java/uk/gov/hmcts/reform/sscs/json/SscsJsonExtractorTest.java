@@ -64,6 +64,31 @@ public class SscsJsonExtractorTest {
     }
 
     @Test
+    public void givenDocumentData_thenExtractIntoSscsDocumentObjectWhenUnknownPropertiesPresent() {
+
+        Map<String, Object> valueMap = new HashMap<>();
+
+        valueMap.put("fileName", "Test_doc");
+        valueMap.put("scannedDate", "2018-08-10");
+        valueMap.put("deliveryDate", "2018-08-10");
+        valueMap.put("type", "1");
+        valueMap.put("subtype", "my subtype");
+        valueMap.put("controlNumber", "4");
+        JSONObject item = new JSONObject();
+        item.put("document_url", "www.test.com");
+        valueMap.put("url", item);
+
+        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scannedDocuments", valueMap);
+
+        ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
+
+        ScannedRecord expectedRecord = ScannedRecord.builder()
+            .type("1").subtype("my subtype").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
+
+        assertEquals(expectedRecord, result.getRecords().get(0));
+    }
+
+    @Test
     public void givenMultipleDocumentData_thenExtractIntoSscsDocumentObject() {
 
         Map<String, Object> valueMap1 = new HashMap<>();
