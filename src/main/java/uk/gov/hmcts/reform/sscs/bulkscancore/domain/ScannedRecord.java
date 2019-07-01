@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ScannedRecord {
 
     private DocumentLink url;

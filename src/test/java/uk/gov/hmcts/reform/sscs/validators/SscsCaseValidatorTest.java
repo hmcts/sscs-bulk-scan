@@ -54,6 +54,7 @@ public class SscsCaseValidatorTest {
         offices.add("2");
         offices.add("Balham DRT");
         offices.add("Milton Keynes DRT");
+        offices.add("Worthing DRT");
         ReflectionTestUtils.setField(validator, "offices", offices);
 
         given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
