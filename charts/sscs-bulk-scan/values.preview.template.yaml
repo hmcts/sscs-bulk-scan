@@ -1,5 +1,15 @@
 java:
+  image: ${IMAGE_NAME}
+  ingressHost: ${SERVICE_FQDN}
   environment:
+    IDAM_OAUTH2_CLIENT_SECRET: ${IDAM_OAUTH2_CLIENT_SECRET}
+    IDAM_OAUTH2_USER_EMAIL: ${IDAM_OAUTH2_USER_EMAIL}
+    IDAM_OAUTH2_USER_PASSWORD: ${IDAM_OAUTH2_USER_PASSWORD}
+    EMAIL_SERVER_HOST: ${EMAIL_SERVER_HOST}
+    EMAIL_SERVER_PORT: ${EMAIL_SERVER_PORT}
+    ROBOTICS_EMAIL_FROM: ${ROBOTICS_EMAIL_FROM}
+    ROBOTICS_EMAIL_TO: ${ROBOTICS_EMAIL_TO}
+    S2S_SECRET: ${S2S_SECRET}
     IDAM_S2S_AUTH: "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
     CORE_CASE_DATA_API_URL: "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
     DOCUMENT_MANAGEMENT_URL: "http://dm-store-aat.service.core-compute-aat.internal"
