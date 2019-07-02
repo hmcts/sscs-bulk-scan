@@ -64,6 +64,15 @@ public class SscsBulkScanFunctionalTest {
     }
 
     @Test
+    public void create_appeal_created_with_broken_data() throws IOException {
+        Response response = exceptionRecordEndpointRequest(getJson("broken.json"));
+
+        //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
+        List<String> possibleStates = new ArrayList<>(Arrays.asList("validAppeal", "withDwp"));
+        assertTrue(possibleStates.contains(findStateOfCaseInCcd(response)));
+    }
+
+    @Test
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
         Response response = exceptionRecordEndpointRequest(getJson("some_mandatory_fields_missing.json"));
 
