@@ -44,7 +44,7 @@ public class CcdCallbackHandler {
     @Value("${feature.send_to_dwp}")
     private Boolean sendToDwpFeature;
 
-    @Value("${debug_json}")
+    @Value("${feature.debug_json}")
     private Boolean debugJson;
 
     public CcdCallbackHandler(
