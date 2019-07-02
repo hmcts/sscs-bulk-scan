@@ -70,6 +70,8 @@ module "sscs-bulk-scan" {
     EMAIL_SMTP_SSL_TRUST   = "${var.appeal_email_smtp_ssl_trust}"
 
     DOCUMENT_MANAGEMENT_URL = "${local.documentStore}"
+
+    DEBUG_JSON    = "${var.debug_json}"
   }
 }
 
