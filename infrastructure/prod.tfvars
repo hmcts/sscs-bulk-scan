@@ -8,4 +8,4 @@ idam_url = "https://idam-api.platform.hmcts.net"
 
 robotics_enabled = "true"
 
-send_to_dwp_enabled = "false"
+send_to_dwp_enabled = "true"

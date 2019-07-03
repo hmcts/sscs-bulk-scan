@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -41,6 +43,9 @@ public class CcdCallbackHandler {
 
     @Value("${feature.send_to_dwp}")
     private Boolean sendToDwpFeature;
+
+    @Value("${feature.debug_json}")
+    private Boolean debugJson;
 
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
@@ -88,6 +93,15 @@ public class CcdCallbackHandler {
             log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             return validationErrorResponse;
         } else {
+            if (debugJson) {
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    String data = mapper.writeValueAsString(exceptionCaseData);
+                    log.info("*** Json **" + data);
+                } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                    log.error("Cannot print Json.", e);
+                }
+            }
             log.info("Exception record id {} validated successfully", exceptionRecordId);
             return update(caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token, exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
         }

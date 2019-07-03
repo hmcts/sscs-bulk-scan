@@ -60,10 +60,12 @@ public class CcdCallbackHandlerTest {
         sscsDataHelper = new SscsDataHelper(null);
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, roboticsHandler, sscsDataHelper, caseDataHelper);
         ReflectionTestUtils.setField(ccdCallbackHandler, "sendToDwpFeature", true);
+        ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
     }
 
     @Test
     public void should_return_exception_data_with_case_id_and_state_when_transformation_and_validation_are_successful() {
+        ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", true);
         // given
         CaseDetails caseDetails = CaseDetails
             .builder()
