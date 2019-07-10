@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
-import static uk.gov.hmcts.reform.sscs.domain.email.EmailAttachment.*;
+import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 

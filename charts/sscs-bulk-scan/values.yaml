@@ -7,8 +7,6 @@ java:
         - sscs-s2s-secret
         - smtp-host
         - smtp-port
-        - robotics-email-from
-        - robotics-email-to
         - idam-sscs-systemupdate-user
         - idam-sscs-systemupdate-password
         - idam-sscs-oauth2-client-secret
@@ -20,5 +18,3 @@ java:
     ROOT_LOGGING_LEVEL: INFO
     LOG_OUTPUT: single
     IDAM_OAUTH2_REDIRECT_URL: "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
-    ROBOTICS_EMAIL_SUBJECT: "Robotics Data"
-    ROBOTICS_EMAIL_MESSAGE: "Please find attached the robotics json file Please do not respond to this email"

@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
@@ -29,7 +28,6 @@ public class SscsDataHelperTest {
     @Before
     public void setUp() {
         caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"));
-        ReflectionTestUtils.setField(caseDataHelper, "sendToDwpFeature", true);
     }
 
     @Test
@@ -57,7 +55,7 @@ public class SscsDataHelperTest {
     }
 
     @Test
-    public void givenACaseResponseWithNoWarningsAndRecentMrnDateAndDwpFeatureFlagOn_thenReturnCaseCreatedEvent() {
+    public void givenACaseResponseWithNoWarningsAndRecentMrnDate_thenReturnCaseCreatedEvent() {
         LocalDate localDate = LocalDate.now();
 
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
@@ -65,19 +63,6 @@ public class SscsDataHelperTest {
         transformedCase.put("appeal", appeal);
 
         assertEquals("validAppealCreated", caseDataHelper.findEventToCreateCase(CaseResponse.builder().transformedCase(transformedCase).build()));
-    }
-
-    @Test
-    public void givenACaseResponseWithNoWarningsAndRecentMrnDateAndDwpFeatureFlagOff_thenReturnCaseCreatedEvent() {
-        ReflectionTestUtils.setField(caseDataHelper, "sendToDwpFeature", false);
-
-        LocalDate localDate = LocalDate.now();
-
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
-        Map<String, Object> transformedCase = new HashMap<>();
-        transformedCase.put("appeal", appeal);
-
-        assertEquals("appealCreated", caseDataHelper.findEventToCreateCase(CaseResponse.builder().transformedCase(transformedCase).build()));
     }
 
     @Test

@@ -55,20 +55,6 @@ module "sscs-bulk-scan" {
 
     CORE_CASE_DATA_API_URL = "${local.ccdApiUrl}"
 
-    ROBOTICS_EMAIL_FROM    = "${data.azurerm_key_vault_secret.robotics_email_from.value}"
-    ROBOTICS_EMAIL_TO      = "${data.azurerm_key_vault_secret.robotics_email_to.value}"
-    ROBOTICS_EMAIL_SUBJECT = "${var.robotics_email_subject}"
-    ROBOTICS_EMAIL_MESSAGE = "${var.robotics_email_message}"
-    ROBOTICS_ENABLED       = "${var.robotics_enabled}"
-
-    SEND_TO_DWP_ENABLED    = "${var.send_to_dwp_enabled}"
-    FEATURE_RPC_EMAIL_ROBOTICS = "${var.feature_rpc_email_robotics}"
-
-    EMAIL_SERVER_HOST      = "${data.azurerm_key_vault_secret.smtp_host.value}"
-    EMAIL_SERVER_PORT      = "${data.azurerm_key_vault_secret.smtp_port.value}"
-    EMAIL_SMTP_TLS_ENABLED = "${var.appeal_email_smtp_tls_enabled}"
-    EMAIL_SMTP_SSL_TRUST   = "${var.appeal_email_smtp_ssl_trust}"
-
     DOCUMENT_MANAGEMENT_URL = "${local.documentStore}"
 
     DEBUG_JSON    = "${var.debug_json}"
@@ -117,12 +103,3 @@ data "azurerm_key_vault_secret" "robotics_email_to" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
-data "azurerm_key_vault_secret" "smtp_host" {
-  name      = "smtp-host"
-  vault_uri = "${local.permanent_vault_uri}"
-}
-
-data "azurerm_key_vault_secret" "smtp_port" {
-  name      = "smtp-port"
-  vault_uri = "${local.permanent_vault_uri}"
-}

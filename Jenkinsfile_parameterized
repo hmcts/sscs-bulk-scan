@@ -14,11 +14,6 @@ properties([
 ])
 List<LinkedHashMap<String, Object>> secrets = [
   secret('sscs-s2s-secret', 'S2S_SECRET'),
-  secret('smtp-host', 'EMAIL_SERVER_HOST'),
-  secret('smtp-port', 'EMAIL_SERVER_PORT'),
-
-  secret('robotics-email-from', 'ROBOTICS_EMAIL_FROM'),
-  secret('robotics-email-to', 'ROBOTICS_EMAIL_TO'),
 
   secret('idam-sscs-systemupdate-user', 'IDAM_OAUTH2_USER_EMAIL'),
   secret('idam-sscs-systemupdate-password', 'IDAM_OAUTH2_USER_PASSWORD'),
