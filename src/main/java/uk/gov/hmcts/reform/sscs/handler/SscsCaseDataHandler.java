@@ -5,7 +5,6 @@ import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.SEND_TO_DWP;
 
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
@@ -23,19 +22,13 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
     private final SscsDataHelper sscsDataHelper;
     private final CaseDataHelper caseDataHelper;
-    private final SscsRoboticsHandler roboticsHandler;
     private final CaseEvent caseEvent;
-
-    @Value("${feature.send_to_dwp}")
-    private Boolean sendToDwpFeature;
 
     public SscsCaseDataHandler(SscsDataHelper sscsDataHelper,
                                CaseDataHelper caseDataHelper,
-                               SscsRoboticsHandler roboticsHandler,
                                CaseEvent caseEvent) {
         this.sscsDataHelper = sscsDataHelper;
         this.caseDataHelper = caseDataHelper;
-        this.roboticsHandler = roboticsHandler;
         this.caseEvent = caseEvent;
     }
 
@@ -53,15 +46,9 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
                 if (isCaseCreatedEvent(eventId)) {
-
-                    if (sendToDwpFeature) {
-                        log.info("About to update case with sendToDwp event for id {}", caseId);
-                        caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
-                        log.info("Case updated with sendToDwp event for id {}", caseId);
-                    } else {
-                        //FIXME: Remove this line along with all robotics code once Dwp feature flag switched on
-                        roboticsHandler.handle(caseValidationResponse, caseId);
-                    }
+                    log.info("About to update case with sendToDwp event for id {}", caseId);
+                    caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
+                    log.info("Case updated with sendToDwp event for id {}", caseId);
                 }
 
                 return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();

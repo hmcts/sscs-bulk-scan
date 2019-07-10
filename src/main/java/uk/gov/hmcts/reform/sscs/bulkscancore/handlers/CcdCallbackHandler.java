@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
-import uk.gov.hmcts.reform.sscs.handler.SscsRoboticsHandler;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
 @Component
@@ -35,14 +34,9 @@ public class CcdCallbackHandler {
 
     private final CaseDataHandler caseDataHandler;
 
-    private final SscsRoboticsHandler roboticsHandler;
-
     private final SscsDataHelper sscsDataHelper;
 
     private final CaseDataHelper caseDataHelper;
-
-    @Value("${feature.send_to_dwp}")
-    private Boolean sendToDwpFeature;
 
     @Value("${feature.debug_json}")
     private Boolean debugJson;
@@ -51,14 +45,12 @@ public class CcdCallbackHandler {
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         CaseDataHandler caseDataHandler,
-        SscsRoboticsHandler roboticsHandler,
         SscsDataHelper sscsDataHelper,
         CaseDataHelper caseDataHelper
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
-        this.roboticsHandler = roboticsHandler;
         this.sscsDataHelper = sscsDataHelper;
         this.caseDataHelper = caseDataHelper;
     }
@@ -128,11 +120,6 @@ public class CcdCallbackHandler {
             return validationErrorResponse;
         } else {
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-
-            if (!sendToDwpFeature) {
-                //FIXME: Remove this line along with all robotics code once Dwp feature flag switched on
-                roboticsHandler.handle(caseValidationResponse, Long.valueOf(exceptionRecordId));
-            }
 
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .warnings(caseValidationResponse.getWarnings())
