@@ -5,7 +5,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
@@ -18,9 +17,6 @@ import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 public class SscsDataHelper {
 
     private final CaseEvent caseEvent;
-
-    @Value("${feature.send_to_dwp}")
-    private Boolean sendToDwpFeature;
 
     public SscsDataHelper(CaseEvent caseEvent) {
         this.caseEvent = caseEvent;
@@ -50,10 +46,8 @@ public class SscsDataHelper {
             return caseEvent.getIncompleteApplicationEventId();
         } else if (mrnDate != null && mrnDate.plusMonths(13L).isBefore(LocalDate.now())) {
             return caseEvent.getNonCompliantEventId();
-        } else if (sendToDwpFeature) {
-            return caseEvent.getValidAppealCreatedEventId();
         } else {
-            return caseEvent.getCaseCreatedEventId();
+            return caseEvent.getValidAppealCreatedEventId();
         }
     }
 

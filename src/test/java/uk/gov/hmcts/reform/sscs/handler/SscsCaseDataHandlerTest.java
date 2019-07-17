@@ -18,7 +18,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -42,9 +41,6 @@ public class SscsCaseDataHandlerTest {
     @Mock
     CaseDataHelper caseDataHelper;
 
-    @Mock
-    SscsRoboticsHandler roboticsHandler;
-
     LocalDate localDate;
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -53,9 +49,7 @@ public class SscsCaseDataHandlerTest {
     public void setup() {
         initMocks(this);
 
-        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, roboticsHandler, new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"));
-
-        ReflectionTestUtils.setField(sscsCaseDataHandler, "sendToDwpFeature", true);
+        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"));
 
         localDate = LocalDate.now();
     }
@@ -84,7 +78,6 @@ public class SscsCaseDataHandlerTest {
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived");
         verifyZeroInteractions(caseDataHelper);
-        verifyZeroInteractions(roboticsHandler);
     }
 
     @Test
@@ -105,7 +98,6 @@ public class SscsCaseDataHandlerTest {
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         verifyZeroInteractions(caseDataHelper);
-        verifyZeroInteractions(roboticsHandler);
 
         assertNull(response);
     }
@@ -136,37 +128,6 @@ public class SscsCaseDataHandlerTest {
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "validAppealCreated");
         verify(caseDataHelper).updateCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(), 1L, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
-        verifyZeroInteractions(roboticsHandler);
-    }
-
-    @Test
-    public void givenACaseWithNoWarningsAndSendToDwpFeatureFlagIsFalse_thenCreateCaseWithAppealCreatedEventAndDoNotSendToDwp() {
-        ReflectionTestUtils.setField(sscsCaseDataHandler, "sendToDwpFeature", false);
-
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
-            .appellant(Appellant.builder().address(
-                Address.builder().postcode("CM120HN").build())
-                .build()).build();
-
-        Map<String, Object> transformedCase = new HashMap<>();
-        transformedCase.put("appeal", appeal);
-
-        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
-
-        given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willReturn(1L);
-
-        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
-
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
-
-        assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
-        assertEquals("1", ((HandlerResponse) response).getCaseId());
-
-        verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated");
-        verify(roboticsHandler).handle(caseValidationResponse, 1L);
-        verifyZeroInteractions(caseDataHelper);
     }
 
     @Test
@@ -193,7 +154,6 @@ public class SscsCaseDataHandlerTest {
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "nonCompliant");
         verifyZeroInteractions(caseDataHelper);
-        verifyZeroInteractions(roboticsHandler);
     }
 
     @Test
@@ -223,7 +183,6 @@ public class SscsCaseDataHandlerTest {
 
         verify(caseDataHelper).createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived");
         verifyZeroInteractions(caseDataHelper);
-        verifyZeroInteractions(roboticsHandler);
     }
 
     @Test(expected = CaseDataHelperException.class)

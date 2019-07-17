@@ -45,7 +45,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         startForCaseworkerStub(START_EVENT_VALID_APPEAL_CREATED_URL);
         submitForCaseworkerStub("validAppealCreated");
-        readForCaseworkerStub(READ_EVENT_URL, true);
+        readForCaseworkerStub(READ_EVENT_URL);
 
         startForCaseworkerStub(UPDATE_EVENT_SEND_TO_DWP_URL);
         submitEventForCaseworkerStub("sendToDwp");
@@ -563,8 +563,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
                 .withBody(loadJson("mappings/create-case-200-response.json"))));
     }
 
-    private void readForCaseworkerStub(String eventUrl, Boolean validData) throws Exception {
-        String createCaseResponse = validData ? "mappings/create-case-200-response.json" : "mappings/create-case-invalid-robotics-200-response.json";
+    private void readForCaseworkerStub(String eventUrl) throws Exception {
+        String createCaseResponse = "mappings/create-case-200-response.json";
 
         ccdServer.stubFor(get(concat(eventUrl))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))

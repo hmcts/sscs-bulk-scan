@@ -59,36 +59,6 @@ variable "idam_url" {
   default = "http://testing.test"
 }
 
-variable "robotics_email_subject" {
-  type    = "string"
-  default = "Robotics Data"
-}
-
-variable "robotics_email_message" {
-  type    = "string"
-  default = "Please find attached the robotics json file \nPlease do not respond to this email"
-}
-
-variable "appeal_email_smtp_tls_enabled" {
-  type    = "string"
-  default = "true"
-}
-
-variable "appeal_email_smtp_ssl_trust" {
-  type    = "string"
-  default = "*"
-}
-
-variable "robotics_enabled" {
-  type    = "string"
-  default = "false"
-}
-
-variable "send_to_dwp_enabled" {
-  type    = "string"
-  default = "false"
-}
-
 variable "debug_json" {
   type    = "string"
   default = "false"
@@ -97,8 +67,4 @@ variable "debug_json" {
 variable "appinsights_instrumentation_key" {
   description = "Instrumentation key of the App Insights instance this webapp should use. Module will create own App Insights resource if this is not provided"
   default     = ""
-}
-
-variable "feature_rpc_email_robotics" {
-  default = "true"
 }
