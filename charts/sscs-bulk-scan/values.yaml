@@ -1,4 +1,5 @@
 java:
+  image: 'https://hmctspublic.azurecr.io/hmcts/sscs/bulk-scan:latest'
   applicationPort: 8090
   keyVaults:
     sscs-bulk-scan:
