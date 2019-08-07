@@ -62,6 +62,8 @@
     <cve>CVE-2019-10246</cve>
     <cve>CVE-2019-10247</cve>
     <cve>CVE-2019-12384</cve>
+    <cve>CVE-2019-14379</cve>
+    <cve>CVE-2019-14439</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
