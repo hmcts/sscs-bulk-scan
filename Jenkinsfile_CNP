@@ -13,7 +13,7 @@ def product = "sscs"
 def component = "bulk-scan"
 
 def secrets = [
-  'sscs-${env}'      : [
+  'sscs-bulk-scan-${env}'      : [
     secret('sscs-s2s-secret', 'S2S_SECRET'),
 
     secret('idam-sscs-systemupdate-user', 'IDAM_OAUTH2_USER_EMAIL'),
@@ -60,11 +60,8 @@ withPipeline("java", product, component) {
   }
 
   enableSlackNotifications('#sscs-tech')
-
   enableDockerBuild()
   installCharts()
   loadVaultSecrets(secrets)
-  setVaultName('sscs-bulk-scan')
-  enableSlackNotifications('#sscs-tech')
 }
 
