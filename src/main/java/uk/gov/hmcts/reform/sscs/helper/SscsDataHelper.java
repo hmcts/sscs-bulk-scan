@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,13 +29,23 @@ public class SscsDataHelper {
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
         appealData.put("subscriptions", subscriptions);
 
-        if (appeal != null && appeal.getAppellant() != null) {
-            if (appeal.getAppellant().getName() != null) {
-                appealData.put("generatedSurname", appeal.getAppellant().getName().getLastName());
+        if (appeal != null) {
+            if (appeal.getAppellant() != null) {
+                if (appeal.getAppellant().getName() != null) {
+                    appealData.put("generatedSurname", appeal.getAppellant().getName().getLastName());
+                }
+                if (appeal.getAppellant().getIdentity() != null) {
+                    appealData.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
+                    appealData.put("generatedDOB", appeal.getAppellant().getIdentity().getDob());
+                }
             }
-            if (appeal.getAppellant().getIdentity() != null) {
-                appealData.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
-                appealData.put("generatedDOB", appeal.getAppellant().getIdentity().getDob());
+            if (appeal.getBenefitType() != null) {
+                String benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
+                String issueCode = generateIssueCode();
+
+                appealData.put("benefitCode", benefitCode);
+                appealData.put("issueCode", issueCode);
+                appealData.put("caseCode", generateCaseCode(benefitCode, issueCode));
             }
         }
     }
