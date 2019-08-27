@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
@@ -83,6 +84,15 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String caseCreated = dtfOut.print(new DateTime());
         transformed.put("caseCreated", caseCreated);
+
+        if (appeal.getBenefitType() != null) {
+            String benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
+            String issueCode = generateIssueCode();
+
+            transformed.put("benefitCode", benefitCode);
+            transformed.put("issueCode", issueCode);
+            transformed.put("caseCode", generateCaseCode(benefitCode, issueCode));
+        }
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 

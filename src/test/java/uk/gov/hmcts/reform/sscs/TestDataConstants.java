@@ -58,4 +58,7 @@ public class TestDataConstants {
     public static final String HEARING_OPTIONS_DIALECT_TYPE = "Castilian";
     public static final Boolean AGREE_LESS_HEARING_NOTICE = true;
     public static final String SIGNATURE_NAME = "Barry Smith";
+    public static final String BENEFIT_CODE = "002";
+    public static final String ISSUE_CODE = "DD";
+    public static final String CASE_CODE = "002DD";
 }
