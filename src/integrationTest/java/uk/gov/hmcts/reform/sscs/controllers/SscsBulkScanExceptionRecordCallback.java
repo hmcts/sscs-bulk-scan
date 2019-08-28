@@ -337,7 +337,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "office", VALUE, "5"))
+            ImmutableMap.of(KEY, "office", VALUE, "Balham DRT"))
         );
         ocrList.add(ocrEntry(
             VALUE,
@@ -424,7 +424,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
         ocrList.add(ocrEntry(
             VALUE,
-            ImmutableMap.of(KEY, "office", VALUE, "5"))
+            ImmutableMap.of(KEY, "office", VALUE, "Balham DRT"))
         );
         ocrList.add(ocrEntry(
             VALUE,

@@ -55,7 +55,6 @@ schema.location: /schema/sscs-bulk-scan-schema.json
 
 validation:
   titles: Cllr,Count,DC,Dr,DS,Insp,Lady,Lord,Miss,Mr & Mrs,Mr,Mrs,Ms,PC,Rev,S/M,Sgt
-  dwp_offices: 1,2,3,4,5,6,7,8,9,10,Balham DRT,Birkenhead LM DRT,Chesterfield DRT,Coatbridge Benefit Centre,Inverness DRT,Lowestoft DRT,Milton Keynes DRT,Norwich DRT,Sheffield DRT,Springburn DRT,Watford DRT,Wellingborough DRT,test-hmcts-address,Worthing DRT
 
 feature:
   debug_json: ${DEBUG_JSON:false}
