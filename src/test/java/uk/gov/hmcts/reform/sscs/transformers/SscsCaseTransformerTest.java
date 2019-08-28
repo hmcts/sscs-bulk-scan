@@ -194,13 +194,13 @@ public class SscsCaseTransformerTest {
         pairs.put("hearing_options_language_type", HEARING_OPTIONS_LANGUAGE_TYPE);
         pairs.put("agree_less_hearing_notice", AGREE_LESS_HEARING_NOTICE);
         pairs.put("signature_name", SIGNATURE_NAME);
-        pairs.put("benefitCode", BENEFIT_CODE);
-        pairs.put("issueCode", ISSUE_CODE);
-        pairs.put("caseCode", CASE_CODE);
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(buildTestAppealData(), result.getTransformedCase().get("appeal"));
+        assertEquals(BENEFIT_CODE, result.getTransformedCase().get("benefitCode"));
+        assertEquals(ISSUE_CODE, result.getTransformedCase().get("issueCode"));
+        assertEquals(CASE_CODE, result.getTransformedCase().get("caseCode"));
 
         assertTrue(result.getErrors().isEmpty());
     }
