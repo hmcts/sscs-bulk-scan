@@ -198,6 +198,9 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(buildTestAppealData(), result.getTransformedCase().get("appeal"));
+        assertEquals(BENEFIT_CODE, result.getTransformedCase().get("benefitCode"));
+        assertEquals(ISSUE_CODE, result.getTransformedCase().get("issueCode"));
+        assertEquals(CASE_CODE, result.getTransformedCase().get("caseCode"));
 
         assertTrue(result.getErrors().isEmpty());
     }
