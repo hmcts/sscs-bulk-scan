@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
-import uk.gov.hmcts.reform.sscs.model.DwpAddress;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
@@ -161,9 +161,9 @@ public class SscsCaseValidator implements CaseValidator {
 
         } else if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
 
-            Optional<DwpAddress> address = dwpAddressLookupService.getDwpAddress(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
+            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
 
-            if (!address.isPresent()) {
+            if (!officeMapping.isPresent()) {
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
         }
