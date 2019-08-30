@@ -815,8 +815,34 @@ public class SscsCaseTransformerTest {
         ScannedRecord scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "My subtype");
         records.add(scannedRecord);
 
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Map<String, Object> transformedCase = result.getTransformedCase();
+        @SuppressWarnings("unchecked")
+        List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
+        assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord.getFileName(), docs.get(0).getValue().getDocumentFileName());
+        assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
+
+        assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
+
         org.joda.time.format.DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
         String expectedCreatedDate = dtfOut.print(new DateTime());
+        assertEquals(expectedCreatedDate, transformedCase.get("caseCreated"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenOneDocumentWithBadlyFormedOpeningDate_thenBuildACase() {
+        List<ScannedRecord> records = new ArrayList<>();
+        ScannedRecord scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "My subtype");
+        records.add(scannedRecord);
+
+        caseDetails.getCaseData().put("openingDate", "01-01-99");
 
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
 
@@ -831,6 +857,9 @@ public class SscsCaseTransformerTest {
         assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
 
         assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
+
+        org.joda.time.format.DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
+        String expectedCreatedDate = dtfOut.print(new DateTime());
         assertEquals(expectedCreatedDate, transformedCase.get("caseCreated"));
 
         assertTrue(result.getErrors().isEmpty());

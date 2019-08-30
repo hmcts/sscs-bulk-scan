@@ -99,7 +99,8 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String extractOpeningDate(CaseDetails caseDetails) {
-        return caseDetails.getCaseData().get("openingDate") == null
+        String openingDate = (String) caseDetails.getCaseData().get("openingDate");
+        return (StringUtils.isEmpty(openingDate) || openingDate.length() < 10)
             ? DATE_FORMAT.print(new DateTime())
             : ((String) caseDetails.getCaseData().get("openingDate")).substring(0, 10);
     }
