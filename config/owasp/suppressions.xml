@@ -132,6 +132,7 @@
    ]]></notes>
     <sha1>29a4ed185eeca1d90b0f4160911029ec692e746f</sha1>
     <cve>CVE-2019-11065</cve>
+    <cve>CVE-2019-15052</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
