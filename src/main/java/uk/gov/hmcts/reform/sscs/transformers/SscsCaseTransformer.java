@@ -82,7 +82,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         transformed.put("bulkScanCaseReference", caseId);
 
         String caseCreated = extractOpeningDate(caseDetails);
-        transformed.put("caseCreated", extractOpeningDate(caseDetails));
+        transformed.put("caseCreated", caseCreated);
 
         if (appeal.getBenefitType() != null) {
             String benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
