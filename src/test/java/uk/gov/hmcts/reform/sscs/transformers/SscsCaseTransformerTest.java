@@ -21,6 +21,8 @@ import java.util.*;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.assertj.core.api.Assertions;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -813,6 +815,9 @@ public class SscsCaseTransformerTest {
         ScannedRecord scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "My subtype");
         records.add(scannedRecord);
 
+        org.joda.time.format.DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
+        String expectedCreatedDate = dtfOut.print(new DateTime());
+
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
@@ -826,6 +831,36 @@ public class SscsCaseTransformerTest {
         assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
 
         assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
+        assertEquals(expectedCreatedDate, transformedCase.get("caseCreated"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenOneDocumentWithAnOpeningDate_thenBuildACase() {
+        List<ScannedRecord> records = new ArrayList<>();
+        ScannedRecord scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "My subtype");
+        records.add(scannedRecord);
+
+        org.joda.time.format.DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
+        String expectedCreatedDate = dtfOut.print(new DateTime().minusYears(3));
+
+        caseDetails.getCaseData().put("openingDate", expectedCreatedDate);
+
+        given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).build());
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        Map<String, Object> transformedCase = result.getTransformedCase();
+        @SuppressWarnings("unchecked")
+        List<SscsDocument> docs = ((List<SscsDocument>) transformedCase.get("sscsDocument"));
+        assertEquals("2018-08-10", docs.get(0).getValue().getDocumentDateAdded());
+        assertEquals(scannedRecord.getFileName(), docs.get(0).getValue().getDocumentFileName());
+        assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
+        assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
+
+        assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
+        assertEquals(expectedCreatedDate, transformedCase.get("caseCreated"));
 
         assertTrue(result.getErrors().isEmpty());
     }
