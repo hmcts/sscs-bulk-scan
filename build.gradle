@@ -17,6 +17,12 @@ version = '0.0.1'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations.all {
+  resolutionStrategy {
+    force 'commons-beanutils:commons-beanutils:1.9.4'
+  }
+}
+
 sourceSets {
   functionalTest {
     java {
@@ -67,7 +73,7 @@ task smoke(type: Test, description: 'Runs Smoke Tests.') {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '8.18'
+  toolVersion = '8.24'
   // need to set configDir to rootDir otherwise submodule will use submodule/config/checkstyle
   configDir = new File(rootDir, 'config/checkstyle')
 }
