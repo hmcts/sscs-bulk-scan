@@ -68,7 +68,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             Long caseId = null;
 
             if (!StringUtils.isEmpty(caseReference)) {
-                log.info("Case already exists for exception record id {}", caseReference, exceptionRecordId);
+                log.info("Case {} already exists for exception record id {}", caseReference, exceptionRecordId);
                 isCaseAlreadyExists = true;
             } else if (!StringUtils.isEmpty(generatedNino) && !StringUtils.isEmpty(benefitType) && !StringUtils.isEmpty(mrnDate)) {
                 IdamTokens idamTokens = idamService.getIdamTokens();
