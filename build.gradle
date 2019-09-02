@@ -17,12 +17,6 @@ version = '0.0.1'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-configurations.all {
-  resolutionStrategy {
-    force 'commons-beanutils:commons-beanutils:1.9.4'
-  }
-}
-
 sourceSets {
   functionalTest {
     java {
@@ -233,6 +227,8 @@ dependencyManagement {
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
     }
+
+    dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
   }
 }
 
