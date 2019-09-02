@@ -98,9 +98,11 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                         caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
                         log.info("Case updated with sendToDwp event for id {}", caseId);
                     }
+
+                    caseReference = String.valueOf(caseId);
                 }
 
-                return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(String.valueOf(caseId)).build();
+                return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(caseReference).build();
             } catch (FeignException e) {
                 throw e;
             } catch (Exception e) {
