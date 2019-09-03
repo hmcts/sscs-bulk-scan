@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.sscs.config;
 
 import java.util.List;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
@@ -27,11 +27,11 @@ public class AuthServiceConfig {
     public AuthTokenValidator tokenValidatorStub() {
         return new AuthTokenValidator() {
             public void validate(String token) {
-                throw new NotImplementedException();
+                throw new NotImplementedException("AuthTokenValidator: validate");
             }
 
             public void validate(String token, List<String> roles) {
-                throw new NotImplementedException();
+                throw new NotImplementedException("AuthTokenValidator: validate");
             }
 
             public String getServiceName(String token) {
