@@ -196,6 +196,9 @@ dependencies {
   integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.9.3'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
   testCompile (group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot) {
     exclude group: "com.vaadin.external.google", module:"android-json"
