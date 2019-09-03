@@ -151,4 +151,12 @@
     <cve>CVE-2018-9116</cve>
     <cve>CVE-2018-9117</cve>
   </suppress>
+  <suppress>
+    <notes><![CDATA[
+            file name: gradle-pitest-plugin-1.4.0.jar
+    ]]></notes>
+    <gav regex="true">^gradle:gradle:1.4.0:*$</gav>
+    <cpe>cpe:/2.3:a:gradle:gradle:1.4.0</cpe>
+    <cve>CVE-2019-15052</cve>
+  </suppress>
 </suppressions>
