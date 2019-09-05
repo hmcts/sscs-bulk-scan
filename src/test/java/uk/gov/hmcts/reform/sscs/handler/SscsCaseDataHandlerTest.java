@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.sscs.handler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -22,15 +21,15 @@ import org.junit.Test;
 import org.mockito.Mock;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
-import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
-import uk.gov.hmcts.reform.sscs.idam.IdamService;
 
 public class SscsCaseDataHandlerTest {
 
@@ -43,10 +42,10 @@ public class SscsCaseDataHandlerTest {
     CaseDataHelper caseDataHelper;
 
     @Mock
-    private CcdService ccdService;
+    ExceptionCaseData exceptionCaseData;
 
     @Mock
-    private IdamService idamService;
+    CaseDetails caseDetails;
 
     LocalDate localDate;
 
@@ -56,7 +55,9 @@ public class SscsCaseDataHandlerTest {
     public void setup() {
         initMocks(this);
 
-        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), ccdService, idamService);
+        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"));
+        when(exceptionCaseData.getCaseDetails()).thenReturn(caseDetails);
+        when(caseDetails.getCaseData()).thenReturn(new HashMap<>());
 
         localDate = LocalDate.now();
     }
@@ -72,15 +73,15 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings).transformedCase(transformedCase).build();
 
-        given(ccdService.findCaseBy(any(), any())).willReturn(Lists.emptyList());
+        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
 
         given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
+                transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
 
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("incompleteApplicationReceived");
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, true,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, true,
+                Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
@@ -100,13 +101,13 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings).transformedCase(transformedCase).build();
 
-        given(ccdService.findCaseBy(any(), any())).willReturn(Lists.emptyList());
+        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
 
         given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
+                transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
+                Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         verifyZeroInteractions(caseDataHelper);
 
@@ -115,16 +116,17 @@ public class SscsCaseDataHandlerTest {
 
     @Test
     public void givenACaseWithCaseReference_thenDoNotCreateCaseWithIncompleteApplicationEvent() {
-        List<String> warnings = new ArrayList<>();
-
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
+        Map<String, Object> caseData = new HashMap<>();
+        caseData.put("caseReference", 1L);
+
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
-        transformedCase.put("caseReference",1L);
 
-        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings).transformedCase(transformedCase).build();
+        when(caseDetails.getCaseData()).thenReturn(caseData);
+        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(new ArrayList<>()).transformedCase(transformedCase).build();
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
+        CallbackResponse response =  sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
                 Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         verifyZeroInteractions(caseDataHelper);
@@ -132,8 +134,8 @@ public class SscsCaseDataHandlerTest {
 
     @Test
     public void givenACaseWithExistingNinoMrnDateAndBenefitCode_thenDoNotCreateCaseWithIncompleteApplicationEvent() {
-        SscsCaseDetails sscsCaseDetails = mock(SscsCaseDetails.class);
-        List<SscsCaseDetails> caseDetails = new ArrayList<>();
+        uk.gov.hmcts.reform.ccd.client.model.CaseDetails sscsCaseDetails = mock(uk.gov.hmcts.reform.ccd.client.model.CaseDetails.class);
+        List<uk.gov.hmcts.reform.ccd.client.model.CaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(sscsCaseDetails);
         String nino = "testnino";
         String benifitCode = "002";
@@ -147,38 +149,38 @@ public class SscsCaseDataHandlerTest {
         transformedCase.put("generatedNino",nino);
         transformedCase.put("benefitCode", benifitCode);
 
-        given(ccdService.findCaseBy(anyMap(), any())).willReturn(caseDetails);
+        given(caseDataHelper.findCaseBy(getSearchCriteria(nino, benifitCode, mrnDate.toString()), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(caseDetails);
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(new ArrayList<>()).transformedCase(transformedCase).build();
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
+        CallbackResponse response =  sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
                 Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
-        verifyZeroInteractions(caseDataHelper);
+        verify(caseDataHelper).findCaseBy(getSearchCriteria(nino, benifitCode, mrnDate.toString()), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID);
     }
 
     @Test
     public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwp() {
 
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
-            .appellant(Appellant.builder().address(
-                Address.builder().postcode("CM120HN").build())
-            .build()).build();
+                .appellant(Appellant.builder().address(
+                        Address.builder().postcode("CM120HN").build())
+                        .build()).build();
 
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        given(ccdService.findCaseBy(any(), any())).willReturn(Lists.emptyList());
+        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
 
         given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "validAppealCreated")).willReturn(1L);
+                transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "validAppealCreated")).willReturn(1L);
 
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("validAppealCreated");
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
+                Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
@@ -198,15 +200,15 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        given(ccdService.findCaseBy(any(), any())).willReturn(Lists.emptyList());
+        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
 
         given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "nonCompliant")).willReturn(1L);
+                transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "nonCompliant")).willReturn(1L);
 
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("nonCompliant");
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, true,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, true,
+                Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
@@ -229,15 +231,15 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings).transformedCase(transformedCase).build();
 
-        given(ccdService.findCaseBy(any(), any())).willReturn(Lists.emptyList());
+        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
 
         given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
+                transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
 
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("incompleteApplicationReceived");
 
-        CallbackResponse response =  sscsCaseDataHandler.handle(caseValidationResponse, true,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        CallbackResponse response =  sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, true,
+                Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
@@ -256,11 +258,27 @@ public class SscsCaseDataHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
         given(caseDataHelper.createCase(
-            transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willThrow(new RuntimeException());
+                transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "appealCreated")).willThrow(new RuntimeException());
 
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
 
-        sscsCaseDataHandler.handle(caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
+                Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+    }
+
+    private Map<String,String> getSearchCriteria() {
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("case.generatedNino", "");
+        searchCriteria.put("case.appeal.benefitType.code", "");
+        searchCriteria.put("case.appeal.mrnDetails.mrnDate", "");
+        return searchCriteria;
+    }
+
+    private Map<String,String> getSearchCriteria(String nino, String benefitCode, String mrnDate) {
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("case.generatedNino", nino);
+        searchCriteria.put("case.appeal.benefitType.code", benefitCode);
+        searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
+        return searchCriteria;
     }
 }

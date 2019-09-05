@@ -95,7 +95,7 @@ public class CcdCallbackHandler {
                 }
             }
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-            return update(caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token, exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
+            return update(exceptionCaseData, caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token, exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
         }
     }
 
@@ -127,8 +127,9 @@ public class CcdCallbackHandler {
         }
     }
 
-    private CallbackResponse update(CaseResponse caseValidationResponse, Boolean isIgnoreWarnings, Token token, String exceptionRecordId, Map<String, Object> exceptionRecordData) {
+    private CallbackResponse update(ExceptionCaseData exceptionCaseData, CaseResponse caseValidationResponse, Boolean isIgnoreWarnings, Token token, String exceptionRecordId, Map<String, Object> exceptionRecordData) {
         HandlerResponse handlerResponse = (HandlerResponse) caseDataHandler.handle(
+            exceptionCaseData,
             caseValidationResponse,
             isIgnoreWarnings,
             token,
