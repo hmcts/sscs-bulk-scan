@@ -11,6 +11,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,8 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 @Component
@@ -37,15 +40,15 @@ public class SscsCaseValidator implements CaseValidator {
     private CallbackType callbackType;
 
     private final RegionalProcessingCenterService regionalProcessingCenterService;
+    private final DwpAddressLookupService dwpAddressLookupService;
 
     @Value("#{'${validation.titles}'.split(',')}")
     private List<String> titles;
 
-    @Value("#{'${validation.dwp_offices}'.split(',')}")
-    private List<String> offices;
-
-    public SscsCaseValidator(RegionalProcessingCenterService regionalProcessingCenterService) {
+    public SscsCaseValidator(RegionalProcessingCenterService regionalProcessingCenterService,
+                             DwpAddressLookupService dwpAddressLookupService) {
         this.regionalProcessingCenterService = regionalProcessingCenterService;
+        this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
     @Override
@@ -155,8 +158,14 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (!doesIssuingOfficeExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
-        } else if (!isIssuingOfficeValid(appeal.getMrnDetails().getDwpIssuingOffice())) {
-            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
+
+        } else if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
+
+            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
+
+            if (!officeMapping.isPresent()) {
+                warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
+            }
         }
     }
 
@@ -305,10 +314,6 @@ public class SscsCaseValidator implements CaseValidator {
             return appeal.getMrnDetails().getDwpIssuingOffice() != null;
         }
         return false;
-    }
-
-    private boolean isIssuingOfficeValid(String dwpIssuingOffice) {
-        return offices.stream().anyMatch(o -> o.equalsIgnoreCase(dwpIssuingOffice));
     }
 
     private String getPerson1OrPerson2(Appellant appellant) {

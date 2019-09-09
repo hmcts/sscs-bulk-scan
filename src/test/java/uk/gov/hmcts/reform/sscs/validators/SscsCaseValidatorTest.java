@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
@@ -21,6 +22,7 @@ import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 public class SscsCaseValidatorTest {
@@ -32,30 +34,25 @@ public class SscsCaseValidatorTest {
     @Mock
     RegionalProcessingCenterService regionalProcessingCenterService;
 
+    DwpAddressLookupService dwpAddressLookupService;
+
     private SscsCaseValidator validator;
 
     private MrnDetails defaultMrnDetails;
 
     private List<String> titles = new ArrayList<>();
-    private List<String> offices = new ArrayList<>();
 
     @Before
     public void setup() {
         initMocks(this);
-        validator = new SscsCaseValidator(regionalProcessingCenterService);
+        dwpAddressLookupService = new DwpAddressLookupService();
+        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService);
 
         defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2018-12-09").build();
 
         titles.add("Mr");
         titles.add("Mrs");
         ReflectionTestUtils.setField(validator, "titles", titles);
-
-        offices.add("1");
-        offices.add("2");
-        offices.add("Balham DRT");
-        offices.add("Milton Keynes DRT");
-        offices.add("Worthing DRT");
-        ReflectionTestUtils.setField(validator, "offices", offices);
 
         given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
     }
@@ -376,14 +373,6 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Balham DRT").build(), buildAppellant(false), true));
 
         assertTrue(response.getWarnings().isEmpty());
-    }
-
-    @Test
-    public void givenAnMrnContainsAValidDwpIssuingOffice_thenDoNotAddAWarning() {
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("1").build(), buildAppellant(false), true));
-
-        assertEquals(0, response.getWarnings().size());
-        assertEquals(0, response.getErrors().size());
     }
 
     @Test
@@ -820,7 +809,7 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrn(MrnDetails mrn, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, PIP.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant, Boolean exceptionCaseType) {
