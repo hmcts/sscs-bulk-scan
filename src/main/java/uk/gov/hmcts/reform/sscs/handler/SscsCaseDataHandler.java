@@ -55,11 +55,12 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
             String caseReference = String.valueOf(Optional.ofNullable(exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
             String generatedNino = String.valueOf(Optional.ofNullable(caseValidationResponse.getTransformedCase().get("generatedNino")).orElse(""));
-            String benefitType = String.valueOf(Optional.ofNullable(caseValidationResponse.getTransformedCase().get("benefitCode")).orElse(""));
             Appeal appeal = (Appeal) caseValidationResponse.getTransformedCase().get("appeal");
             String mrnDate = "";
+            String benefitType = "";
             if (appeal != null) {
                 mrnDate = appeal.getMrnDetails().getMrnDate();
+                benefitType = appeal.getBenefitType().getCode();
             }
             Long caseId;
 
