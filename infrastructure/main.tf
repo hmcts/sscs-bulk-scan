@@ -25,7 +25,7 @@ locals {
 }
 
 module "sscs-bulk-scan" {
-  source              = "git@github.com:hmcts/moj-module-webapp?ref=master"
+  source              = "git@github.com:hmcts/cnp-module-webapp?ref=master"
   product             = "${var.product}-${var.component}"
   location            = "${var.location_app}"
   env                 = "${var.env}"
