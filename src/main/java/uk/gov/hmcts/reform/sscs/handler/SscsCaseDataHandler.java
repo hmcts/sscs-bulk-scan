@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -52,9 +51,14 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         if (canCreateCase(caseValidationResponse, ignoreWarnings, exceptionRecordId)) {
             boolean isCaseAlreadyExists = false;
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
+            if ("nonCompliant".equals(eventId)) {
+                caseValidationResponse.getTransformedCase().put("interlocReferralReason", "over13months");
+            }
 
-            String caseReference = String.valueOf(Optional.ofNullable(exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
-            String generatedNino = String.valueOf(Optional.ofNullable(caseValidationResponse.getTransformedCase().get("generatedNino")).orElse(""));
+            String caseReference = String.valueOf(Optional.ofNullable(
+                exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
+            String generatedNino = String.valueOf(Optional.ofNullable(
+                caseValidationResponse.getTransformedCase().get("generatedNino")).orElse(""));
             Appeal appeal = (Appeal) caseValidationResponse.getTransformedCase().get("appeal");
             String mrnDate = "";
             String benefitType = "";
@@ -67,32 +71,36 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             if (!StringUtils.isEmpty(caseReference)) {
                 log.info("Case {} already exists for exception record id {}", caseReference, exceptionRecordId);
                 isCaseAlreadyExists = true;
-            } else if (!StringUtils.isEmpty(generatedNino) && !StringUtils.isEmpty(benefitType) && !StringUtils.isEmpty(mrnDate)) {
-                Map<String,String> searchCriteria = new HashMap<>();
+            } else if (!StringUtils.isEmpty(generatedNino) && !StringUtils.isEmpty(benefitType)
+                && !StringUtils.isEmpty(mrnDate)) {
+                Map<String, String> searchCriteria = new HashMap<>();
                 searchCriteria.put("case.generatedNino", generatedNino);
                 searchCriteria.put("case.appeal.benefitType.code", benefitType);
                 searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
-                List<CaseDetails> caseDetails = caseDataHelper.findCaseBy(searchCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
+                List<CaseDetails> caseDetails = caseDataHelper.findCaseBy(
+                    searchCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
 
                 if (!CollectionUtils.isEmpty(caseDetails)) {
                     log.info("Duplicate case found for Nino {} , benefit type {} and mrnDate {}. "
-                                    + "No need to continue with post create case processing.",
-                            generatedNino, benefitType, mrnDate);
+                            + "No need to continue with post create case processing.",
+                        generatedNino, benefitType, mrnDate);
                     isCaseAlreadyExists = true;
                     caseReference = String.valueOf(caseDetails.get(0).getId());
                 }
             }
 
             try {
-
                 if (!isCaseAlreadyExists) {
-                    caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
+                    caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(),
+                        token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
                     log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
                     if (isCaseCreatedEvent(eventId)) {
                         log.info("About to update case with sendToDwp event for id {}", caseId);
-                        caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
+                        caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(),
+                            token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId,
+                            "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
                         log.info("Case updated with sendToDwp event for id {}", caseId);
                     }
                     caseReference = String.valueOf(caseId);
@@ -110,10 +118,12 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     }
 
     private boolean isCaseCreatedEvent(String eventId) {
-        return eventId.equals(caseEvent.getCaseCreatedEventId()) || eventId.equals(caseEvent.getValidAppealCreatedEventId());
+        return eventId.equals(caseEvent.getCaseCreatedEventId())
+            || eventId.equals(caseEvent.getValidAppealCreatedEventId());
     }
 
-    private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings, String exceptionRecordId) {
+    private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings,
+                                  String exceptionRecordId) {
         return ((!isEmpty(caseValidationResponse.getWarnings()) && ignoreWarnings) || isEmpty(caseValidationResponse.getWarnings()));
     }
 
