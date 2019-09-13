@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 @Slf4j
 public class SscsCaseDataHandler implements CaseDataHandler {
 
+    private static final String INTERLOC_REFERRAL_REASON = "interlocReferralReason";
     private final SscsDataHelper sscsDataHelper;
     private final CaseDataHelper caseDataHelper;
     private final CaseEvent caseEvent;
@@ -51,9 +53,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         if (canCreateCase(caseValidationResponse, ignoreWarnings, exceptionRecordId)) {
             boolean isCaseAlreadyExists = false;
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
-            if ("nonCompliant".equals(eventId)) {
-                caseValidationResponse.getTransformedCase().put("interlocReferralReason", "over13months");
-            }
+            stampReferredCase(caseValidationResponse, eventId);
 
             String caseReference = String.valueOf(Optional.ofNullable(
                 exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
@@ -115,6 +115,13 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             }
         }
         return null;
+    }
+
+    private void stampReferredCase(CaseResponse caseValidationResponse, String eventId) {
+        if (EventType.NON_COMPLIANT.getCcdType().equals(eventId)) {
+            caseValidationResponse.getTransformedCase().put(INTERLOC_REFERRAL_REASON,
+                InterlocReferralReasonOptions.OVER_13_MONTHS.getValue());
+        }
     }
 
     private boolean isCaseCreatedEvent(String eventId) {
