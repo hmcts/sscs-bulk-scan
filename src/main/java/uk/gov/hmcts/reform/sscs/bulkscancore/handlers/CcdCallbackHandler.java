@@ -55,9 +55,7 @@ public class CcdCallbackHandler {
         this.caseDataHelper = caseDataHelper;
     }
 
-    public CallbackResponse handle(
-        ExceptionCaseData exceptionCaseData,
-        Token token) {
+    public CallbackResponse handle(ExceptionCaseData exceptionCaseData, Token token) {
 
         String exceptionRecordId = exceptionCaseData.getCaseDetails().getCaseId();
 

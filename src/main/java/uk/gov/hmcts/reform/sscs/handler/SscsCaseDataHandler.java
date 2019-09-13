@@ -137,7 +137,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     }
 
     private boolean reasonsIsNotBlank(Appeal appeal) {
-        return appeal.getAppealReasons().getReasons() != null
+        return !isEmpty(appeal.getAppealReasons().getReasons())
             && appeal.getAppealReasons().getReasons().get(0) != null
             && appeal.getAppealReasons().getReasons().get(0).getValue() != null
             && (StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getReason())

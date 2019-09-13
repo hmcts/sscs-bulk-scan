@@ -21,7 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseDetails;
@@ -31,12 +33,12 @@ import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @SpringBootTest
+@TestPropertySource(locations = "classpath:application_e2e.yaml")
 @RunWith(SpringRunner.class)
 public class SscsBulkScanFunctionalTest {
 
-    private final String envUrl = System.getenv("TEST_URL");
-    private final String localUrl = "http://localhost:8090";
-    private final String appUrl = StringUtils.isNotBlank(envUrl) ? envUrl : localUrl;
+    @Value("${test-url}")
+    private String testUrl;
 
     @Autowired
     private IdamService idamService;
@@ -50,7 +52,7 @@ public class SscsBulkScanFunctionalTest {
 
     @Before
     public void setup() {
-        RestAssured.baseURI = appUrl;
+        RestAssured.baseURI = testUrl;
         idamTokens = idamService.getIdamTokens();
     }
 
@@ -117,7 +119,7 @@ public class SscsBulkScanFunctionalTest {
     }
 
     private Response simulateCcdCallback(String json, String urlPath) {
-        final String callbackUrl = appUrl + urlPath;
+        final String callbackUrl = testUrl + urlPath;
 
         RestAssured.useRelaxedHTTPSValidation();
         Response response = RestAssured

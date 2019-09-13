@@ -1,15 +1,56 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.AGREE_LESS_HEARING_NOTICE_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.APPEAL_GROUNDS;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.DEFAULT_SIGN_LANGUAGE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_DIALECT_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_EXCLUDE_DATES_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_HEARING_LOOP_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_SUPPORT_ARRANGEMENTS_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_PAPER;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_BENEFIT_TYPE_ESA;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_BENEFIT_TYPE_PIP;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_HEARING_TYPE_ORAL_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_HEARING_TYPE_PAPER_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.NO_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON1_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON2_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.REPRESENTATIVE_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.YES_LITERAL;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
-import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateBenefitCode;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateCaseCode;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateIssueCode;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.areBooleansValid;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.checkBooleanValue;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.doValuesContradict;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.findBooleanExists;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.generateDateForCcd;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getBoolean;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getDateForCcd;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.hasPerson;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
 import java.time.LocalDateTime;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -24,7 +65,27 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
-import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReason;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasonDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasons;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appointee;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
+import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Contact;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DateRange;
+import uk.gov.hmcts.reform.sscs.ccd.domain.ExcludeDate;
+import uk.gov.hmcts.reform.sscs.ccd.domain.HearingOptions;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Identity;
+import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Name;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Representative;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocumentDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Subscription;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
@@ -178,7 +239,11 @@ public class SscsCaseTransformer implements CaseTransformer {
     private AppealReasons findAppealReasons(Map<String, Object> pairs) {
         String appealReason = getField(pairs, APPEAL_GROUNDS);
         if (appealReason != null) {
-            List<AppealReason> reasons = Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(appealReason).build()).build());
+            List<AppealReason> reasons = Collections.singletonList(AppealReason.builder()
+                .value(AppealReasonDetails.builder()
+                    .description(appealReason)
+                    .build())
+                .build());
             return AppealReasons.builder().reasons(reasons).build();
         }
         return null;
@@ -200,7 +265,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee, Contact contact) {
         return Appellant.builder()
             .name(buildPersonName(pairs, personType))
-            .isAppointee(convertBooleanToYesNoString(appointee !=  null))
+            .isAppointee(convertBooleanToYesNoString(appointee != null))
             .address(buildPersonAddress(pairs, personType))
             .identity(buildPersonIdentity(pairs, personType))
             .contact(contact)
@@ -216,7 +281,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .hasRepresentative(YES_LITERAL)
                 .name(buildPersonName(pairs, REPRESENTATIVE_VALUE))
                 .address(buildPersonAddress(pairs, REPRESENTATIVE_VALUE))
-                .organisation(getField(pairs,"representative_company"))
+                .organisation(getField(pairs, "representative_company"))
                 .contact(buildPersonContact(pairs, REPRESENTATIVE_VALUE))
                 .build();
         } else {
@@ -227,22 +292,22 @@ public class SscsCaseTransformer implements CaseTransformer {
     private MrnDetails buildMrnDetails(Map<String, Object> pairs) {
 
         return MrnDetails.builder()
-            .mrnDate(generateDateForCcd(pairs, errors,"mrn_date"))
-            .mrnLateReason(getField(pairs,"appeal_late_reason"))
-            .dwpIssuingOffice(getField(pairs,"office"))
-        .build();
+            .mrnDate(generateDateForCcd(pairs, errors, "mrn_date"))
+            .mrnLateReason(getField(pairs, "appeal_late_reason"))
+            .dwpIssuingOffice(getField(pairs, "office"))
+            .build();
     }
 
     private Name buildPersonName(Map<String, Object> pairs, String personType) {
         return Name.builder()
-            .title(getField(pairs,personType + "_title"))
-            .firstName(getField(pairs,personType + "_first_name"))
-            .lastName(getField(pairs,personType + "_last_name"))
-        .build();
+            .title(getField(pairs, personType + "_title"))
+            .firstName(getField(pairs, personType + "_first_name"))
+            .lastName(getField(pairs, personType + "_last_name"))
+            .build();
     }
 
     private Address buildPersonAddress(Map<String, Object> pairs, String personType) {
-        if (findBooleanExists(getField(pairs,personType + "_address_line4"))) {
+        if (findBooleanExists(getField(pairs, personType + "_address_line4"))) {
             return Address.builder()
                 .line1(getField(pairs, personType + "_address_line1"))
                 .line2(getField(pairs, personType + "_address_line2"))
@@ -261,30 +326,35 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private Identity buildPersonIdentity(Map<String, Object> pairs, String personType) {
         return Identity.builder()
-            .dob(generateDateForCcd(pairs, errors,personType + "_dob"))
-            .nino(normaliseNino(getField(pairs,personType + "_nino")))
-        .build();
+            .dob(generateDateForCcd(pairs, errors, personType + "_dob"))
+            .nino(normaliseNino(getField(pairs, personType + "_nino")))
+            .build();
     }
 
     private Contact buildPersonContact(Map<String, Object> pairs, String personType) {
         return Contact.builder()
-            .phone(getField(pairs,personType + "_phone"))
-            .mobile(getField(pairs,personType + "_mobile"))
-            .email(getField(pairs,personType + "_email"))
-        .build();
+            .phone(getField(pairs, personType + "_phone"))
+            .mobile(getField(pairs, personType + "_mobile"))
+            .email(getField(pairs, personType + "_email"))
+            .build();
     }
 
     private String findHearingType(Map<String, Object> pairs) {
 
         checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL);
         checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL);
-        if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL) && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
+        if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL)
+            && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null
+            || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
             pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()));
-        } else if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL) && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
+        } else if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL)
+            && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null
+            || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
             pairs.put(IS_HEARING_TYPE_ORAL_LITERAL,!Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).toString()));
         }
 
-        if (areBooleansValid(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL) && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
+        if (areBooleansValid(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)
+            && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
             return BooleanUtils.toBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
         }
         return null;
@@ -296,7 +366,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
 
-        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL)) || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL));
+        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL))
+            || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL));
 
         String languageType = isLanguageInterpreterRequired ? findLanguageTypeString(pairs) : null;
 
@@ -308,9 +379,11 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<ExcludeDate> excludedDates = buildExcludedDates(pairs);
 
-        String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL) ? convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
+        String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL) ?
+            convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
 
-        String scheduleHearing = excludedDates != null && !excludedDates.isEmpty() && wantsToAttend.equals(YES_LITERAL) ? YES_LITERAL : NO_LITERAL;
+        String scheduleHearing = excludedDates != null && !excludedDates.isEmpty()
+            && wantsToAttend.equals(YES_LITERAL) ? YES_LITERAL : NO_LITERAL;
 
         return HearingOptions.builder()
             .wantsToAttend(wantsToAttend)
@@ -323,7 +396,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .languageInterpreter(convertBooleanToYesNoString(isLanguageInterpreterRequired))
             .languages(languageType)
             .signLanguageType(signLanguageType)
-        .build();
+            .build();
     }
 
     private String findLanguageTypeString(Map<String, Object> pairs) {
@@ -376,11 +449,13 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<ExcludeDate> excludeDates = new ArrayList<>();
 
         if (excludedDatesList != null && !excludedDatesList.isEmpty()) {
-            List<String> items = Arrays.asList(excludedDatesList.split(",\\s*"));
+            String[] items = excludedDatesList.split(",\\s*");
 
             for (String item : items) {
                 List<String> range = Arrays.asList(item.split("\\s*-\\s*"));
-                String errorMessage = "hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019";
+                String errorMessage = "hearing_options_exclude_dates contains an invalid date range. "
+                    + "Should be single dates separated by commas and/or a date range "
+                    + "e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019";
 
                 if (range.size() > 2) {
                     errors.add(errorMessage);
@@ -403,10 +478,12 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<String> arrangements = new ArrayList<>();
 
-        if (areBooleansValid(pairs, errors, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL) &&  BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
+        if (areBooleansValid(pairs, errors, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL)
+            &&  BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
             arrangements.add("disabledAccess");
         }
-        if (areBooleansValid(pairs, errors, HEARING_OPTIONS_HEARING_LOOP_LITERAL) && BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
+        if (areBooleansValid(pairs, errors, HEARING_OPTIONS_HEARING_LOOP_LITERAL)
+            && BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
             arrangements.add("hearingLoop");
         }
         if (isSignLanguageInterpreterRequired) {
