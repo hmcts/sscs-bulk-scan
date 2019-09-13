@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,21 +60,23 @@ public class SscsBulkScanFunctionalTest {
 
         //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
         List<String> possibleStates = new ArrayList<>(Arrays.asList("validAppeal", "withDwp"));
-        assertTrue(possibleStates.contains(findStateOfCaseInCcd(response)));
+        assertTrue(possibleStates.contains(findCaseInCcd(response).getState()));
     }
 
     @Test
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
         Response response = exceptionRecordEndpointRequest(getJson("some_mandatory_fields_missing.json"));
 
-        assertEquals("incompleteApplication", findStateOfCaseInCcd(response));
+        assertEquals("incompleteApplication", findCaseInCcd(response).getState());
     }
 
     @Test
     public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months() throws IOException {
         Response response = exceptionRecordEndpointRequest(getJson("mrn_date_greater_than_13_months.json"));
 
-        assertEquals("interlocutoryReviewState", findStateOfCaseInCcd(response));
+        SscsCaseDetails caseInCcd = findCaseInCcd(response);
+        assertEquals("interlocutoryReviewState", caseInCcd.getState());
+        assertEquals("over13months", caseInCcd.getData().getInterlocReferralReason());
     }
 
     @Test
@@ -144,14 +144,10 @@ public class SscsBulkScanFunctionalTest {
         ccdCaseId = String.valueOf(caseDetails.getId());
     }
 
-    private String findStateOfCaseInCcd(Response response) {
-
+    private SscsCaseDetails findCaseInCcd(Response response) {
         JsonPath jsonPathEvaluator = response.jsonPath();
         Long caseRef = Long.parseLong(((HashMap) jsonPathEvaluator.get("data")).get("caseReference").toString());
-
-        SscsCaseDetails caseDetails = ccdService.getByCaseId(caseRef, idamTokens);
-
-        return caseDetails.getState();
+        return ccdService.getByCaseId(caseRef, idamTokens);
     }
 
 }
