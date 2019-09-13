@@ -95,8 +95,8 @@ public class SscsCaseDataHandlerTest {
 
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("incompleteApplicationReceived");
 
-        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, true,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData,
+            caseValidationResponse, true, token, null);
 
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
@@ -128,8 +128,8 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
 
-        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData,
+            caseValidationResponse, false, token, null);
 
         verifyZeroInteractions(caseDataHelper);
         assertNull(response);
@@ -203,9 +203,8 @@ public class SscsCaseDataHandlerTest {
 
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("validAppealCreated");
 
-        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN)
-                .userId(TEST_USER_ID).build(), null);
+        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData,
+            caseValidationResponse, false, token, null);
 
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
@@ -246,12 +245,8 @@ public class SscsCaseDataHandlerTest {
 
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("nonCompliant");
 
-        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, true,
-            Token.builder()
-                .userAuthToken(TEST_USER_AUTH_TOKEN)
-                .serviceAuthToken(TEST_SERVICE_AUTH_TOKEN)
-                .userId(TEST_USER_ID)
-                .build(), null);
+        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData,
+            caseValidationResponse, true, token, null);
 
         assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
         assertEquals("1", ((HandlerResponse) response).getCaseId());
@@ -280,7 +275,8 @@ public class SscsCaseDataHandlerTest {
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
-        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings).transformedCase(transformedCase).build();
+        CaseResponse caseValidationResponse = CaseResponse.builder()
+            .warnings(warnings).transformedCase(transformedCase).build();
 
         given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
 
@@ -307,7 +303,7 @@ public class SscsCaseDataHandlerTest {
     }
 
     @Test(expected = CaseDataHelperException.class)
-    public void shouldThrowCaseDataHelperExceptionForAnyException() throws Exception {
+    public void shouldThrowCaseDataHelperExceptionForAnyException() {
 
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().build())
             .benefitType(BenefitType.builder().build()).build();
