@@ -5,8 +5,8 @@ plugins {
   id 'org.sonarqube' version '2.7.1'
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.4.0'
-  id 'io.spring.dependency-management' version '1.0.7.RELEASE'
-  id 'org.springframework.boot' version '2.1.5.RELEASE'
+  id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+  id 'org.springframework.boot' version '2.1.8.RELEASE'
   id 'org.owasp.dependencycheck' version '5.2.1'
   id 'com.github.ben-manes.versions' version '0.21.0'
 }
@@ -189,7 +189,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.0.53'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.0.63'
 
   //Remove when our dependencies pull in this version or later
   compile 'com.fasterxml.jackson.core:jackson-databind:2.9.9.3'
@@ -228,7 +228,7 @@ dependencyManagement {
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
     // CVE-2019-0232 - Java and Command Line injections in Windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.21') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.24') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'

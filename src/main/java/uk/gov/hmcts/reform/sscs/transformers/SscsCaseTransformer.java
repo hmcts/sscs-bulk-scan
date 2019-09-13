@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 @Component
 @Slf4j
 public class SscsCaseTransformer implements CaseTransformer {
+    private static DateTimeFormatter DATE_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     @Autowired
     private SscsJsonExtractor sscsJsonExtractor;
@@ -80,9 +81,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         transformed.put("bulkScanCaseReference", caseId);
 
-        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
-
-        String caseCreated = dtfOut.print(new DateTime());
+        String caseCreated = extractOpeningDate(caseDetails);
         transformed.put("caseCreated", caseCreated);
 
         if (appeal.getBenefitType() != null) {
@@ -97,6 +96,13 @@ public class SscsCaseTransformer implements CaseTransformer {
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 
         return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
+    }
+
+    private String extractOpeningDate(CaseDetails caseDetails) {
+        String openingDate = (String) caseDetails.getCaseData().get("openingDate");
+        return (StringUtils.isEmpty(openingDate) || openingDate.length() < 10)
+            ? DATE_FORMAT.print(new DateTime())
+            : ((String) caseDetails.getCaseData().get("openingDate")).substring(0, 10);
     }
 
     private static Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {
