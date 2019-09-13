@@ -704,7 +704,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     private String getParamsUrl(String mrnDate) {
         Map<String, String> searchCriteria = new HashMap<>();
         searchCriteria.put("case.generatedNino", "BB000000B");
-        searchCriteria.put("case.appeal.benefitType.code", "051");
+        searchCriteria.put("case.appeal.benefitType.code", "ESA");
         searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
         return searchCriteria.entrySet().stream()

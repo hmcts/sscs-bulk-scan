@@ -67,7 +67,8 @@ public class SscsCaseDataHandlerTest {
         List<String> warnings = new ArrayList<>();
         warnings.add("I am a warning");
 
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
+                .benefitType(BenefitType.builder().build()).build();
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
@@ -116,7 +117,8 @@ public class SscsCaseDataHandlerTest {
 
     @Test
     public void givenACaseWithCaseReference_thenDoNotCreateCaseWithIncompleteApplicationEvent() {
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
+                .benefitType(BenefitType.builder().build()).build();
         Map<String, Object> caseData = new HashMap<>();
         caseData.put("caseReference", 1L);
 
@@ -163,6 +165,7 @@ public class SscsCaseDataHandlerTest {
     public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwp() {
 
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
+                .benefitType(BenefitType.builder().build())
                 .appellant(Appellant.builder().address(
                         Address.builder().postcode("CM120HN").build())
                         .build()).build();
@@ -194,7 +197,8 @@ public class SscsCaseDataHandlerTest {
 
         localDate = LocalDate.now().minusMonths(14);
 
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
+                .benefitType(BenefitType.builder().build()).build();
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
@@ -225,7 +229,8 @@ public class SscsCaseDataHandlerTest {
         List<String> warnings = new ArrayList<>();
         warnings.add("I am a warning");
 
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
+                .benefitType(BenefitType.builder().build()).build();
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
@@ -251,7 +256,8 @@ public class SscsCaseDataHandlerTest {
     @Test(expected = CaseDataHelperException.class)
     public void shouldThrowCaseDataHelperExceptionForAnyException() throws Exception {
 
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().build()).build();
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().build())
+                .benefitType(BenefitType.builder().build()).build();
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
