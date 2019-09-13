@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
@@ -118,10 +118,30 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     }
 
     private void stampReferredCase(CaseResponse caseValidationResponse, String eventId) {
+        Map<String, Object> transformedCase = caseValidationResponse.getTransformedCase();
+        Appeal appeal = (Appeal) transformedCase.get("appeal");
         if (EventType.NON_COMPLIANT.getCcdType().equals(eventId)) {
-            caseValidationResponse.getTransformedCase().put(INTERLOC_REFERRAL_REASON,
-                InterlocReferralReasonOptions.OVER_13_MONTHS.getValue());
+            if (appealReasonIsNotBlank(appeal)) {
+                transformedCase.put(INTERLOC_REFERRAL_REASON,
+                    InterlocReferralReasonOptions.OVER_13_MONTHS.getValue());
+            } else {
+                transformedCase.put(INTERLOC_REFERRAL_REASON,
+                    InterlocReferralReasonOptions.GROUNDS_MISSING.getValue());
+            }
         }
+    }
+
+    private boolean appealReasonIsNotBlank(Appeal appeal) {
+        return appeal.getAppealReasons() != null && (StringUtils.isNotBlank(appeal.getAppealReasons().getOtherReasons())
+            || reasonsIsNotBlank(appeal));
+    }
+
+    private boolean reasonsIsNotBlank(Appeal appeal) {
+        return appeal.getAppealReasons().getReasons() != null
+            && appeal.getAppealReasons().getReasons().get(0) != null
+            && appeal.getAppealReasons().getReasons().get(0).getValue() != null
+            && (StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getReason())
+            || StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getDescription()));
     }
 
     private boolean isCaseCreatedEvent(String eventId) {
@@ -131,7 +151,8 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
     private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings,
                                   String exceptionRecordId) {
-        return ((!isEmpty(caseValidationResponse.getWarnings()) && ignoreWarnings) || isEmpty(caseValidationResponse.getWarnings()));
+        return ((!isEmpty(caseValidationResponse.getWarnings()) && ignoreWarnings)
+            || isEmpty(caseValidationResponse.getWarnings()));
     }
 
     private void wrapAndThrowCaseDataHandlerException(String exceptionId, Exception ex) {

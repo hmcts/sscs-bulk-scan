@@ -19,12 +19,16 @@ import static uk.gov.hmcts.reform.sscs.common.TestHelper.TEST_USER_ID;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -37,6 +41,9 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReason;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasonDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasons;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Identity;
@@ -45,6 +52,7 @@ import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
+@RunWith(JUnitParamsRunner.class)
 public class SscsCaseDataHandlerTest {
     private final Token token = Token.builder()
         .userAuthToken(TEST_USER_AUTH_TOKEN)
@@ -223,15 +231,10 @@ public class SscsCaseDataHandlerTest {
     }
 
     @Test
-    public void givenACaseWithNoWarningsAndMrnDateIsGreaterThan13Months_thenCreateCaseWithNonCompliantApplicationEvent() {
-        localDate = LocalDate.now().minusMonths(14);
+    @Parameters(method = "generatePossibleAppealReasonsScenarios")
+    public void givenACaseWithNoWarningsAndMrnDateIsGreaterThan13Months_thenCreateCaseWithNonCompliantApplicationEvent(
+        Appeal appeal, String expectedInterlocReferralReason) {
 
-        Appeal appeal = Appeal.builder()
-            .benefitType(BenefitType.builder().build())
-            .mrnDetails(MrnDetails.builder()
-                .mrnDate(localDate.format(formatter))
-                .build())
-            .build();
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
@@ -256,10 +259,130 @@ public class SscsCaseDataHandlerTest {
 
         boolean interlocReferralReasonFieldAndValueCheck = transformedCaseCaptor.getAllValues().stream()
             .filter(m -> m.containsKey("interlocReferralReason"))
-            .anyMatch(m -> m.containsValue("over13months"));
+            .anyMatch(m -> m.containsValue(expectedInterlocReferralReason));
         assertTrue(interlocReferralReasonFieldAndValueCheck);
 
         verifyZeroInteractions(caseDataHelper);
+    }
+
+    private Object[] generatePossibleAppealReasonsScenarios() {
+        localDate = LocalDate.now().minusMonths(14);
+        Appeal appealWithAppealReason = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder()
+                .reasons(Collections.singletonList(AppealReason.builder()
+                    .value(AppealReasonDetails.builder()
+                        .reason("reason")
+                        .description("description")
+                        .build())
+                    .build()))
+                .build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealWithNoAppealReason = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealWithNullAppealReason = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(null)
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealWithEmptyAppealReason = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder().build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealWithNullReasonsAndNoOtherReasons = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder()
+                .reasons(null)
+                .build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealWithNullListAndNoOtherReasons = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder()
+                .reasons(Collections.singletonList(null))
+                .build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealNoValueNoOtherReasons = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder()
+                .reasons(Collections.singletonList(AppealReason.builder().build()))
+                .build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealEmptyValueNoOtherReasons = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder()
+                .reasons(Collections.singletonList(AppealReason.builder()
+                    .value(AppealReasonDetails.builder().build())
+                    .build()))
+                .build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealWithDescAndNoReasonNoOtherReasons = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder()
+                .reasons(Collections.singletonList(AppealReason.builder()
+                    .value(AppealReasonDetails.builder()
+                        .description("some")
+                        .build())
+                    .build()))
+                .build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        Appeal appealWithOtherReasonsAndNoReasons = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder()
+                .otherReasons("others")
+                .build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
+        return new Object[]{
+            new Object[]{appealWithAppealReason, "over13months"},
+            new Object[]{appealWithNoAppealReason, "groundsMissing"},
+            new Object[]{appealWithNullAppealReason, "groundsMissing"},
+            new Object[]{appealWithEmptyAppealReason, "groundsMissing"},
+            new Object[]{appealWithNullReasonsAndNoOtherReasons, "groundsMissing"},
+            new Object[]{appealWithNullListAndNoOtherReasons, "groundsMissing"},
+            new Object[]{appealNoValueNoOtherReasons, "groundsMissing"},
+            new Object[]{appealEmptyValueNoOtherReasons, "groundsMissing"},
+            new Object[]{appealWithDescAndNoReasonNoOtherReasons, "over13months"},
+            new Object[]{appealWithOtherReasonsAndNoReasons, "over13months"}
+        };
     }
 
     @Test
@@ -270,8 +393,21 @@ public class SscsCaseDataHandlerTest {
         List<String> warnings = new ArrayList<>();
         warnings.add("I am a warning");
 
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
-            .benefitType(BenefitType.builder().build()).build();
+        Appeal appeal = Appeal.builder()
+            .benefitType(BenefitType.builder().build())
+            .appealReasons(AppealReasons.builder()
+                .reasons(Collections.singletonList(AppealReason.builder()
+                    .value(AppealReasonDetails.builder()
+                        .reason("reason")
+                        .description("description")
+                        .build())
+                    .build()))
+                .build())
+            .mrnDetails(MrnDetails.builder()
+                .mrnDate(localDate.format(formatter))
+                .build())
+            .build();
+
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
 
