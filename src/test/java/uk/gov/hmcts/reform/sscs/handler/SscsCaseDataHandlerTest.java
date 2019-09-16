@@ -373,13 +373,13 @@ public class SscsCaseDataHandlerTest {
 
         return new Object[]{
             new Object[]{appealWithAppealReason, "over13months"},
-            new Object[]{appealWithNoAppealReason, "groundsMissing"},
-            new Object[]{appealWithNullAppealReason, "groundsMissing"},
-            new Object[]{appealWithEmptyAppealReason, "groundsMissing"},
-            new Object[]{appealWithNullReasonsAndNoOtherReasons, "groundsMissing"},
-            new Object[]{appealWithNullListAndNoOtherReasons, "groundsMissing"},
-            new Object[]{appealNoValueNoOtherReasons, "groundsMissing"},
-            new Object[]{appealEmptyValueNoOtherReasons, "groundsMissing"},
+            new Object[]{appealWithNoAppealReason, "over13MonthsAndGroundsMissing"},
+            new Object[]{appealWithNullAppealReason, "over13MonthsAndGroundsMissing"},
+            new Object[]{appealWithEmptyAppealReason, "over13MonthsAndGroundsMissing"},
+            new Object[]{appealWithNullReasonsAndNoOtherReasons, "over13MonthsAndGroundsMissing"},
+            new Object[]{appealWithNullListAndNoOtherReasons, "over13MonthsAndGroundsMissing"},
+            new Object[]{appealNoValueNoOtherReasons, "over13MonthsAndGroundsMissing"},
+            new Object[]{appealEmptyValueNoOtherReasons, "over13MonthsAndGroundsMissing"},
             new Object[]{appealWithDescAndNoReasonNoOtherReasons, "over13months"},
             new Object[]{appealWithOtherReasonsAndNoReasons, "over13months"}
         };

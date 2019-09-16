@@ -126,7 +126,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                     InterlocReferralReasonOptions.OVER_13_MONTHS.getValue());
             } else {
                 transformedCase.put(INTERLOC_REFERRAL_REASON,
-                    InterlocReferralReasonOptions.GROUNDS_MISSING.getValue());
+                    InterlocReferralReasonOptions.OVER_13_MONTHS_AND_GROUNDS_MISSING.getValue());
             }
         }
     }
