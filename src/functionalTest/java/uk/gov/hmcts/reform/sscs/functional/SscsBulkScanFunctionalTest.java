@@ -15,14 +15,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
@@ -32,8 +38,14 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application_e2e.yaml")
-@RunWith(SpringRunner.class)
+@RunWith(JUnitParamsRunner.class)
 public class SscsBulkScanFunctionalTest {
+
+    @ClassRule
+    public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
+
+    @Rule
+    public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
     @Value("${test-url}")
     private String testUrl;
@@ -71,12 +83,20 @@ public class SscsBulkScanFunctionalTest {
     }
 
     @Test
-    public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months() throws IOException {
-        Response response = exceptionRecordEndpointRequest(getJson("mrn_date_greater_than_13_months.json"));
+    @Parameters({
+        "see scanned SSCS1 form,over13months", ",over13MonthsAndGroundsMissing"
+    })
+    public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months(String appeal_grounds,
+                                                                                      String expected)
+        throws IOException {
+        String json = getJson("mrn_date_greater_than_13_months.json");
+        json = json.replace("APPEAL_GROUNDS", appeal_grounds);
+
+        Response response = exceptionRecordEndpointRequest(json);
 
         SscsCaseDetails caseInCcd = findCaseInCcd(response);
         assertEquals("interlocutoryReviewState", caseInCcd.getState());
-        assertEquals("over13months", caseInCcd.getData().getInterlocReferralReason());
+        assertEquals(expected, caseInCcd.getData().getInterlocReferralReason());
     }
 
     @Test
@@ -114,7 +134,8 @@ public class SscsBulkScanFunctionalTest {
     }
 
     private String getJson(String resource) throws IOException {
-        String file = getClass().getClassLoader().getResource("import/" + resource).getFile();
+        String file = Objects.requireNonNull(getClass().getClassLoader()
+            .getResource("import/" + resource)).getFile();
         return FileUtils.readFileToString(new File(file), StandardCharsets.UTF_8.name());
     }
 
