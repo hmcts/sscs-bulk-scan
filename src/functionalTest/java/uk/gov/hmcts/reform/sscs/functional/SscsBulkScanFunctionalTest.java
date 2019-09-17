@@ -86,11 +86,11 @@ public class SscsBulkScanFunctionalTest {
     @Parameters({
         "see scanned SSCS1 form,over13months", ",over13MonthsAndGroundsMissing"
     })
-    public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months(String appeal_grounds,
+    public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months(String appealGrounds,
                                                                                       String expected)
         throws IOException {
         String json = getJson("mrn_date_greater_than_13_months.json");
-        json = json.replace("APPEAL_GROUNDS", appeal_grounds);
+        json = json.replace("APPEAL_GROUNDS", appealGrounds);
 
         Response response = exceptionRecordEndpointRequest(json);
 
