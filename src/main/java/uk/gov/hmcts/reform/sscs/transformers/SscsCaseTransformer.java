@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -187,9 +188,9 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (areBooleansValid(pairs, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP)) {
             doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP);
         }
-        if (checkBooleanValue(pairs, IS_BENEFIT_TYPE_PIP) && Boolean.parseBoolean(pairs.get(IS_BENEFIT_TYPE_PIP).toString())) {
+        if (checkBooleanValue(pairs, IS_BENEFIT_TYPE_PIP) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_PIP).toString())) {
             code = Benefit.PIP.name();
-        } else if (checkBooleanValue(pairs, IS_BENEFIT_TYPE_ESA) && Boolean.parseBoolean(pairs.get(IS_BENEFIT_TYPE_ESA).toString())) {
+        } else if (checkBooleanValue(pairs, IS_BENEFIT_TYPE_ESA) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_ESA).toString())) {
             code = Benefit.ESA.name();
         }
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
@@ -281,7 +282,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
 
         if (areBooleansValid(pairs, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL) && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
-            return Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
+            return BooleanUtils.toBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
         }
         return null;
     }
@@ -338,7 +339,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private Optional<Boolean> findSignLanguageInterpreterRequiredInOldForm(Map<String, Object> pairs) {
         if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
-            return Optional.of(Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString()));
+            return Optional.of(BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString()));
         }
         return Optional.empty();
     }
@@ -399,10 +400,10 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<String> arrangements = new ArrayList<>();
 
-        if (areBooleansValid(pairs, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL) &&  Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
+        if (areBooleansValid(pairs, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL) &&  BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
             arrangements.add("disabledAccess");
         }
-        if (areBooleansValid(pairs, HEARING_OPTIONS_HEARING_LOOP_LITERAL) && Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
+        if (areBooleansValid(pairs, HEARING_OPTIONS_HEARING_LOOP_LITERAL) && BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
             arrangements.add("hearingLoop");
         }
         if (isSignLanguageInterpreterRequired) {
