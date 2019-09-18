@@ -38,9 +38,11 @@ import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getBoolean;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getDateForCcd;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.hasPerson;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
 import java.time.LocalDateTime;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -146,15 +148,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String caseCreated = extractOpeningDate(caseDetails);
         transformed.put("caseCreated", caseCreated);
-
-        if (appeal.getBenefitType() != null) {
-            String benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
-            String issueCode = generateIssueCode();
-
-            transformed.put("benefitCode", benefitCode);
-            transformed.put("issueCode", issueCode);
-            transformed.put("caseCode", generateCaseCode(benefitCode, issueCode));
-        }
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 

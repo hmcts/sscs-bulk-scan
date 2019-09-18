@@ -1,11 +1,16 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
@@ -13,14 +18,25 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @Component
 public class SscsDataHelper {
 
     private final CaseEvent caseEvent;
 
-    public SscsDataHelper(CaseEvent caseEvent) {
+    private final List<String> offices;
+
+    @Autowired
+    private DwpAddressLookupService dwpAddressLookupService;
+
+    public SscsDataHelper(CaseEvent caseEvent,
+                          DwpAddressLookupService dwpAddressLookupService,
+                          @Value("#{'${readyToList.offices}'.split(',')}") List<String> offices) {
         this.caseEvent = caseEvent;
+        this.dwpAddressLookupService = dwpAddressLookupService;
+        this.offices = offices;
     }
 
     public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions) {
@@ -47,6 +63,7 @@ public class SscsDataHelper {
                 appealData.put("issueCode", issueCode);
                 appealData.put("caseCode", generateCaseCode(benefitCode, issueCode));
             }
+            appealData.put("createdInGapsFrom", getCreatedInGapsFromField(appeal));
         }
     }
 
@@ -72,5 +89,23 @@ public class SscsDataHelper {
 
     public String hasEvidence(List<SscsDocument> sscsDocuments) {
         return (null == sscsDocuments || sscsDocuments.isEmpty()) ? "No" : "Yes";
+    }
+
+    private String getCreatedInGapsFromField(Appeal appeal) {
+
+        if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null
+            && appeal.getMrnDetails() != null && appeal.getMrnDetails().getDwpIssuingOffice() != null) {
+            String createdInGapsFrom = VALID_APPEAL.name();
+            Optional<OfficeMapping> selectedOfficeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
+
+            for (String office : offices) {
+                Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), office);
+                if (officeMapping.isPresent() && selectedOfficeMapping.equals(officeMapping)) {
+                    createdInGapsFrom = (READY_TO_LIST.name());
+                }
+            }
+            return createdInGapsFrom;
+        }
+        return null;
     }
 }
