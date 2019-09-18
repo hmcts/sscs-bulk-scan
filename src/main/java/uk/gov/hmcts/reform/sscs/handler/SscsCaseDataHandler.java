@@ -50,7 +50,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                                    Token token,
                                    String exceptionRecordId) {
 
-        if (canCreateCase(caseValidationResponse, ignoreWarnings, exceptionRecordId)) {
+        if (canCreateCase(caseValidationResponse, ignoreWarnings)) {
             boolean isCaseAlreadyExists = false;
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
             stampReferredCase(caseValidationResponse, eventId);
@@ -149,8 +149,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             || eventId.equals(caseEvent.getValidAppealCreatedEventId());
     }
 
-    private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings,
-                                  String exceptionRecordId) {
+    private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings) {
         return ((!isEmpty(caseValidationResponse.getWarnings()) && ignoreWarnings)
             || isEmpty(caseValidationResponse.getWarnings()));
     }
