@@ -44,6 +44,9 @@ public class TestConstants {
     public static final String READ_EVENT_URL =
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756";
 
+    public static final String FIND_CASE_EVENT_URL =
+            "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases";
+
     public static final String USER_ID_HEADER = "user-id";
 
     public static final String CONTENT_TYPE = "Content-Type";

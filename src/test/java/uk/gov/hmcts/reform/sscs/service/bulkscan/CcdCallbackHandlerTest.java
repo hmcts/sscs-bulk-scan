@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.service.bulkscan;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
@@ -80,10 +81,11 @@ public class CcdCallbackHandlerTest {
 
         // Return case id for successful ccd case creation
         when(caseDataHandler.handle(
-            caseValidationResponse,
-            false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(),
-            null)
+            any(ExceptionCaseData.class),
+            eq(caseValidationResponse),
+            eq(false),
+            eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()),
+            eq(null))
         ).thenReturn(HandlerResponse.builder().state("DocUpdated").build());
 
         // when

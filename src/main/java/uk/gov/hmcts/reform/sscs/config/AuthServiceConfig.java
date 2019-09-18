@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.sscs.config;
 
 import java.util.List;
-//import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.openfeign.EnableFeignClients;
