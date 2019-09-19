@@ -8,7 +8,7 @@ import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import com.google.common.collect.ImmutableList;
 import java.util.AbstractMap;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,6 @@ import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
-import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @RunWith(SpringRunner.class)
 public class CcdCallbackHandlerTest {
@@ -53,13 +52,9 @@ public class CcdCallbackHandlerTest {
 
     private SscsDataHelper sscsDataHelper;
 
-    private DwpAddressLookupService dwpAddressLookupService = new DwpAddressLookupService();
-
-    private List<String> offices;
-
     @Before
     public void setUp() {
-        sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, offices);
+        sscsDataHelper = new SscsDataHelper(null, new ArrayList<>());
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper, caseDataHelper);
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
     }

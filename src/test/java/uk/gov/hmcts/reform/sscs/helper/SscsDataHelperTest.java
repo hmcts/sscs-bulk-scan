@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
-import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @RunWith(SpringRunner.class)
 public class SscsDataHelperTest {
@@ -26,13 +25,9 @@ public class SscsDataHelperTest {
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    private DwpAddressLookupService dwpAddressLookupService = new DwpAddressLookupService();
-
-    private List<String> offices;
-
     @Before
     public void setUp() {
-        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), dwpAddressLookupService, offices);
+        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), new ArrayList<>());
     }
 
     @Test

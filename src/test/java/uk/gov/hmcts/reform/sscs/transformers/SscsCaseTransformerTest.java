@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.assertj.core.api.Assertions;
@@ -37,7 +36,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
-import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -60,8 +58,6 @@ public class SscsCaseTransformerTest {
 
     Map<String, Object> pairs = new HashMap<>();
 
-    private DwpAddressLookupService dwpAddressLookupService = new DwpAddressLookupService();
-
     private List<String> offices;
 
     @Before
@@ -72,7 +68,7 @@ public class SscsCaseTransformerTest {
         offices.add("1");
         offices.add("Balham DRT");
 
-        sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, offices);
+        sscsDataHelper = new SscsDataHelper(null, offices);
         transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
@@ -1207,9 +1203,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenACaseWithNoBenefitTypeAndReadyToListOffice_thenSetCreatedInGapsFromFieldToNull() {
-        pairs.put("office", "1");
-
+    public void givenACaseWithNoReadyToListOffice_thenSetCreatedInGapsFromFieldToNull() {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
