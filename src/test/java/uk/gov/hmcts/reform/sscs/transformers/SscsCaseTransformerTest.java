@@ -85,13 +85,25 @@ public class SscsCaseTransformerTest {
 
     @Test
     @Parameters({"true", "false"})
-    public void benefitTypeIsDefinedIfIsEsaOrIsPipValuesAreUsed(boolean isPip) {
+    public void givenBenefitTypeIsDefinedWithTrueFalse_thenCheckCorrectCodeIsReturned(boolean isPip) {
         pairs.put(IS_BENEFIT_TYPE_PIP, isPip);
         pairs.put(IS_BENEFIT_TYPE_ESA, !isPip);
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = isPip ? PIP : ESA;
+        assertEquals(expectedBenefit.name(),  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    @Parameters({"Yes", "No"})
+    public void givenBenefitTypeIsDefinedWithYesNo_thenCheckCorrectCodeIsReturned(String isPip) {
+        pairs.put(IS_BENEFIT_TYPE_PIP, isPip);
+        pairs.put(IS_BENEFIT_TYPE_ESA, isPip.equals("Yes") ? "No" : "Yes");
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Benefit expectedBenefit = isPip.equals("Yes") ? PIP : ESA;
         assertEquals(expectedBenefit.name(),  appeal.getBenefitType().getCode());
     }
 
@@ -329,13 +341,31 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenPaperHearingType_thenBuildAnAppealWithWantsToAttendNo() {
 
-        pairs.put("is_hearing_type_oral", false);
-        pairs.put("is_hearing_type_paper", true);
+        pairs.put(IS_HEARING_TYPE_ORAL_LITERAL, false);
+        pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, true);
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals(HEARING_TYPE_PAPER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
         assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"Yes", "No"})
+    public void givenHearingTypeYesNo_thenCorrectlyBuildAnAppealWithWantsToAttendValue(String isOral) {
+
+        pairs.put(IS_HEARING_TYPE_ORAL_LITERAL, isOral);
+        pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, isOral.equals("Yes") ? "No" : "Yes");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        String expectedHearingType = isOral.equals("Yes") ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
+        String attendingHearing = isOral.equals("Yes") ? YES_LITERAL : NO_LITERAL;
+
+        assertEquals(expectedHearingType, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
+        assertEquals(attendingHearing, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -478,9 +508,10 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenHearingLoopIsTrue_thenBuildAnAppealWithArrangementsWithHearingLoop() {
+    @Parameters({"true", "Yes"})
+    public void givenHearingLoopIsRequired_thenBuildAnAppealWithArrangementsWithHearingLoop(String hearingLoop) {
 
-        pairs.put("hearing_options_hearing_loop", HEARING_LOOP);
+        pairs.put("hearing_options_hearing_loop", hearingLoop);
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
@@ -490,13 +521,40 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenDisabledAccessIsTrue_thenBuildAnAppealWithArrangementsWithDisabledAccess() {
+    @Parameters({"false", "No"})
+    public void givenHearingLoopIsNotRequired_thenBuildAnAppealWithNoHearingLoop(String hearingLoop) {
 
-        pairs.put("hearing_options_accessible_hearing_rooms", DISABLED_ACCESS);
+        pairs.put("hearing_options_hearing_loop", hearingLoop);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(0, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().size());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenDisabledAccessIsRequired_thenBuildAnAppealWithArrangementsWithDisabledAccess(String disabledAccess) {
+
+        pairs.put("hearing_options_accessible_hearing_rooms", disabledAccess);
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("disabledAccess", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"false", "No"})
+    public void givenDisabledAccessIsNotRequired_thenBuildAnAppealWithNoDisabledAccess(String disabledAccess) {
+
+        pairs.put("hearing_options_accessible_hearing_rooms", disabledAccess);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(0, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().size());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -700,9 +758,10 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenASignLanguageInterpreterIsTrueAndTypeIsEntered_thenBuildAnAppealWithArrangementsWithSignLanguageInterpreterAndTypeSetToValueEntered() {
+    @Parameters({"Yes", "true"})
+    public void givenASignLanguageInterpreterIsTrueAndTypeIsEntered_thenBuildAnAppealWithArrangementsWithSignLanguageInterpreterAndTypeSetToValueEntered(String signLanguageInterpreter) {
 
-        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, SIGN_LANGUAGE_REQUIRED);
+        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, signLanguageInterpreter);
         pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL, SIGN_LANGUAGE_TYPE);
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
@@ -722,6 +781,19 @@ public class SscsCaseTransformerTest {
 
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals(DEFAULT_SIGN_LANGUAGE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"No", "false"})
+    public void givenASignLanguageInterpreterIsFalse_thenBuildAnAppealWithNoArrangements(String signLanguageInterpreter) {
+
+        pairs.put(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL, signLanguageInterpreter);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(0, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().size());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1063,6 +1135,32 @@ public class SscsCaseTransformerTest {
 
         String generatedNino = ((String) result.getTransformedCase().get("generatedNino"));
         assertEquals("JT0123456B", generatedNino);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenAgreeLessHearingNoticeIsRequired_thenBuildAnAppealWithAgreeLessHearingNotice(String agreeLessHearingNotice) {
+
+        pairs.put("agree_less_hearing_notice", agreeLessHearingNotice);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("Yes", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"false", "No"})
+    public void givenAgreeLessHearingNoticeIsNotRequired_thenBuildAnAppealWithNoAgreeLessHearingNotice(String agreeLessHearingNotice) {
+
+        pairs.put("agree_less_hearing_notice", agreeLessHearingNotice);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
 
         assertTrue(result.getErrors().isEmpty());
     }
