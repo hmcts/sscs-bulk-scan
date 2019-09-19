@@ -16,6 +16,7 @@ import org.junit.Test;
 public class SscsOcrDataUtilTest {
 
     Map<String, Object> pairs = new HashMap<>();
+    List<String> errors = new ArrayList<>();
 
     @Test
     public void givenAPersonExists_thenReturnTrue() {
@@ -139,7 +140,7 @@ public class SscsOcrDataUtilTest {
     public void givenAValidBooleanValue_thenReturnTrue() {
         pairs.put("hearing_type_oral", true);
 
-        assertTrue(areBooleansValid(pairs, "hearing_type_oral"));
+        assertTrue(areBooleansValid(pairs, errors, "hearing_type_oral"));
     }
 
     @Test
@@ -147,14 +148,14 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", true);
         pairs.put("hearing_type_paper", false);
 
-        assertTrue(areBooleansValid(pairs, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
     }
 
     @Test
     public void givenABooleanValueWithText_thenReturnFalse() {
         pairs.put("hearing_type_oral", "blue");
 
-        assertFalse(areBooleansValid(pairs, "hearing_type_oral"));
+        assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral"));
     }
 
     @Test
@@ -201,5 +202,16 @@ public class SscsOcrDataUtilTest {
         generateDateForCcd(pairs, errors, "hearingDate");
 
         assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
+    }
+
+    @Test
+    public void givenAnInvalidBooleanValue_thenAddError() {
+        pairs.put("hearing_options_hearing_loop", "Yrs");
+
+        List<String> errors = new ArrayList<>();
+
+        areBooleansValid(pairs, errors, "hearing_options_hearing_loop");
+
+        assertEquals("hearing_options_hearing_loop has an invalid value. Should be Yes/No or True/False", errors.get(0));
     }
 }

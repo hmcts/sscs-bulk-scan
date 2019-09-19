@@ -48,16 +48,24 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
-    public static boolean areBooleansValid(Map<String, Object> pairs, String... values) {
-        return Stream.of(values).allMatch(value -> checkBooleanValue(pairs, value));
+    public static boolean areBooleansValid(Map<String, Object> pairs, List<String> errors, String... values) {
+        return Stream.of(values).allMatch(value -> checkBooleanValue(pairs, errors, value));
     }
 
-    public static boolean checkBooleanValue(Map<String, Object> pairs, String value) {
-        return pairs.get(value) != null && BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
+    public static boolean checkBooleanValue(Map<String, Object> pairs, List<String> errors, String value) {
+        if (pairs.get(value) != null) {
+            Boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
+            if (booleanValue) {
+                return true;
+            } else {
+                errors.add(value + " has an invalid value. Should be Yes/No or True/False");
+            }
+        }
+        return false;
     }
 
-    public static boolean getBoolean(Map<String, Object> pairs, String value) {
-        return checkBooleanValue(pairs, value) && Boolean.parseBoolean(pairs.get(value).toString());
+    public static boolean getBoolean(Map<String, Object> pairs, List<String> errors, String value) {
+        return checkBooleanValue(pairs, errors, value) && Boolean.parseBoolean(pairs.get(value).toString());
     }
 
     public static String convertBooleanToYesNoString(boolean value) {
