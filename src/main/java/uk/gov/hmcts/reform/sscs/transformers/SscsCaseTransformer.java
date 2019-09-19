@@ -10,6 +10,7 @@ import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateApp
 import java.time.LocalDateTime;
 import java.util.*;
 
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +44,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private SscsDataHelper sscsDataHelper;
 
-    private List<String> errors;
+    private Set<String> errors;
 
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
                                SscsKeyValuePairValidator keyValuePairValidator,
@@ -68,7 +69,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         log.info("Key value pairs validated while transforming exception record {}", caseId);
 
-        errors = new ArrayList<>();
+        errors = new HashSet<>();
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
 
@@ -96,7 +97,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 
-        return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
+        return CaseResponse.builder().transformedCase(transformed).errors(errors.stream().collect(Collectors.toList())).build();
     }
 
     private String extractOpeningDate(CaseDetails caseDetails) {
@@ -275,6 +276,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private String findHearingType(Map<String, Object> pairs) {
 
+        checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL);
+        checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL);
         if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL) && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
             pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()));
         } else if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL) && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {

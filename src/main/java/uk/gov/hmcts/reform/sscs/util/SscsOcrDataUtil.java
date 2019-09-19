@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +40,7 @@ public final class SscsOcrDataUtil {
         return pairs.containsKey(field) && pairs.get(field) != null ? pairs.get(field).toString() : null;
     }
 
-    public static boolean doValuesContradict(Map<String, Object> pairs, List<String> errors, String value1, String value2) {
+    public static boolean doValuesContradict(Map<String, Object> pairs, Set<String> errors, String value1, String value2) {
         if (pairs.get(value1).equals(pairs.get(value2))) {
             errors.add(value1 + " and " + value2 + " have contradicting values");
             return true;
@@ -48,11 +48,11 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
-    public static boolean areBooleansValid(Map<String, Object> pairs, List<String> errors, String... values) {
+    public static boolean areBooleansValid(Map<String, Object> pairs, Set<String> errors, String... values) {
         return Stream.of(values).allMatch(value -> checkBooleanValue(pairs, errors, value));
     }
 
-    public static boolean checkBooleanValue(Map<String, Object> pairs, List<String> errors, String value) {
+    public static boolean checkBooleanValue(Map<String, Object> pairs, Set<String> errors, String value) {
         if (pairs.get(value) != null) {
             Boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
             if (booleanValue) {
@@ -64,7 +64,7 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
-    public static boolean getBoolean(Map<String, Object> pairs, List<String> errors, String value) {
+    public static boolean getBoolean(Map<String, Object> pairs, Set<String> errors, String value) {
         return checkBooleanValue(pairs, errors, value) && Boolean.parseBoolean(pairs.get(value).toString());
     }
 
@@ -72,14 +72,14 @@ public final class SscsOcrDataUtil {
         return value ? YES : NO;
     }
 
-    public static String generateDateForCcd(Map<String, Object> pairs, List<String> errors, String fieldName) {
+    public static String generateDateForCcd(Map<String, Object> pairs, Set<String> errors, String fieldName) {
         if (pairs.containsKey(fieldName)) {
             return getDateForCcd(getField(pairs, fieldName), errors, fieldName + " is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy");
         }
         return null;
     }
 
-    public static String getDateForCcd(String ocrField, List<String> errors, String errorMessage) {
+    public static String getDateForCcd(String ocrField, Set<String> errors, String errorMessage) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/uuuu").withResolverStyle(ResolverStyle.STRICT);
 
         if (!StringUtils.isEmpty(ocrField)) {
