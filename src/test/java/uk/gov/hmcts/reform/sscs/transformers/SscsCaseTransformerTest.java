@@ -1139,6 +1139,32 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
     }
 
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenAgreeLessHearingNoticeIsRequired_thenBuildAnAppealWithAgreeLessHearingNotice(String agreeLessHearingNotice) {
+
+        pairs.put("agree_less_hearing_notice", agreeLessHearingNotice);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("Yes", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"false", "No"})
+    public void givenAgreeLessHearingNoticeIsNotRequired_thenBuildAnAppealWithNoAgreeLessHearingNotice(String agreeLessHearingNotice) {
+
+        pairs.put("agree_less_hearing_notice", agreeLessHearingNotice);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
