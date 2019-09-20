@@ -379,8 +379,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<ExcludeDate> excludedDates = buildExcludedDates(pairs);
 
-        String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL) ?
-            convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
+        String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)
+            ? convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
 
         String scheduleHearing = excludedDates != null && !excludedDates.isEmpty()
             && wantsToAttend.equals(YES_LITERAL) ? YES_LITERAL : NO_LITERAL;
