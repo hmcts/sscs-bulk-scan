@@ -1,21 +1,17 @@
 package uk.gov.hmcts.reform.sscs.util;
 
 import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.junit.Test;
 
 public class SscsOcrDataUtilTest {
 
     Map<String, Object> pairs = new HashMap<>();
+    Set<String> errors = new HashSet<>();
 
     @Test
     public void givenAPersonExists_thenReturnTrue() {
@@ -124,7 +120,7 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", true);
         pairs.put("hearing_type_paper", true);
 
-        assertTrue(doValuesContradict(pairs, new ArrayList<>(), "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(doValuesContradict(pairs, new HashSet<>(), "hearing_type_oral", "hearing_type_paper"));
     }
 
     @Test
@@ -132,14 +128,14 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", true);
         pairs.put("hearing_type_paper", false);
 
-        assertFalse(doValuesContradict(pairs, new ArrayList<>(), "hearing_type_oral", "hearing_type_paper"));
+        assertFalse(doValuesContradict(pairs, new HashSet<>(), "hearing_type_oral", "hearing_type_paper"));
     }
 
     @Test
     public void givenAValidBooleanValue_thenReturnTrue() {
         pairs.put("hearing_type_oral", true);
 
-        assertTrue(areBooleansValid(pairs, "hearing_type_oral"));
+        assertTrue(areBooleansValid(pairs, errors, "hearing_type_oral"));
     }
 
     @Test
@@ -147,14 +143,14 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", true);
         pairs.put("hearing_type_paper", false);
 
-        assertTrue(areBooleansValid(pairs, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
     }
 
     @Test
     public void givenABooleanValueWithText_thenReturnFalse() {
         pairs.put("hearing_type_oral", "blue");
 
-        assertFalse(areBooleansValid(pairs, "hearing_type_oral"));
+        assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral"));
     }
 
     @Test
@@ -171,35 +167,40 @@ public class SscsOcrDataUtilTest {
     public void givenAnOcrDate_thenConvertToCcdDateFormat() {
         pairs.put("hearingDate", "01/01/2018");
 
-        assertEquals("2018-01-01", generateDateForCcd(pairs, new ArrayList<>(), "hearingDate"));
+        assertEquals("2018-01-01", generateDateForCcd(pairs, errors, "hearingDate"));
     }
 
     @Test
     public void givenAnOcrDateWithNoLeadingZero_thenConvertToCcdDateFormat() {
         pairs.put("hearingDate", "1/1/2018");
 
-        assertEquals("2018-01-01", generateDateForCcd(pairs, new ArrayList<>(), "hearingDate"));
+        assertEquals("2018-01-01", generateDateForCcd(pairs, errors, "hearingDate"));
     }
 
     @Test
     public void givenAnOcrDateWithInvalidFormat_thenAddError() {
         pairs.put("hearingDate", "01/30/2018");
 
-        List<String> errors = new ArrayList<>();
-
         generateDateForCcd(pairs, errors, "hearingDate");
 
-        assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
+        assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.iterator().next());
     }
 
     @Test
     public void givenAnOcrInvalidDate_thenAddError() {
         pairs.put("hearingDate", "29/02/2018");
 
-        List<String> errors = new ArrayList<>();
-
         generateDateForCcd(pairs, errors, "hearingDate");
 
-        assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
+        assertEquals("hearingDate is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.iterator().next());
+    }
+
+    @Test
+    public void givenAnInvalidBooleanValue_thenAddError() {
+        pairs.put("hearing_options_hearing_loop", "Yrs");
+
+        areBooleansValid(pairs, errors, "hearing_options_hearing_loop");
+
+        assertEquals("hearing_options_hearing_loop has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
     }
 }

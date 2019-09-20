@@ -364,6 +364,20 @@
             "value": "01/04/2018"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "is_benefit_type_pip",
+            "value": "no"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "is_benefit_type_esa",
+            "value": "yes"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         }
       ],
       "openingDate": "2018-02-11"
