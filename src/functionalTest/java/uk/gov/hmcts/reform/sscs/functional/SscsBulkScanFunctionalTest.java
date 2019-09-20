@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
@@ -91,7 +92,8 @@ public class SscsBulkScanFunctionalTest {
         throws IOException {
         String json = getJson("mrn_date_greater_than_13_months.json");
         json = json.replace("APPEAL_GROUNDS", appealGrounds);
-
+        json = json.replace("PERSON1_NINO", "BB" + RandomStringUtils.random(6, false, true) + "A");
+        json = json.replace("PERSON2_NINO", "BB" + RandomStringUtils.random(6, false, true) + "B");
         Response response = exceptionRecordEndpointRequest(json);
 
         SscsCaseDetails caseInCcd = findCaseInCcd(response);
