@@ -189,7 +189,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.0.65'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.0.66-RC-SSCS-6201-4'
 
   //Remove when our dependencies pull in this version or later
   compile 'com.fasterxml.jackson.core:jackson-databind:2.9.9.3'

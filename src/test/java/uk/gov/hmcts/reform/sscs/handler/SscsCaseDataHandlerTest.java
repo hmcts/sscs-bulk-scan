@@ -287,4 +287,10 @@ public class SscsCaseDataHandlerTest {
         searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
         return searchCriteria;
     }
+
+    private Map<String,String> getMatchSearchCriteria(String nino) {
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("case.generatedNino", nino);
+        return searchCriteria;
+    }
 }

@@ -4,10 +4,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.SEND_TO_DWP;
 
 import feign.FeignException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,7 +19,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -87,7 +85,20 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             try {
 
                 if (!isCaseAlreadyExists) {
-                    caseId = caseDataHelper.createCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
+                    Map<String, Object> sscsCaseData = caseValidationResponse.getTransformedCase();
+
+                    if (generatedNino != null && !generatedNino.equals("")) {
+                        Map<String, String> linkCasesCriteria = new HashMap<>();
+                        linkCasesCriteria.put("case.generatedNino", generatedNino);
+                        List<CaseDetails> matchedByNinoCases = caseDataHelper.findCaseBy(linkCasesCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
+
+
+                        if (matchedByNinoCases.size() > 0) {
+                            sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
+                        }
+                    }
+
+                    caseId = caseDataHelper.createCase(sscsCaseData, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
                     log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
                     if (isCaseCreatedEvent(eventId)) {
@@ -107,6 +118,19 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             }
         }
         return null;
+    }
+
+    protected Map<String, Object> addAssociatedCases(Map<String, Object> sscsCaseData, List<CaseDetails> matchedByNinoCases) {
+        List<CaseLink> associatedCases = new ArrayList<>();
+
+        for (CaseDetails sscsCaseDetails: matchedByNinoCases) {
+            CaseLink caseLink = CaseLink.builder().value(
+                CaseLinkDetails.builder().caseReference(sscsCaseDetails.getId().toString()).build()).build();
+            associatedCases.add(caseLink);
+            log.info("Added associated case " + sscsCaseDetails.getId().toString());
+        }
+        sscsCaseData.put("associatedCase", associatedCases);
+        return sscsCaseData;
     }
 
     private boolean isCaseCreatedEvent(String eventId) {
