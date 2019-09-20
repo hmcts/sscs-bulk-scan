@@ -16,13 +16,11 @@ import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+
 import org.apache.commons.codec.Charsets;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.BaseTest;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
@@ -43,6 +41,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2018-12-09");
         startForCaseworkerStub(START_EVENT_VALID_APPEAL_CREATED_URL);
         submitForCaseworkerStub("validAppealCreated");
         readForCaseworkerStub(READ_EVENT_URL);
@@ -185,6 +184,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2017-01-01");
         startForCaseworkerStub(START_EVENT_NON_COMPLIANT_CASE_URL);
 
         submitForCaseworkerStub("nonCompliant");
@@ -207,6 +207,67 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         assertThat(callbackResponse.getData()).contains(
             entry("caseReference", "1539878003972756"),
             entry("state", "ScannedRecordCaseCreated")
+        );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_not_create_duplicate_non_compliant_case_when_case_reference_not_null() throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        Map<String,Object> exceptionData = caseDataWithMrnDate("01/01/2017");
+        exceptionData.put("caseReference","1539878003972756");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+                exceptionCaseData(exceptionData),
+                httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+                this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getData()).contains(
+                entry("caseReference", "1539878003972756"),
+                entry("state", "ScannedRecordCaseCreated")
+        );
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benifit_code_case_exists() throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+                exceptionCaseData(caseDataWithMrnDate("01/01/2017")),
+                httpHeaders()
+        );
+
+        findCaseByForCaseworkerReturnCaseDetails(FIND_CASE_EVENT_URL, "2017-01-01");
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+                this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getData()).contains(
+                entry("caseReference", "1539878003972756"),
+                entry("state", "ScannedRecordCaseCreated")
         );
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
@@ -249,6 +310,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
+        findCaseByForCaseworkerWithUserTokenHavingNoAccess(FIND_CASE_EVENT_URL, "2018-12-09");
         startForCaseworkerStubWithUserTokenHavingNoAccess(START_EVENT_VALID_APPEAL_CREATED_URL);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
@@ -267,6 +329,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     @Test
     public void should_return_503_status_when_ccd_service_is_not_available_when_creating_appeal() throws Exception {
         // Given
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2018-12-09");
         startForCaseworkerStubWithCcdUnavailable(START_EVENT_VALID_APPEAL_CREATED_URL);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -599,6 +662,57 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
                 .withStatus(503)));
     }
 
+    private void findCaseByForCaseworkerWithUserTokenHavingNoAccess(String eventUrl, String mrnDate) {
+        String queryUrl = getParamsUrl(mrnDate);
+
+        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
+                .withHeader(AUTHORIZATION, equalTo(USER_TOKEN_WITHOUT_CASE_ACCESS))
+                .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+                .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+                .willReturn(aResponse()
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                        .withStatus(403)
+                        .withBody("[]")));
+    }
+
+    private void findCaseByForCaseworker(String eventUrl, String mrnDate) {
+        String queryUrl = getParamsUrl(mrnDate);
+
+        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
+                .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
+                .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+                .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+                .willReturn(aResponse()
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                        .withStatus(200)
+                        .withBody("[]")));
+    }
+
+    private void findCaseByForCaseworkerReturnCaseDetails(String eventUrl, String mrnDate) throws Exception {
+        String queryUrl = getParamsUrl(mrnDate);
+
+        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
+                .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
+                .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+                .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+                .willReturn(aResponse()
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                        .withStatus(200)
+                        .withBody(loadJson("mappings/existing-case-details-200-response.json"))));
+    }
+
+    private String getParamsUrl(String mrnDate) {
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("case.generatedNino", "BB000000B");
+        searchCriteria.put("case.appeal.benefitType.code", "ESA");
+        searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
+
+        return searchCriteria.entrySet().stream()
+                .map(p -> p.getKey() + "=" + p.getValue())
+                .reduce((p1, p2) -> p1 + "&" + p2)
+                .map(s -> "?" + s)
+                .orElse("");
+    }
 
     private static String loadJson(String fileName) throws IOException {
         URL url = getResource(fileName);

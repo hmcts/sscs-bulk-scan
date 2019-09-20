@@ -10,7 +10,9 @@ import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateApp
 import java.time.LocalDateTime;
 import java.util.*;
 
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -42,7 +44,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private SscsDataHelper sscsDataHelper;
 
-    private List<String> errors;
+    private Set<String> errors;
 
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
                                SscsKeyValuePairValidator keyValuePairValidator,
@@ -67,7 +69,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         log.info("Key value pairs validated while transforming exception record {}", caseId);
 
-        errors = new ArrayList<>();
+        errors = new HashSet<>();
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
 
@@ -95,7 +97,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 
-        return CaseResponse.builder().transformedCase(transformed).errors(errors).build();
+        return CaseResponse.builder().transformedCase(transformed).errors(errors.stream().collect(Collectors.toList())).build();
     }
 
     private String extractOpeningDate(CaseDetails caseDetails) {
@@ -105,7 +107,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             : ((String) caseDetails.getCaseData().get("openingDate")).substring(0, 10);
     }
 
-    private static Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {
+    private Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {
 
         return Subscriptions.builder()
             .appellantSubscription(appeal.getAppellant() != null
@@ -120,8 +122,8 @@ public class SscsCaseTransformer implements CaseTransformer {
             .build();
     }
 
-    private static Subscription generateSubscriptionWithAppealNumber(Map<String, Object> pairs, String personType) {
-        boolean wantsSms = getBoolean(pairs, personType + "_want_sms_notifications");
+    private Subscription generateSubscriptionWithAppealNumber(Map<String, Object> pairs, String personType) {
+        boolean wantsSms = getBoolean(pairs, errors, personType + "_want_sms_notifications");
         String email = getField(pairs,personType + "_email");
         String mobile = getField(pairs,personType + "_mobile");
 
@@ -184,12 +186,12 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private BenefitType getBenefitType(Map<String, Object> pairs) {
         String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
-        if (areBooleansValid(pairs, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP)) {
+        if (areBooleansValid(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP)) {
             doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP);
         }
-        if (checkBooleanValue(pairs, IS_BENEFIT_TYPE_PIP) && Boolean.parseBoolean(pairs.get(IS_BENEFIT_TYPE_PIP).toString())) {
+        if (checkBooleanValue(pairs, errors, IS_BENEFIT_TYPE_PIP) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_PIP).toString())) {
             code = Benefit.PIP.name();
-        } else if (checkBooleanValue(pairs, IS_BENEFIT_TYPE_ESA) && Boolean.parseBoolean(pairs.get(IS_BENEFIT_TYPE_ESA).toString())) {
+        } else if (checkBooleanValue(pairs, errors, IS_BENEFIT_TYPE_ESA) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_ESA).toString())) {
             code = Benefit.ESA.name();
         }
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
@@ -274,14 +276,16 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private String findHearingType(Map<String, Object> pairs) {
 
-        if (checkBooleanValue(pairs, IS_HEARING_TYPE_ORAL_LITERAL) && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
+        checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL);
+        checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL);
+        if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL) && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
             pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()));
-        } else if (checkBooleanValue(pairs, IS_HEARING_TYPE_PAPER_LITERAL) && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
+        } else if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL) && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
             pairs.put(IS_HEARING_TYPE_ORAL_LITERAL,!Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).toString()));
         }
 
-        if (areBooleansValid(pairs, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL) && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
-            return Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
+        if (areBooleansValid(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL) && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
+            return BooleanUtils.toBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
         }
         return null;
     }
@@ -304,7 +308,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<ExcludeDate> excludedDates = buildExcludedDates(pairs);
 
-        String agreeLessNotice = checkBooleanValue(pairs, AGREE_LESS_HEARING_NOTICE_LITERAL) ? convertBooleanToYesNoString(getBoolean(pairs, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
+        String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL) ? convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
 
         String scheduleHearing = excludedDates != null && !excludedDates.isEmpty() && wantsToAttend.equals(YES_LITERAL) ? YES_LITERAL : NO_LITERAL;
 
@@ -337,8 +341,8 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Optional<Boolean> findSignLanguageInterpreterRequiredInOldForm(Map<String, Object> pairs) {
-        if (areBooleansValid(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
-            return Optional.of(Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString()));
+        if (areBooleansValid(pairs, errors, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
+            return Optional.of(BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString()));
         }
         return Optional.empty();
     }
@@ -399,10 +403,10 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<String> arrangements = new ArrayList<>();
 
-        if (areBooleansValid(pairs, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL) &&  Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
+        if (areBooleansValid(pairs, errors, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL) &&  BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
             arrangements.add("disabledAccess");
         }
-        if (areBooleansValid(pairs, HEARING_OPTIONS_HEARING_LOOP_LITERAL) && Boolean.parseBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
+        if (areBooleansValid(pairs, errors, HEARING_OPTIONS_HEARING_LOOP_LITERAL) && BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_HEARING_LOOP_LITERAL).toString())) {
             arrangements.add("hearingLoop");
         }
         if (isSignLanguageInterpreterRequired) {
