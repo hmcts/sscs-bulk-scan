@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
@@ -15,14 +16,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
@@ -31,12 +38,18 @@ import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @SpringBootTest
-@RunWith(SpringRunner.class)
+@TestPropertySource(locations = "classpath:application_e2e.yaml")
+@RunWith(JUnitParamsRunner.class)
 public class SscsBulkScanFunctionalTest {
 
-    private final String envUrl = System.getenv("TEST_URL");
-    private final String localUrl = "http://localhost:8090";
-    private final String appUrl = StringUtils.isNotBlank(envUrl) ? envUrl : localUrl;
+    @ClassRule
+    public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
+
+    @Rule
+    public final SpringMethodRule springMethodRule = new SpringMethodRule();
+
+    @Value("${test-url}")
+    private String testUrl;
 
     @Autowired
     private IdamService idamService;
@@ -50,7 +63,7 @@ public class SscsBulkScanFunctionalTest {
 
     @Before
     public void setup() {
-        RestAssured.baseURI = appUrl;
+        RestAssured.baseURI = testUrl;
         idamTokens = idamService.getIdamTokens();
     }
 
@@ -60,21 +73,32 @@ public class SscsBulkScanFunctionalTest {
 
         //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
         List<String> possibleStates = new ArrayList<>(Arrays.asList("validAppeal", "withDwp"));
-        assertTrue(possibleStates.contains(findStateOfCaseInCcd(response)));
+        assertTrue(possibleStates.contains(findCaseInCcd(response).getState()));
     }
 
     @Test
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
         Response response = exceptionRecordEndpointRequest(getJson("some_mandatory_fields_missing.json"));
 
-        assertEquals("incompleteApplication", findStateOfCaseInCcd(response));
+        assertEquals("incompleteApplication", findCaseInCcd(response).getState());
     }
 
     @Test
-    public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months() throws IOException {
-        Response response = exceptionRecordEndpointRequest(getJson("mrn_date_greater_than_13_months.json"));
+    @Parameters({
+        "see scanned SSCS1 form,over13months", ",over13MonthsAndGroundsMissing"
+    })
+    public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months(String appealGrounds,
+                                                                                      String expected)
+        throws IOException {
+        String json = getJson("mrn_date_greater_than_13_months.json");
+        json = json.replace("APPEAL_GROUNDS", appealGrounds);
+        json = json.replace("PERSON1_NINO", "BB" + RandomStringUtils.random(6, false, true) + "A");
+        json = json.replace("PERSON2_NINO", "BB" + RandomStringUtils.random(6, false, true) + "B");
+        Response response = exceptionRecordEndpointRequest(json);
 
-        assertEquals("interlocutoryReviewState", findStateOfCaseInCcd(response));
+        SscsCaseDetails caseInCcd = findCaseInCcd(response);
+        assertEquals("interlocutoryReviewState", caseInCcd.getState());
+        assertEquals(expected, caseInCcd.getData().getInterlocReferralReason());
     }
 
     @Test
@@ -112,12 +136,13 @@ public class SscsBulkScanFunctionalTest {
     }
 
     private String getJson(String resource) throws IOException {
-        String file = getClass().getClassLoader().getResource("import/" + resource).getFile();
+        String file = Objects.requireNonNull(getClass().getClassLoader()
+            .getResource("import/" + resource)).getFile();
         return FileUtils.readFileToString(new File(file), StandardCharsets.UTF_8.name());
     }
 
     private Response simulateCcdCallback(String json, String urlPath) {
-        final String callbackUrl = appUrl + urlPath;
+        final String callbackUrl = testUrl + urlPath;
 
         RestAssured.useRelaxedHTTPSValidation();
         Response response = RestAssured
@@ -142,14 +167,10 @@ public class SscsBulkScanFunctionalTest {
         ccdCaseId = String.valueOf(caseDetails.getId());
     }
 
-    private String findStateOfCaseInCcd(Response response) {
-
+    private SscsCaseDetails findCaseInCcd(Response response) {
         JsonPath jsonPathEvaluator = response.jsonPath();
         Long caseRef = Long.parseLong(((HashMap) jsonPathEvaluator.get("data")).get("caseReference").toString());
-
-        SscsCaseDetails caseDetails = ccdService.getByCaseId(caseRef, idamTokens);
-
-        return caseDetails.getState();
+        return ccdService.getByCaseId(caseRef, idamTokens);
     }
 
 }
