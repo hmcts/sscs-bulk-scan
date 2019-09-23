@@ -51,7 +51,8 @@ public class SscsDataHelper {
     }
 
     public String findEventToCreateCase(CaseResponse caseValidationResponse) {
-        LocalDate mrnDate = findMrnDateTime(((Appeal) caseValidationResponse.getTransformedCase().get("appeal")).getMrnDetails());
+        LocalDate mrnDate = findMrnDateTime(((Appeal) caseValidationResponse.getTransformedCase()
+            .get("appeal")).getMrnDetails());
 
         if (!isEmpty(caseValidationResponse.getWarnings())) {
             return caseEvent.getIncompleteApplicationEventId();

@@ -67,6 +67,13 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
+   file name: wiremock-standalone-2.20.0.jar: handlebars-v4.0.4.js
+   ]]></notes>
+    <packageUrl regex="true">^pkg:javascript/handlebars\.js@.*$</packageUrl>
+    <vulnerabilityName>A prototype pollution vulnerability in handlebars is exploitable if an attacker can control the template</vulnerabilityName>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
    file name: guava-20.0.jar
    ]]></notes>
     <gav regex="true">^com\.google\.guava:guava:.*$</gav>
@@ -165,5 +172,11 @@
     <gav regex="true">^com\.fasterxml\.jackson\.core:jackson-databind:.*$</gav>
     <cve>CVE-2019-14540</cve>
     <cve>CVE-2019-16335</cve>
+  </suppress>
+  <suppress until="2019-10-01">
+    <notes><![CDATA[
+            A low severity security issue was reported in the Gradle signing plugin. ]]>
+    </notes>
+    <cve>CVE-2019-16370</cve>
   </suppress>
 </suppressions>

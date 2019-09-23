@@ -8,9 +8,9 @@ import feign.FeignException;
 import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 @Slf4j
 public class SscsCaseDataHandler implements CaseDataHandler {
 
+    private static final String INTERLOC_REFERRAL_REASON = "interlocReferralReason";
     private final SscsDataHelper sscsDataHelper;
     private final CaseDataHelper caseDataHelper;
     private final CaseEvent caseEvent;
@@ -47,12 +48,15 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                                    Token token,
                                    String exceptionRecordId) {
 
-        if (canCreateCase(caseValidationResponse, ignoreWarnings, exceptionRecordId)) {
+        if (canCreateCase(caseValidationResponse, ignoreWarnings)) {
             boolean isCaseAlreadyExists = false;
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
+            stampReferredCase(caseValidationResponse, eventId);
 
-            String caseReference = String.valueOf(Optional.ofNullable(exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
-            String generatedNino = String.valueOf(Optional.ofNullable(caseValidationResponse.getTransformedCase().get("generatedNino")).orElse(""));
+            String caseReference = String.valueOf(Optional.ofNullable(
+                exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
+            String generatedNino = String.valueOf(Optional.ofNullable(
+                caseValidationResponse.getTransformedCase().get("generatedNino")).orElse(""));
             Appeal appeal = (Appeal) caseValidationResponse.getTransformedCase().get("appeal");
             String mrnDate = "";
             String benefitType = "";
@@ -65,25 +69,26 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             if (!StringUtils.isEmpty(caseReference)) {
                 log.info("Case {} already exists for exception record id {}", caseReference, exceptionRecordId);
                 isCaseAlreadyExists = true;
-            } else if (!StringUtils.isEmpty(generatedNino) && !StringUtils.isEmpty(benefitType) && !StringUtils.isEmpty(mrnDate)) {
-                Map<String,String> searchCriteria = new HashMap<>();
+            } else if (!StringUtils.isEmpty(generatedNino) && !StringUtils.isEmpty(benefitType)
+                && !StringUtils.isEmpty(mrnDate)) {
+                Map<String, String> searchCriteria = new HashMap<>();
                 searchCriteria.put("case.generatedNino", generatedNino);
                 searchCriteria.put("case.appeal.benefitType.code", benefitType);
                 searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
-                List<CaseDetails> caseDetails = caseDataHelper.findCaseBy(searchCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
+                List<CaseDetails> caseDetails = caseDataHelper.findCaseBy(
+                    searchCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
 
                 if (!CollectionUtils.isEmpty(caseDetails)) {
                     log.info("Duplicate case found for Nino {} , benefit type {} and mrnDate {}. "
-                                    + "No need to continue with post create case processing.",
-                            generatedNino, benefitType, mrnDate);
+                            + "No need to continue with post create case processing.",
+                        generatedNino, benefitType, mrnDate);
                     isCaseAlreadyExists = true;
                     caseReference = String.valueOf(caseDetails.get(0).getId());
                 }
             }
 
             try {
-
                 if (!isCaseAlreadyExists) {
                     Map<String, Object> sscsCaseData = caseValidationResponse.getTransformedCase();
 
@@ -103,7 +108,9 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
                     if (isCaseCreatedEvent(eventId)) {
                         log.info("About to update case with sendToDwp event for id {}", caseId);
-                        caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
+                        caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getUserAuthToken(),
+                            token.getServiceAuthToken(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId,
+                            "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
                         log.info("Case updated with sendToDwp event for id {}", caseId);
                     }
                     caseReference = String.valueOf(caseId);
@@ -123,7 +130,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     protected Map<String, Object> addAssociatedCases(Map<String, Object> sscsCaseData, List<CaseDetails> matchedByNinoCases) {
         List<CaseLink> associatedCases = new ArrayList<>();
 
-        for (CaseDetails sscsCaseDetails: matchedByNinoCases) {
+        for (CaseDetails sscsCaseDetails : matchedByNinoCases) {
             CaseLink caseLink = CaseLink.builder().value(
                 CaseLinkDetails.builder().caseReference(sscsCaseDetails.getId().toString()).build()).build();
             associatedCases.add(caseLink);
@@ -133,12 +140,41 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         return sscsCaseData;
     }
 
-    private boolean isCaseCreatedEvent(String eventId) {
-        return eventId.equals(caseEvent.getCaseCreatedEventId()) || eventId.equals(caseEvent.getValidAppealCreatedEventId());
+    private void stampReferredCase(CaseResponse caseValidationResponse, String eventId) {
+        Map<String, Object> transformedCase = caseValidationResponse.getTransformedCase();
+        Appeal appeal = (Appeal) transformedCase.get("appeal");
+        if (EventType.NON_COMPLIANT.getCcdType().equals(eventId)) {
+            if (appealReasonIsNotBlank(appeal)) {
+                transformedCase.put(INTERLOC_REFERRAL_REASON,
+                    InterlocReferralReasonOptions.OVER_13_MONTHS.getValue());
+            } else {
+                transformedCase.put(INTERLOC_REFERRAL_REASON,
+                    InterlocReferralReasonOptions.OVER_13_MONTHS_AND_GROUNDS_MISSING.getValue());
+            }
+        }
     }
 
-    private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings, String exceptionRecordId) {
-        return ((!isEmpty(caseValidationResponse.getWarnings()) && ignoreWarnings) || isEmpty(caseValidationResponse.getWarnings()));
+    private boolean appealReasonIsNotBlank(Appeal appeal) {
+        return appeal.getAppealReasons() != null && (StringUtils.isNotBlank(appeal.getAppealReasons().getOtherReasons())
+            || reasonsIsNotBlank(appeal));
+    }
+
+    private boolean reasonsIsNotBlank(Appeal appeal) {
+        return !isEmpty(appeal.getAppealReasons().getReasons())
+            && appeal.getAppealReasons().getReasons().get(0) != null
+            && appeal.getAppealReasons().getReasons().get(0).getValue() != null
+            && (StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getReason())
+            || StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getDescription()));
+    }
+
+    private boolean isCaseCreatedEvent(String eventId) {
+        return eventId.equals(caseEvent.getCaseCreatedEventId())
+            || eventId.equals(caseEvent.getValidAppealCreatedEventId());
+    }
+
+    private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings) {
+        return ((!isEmpty(caseValidationResponse.getWarnings()) && ignoreWarnings)
+            || isEmpty(caseValidationResponse.getWarnings()));
     }
 
     private void wrapAndThrowCaseDataHandlerException(String exceptionId, Exception ex) {
