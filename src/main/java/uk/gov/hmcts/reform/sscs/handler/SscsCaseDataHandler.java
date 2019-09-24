@@ -92,15 +92,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 if (!isCaseAlreadyExists) {
                     Map<String, Object> sscsCaseData = caseValidationResponse.getTransformedCase();
 
-                    if (generatedNino != null && !generatedNino.equals("")) {
-                        Map<String, String> linkCasesCriteria = new HashMap<>();
-                        linkCasesCriteria.put("case.generatedNino", generatedNino);
-                        List<CaseDetails> matchedByNinoCases = caseDataHelper.findCaseBy(linkCasesCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
-
-                        if (matchedByNinoCases.size() > 0) {
-                            sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
-                        }
-                    }
+                    sscsCaseData = checkForMatches(generatedNino, sscsCaseData, token);
 
                     caseId = caseDataHelper.createCase(sscsCaseData,
                         token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
@@ -126,6 +118,19 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             }
         }
         return null;
+    }
+
+    protected Map<String, Object> checkForMatches(String generatedNino, Map<String, Object> sscsCaseData, Token token) {
+        if (generatedNino != null && !generatedNino.equals("")) {
+            Map<String, String> linkCasesCriteria = new HashMap<>();
+            linkCasesCriteria.put("case.generatedNino", generatedNino);
+            List<CaseDetails> matchedByNinoCases = caseDataHelper.findCaseBy(linkCasesCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
+
+            if (matchedByNinoCases.size() > 0) {
+                sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
+            }
+        }
+        return sscsCaseData;
     }
 
     protected Map<String, Object> addAssociatedCases(Map<String, Object> sscsCaseData, List<CaseDetails> matchedByNinoCases) {

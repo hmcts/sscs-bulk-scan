@@ -39,15 +39,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReason;
-import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasonDetails;
-import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasons;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
-import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Identity;
-import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -190,7 +182,7 @@ public class SscsCaseDataHandlerTest {
     }
 
     @Test
-    public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwp() {
+    public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwpCheckMatches() {
 
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
             .benefitType(BenefitType.builder().build())
@@ -198,7 +190,9 @@ public class SscsCaseDataHandlerTest {
                 Address.builder().postcode("CM120HN").build())
                 .build()).build();
 
+        String nino = "testnino";
         Map<String, Object> transformedCase = new HashMap<>();
+        transformedCase.put("generatedNino", nino);
         transformedCase.put("appeal", appeal);
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
@@ -220,10 +214,65 @@ public class SscsCaseDataHandlerTest {
         verify(caseDataHelper).createCase(transformedCaseCaptor.capture(), eq(TEST_USER_AUTH_TOKEN), eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_USER_ID), eq("validAppealCreated"));
 
+
+        boolean associatedCaseListCheck = transformedCaseCaptor.getAllValues().stream()
+            .filter(m -> m.containsKey("associatedCase")).count() == 1;
+        assertFalse(associatedCaseListCheck);
+
+        verify(caseDataHelper).updateCase(transformedCase,
+            TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(),
+            1L, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
+    }
+
+    @Test
+    public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwp() {
+
+        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
+            .benefitType(BenefitType.builder().build())
+            .appellant(Appellant.builder().address(
+                Address.builder().postcode("CM120HN").build())
+                .build()).build();
+
+        String nino = "testnino";
+        Map<String, Object> transformedCase = new HashMap<>();
+        transformedCase.put("generatedNino", nino);
+        transformedCase.put("appeal", appeal);
+
+        final CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
+
+        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID))
+            .willReturn(Lists.emptyList());
+
+        given(caseDataHelper.createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID,
+            "validAppealCreated")).willReturn(1L);
+
+        uk.gov.hmcts.reform.ccd.client.model.CaseDetails matchingCase = uk.gov.hmcts.reform.ccd.client.model.CaseDetails.builder().id(12345678L).build();
+
+        List<uk.gov.hmcts.reform.ccd.client.model.CaseDetails> matchedByNinoCases = new ArrayList<>();
+        matchedByNinoCases.add(matchingCase);
+
+        given(caseDataHelper.findCaseBy(getMatchSearchCriteria(nino), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(matchedByNinoCases);
+
+        given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("validAppealCreated");
+
+        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData,
+            caseValidationResponse, false, token, null);
+
+        assertEquals("ScannedRecordCaseCreated", ((HandlerResponse) response).getState());
+        assertEquals("1", ((HandlerResponse) response).getCaseId());
+
+        verify(caseDataHelper).createCase(transformedCaseCaptor.capture(), eq(TEST_USER_AUTH_TOKEN), eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_USER_ID), eq("validAppealCreated"));
+
         boolean interlocReferralReasonFieldAndValueCheck = transformedCaseCaptor.getAllValues().stream()
             .filter(m -> m.containsKey("interlocReferralReason"))
             .anyMatch(m -> m.containsValue("over13months"));
         assertFalse(interlocReferralReasonFieldAndValueCheck);
+
+        boolean associatedCaseListCheck = transformedCaseCaptor.getAllValues().stream()
+            .filter(m -> m.containsKey("associatedCase")).count() == 0;
+        assertFalse(associatedCaseListCheck);
+
 
         verify(caseDataHelper).updateCase(transformedCase,
             TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(),
@@ -476,6 +525,8 @@ public class SscsCaseDataHandlerTest {
         searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
         return searchCriteria;
     }
+
+
 
     private Map<String,String> getMatchSearchCriteria(String nino) {
         Map<String, String> searchCriteria = new HashMap<>();
