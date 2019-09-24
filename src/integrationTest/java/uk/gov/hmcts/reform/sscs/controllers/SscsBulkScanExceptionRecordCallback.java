@@ -42,8 +42,10 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2018-12-09");
+
         startForCaseworkerStub(START_EVENT_VALID_APPEAL_CREATED_URL);
         submitForCaseworkerStub("validAppealCreated");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
         readForCaseworkerStub(READ_EVENT_URL);
 
         startForCaseworkerStub(UPDATE_EVENT_SEND_TO_DWP_URL);
@@ -186,6 +188,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2017-01-01");
         startForCaseworkerStub(START_EVENT_NON_COMPLIANT_CASE_URL);
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         submitForCaseworkerStub("nonCompliant");
 
@@ -331,6 +334,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         // Given
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2018-12-09");
         startForCaseworkerStubWithCcdUnavailable(START_EVENT_VALID_APPEAL_CREATED_URL);
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -688,6 +692,19 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
                         .withBody("[]")));
     }
 
+    private void checkForLinkedCases(String eventUrl) {
+        String queryUrl = getParamsMatchCaseUrl();
+
+        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
+            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(200)
+                .withBody("[]")));
+    }
+
     private void findCaseByForCaseworkerReturnCaseDetails(String eventUrl, String mrnDate) throws Exception {
         String queryUrl = getParamsUrl(mrnDate);
 
@@ -712,6 +729,17 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
                 .reduce((p1, p2) -> p1 + "&" + p2)
                 .map(s -> "?" + s)
                 .orElse("");
+    }
+
+    private String getParamsMatchCaseUrl() {
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("case.generatedNino", "BB000000B");
+
+        return searchCriteria.entrySet().stream()
+            .map(p -> p.getKey() + "=" + p.getValue())
+            .reduce((p1, p2) -> p1 + "&" + p2)
+            .map(s -> "?" + s)
+            .orElse("");
     }
 
     private static String loadJson(String fileName) throws IOException {

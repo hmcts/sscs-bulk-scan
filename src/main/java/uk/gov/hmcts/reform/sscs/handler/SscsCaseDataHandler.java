@@ -97,13 +97,14 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                         linkCasesCriteria.put("case.generatedNino", generatedNino);
                         List<CaseDetails> matchedByNinoCases = caseDataHelper.findCaseBy(linkCasesCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
 
-
                         if (matchedByNinoCases.size() > 0) {
                             sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
                         }
                     }
 
-                    caseId = caseDataHelper.createCase(sscsCaseData, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
+                    caseId = caseDataHelper.createCase(sscsCaseData,
+                        token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
+
                     log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
                     if (isCaseCreatedEvent(eventId)) {
