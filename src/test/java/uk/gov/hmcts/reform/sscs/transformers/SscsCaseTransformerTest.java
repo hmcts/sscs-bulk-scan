@@ -7,8 +7,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.VALID_APPEAL;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
@@ -1155,7 +1155,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
-        assertEquals(READY_TO_LIST.name(), createdInGapsFrom);
+        assertEquals(READY_TO_LIST.getId(), createdInGapsFrom);
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1169,7 +1169,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
-        assertEquals(VALID_APPEAL.name(), createdInGapsFrom);
+        assertEquals(VALID_APPEAL.getId(), createdInGapsFrom);
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1183,7 +1183,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
-        assertEquals(READY_TO_LIST.name(), createdInGapsFrom);
+        assertEquals(READY_TO_LIST.getId(), createdInGapsFrom);
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1197,7 +1197,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
-        assertEquals(VALID_APPEAL.name(), createdInGapsFrom);
+        assertEquals(VALID_APPEAL.getId(), createdInGapsFrom);
 
         assertTrue(result.getErrors().isEmpty());
     }

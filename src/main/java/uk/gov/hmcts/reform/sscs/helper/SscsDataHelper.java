@@ -86,7 +86,7 @@ public class SscsDataHelper {
     private String getCreatedInGapsFromField(Appeal appeal) {
 
         if (appeal.getMrnDetails() != null && appeal.getMrnDetails().getDwpIssuingOffice() != null) {
-            return offices.contains(appeal.getMrnDetails().getDwpIssuingOffice()) ? READY_TO_LIST.name() : VALID_APPEAL.name();
+            return offices.contains(appeal.getMrnDetails().getDwpIssuingOffice()) ? READY_TO_LIST.getId() : VALID_APPEAL.getId();
 
         }
         return null;
