@@ -60,8 +60,10 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             Appeal appeal = (Appeal) caseValidationResponse.getTransformedCase().get("appeal");
             String mrnDate = "";
             String benefitType = "";
-            if (appeal != null) {
+            if (appeal != null && appeal.getMrnDetails() != null) {
                 mrnDate = appeal.getMrnDetails().getMrnDate();
+            }
+            if (appeal != null && appeal.getBenefitType() != null) {
                 benefitType = appeal.getBenefitType().getCode();
             }
             Long caseId;
