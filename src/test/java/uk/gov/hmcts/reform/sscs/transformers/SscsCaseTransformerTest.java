@@ -7,6 +7,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
@@ -17,7 +19,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.assertj.core.api.Assertions;
@@ -57,11 +58,17 @@ public class SscsCaseTransformerTest {
 
     Map<String, Object> pairs = new HashMap<>();
 
+    private List<String> offices;
+
     @Before
     public void setup() {
         initMocks(this);
 
-        sscsDataHelper = new SscsDataHelper(null);
+        offices = new ArrayList<>();
+        offices.add("1");
+        offices.add("Balham DRT");
+
+        sscsDataHelper = new SscsDataHelper(null, offices);
         transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
@@ -1135,6 +1142,72 @@ public class SscsCaseTransformerTest {
 
         String generatedNino = ((String) result.getTransformedCase().get("generatedNino"));
         assertEquals("JT0123456B", generatedNino);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenAPipCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
+        pairs.put("office", "1");
+        pairs.put(IS_BENEFIT_TYPE_PIP, true);
+        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
+        assertEquals(READY_TO_LIST.getId(), createdInGapsFrom);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenAPipCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
+        pairs.put("office", "2");
+        pairs.put(IS_BENEFIT_TYPE_PIP, true);
+        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
+        assertEquals(VALID_APPEAL.getId(), createdInGapsFrom);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenAEsaCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
+        pairs.put("office", "Balham DRT");
+        pairs.put(IS_BENEFIT_TYPE_PIP, false);
+        pairs.put(IS_BENEFIT_TYPE_ESA, true);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
+        assertEquals(READY_TO_LIST.getId(), createdInGapsFrom);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenAEsaCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
+        pairs.put("office", "Chesterfield DRT");
+        pairs.put(IS_BENEFIT_TYPE_PIP, false);
+        pairs.put(IS_BENEFIT_TYPE_ESA, true);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
+        assertEquals(VALID_APPEAL.getId(), createdInGapsFrom);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenACaseWithNoReadyToListOffice_thenSetCreatedInGapsFromFieldToNull() {
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
+        assertNull(createdInGapsFrom);
 
         assertTrue(result.getErrors().isEmpty());
     }
