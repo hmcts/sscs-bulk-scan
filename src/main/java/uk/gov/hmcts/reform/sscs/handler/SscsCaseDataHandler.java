@@ -78,10 +78,6 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 searchCriteria.put("case.appeal.benefitType.code", benefitType);
                 searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
-                log.info("token.getUserAuthToken()" + token.getUserAuthToken());
-                log.info("token.getServiceAuthToken()" + token.getServiceAuthToken());
-                log.info("token.getUserId()" + token.getUserId());
-
                 List<CaseDetails> caseDetails = caseDataHelper.findCaseBy(
                     searchCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
 
