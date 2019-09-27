@@ -27,7 +27,7 @@ public class SscsDataHelperTest {
 
     @Before
     public void setUp() {
-        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"));
+        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), new ArrayList<>());
     }
 
     @Test
@@ -79,5 +79,4 @@ public class SscsDataHelperTest {
 
         assertEquals("No", caseDataHelper.hasEvidence(evidence));
     }
-
 }
