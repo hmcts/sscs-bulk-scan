@@ -159,12 +159,6 @@
     <cve>CVE-2018-9116</cve>
     <cve>CVE-2018-9117</cve>
   </suppress>
-  <suppress>
-    <notes><![CDATA[
-   gradle plugin we don't control gradle in pipeline
-   ]]></notes>
-    <cve>CVE-2019-16370</cve>
-  </suppress>
   <suppress until="2019-10-01">
     <notes><![CDATA[
    file name: jackson-databind-2.9.9.3.jar
@@ -172,5 +166,11 @@
     <gav regex="true">^com\.fasterxml\.jackson\.core:jackson-databind:.*$</gav>
     <cve>CVE-2019-14540</cve>
     <cve>CVE-2019-16335</cve>
+  </suppress>
+  <suppress until="2019-10-01">
+    <notes><![CDATA[
+            A low severity security issue was reported in the Gradle signing plugin. ]]>
+    </notes>
+    <cve>CVE-2019-16370</cve>
   </suppress>
 </suppressions>
