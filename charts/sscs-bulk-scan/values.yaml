@@ -1,9 +1,9 @@
 java:
   image: 'hmctspublic.azurecr.io/sscs/bulk-scan:latest'
   applicationPort: 8090
+  aadIdentityName: sscs
   keyVaults:
     sscs-bulk-scan:
-      resourceGroup: sscs-bulk-scan
       secrets:
         - sscs-s2s-secret
         - idam-sscs-systemupdate-user
