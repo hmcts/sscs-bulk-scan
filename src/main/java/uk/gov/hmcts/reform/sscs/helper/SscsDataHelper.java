@@ -1,11 +1,14 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
@@ -19,8 +22,13 @@ public class SscsDataHelper {
 
     private final CaseEvent caseEvent;
 
-    public SscsDataHelper(CaseEvent caseEvent) {
+    private final List<String> offices;
+
+
+    public SscsDataHelper(CaseEvent caseEvent,
+                          @Value("#{'${readyToList.offices}'.split(',')}") List<String> offices) {
         this.caseEvent = caseEvent;
+        this.offices = offices;
     }
 
     public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions) {
@@ -47,6 +55,7 @@ public class SscsDataHelper {
                 appealData.put("issueCode", issueCode);
                 appealData.put("caseCode", generateCaseCode(benefitCode, issueCode));
             }
+            appealData.put("createdInGapsFrom", getCreatedInGapsFromField(appeal));
         }
     }
 
@@ -72,5 +81,14 @@ public class SscsDataHelper {
 
     public String hasEvidence(List<SscsDocument> sscsDocuments) {
         return (null == sscsDocuments || sscsDocuments.isEmpty()) ? "No" : "Yes";
+    }
+
+    private String getCreatedInGapsFromField(Appeal appeal) {
+
+        if (appeal.getMrnDetails() != null && appeal.getMrnDetails().getDwpIssuingOffice() != null) {
+            return offices.contains(appeal.getMrnDetails().getDwpIssuingOffice()) ? READY_TO_LIST.getId() : VALID_APPEAL.getId();
+
+        }
+        return null;
     }
 }

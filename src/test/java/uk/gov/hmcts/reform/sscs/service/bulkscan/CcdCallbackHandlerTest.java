@@ -8,6 +8,7 @@ import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import com.google.common.collect.ImmutableList;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class CcdCallbackHandlerTest {
 
     @Before
     public void setUp() {
-        sscsDataHelper = new SscsDataHelper(null);
+        sscsDataHelper = new SscsDataHelper(null, new ArrayList<>());
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper, caseDataHelper);
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
     }

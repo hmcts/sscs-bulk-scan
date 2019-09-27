@@ -63,5 +63,6 @@ withPipeline("java", product, component) {
   enableDockerBuild()
   installCharts()
   loadVaultSecrets(secrets)
+  enableAksStagingDeployment()
 }
 
