@@ -112,7 +112,7 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-	   file name: stax-api-1.0.1.jar
+      file name: stax-api-1.0.1.jar
 	   ]]></notes>
     <cve>CVE-2017-16224</cve>
   </suppress>
