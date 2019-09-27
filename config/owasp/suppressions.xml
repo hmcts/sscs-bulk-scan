@@ -112,7 +112,7 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-    file name: stax-api-1.0.1.jar
+      file name: stax-api-1.0.1.jar
 	   ]]></notes>
     <cve>CVE-2017-16224</cve>
   </suppress>
@@ -172,11 +172,5 @@
     <gav regex="true">^com\.fasterxml\.jackson\.core:jackson-databind:.*$</gav>
     <cve>CVE-2019-14540</cve>
     <cve>CVE-2019-16335</cve>
-  </suppress>
-  <suppress until="2019-10-01">
-    <notes><![CDATA[
-            A low severity security issue was reported in the Gradle signing plugin. ]]>
-    </notes>
-    <cve>CVE-2019-16370</cve>
   </suppress>
 </suppressions>
