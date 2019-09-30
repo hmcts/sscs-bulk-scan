@@ -8,4 +8,4 @@ idam_url = "https://idam-api.aat.platform.hmcts.net"
 
 debug_json = "true"
 
-managed_identity_object_id="515ef763-ffa5-421c-b1c9-13e6cbac8f21"
+managed_identity_object_id="04f84767-89d9-4ea8-802f-61dd9efb17e6"
