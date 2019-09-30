@@ -228,7 +228,7 @@ dependencyManagement {
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
     // CVE-2019-0232 - Java and Command Line injections in Windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.24') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.26') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
