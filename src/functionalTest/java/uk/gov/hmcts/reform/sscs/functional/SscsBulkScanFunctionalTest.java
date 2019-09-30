@@ -95,6 +95,7 @@ public class SscsBulkScanFunctionalTest {
                                                                                       String expected)
         throws IOException {
         String json = getJson("mrn_date_greater_than_13_months.json");
+        json = json.replace("APPEAL_GROUNDS", appealGrounds);
         json = replaceNino(json);
         Response response = exceptionRecordEndpointRequest(json);
 
