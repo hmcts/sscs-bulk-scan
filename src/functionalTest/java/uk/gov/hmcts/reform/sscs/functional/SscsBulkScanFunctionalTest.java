@@ -69,7 +69,9 @@ public class SscsBulkScanFunctionalTest {
 
     @Test
     public void create_appeal_created_case_when_all_fields_entered() throws IOException {
-        Response response = exceptionRecordEndpointRequest(getJson("all_fields_entered.json"));
+        String json = getJson("all_fields_entered.json");
+        json = replaceNino(json);
+        Response response = exceptionRecordEndpointRequest(json);
 
         //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
         List<String> possibleStates = new ArrayList<>(Arrays.asList("validAppeal", "withDwp"));
@@ -78,7 +80,9 @@ public class SscsBulkScanFunctionalTest {
 
     @Test
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
-        Response response = exceptionRecordEndpointRequest(getJson("some_mandatory_fields_missing.json"));
+        String json = getJson("some_mandatory_fields_missing.json");
+        json = replaceNino(json);
+        Response response = exceptionRecordEndpointRequest(json);
 
         assertEquals("incompleteApplication", findCaseInCcd(response).getState());
     }
@@ -92,8 +96,7 @@ public class SscsBulkScanFunctionalTest {
         throws IOException {
         String json = getJson("mrn_date_greater_than_13_months.json");
         json = json.replace("APPEAL_GROUNDS", appealGrounds);
-        json = json.replace("PERSON1_NINO", "BB" + RandomStringUtils.random(6, false, true) + "A");
-        json = json.replace("PERSON2_NINO", "BB" + RandomStringUtils.random(6, false, true) + "B");
+        json = replaceNino(json);
         Response response = exceptionRecordEndpointRequest(json);
 
         SscsCaseDetails caseInCcd = findCaseInCcd(response);
@@ -125,6 +128,12 @@ public class SscsBulkScanFunctionalTest {
         SscsCaseDetails caseDetails = ccdService.getByCaseId(Long.valueOf(ccdCaseId), idamTokens);
 
         assertEquals("appealCreated", caseDetails.getState());
+    }
+
+    private String replaceNino(String json) {
+        json = json.replace("{PERSON1_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "A");
+        json = json.replace("{PERSON2_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "B");
+        return json;
     }
 
     private Response exceptionRecordEndpointRequest(String json) throws IOException {
