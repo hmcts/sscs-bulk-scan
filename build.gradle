@@ -206,7 +206,7 @@ dependencies {
 
   testCompile 'pl.pragmatists:JUnitParams:1.1.1'
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
-  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.0'
+  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.5'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
 
   integrationTestCompile group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock
