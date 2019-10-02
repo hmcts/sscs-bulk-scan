@@ -123,15 +123,13 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     }
 
     protected Map<String, Object> checkForMatches(String generatedNino, Map<String, Object> sscsCaseData, Token token) {
+        List<CaseDetails> matchedByNinoCases = new ArrayList<>();
         if (generatedNino != null && !generatedNino.equals("")) {
             Map<String, String> linkCasesCriteria = new HashMap<>();
             linkCasesCriteria.put("case.generatedNino", generatedNino);
-            List<CaseDetails> matchedByNinoCases = caseDataHelper.findCaseBy(linkCasesCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
-
-            if (matchedByNinoCases.size() > 0) {
-                sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
-            }
+            matchedByNinoCases = caseDataHelper.findCaseBy(linkCasesCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
         }
+        sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
         return sscsCaseData;
     }
 
@@ -144,7 +142,13 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             associatedCases.add(caseLink);
             log.info("Added associated case " + sscsCaseDetails.getId().toString());
         }
-        sscsCaseData.put("associatedCase", associatedCases);
+        if (associatedCases.size() > 0) {
+            sscsCaseData.put("associatedCase", associatedCases);
+            sscsCaseData.put("linkedCasesBoolean", true);
+        } else {
+            sscsCaseData.put("linkedCasesBoolean", false);
+        }
+
         return sscsCaseData;
     }
 

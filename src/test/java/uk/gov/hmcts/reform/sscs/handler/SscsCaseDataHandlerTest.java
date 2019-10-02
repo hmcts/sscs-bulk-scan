@@ -219,6 +219,11 @@ public class SscsCaseDataHandlerTest {
             .filter(m -> m.containsKey("associatedCase")).count() == 1;
         assertFalse(associatedCaseListCheck);
 
+        boolean linkedCasesBooleanCheck = transformedCaseCaptor.getAllValues().stream()
+            .filter(m -> m.containsKey("linkedCasesBoolean"))
+            .anyMatch(m -> m.containsValue(true));
+        assertTrue(linkedCasesBooleanCheck);
+
         verify(caseDataHelper).updateCase(transformedCase,
             TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(),
             1L, "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
@@ -246,10 +251,7 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID,
             "validAppealCreated")).willReturn(1L);
 
-        uk.gov.hmcts.reform.ccd.client.model.CaseDetails matchingCase = uk.gov.hmcts.reform.ccd.client.model.CaseDetails.builder().id(12345678L).build();
-
         List<uk.gov.hmcts.reform.ccd.client.model.CaseDetails> matchedByNinoCases = new ArrayList<>();
-        matchedByNinoCases.add(matchingCase);
 
         given(caseDataHelper.findCaseBy(getMatchSearchCriteria(nino), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(matchedByNinoCases);
 
@@ -269,10 +271,10 @@ public class SscsCaseDataHandlerTest {
             .anyMatch(m -> m.containsValue("over13months"));
         assertFalse(interlocReferralReasonFieldAndValueCheck);
 
-        boolean associatedCaseListCheck = transformedCaseCaptor.getAllValues().stream()
-            .filter(m -> m.containsKey("associatedCase")).count() == 0;
-        assertFalse(associatedCaseListCheck);
-
+        boolean linkedCasesBooleanCheck = transformedCaseCaptor.getAllValues().stream()
+            .filter(m -> m.containsKey("linkedCasesBoolean"))
+            .anyMatch(m -> m.containsValue(false));
+        assertTrue(linkedCasesBooleanCheck);
 
         verify(caseDataHelper).updateCase(transformedCase,
             TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(),
