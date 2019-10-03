@@ -167,7 +167,7 @@
     <cve>CVE-2019-14540</cve>
     <cve>CVE-2019-16335</cve>
   </suppress>
-  <suppress until="2019-10-01">
+  <suppress until="2019-10-10">
     <notes><![CDATA[
             A low severity security issue was reported in the Gradle signing plugin. ]]>
     </notes>
