@@ -193,7 +193,6 @@ dependencies {
 
   //Remove when our dependencies pull in this version or later
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.10'
-  integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.10'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.4.1'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.4.1'
