@@ -166,7 +166,7 @@ def versions = [
   springBoot: springBoot.class.package.implementationVersion,
   springfoxSwagger: '2.9.2',
   lombok: '1.18.8',
-  springCloudWiremock: '2.1.0.RELEASE',
+  springCloudWiremock: '2.1.3.RELEASE',
   gradlePitest    : '1.3.0',
   pitest          : '1.4.2',
   sonarPitest     : '0.5'
