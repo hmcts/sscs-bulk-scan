@@ -25,14 +25,14 @@
         {
           "value": {
             "key": "office",
-            "value": "1"
+            "value": "Balham DRT"
           },
           "id": "7591499c-7c85-4fb4-b3f4-c73619f6b939"
         },
         {
           "value": {
             "key": "benefit_type_description",
-            "value": "PIP"
+            "value": "ESA"
           },
           "id": "7591499c-7c85-4fb4-b3f4-c73619f6b1e3"
         },
@@ -368,14 +368,14 @@
         {
           "value": {
             "key": "is_benefit_type_pip",
-            "value": "yes"
+            "value": "no"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },
         {
           "value": {
             "key": "is_benefit_type_esa",
-            "value": "no"
+            "value": "yes"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         }
