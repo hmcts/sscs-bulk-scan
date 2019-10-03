@@ -173,4 +173,8 @@
     </notes>
     <cve>CVE-2019-16370</cve>
   </suppress>
+  <suppress until="2019-10-10">
+    <notes>Netty HTTP we don't use netty</notes>
+    <cve>CVE-2019-16869</cve>
+  </suppress>
 </suppressions>
