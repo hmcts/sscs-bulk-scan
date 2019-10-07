@@ -135,11 +135,12 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: gradle-pitest-plugin-1.4.0.jar
+   file name: gradle-pitest-plugin-1.4.5.jar
    ]]></notes>
-    <sha1>29a4ed185eeca1d90b0f4160911029ec692e746f</sha1>
+    <sha1>46238c7fc280c66eef11110d342deb7852456a56</sha1>
     <cve>CVE-2019-11065</cve>
     <cve>CVE-2019-15052</cve>
+    <cve>CVE-2019-16370</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[

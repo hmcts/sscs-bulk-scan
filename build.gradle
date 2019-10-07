@@ -162,7 +162,7 @@ sonarqube {
 // it is important to specify logback classic and core packages explicitly as libraries like spring boot
 // enforces it's own (older) version which is not recommended.
 def versions = [
-  reformLogging: '5.0.1',
+  reformLogging: '5.1.0',
   springBoot: springBoot.class.package.implementationVersion,
   springfoxSwagger: '2.9.2',
   lombok: '1.18.8',
@@ -186,14 +186,13 @@ dependencies {
 
   compile group: 'uk.gov.hmcts.reform', name: 'health-spring-boot-starter', version:'0.0.4'
   compile group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version:'0.0.4'
-  compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
-  compile group: 'uk.gov.hmcts.reform', name: 'java-logging-appinsights', version: versions.reformLogging
+  compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
+  compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.0.74'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.0.75'
 
-  //Remove when our dependencies pull in this version or later
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.9.3'
-  integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.9.3'
+  compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.4.1'
+  compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.4.1'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
@@ -206,10 +205,13 @@ dependencies {
 
   testCompile 'pl.pragmatists:JUnitParams:1.1.1'
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
-  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.0'
+  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.5'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
+  testCompile group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.25.0'
 
-  integrationTestCompile group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock
+  integrationTestCompile (group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
+    exclude group: "com.github.tomakehurst", module:"wiremock-standalone"
+  }
 
   integrationTestCompile sourceSets.main.runtimeClasspath
   integrationTestCompile sourceSets.test.runtimeClasspath
@@ -227,11 +229,8 @@ dependencyManagement {
 
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
-    // CVE-2019-0232 - Java and Command Line injections in Windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.24') {
-      entry 'tomcat-embed-core'
-      entry 'tomcat-embed-el'
-      entry 'tomcat-embed-websocket'
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.9.10') {
+      entry 'jackson-databind'
     }
 
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
