@@ -19,10 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,6 +64,7 @@ public class SscsBulkScanFunctionalTest {
         idamTokens = idamService.getIdamTokens();
     }
 
+    @Ignore
     @Test
     public void create_appeal_created_case_when_all_fields_entered() throws IOException {
         String json = getJson("all_fields_entered.json");
@@ -78,6 +76,7 @@ public class SscsBulkScanFunctionalTest {
         assertTrue(possibleStates.contains(findCaseInCcd(response).getState()));
     }
 
+    @Ignore
     @Test
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
         String json = getJson("some_mandatory_fields_missing.json");
@@ -87,6 +86,7 @@ public class SscsBulkScanFunctionalTest {
         assertEquals("incompleteApplication", findCaseInCcd(response).getState());
     }
 
+    @Ignore
     @Test
     @Parameters({
         "see scanned SSCS1 form,over13months", ",over13MonthsAndGroundsMissing"
@@ -104,6 +104,7 @@ public class SscsBulkScanFunctionalTest {
         assertEquals(expected, caseInCcd.getData().getInterlocReferralReason());
     }
 
+    @Ignore
     @Test
     public void validate_nino_normalised() throws IOException {
         createCase();
@@ -117,6 +118,7 @@ public class SscsBulkScanFunctionalTest {
         assertEquals("AB225566B", caseDetails.getData().getAppeal().getAppellant().getIdentity().getNino());
     }
 
+    @Ignore
     @Test
     public void validate_and_update_incomplete_case_to_appeal_created_case() throws IOException {
         createCase();
