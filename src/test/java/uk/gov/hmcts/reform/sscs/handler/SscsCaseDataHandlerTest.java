@@ -229,7 +229,7 @@ public class SscsCaseDataHandlerTest {
 
         boolean linkedCasesBooleanCheck = list.stream()
             .filter(m -> m.containsKey("linkedCasesBoolean"))
-            .anyMatch(m -> m.containsValue(true));
+            .anyMatch(m -> m.containsValue("Yes"));
         assertTrue(linkedCasesBooleanCheck);
 
         verify(caseDataHelper).updateCase(transformedCase,
@@ -281,7 +281,7 @@ public class SscsCaseDataHandlerTest {
 
         boolean linkedCasesBooleanCheck = transformedCaseCaptor.getAllValues().stream()
             .filter(m -> m.containsKey("linkedCasesBoolean"))
-            .anyMatch(m -> m.containsValue(false));
+            .anyMatch(m -> m.containsValue("No"));
         assertTrue(linkedCasesBooleanCheck);
 
         verify(caseDataHelper).updateCase(transformedCase,

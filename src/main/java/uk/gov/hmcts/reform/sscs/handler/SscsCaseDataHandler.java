@@ -144,9 +144,9 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         }
         if (associatedCases.size() > 0) {
             sscsCaseData.put("associatedCase", associatedCases);
-            sscsCaseData.put("linkedCasesBoolean", true);
+            sscsCaseData.put("linkedCasesBoolean", "Yes");
         } else {
-            sscsCaseData.put("linkedCasesBoolean", false);
+            sscsCaseData.put("linkedCasesBoolean", "No");
         }
 
         return sscsCaseData;
