@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,6 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application_e2e.yaml")
 @RunWith(JUnitParamsRunner.class)
-@Slf4j
 public class SscsBulkScanFunctionalTest {
 
     @ClassRule
@@ -64,8 +62,8 @@ public class SscsBulkScanFunctionalTest {
     public void setup() {
         RestAssured.baseURI = testUrl;
         idamTokens = idamService.getIdamTokens();
-        log.info("idamTokens.getUserId()" + idamTokens.getUserId());
-        log.info("idamTokens.getServiceAuthorization()" + idamTokens.getServiceAuthorization());
+        System.out.println("idamTokens.getUserId()" + idamTokens.getUserId());
+        System.out.println("idamTokens.getServiceAuthorization()" + idamTokens.getServiceAuthorization());
     }
 
     @Test
