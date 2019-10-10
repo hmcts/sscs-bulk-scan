@@ -64,6 +64,7 @@ public class SscsBulkScanFunctionalTest {
         idamTokens = idamService.getIdamTokens();
         System.out.println("idamTokens.getUserId()" + idamTokens.getUserId());
         System.out.println("idamTokens.getServiceAuthorization()" + idamTokens.getServiceAuthorization());
+        System.out.println("idamTokens.getIdamOauth2Token()" + idamTokens.getIdamOauth2Token());
     }
 
     @Test
