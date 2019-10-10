@@ -160,21 +160,23 @@
     <cve>CVE-2018-9116</cve>
     <cve>CVE-2018-9117</cve>
   </suppress>
-  <suppress until="2019-10-10">
+  <suppress until="2019-10-15">
     <notes><![CDATA[
    file name: jackson-databind-2.9.9.3.jar
    ]]></notes>
     <gav regex="true">^com\.fasterxml\.jackson\.core:jackson-databind:.*$</gav>
     <cve>CVE-2019-14540</cve>
     <cve>CVE-2019-16335</cve>
+    <cve>CVE-2019-16943</cve>
+    <cve>CVE-2019-16942</cve>
   </suppress>
-  <suppress until="2019-10-10">
+  <suppress until="2019-10-15">
     <notes><![CDATA[
             A low severity security issue was reported in the Gradle signing plugin. ]]>
     </notes>
     <cve>CVE-2019-16370</cve>
   </suppress>
-  <suppress until="2019-10-10">
+  <suppress until="2019-10-15">
     <notes>Netty HTTP we don't use netty</notes>
     <cve>CVE-2019-16869</cve>
   </suppress>
