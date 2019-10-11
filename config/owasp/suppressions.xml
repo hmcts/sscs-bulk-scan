@@ -160,7 +160,7 @@
     <cve>CVE-2018-9116</cve>
     <cve>CVE-2018-9117</cve>
   </suppress>
-  <suppress until="2019-10-15">
+  <suppress until="2019-10-31">
     <notes><![CDATA[
    file name: jackson-databind-2.9.9.3.jar
    ]]></notes>
@@ -170,7 +170,7 @@
     <cve>CVE-2019-16943</cve>
     <cve>CVE-2019-16942</cve>
   </suppress>
-  <suppress until="2019-10-15">
+  <suppress until="2019-10-31">
     <notes><![CDATA[
             A low severity security issue was reported in the Gradle signing plugin. ]]>
     </notes>
