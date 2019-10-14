@@ -19,10 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,6 +62,9 @@ public class SscsBulkScanFunctionalTest {
     public void setup() {
         RestAssured.baseURI = testUrl;
         idamTokens = idamService.getIdamTokens();
+        System.out.println("idamTokens.getUserId()" + idamTokens.getUserId());
+        System.out.println("idamTokens.getServiceAuthorization()" + idamTokens.getServiceAuthorization());
+        System.out.println("idamTokens.getIdamOauth2Token()" + idamTokens.getIdamOauth2Token());
     }
 
     @Test

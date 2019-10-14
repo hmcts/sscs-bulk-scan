@@ -195,10 +195,15 @@ public class SscsCaseDataHandlerTest {
         transformedCase.put("generatedNino", nino);
         transformedCase.put("appeal", appeal);
 
+        uk.gov.hmcts.reform.ccd.client.model.CaseDetails matchingCase = uk.gov.hmcts.reform.ccd.client.model.CaseDetails.builder().id(12345678L).build();
+
+        List<uk.gov.hmcts.reform.ccd.client.model.CaseDetails> matchedByNinoCases = new ArrayList<>();
+        matchedByNinoCases.add(matchingCase);
+
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID))
-            .willReturn(Lists.emptyList());
+        given(caseDataHelper.findCaseBy(getMatchSearchCriteria(nino), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID))
+            .willReturn(matchedByNinoCases);
 
         given(caseDataHelper.createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID,
             "validAppealCreated")).willReturn(1L);
@@ -214,10 +219,18 @@ public class SscsCaseDataHandlerTest {
         verify(caseDataHelper).createCase(transformedCaseCaptor.capture(), eq(TEST_USER_AUTH_TOKEN), eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_USER_ID), eq("validAppealCreated"));
 
+        List<Map<String, Object>> list = transformedCaseCaptor.getAllValues();
 
-        boolean associatedCaseListCheck = transformedCaseCaptor.getAllValues().stream()
-            .filter(m -> m.containsKey("associatedCase")).count() == 1;
-        assertFalse(associatedCaseListCheck);
+        boolean associatedCaseListCheck = list.stream()
+            .filter(m -> m.containsKey("associatedCase"))
+            .anyMatch(m -> ((List)m.get("associatedCase")).size() == 1);
+        assertTrue(associatedCaseListCheck);
+
+
+        boolean linkedCasesBooleanCheck = list.stream()
+            .filter(m -> m.containsKey("linkedCasesBoolean"))
+            .anyMatch(m -> m.containsValue("Yes"));
+        assertTrue(linkedCasesBooleanCheck);
 
         verify(caseDataHelper).updateCase(transformedCase,
             TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(),
@@ -246,10 +259,7 @@ public class SscsCaseDataHandlerTest {
         given(caseDataHelper.createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID,
             "validAppealCreated")).willReturn(1L);
 
-        uk.gov.hmcts.reform.ccd.client.model.CaseDetails matchingCase = uk.gov.hmcts.reform.ccd.client.model.CaseDetails.builder().id(12345678L).build();
-
         List<uk.gov.hmcts.reform.ccd.client.model.CaseDetails> matchedByNinoCases = new ArrayList<>();
-        matchedByNinoCases.add(matchingCase);
 
         given(caseDataHelper.findCaseBy(getMatchSearchCriteria(nino), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(matchedByNinoCases);
 
@@ -269,10 +279,10 @@ public class SscsCaseDataHandlerTest {
             .anyMatch(m -> m.containsValue("over13months"));
         assertFalse(interlocReferralReasonFieldAndValueCheck);
 
-        boolean associatedCaseListCheck = transformedCaseCaptor.getAllValues().stream()
-            .filter(m -> m.containsKey("associatedCase")).count() == 0;
-        assertFalse(associatedCaseListCheck);
-
+        boolean linkedCasesBooleanCheck = transformedCaseCaptor.getAllValues().stream()
+            .filter(m -> m.containsKey("linkedCasesBoolean"))
+            .anyMatch(m -> m.containsValue("No"));
+        assertTrue(linkedCasesBooleanCheck);
 
         verify(caseDataHelper).updateCase(transformedCase,
             TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(),
