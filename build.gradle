@@ -192,7 +192,7 @@ dependencies {
 
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.0.79'
 
-  compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.4.1'
+  compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.5.0'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.5.0'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
