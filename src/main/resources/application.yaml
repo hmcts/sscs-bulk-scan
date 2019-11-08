@@ -60,7 +60,7 @@ feature:
   debug_json: ${DEBUG_JSON:false}
 
 readyToList:
-  offices:
+  offices: ${READY_TO_LIST_OFFICES:}
 
 ---
 spring:
