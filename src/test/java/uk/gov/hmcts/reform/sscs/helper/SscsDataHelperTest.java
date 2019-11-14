@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -78,5 +79,12 @@ public class SscsDataHelperTest {
         List<SscsDocument> evidence = new ArrayList<>();
 
         assertEquals("No", caseDataHelper.hasEvidence(evidence));
+    }
+
+    @Test
+    public void givenARequest_clearInterlocReviewState() {
+        Map<String, Object> appealData = new HashMap<>();
+        caseDataHelper.addSscsDataToMap(appealData, null, null, null);
+        assertNull(appealData.get("interlocReviewState"));
     }
 }

@@ -36,6 +36,7 @@ public class SscsDataHelper {
         appealData.put("sscsDocument", sscsDocuments);
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
         appealData.put("subscriptions", subscriptions);
+        appealData.put("interlocReviewState", null);
 
         if (appeal != null) {
             if (appeal.getAppellant() != null) {
