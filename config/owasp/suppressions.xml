@@ -160,7 +160,7 @@
     <cve>CVE-2018-9116</cve>
     <cve>CVE-2018-9117</cve>
   </suppress>
-  <suppress until="2019-11-15">
+  <suppress until="2019-11-16">
     <notes><![CDATA[
    file name: jackson-databind-2.9.10.jar
    No fix available
