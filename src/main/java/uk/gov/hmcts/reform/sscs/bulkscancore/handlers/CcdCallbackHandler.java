@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,9 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
-import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
+import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
 @Component
@@ -97,31 +98,37 @@ public class CcdCallbackHandler {
         }
     }
 
-    public CallbackResponse handleValidationAndUpdate(ValidateCaseData validateCaseData, Token token) {
+    public PreSubmitCallbackResponse<SscsCaseData> handleValidationAndUpdate(Callback<SscsCaseData> callback) {
         Map<String, Object> appealData = new HashMap<>();
 
-        String exceptionRecordId = validateCaseData.getCaseDetails().getCaseId();
+        log.info("Processing validation and update request for SSCS exception record id {}", callback.getCaseDetails().getId());
 
-        log.info("Processing validation and update request for SSCS exception record id {}", exceptionRecordId);
+        if (callback.getCaseDetails().getCaseData().getInterlocReviewState() != null) {
+            callback.getCaseDetails().getCaseData().setInterlocReviewState("none");
+        }
 
         sscsDataHelper.addSscsDataToMap(appealData,
-            validateCaseData.getCaseDetails().getCaseData().getAppeal(),
-            validateCaseData.getCaseDetails().getCaseData().getSscsDocument(),
-            validateCaseData.getCaseDetails().getCaseData().getSubscriptions());
+            callback.getCaseDetails().getCaseData().getAppeal(),
+            callback.getCaseDetails().getCaseData().getSscsDocument(),
+            callback.getCaseDetails().getCaseData().getSubscriptions());
 
         CaseResponse caseValidationResponse = caseValidator.validate(appealData);
 
-        AboutToStartOrSubmitCallbackResponse validationErrorResponse = convertWarningsToErrors(caseValidationResponse, validateCaseData.getCaseDetails().getCaseId());
+        PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
 
         if (validationErrorResponse != null) {
-            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_ERRORS, callback.getCaseDetails().getId());
             return validationErrorResponse;
         } else {
-            log.info("Exception record id {} validated successfully", exceptionRecordId);
+            log.info("Exception record id {} validated successfully", callback.getCaseDetails().getId());
 
-            return AboutToStartOrSubmitCallbackResponse.builder()
-                .warnings(caseValidationResponse.getWarnings())
-                .build();
+            PreSubmitCallbackResponse<SscsCaseData> preSubmitCallbackResponse = new PreSubmitCallbackResponse<>(callback.getCaseDetails().getCaseData());
+
+            if (caseValidationResponse.getWarnings() != null) {
+                preSubmitCallbackResponse.addWarnings(caseValidationResponse.getWarnings());
+            }
+
+            return preSubmitCallbackResponse;
         }
     }
 
@@ -160,25 +167,25 @@ public class CcdCallbackHandler {
         return null;
     }
 
-    private AboutToStartOrSubmitCallbackResponse convertWarningsToErrors(CaseResponse caseResponse,
-                                                                String exceptionRecordId) {
+    private PreSubmitCallbackResponse<SscsCaseData> convertWarningsToErrors(SscsCaseData caseData, CaseResponse caseResponse) {
 
         List<String> appendedWarningsAndErrors = new ArrayList<>();
 
         if (!ObjectUtils.isEmpty(caseResponse.getWarnings())) {
-            log.info("Warnings found while validating exception record id {}", exceptionRecordId);
+            log.info("Warnings found while validating exception record id {}", caseData.getCcdCaseId());
             appendedWarningsAndErrors.addAll(caseResponse.getWarnings());
         }
 
         if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
-            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_ERRORS, caseData.getCcdCaseId());
             appendedWarningsAndErrors.addAll(caseResponse.getErrors());
         }
 
         if (appendedWarningsAndErrors.size() > 0) {
-            return AboutToStartOrSubmitCallbackResponse.builder()
-                .errors(appendedWarningsAndErrors)
-                .build();
+            PreSubmitCallbackResponse<SscsCaseData> preSubmitCallbackResponse = new PreSubmitCallbackResponse<>(caseData);
+
+            preSubmitCallbackResponse.addErrors(appendedWarningsAndErrors);
+            return preSubmitCallbackResponse;
         }
         return null;
     }

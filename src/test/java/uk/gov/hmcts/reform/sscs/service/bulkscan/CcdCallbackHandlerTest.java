@@ -7,9 +7,11 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import com.google.common.collect.ImmutableList;
+import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,10 +27,11 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
+import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
+import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
-import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
 @RunWith(SpringRunner.class)
@@ -164,7 +167,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).build())
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -172,12 +175,12 @@ public class CcdCallbackHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validate(any())).thenReturn(caseValidationResponse);
 
-        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
-            (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
-        assertThat(ccdCallbackResponse.getData()).isNull();
-        assertThat(ccdCallbackResponse.getErrors()).isNull();
-        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+        assertThat(ccdCallbackResponse.getData()).isNotNull();
+        assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
     }
 
     @Test
@@ -195,12 +198,11 @@ public class CcdCallbackHandlerTest {
                 .build());
 
         // when
-        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
-            (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
         // then
         assertThat(ccdCallbackResponse.getErrors()).containsOnly("NI Number is invalid");
-        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
     }
 
     @Test
@@ -218,12 +220,11 @@ public class CcdCallbackHandlerTest {
                 .build());
 
         // when
-        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
-            (AboutToStartOrSubmitCallbackResponse) invokeValidationCallbackHandler(caseDetails);
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
         // then
         assertThat(ccdCallbackResponse.getErrors()).containsOnly("Postcode is invalid");
-        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
     }
 
     private void assertExceptionDataEntries(AboutToStartOrSubmitCallbackResponse ccdCallbackResponse) {
@@ -246,13 +247,12 @@ public class CcdCallbackHandlerTest {
         );
     }
 
-    private CallbackResponse invokeValidationCallbackHandler(SscsCaseDetails caseDetails) {
+    private PreSubmitCallbackResponse<SscsCaseData> invokeValidationCallbackHandler(SscsCaseData caseDetails) {
+        uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<SscsCaseData> c = new uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<>(123L, "sscs",
+            State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
+
         return ccdCallbackHandler.handleValidationAndUpdate(
-            ValidateCaseData.builder()
-                .caseDetails(caseDetails)
-                .eventId("validAppeal")
-                .build(),
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
+            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL)
         );
     }
 

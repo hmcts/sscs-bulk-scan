@@ -19,7 +19,10 @@ import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
-import uk.gov.hmcts.reform.sscs.domain.ValidateCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
+import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
+import uk.gov.hmcts.reform.sscs.ccd.deserialisation.SscsCaseCallbackDeserializer;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 
 @RestController
 public class CcdCallbackController {
@@ -30,13 +33,17 @@ public class CcdCallbackController {
 
     private final AuthService authService;
 
+    private final SscsCaseCallbackDeserializer deserializer;
+
     @Autowired
     public CcdCallbackController(
         CcdCallbackHandler ccdCallbackHandler,
-        AuthService authService
+        AuthService authService,
+        SscsCaseCallbackDeserializer deserializer
     ) {
         this.ccdCallbackHandler = ccdCallbackHandler;
         this.authService = authService;
+        this.deserializer = deserializer;
     }
 
     @PostMapping(path = "/exception-record",
@@ -85,28 +92,22 @@ public class CcdCallbackController {
         @ApiResponse(code = 400, message = "Bad Request"),
         @ApiResponse(code = 500, message = "Internal Server Error")
     })
-    public ResponseEntity<CallbackResponse> handleValidationCallback(
-        @RequestHeader(value = "Authorization") String userAuthToken,
+    public ResponseEntity<PreSubmitCallbackResponse<SscsCaseData>> handleValidationCallback(
         @RequestHeader(value = "serviceauthorization", required = false) String serviceAuthToken,
-        @RequestHeader(value = "user-id") String userId,
-        @RequestBody @ApiParam("CaseData") ValidateCaseData caseData) {
+        @RequestBody String message) {
 
-        String exceptionRecordId = caseData.getCaseDetails().getCaseId();
+        Callback<SscsCaseData> callback = deserializer.deserialize(message);
 
-        logger.info("Request received for to validate SSCS exception record id {}", exceptionRecordId);
+        logger.info("Request received for to validate SSCS exception record id {}", callback.getCaseDetails().getId());
 
         String serviceName = authService.authenticate(serviceAuthToken);
 
-        logger.info("Asserting that service {} is allowed to request validation of exception record {}", serviceName, exceptionRecordId);
+        logger.info("Asserting that service {} is allowed to request validation of exception record {}", serviceName, callback.getCaseDetails().getId());
 
         authService.assertIsAllowedToHandleCallback(serviceName);
 
-        Token token = Token.builder().serviceAuthToken(serviceAuthToken).userAuthToken(userAuthToken).userId(userId).build();
-
-        CallbackResponse ccdCallbackResponse =
-            ccdCallbackHandler.handleValidationAndUpdate(caseData, token);
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = ccdCallbackHandler.handleValidationAndUpdate(callback);
 
         return ResponseEntity.ok(ccdCallbackResponse);
     }
-
 }
