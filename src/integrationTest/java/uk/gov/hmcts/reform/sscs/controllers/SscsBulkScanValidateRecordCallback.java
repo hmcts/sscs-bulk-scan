@@ -46,7 +46,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
-        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getErrors()).isEmpty();
         assertThat(callbackResponse.getWarnings()).isEmpty();
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
@@ -71,7 +71,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
-        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(callbackResponse.getErrors()).isEmpty();
         assertThat(callbackResponse.getWarnings()).isEmpty();
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
