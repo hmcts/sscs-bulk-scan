@@ -11,10 +11,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 
 @Component
