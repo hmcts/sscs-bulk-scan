@@ -160,18 +160,4 @@
     <cve>CVE-2018-9116</cve>
     <cve>CVE-2018-9117</cve>
   </suppress>
-  <suppress until="2019-11-20">
-    <notes><![CDATA[
-   file name: jackson-databind-2.9.10.jar
-   No fix available
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
-    <cve>CVE-2019-16942</cve>
-    <cve>CVE-2019-16943</cve>
-    <cve>CVE-2019-17531</cve>
-  </suppress>
-  <suppress until="2019-10-15">
-    <notes>Netty HTTP we don't use netty</notes>
-    <cve>CVE-2019-16869</cve>
-  </suppress>
 </suppressions>
