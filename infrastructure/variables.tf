@@ -76,3 +76,7 @@ variable "managed_identity_object_id" {
 variable "enable_ase" {
   default = false
 }
+
+variable "ready_to_list_offices" {
+  default = ""
+}
