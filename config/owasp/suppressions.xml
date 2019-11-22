@@ -174,7 +174,7 @@
     <notes>Netty HTTP we don't use netty</notes>
     <cve>CVE-2019-16869</cve>
   </suppress>
-  <suppress until="2019-10-31">
+  <suppress until="2019-11-31">
     <notes><![CDATA[
    file name: jackson-databind-2.9.10.jar
    No fix available
