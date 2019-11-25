@@ -59,6 +59,8 @@ module "sscs-bulk-scan" {
     DOCUMENT_MANAGEMENT_URL = "${local.documentStore}"
 
     DEBUG_JSON    = "${var.debug_json}"
+
+    READY_TO_LIST_OFFICES = "${var.ready_to_list_offices}"
   }
 }
 
