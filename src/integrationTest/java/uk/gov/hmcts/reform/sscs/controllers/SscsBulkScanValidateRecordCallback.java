@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
 import static com.google.common.io.Resources.getResource;
+import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,6 +49,8 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         assertThat(callbackResponse.getErrors()).isEmpty();
         assertThat(callbackResponse.getWarnings()).isEmpty();
+
+        assertEquals("validAppeal", callbackResponse.getData().get("createdInGapsFrom"));
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
