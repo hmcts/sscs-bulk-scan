@@ -80,12 +80,12 @@ public class SscsDataHelper {
         return (null == sscsDocuments || sscsDocuments.isEmpty()) ? "No" : "Yes";
     }
 
-    private String getCreatedInGapsFromField(Appeal appeal) {
+    public String getCreatedInGapsFromField(Appeal appeal) {
 
-        if (appeal.getMrnDetails() != null && appeal.getMrnDetails().getDwpIssuingOffice() != null) {
+        if (null != appeal && null != appeal.getMrnDetails() && null != appeal.getMrnDetails().getDwpIssuingOffice()) {
             return offices.contains(appeal.getMrnDetails().getDwpIssuingOffice()) ? READY_TO_LIST.getId() : VALID_APPEAL.getId();
-
         }
         return null;
     }
+
 }

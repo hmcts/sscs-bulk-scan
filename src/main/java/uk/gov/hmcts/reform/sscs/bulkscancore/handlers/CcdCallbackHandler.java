@@ -1,10 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -99,13 +96,15 @@ public class CcdCallbackHandler {
     }
 
     public PreSubmitCallbackResponse<SscsCaseData> handleValidationAndUpdate(Callback<SscsCaseData> callback) {
-        Map<String, Object> appealData = new HashMap<>();
-
         log.info("Processing validation and update request for SSCS exception record id {}", callback.getCaseDetails().getId());
 
-        if (callback.getCaseDetails().getCaseData().getInterlocReviewState() != null) {
+        if (null != callback.getCaseDetails().getCaseData().getInterlocReviewState()) {
             callback.getCaseDetails().getCaseData().setInterlocReviewState("none");
         }
+
+        callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(sscsDataHelper.getCreatedInGapsFromField(callback.getCaseDetails().getCaseData().getAppeal()));
+
+        Map<String, Object> appealData = new HashMap<>();
 
         sscsDataHelper.addSscsDataToMap(appealData,
             callback.getCaseDetails().getCaseData().getAppeal(),
