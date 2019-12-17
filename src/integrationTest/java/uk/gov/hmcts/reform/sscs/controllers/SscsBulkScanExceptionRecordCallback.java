@@ -206,7 +206,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
-        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(Objects.requireNonNull(callbackResponse).getErrors()).isNull();
         assertThat(callbackResponse.getData()).contains(
             entry("caseReference", "1539878003972756"),
             entry("state", "ScannedRecordCaseCreated")
