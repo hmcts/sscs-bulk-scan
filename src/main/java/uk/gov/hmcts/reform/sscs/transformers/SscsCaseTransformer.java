@@ -86,7 +86,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 
-        return CaseResponse.builder().transformedCase(transformed).errors(errors.stream().collect(Collectors.toList())).build();
+        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).build();
     }
 
     private String extractOpeningDate(CaseDetails caseDetails) {

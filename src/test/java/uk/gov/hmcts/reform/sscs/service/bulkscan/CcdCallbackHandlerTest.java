@@ -58,7 +58,7 @@ public class CcdCallbackHandlerTest {
     @Before
     public void setUp() {
         sscsDataHelper = new SscsDataHelper(null, new ArrayList<>());
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper, caseDataHelper);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper);
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
     }
 

@@ -34,8 +34,6 @@ public class CcdCallbackHandler {
 
     private final SscsDataHelper sscsDataHelper;
 
-    private final CaseDataHelper caseDataHelper;
-
     @Value("${feature.debug_json}")
     private Boolean debugJson;
 
@@ -43,14 +41,12 @@ public class CcdCallbackHandler {
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         CaseDataHandler caseDataHandler,
-        SscsDataHelper sscsDataHelper,
-        CaseDataHelper caseDataHelper
+        SscsDataHelper sscsDataHelper
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
         this.sscsDataHelper = sscsDataHelper;
-        this.caseDataHelper = caseDataHelper;
     }
 
     public CallbackResponse handle(ExceptionCaseData exceptionCaseData, Token token) {
@@ -91,7 +87,8 @@ public class CcdCallbackHandler {
                 }
             }
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-            return update(exceptionCaseData, caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token, exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
+            return update(exceptionCaseData, caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token,
+                exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
         }
     }
 

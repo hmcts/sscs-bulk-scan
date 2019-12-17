@@ -19,7 +19,10 @@ import java.util.List;
 import java.util.Objects;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -178,6 +181,7 @@ public class SscsBulkScanFunctionalTest {
 
     private SscsCaseDetails findCaseInCcd(Response response) {
         JsonPath jsonPathEvaluator = response.jsonPath();
+        @SuppressWarnings("rawtypes")
         Long caseRef = Long.parseLong(((HashMap) jsonPathEvaluator.get("data")).get("caseReference").toString());
         return ccdService.getByCaseId(caseRef, idamTokens);
     }
