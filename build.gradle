@@ -203,8 +203,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
-
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.1.5-RC3-sscs-6587'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.1.8-RC-sscs-6587'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.5.0'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.5.0'
