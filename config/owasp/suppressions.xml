@@ -160,4 +160,9 @@
     <cve>CVE-2018-9116</cve>
     <cve>CVE-2018-9117</cve>
   </suppress>
+  <suppress until="2020-01-31">
+    <notes>Tomcat needs to be upgraded in a new spring boot, Tomcat 9.0.29 is still in Spring boot 2.2.2</notes>
+    <cve>CVE-2019-12418</cve>
+    <cve>CVE-2019-17563</cve>
+  </suppress>
 </suppressions>
