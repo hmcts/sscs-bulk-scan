@@ -46,6 +46,7 @@ idam:
       id: ${IDAM_OAUTH2_CLIENT_ID:sscs}
       secret: ${IDAM_OAUTH2_CLIENT_SECRET:QM5RQQ53LZFOSIXJ}
     redirectUrl: ${IDAM_OAUTH2_REDIRECT_URL:https://localhost:3000/authenticated}
+    jwkUrl: ${IDAM_API_JWK_URL:http://localhost:5000/jwks}
 
 allowed-services-for-callback : ccd_data,sscs_bulkscan  # comma separated list of service names
 
@@ -60,7 +61,7 @@ feature:
   debug_json: ${DEBUG_JSON:false}
 
 readyToList:
-  offices: ${READY_TO_LIST_OFFICES:}
+  offices: ${READY_TO_LIST_OFFICES:3}
 
 ---
 spring:
