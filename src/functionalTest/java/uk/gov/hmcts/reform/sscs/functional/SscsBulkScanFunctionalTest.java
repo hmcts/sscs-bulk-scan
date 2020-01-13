@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -40,6 +41,7 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application_e2e.yaml")
 @RunWith(JUnitParamsRunner.class)
+@Slf4j
 public class SscsBulkScanFunctionalTest {
 
     @ClassRule
@@ -65,9 +67,9 @@ public class SscsBulkScanFunctionalTest {
     public void setup() {
         RestAssured.baseURI = testUrl;
         idamTokens = idamService.getIdamTokens();
-        System.out.println("idamTokens.getUserId()" + idamTokens.getUserId());
-        System.out.println("idamTokens.getServiceAuthorization()" + idamTokens.getServiceAuthorization());
-        System.out.println("idamTokens.getIdamOauth2Token()" + idamTokens.getIdamOauth2Token());
+        log.info("idamTokens.getUserId()" + idamTokens.getUserId());
+        log.info("idamTokens.getServiceAuthorization()" + idamTokens.getServiceAuthorization());
+        log.info("idamTokens.getIdamOauth2Token()" + idamTokens.getIdamOauth2Token());
     }
 
     @Test
@@ -78,7 +80,11 @@ public class SscsBulkScanFunctionalTest {
 
         //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
         List<String> possibleStates = new ArrayList<>(Arrays.asList("validAppeal", "withDwp"));
-        assertTrue(possibleStates.contains(findCaseInCcd(response).getState()));
+
+        SscsCaseDetails caseInCcd = findCaseInCcd(response);
+        log.info("Functional test(create_appeal_created_case_when_all_fields_entered), ccdId: {}, state: {}",
+            caseInCcd.getData().getCcdCaseId(), caseInCcd.getState());
+        assertTrue(possibleStates.contains(caseInCcd.getState()));
     }
 
     @Test
