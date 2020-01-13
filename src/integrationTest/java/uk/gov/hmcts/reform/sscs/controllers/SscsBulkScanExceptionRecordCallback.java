@@ -41,7 +41,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2018-12-09");
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2019-12-09");
 
         startForCaseworkerStub(START_EVENT_VALID_APPEAL_CREATED_URL);
         submitForCaseworkerStub("validAppealCreated");
@@ -51,7 +51,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         startForCaseworkerStub(UPDATE_EVENT_SEND_TO_DWP_URL);
         submitEventForCaseworkerStub("sendToDwp");
 
-        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate("09/12/2019")),
+            httpHeaders());
 
         // When
         ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
@@ -332,13 +333,14 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     @Test
     public void should_return_503_status_when_ccd_service_is_not_available_when_creating_appeal() throws Exception {
         // Given
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2018-12-09");
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2019-12-09");
         startForCaseworkerStubWithCcdUnavailable(START_EVENT_VALID_APPEAL_CREATED_URL);
         checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseData(
+            caseDataWithMrnDate("09/12/2019")), httpHeaders());
 
         // When
         ResponseEntity<Void> result =
