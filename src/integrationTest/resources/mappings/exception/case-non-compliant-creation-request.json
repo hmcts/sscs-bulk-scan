@@ -92,18 +92,18 @@
       "representativeSubscription" : null,
       "appointeeSubscription" : null
     },
-    "region" : "BIRMINGHAM",
+    "region" : "BRADFORD",
     "regionalProcessingCenter" : {
-      "name" : "BIRMINGHAM",
-      "address1" : "HM Courts & Tribunals Service",
-      "address2" : "Social Security & Child Support Appeals",
-      "address3" : "Administrative Support Centre",
-      "address4" : "PO Box 14620",
-      "city" : "BIRMINGHAM",
-      "postcode" : "B16 6FR",
+      "name" : "BRADFORD",
+      "address1": "HM Courts & Tribunals Service",
+      "address2": "Social Security & Child Support Appeals",
+      "address3": "Phoenix House",
+      "address4": "Rushton Avenue",
+      "city": "BRADFORD",
+      "postcode": "BD3 7BH",
       "phoneNumber" : "0300 123 1142",
       "faxNumber" : "0126 434 7983",
-      "email" : "Birmingham-SYA-Receipts@justice.gov.uk"
+      "email" : "SSCS_Bradford@justice.gov.uk"
     },
     "generatedNino" : "BB000000B",
     "generatedSurname" : "Smith",
