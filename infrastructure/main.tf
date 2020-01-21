@@ -47,7 +47,7 @@ module "sscs-bulk-scan" {
     IDAM_S2S_AUTH_MICROSERVICE = "${var.idam_s2s_auth_microservice}"
 
     IDAM_URL = "${var.idam_url}"
-    IDAM_API_JWK_URL: "${var.idam_url}/jwks"
+    IDAM_API_JWK_URL = "${var.idam_url}/jwks"
 
     IDAM_OAUTH2_USER_EMAIL    = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_user.value}"
     IDAM_OAUTH2_USER_PASSWORD = "${data.azurerm_key_vault_secret.idam_sscs_systemupdate_password.value}"
