@@ -163,6 +163,8 @@ public class CcdCallbackHandlerTest {
                 .name(Name.builder().firstName("Fred").lastName("Ward").build())
                 .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
                 .build())
+            .mrnDetails(MrnDetails.builder().dwpIssuingOffice("3").build())
+            .benefitType(BenefitType.builder().code("PIP").build())
             .build();
 
         SscsCaseDetails caseDetails = SscsCaseDetails
@@ -181,6 +183,14 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
+        assertThat(ccdCallbackResponse.getData().getGeneratedSurname()).isEqualTo("Ward");
+        assertThat(ccdCallbackResponse.getData().getGeneratedNino()).isEqualTo("JT123456N");
+        assertThat(ccdCallbackResponse.getData().getGeneratedDob()).isEqualTo("12/08/1990");
+        assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("002");
+        assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
+        assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
     }
 
     @Test
