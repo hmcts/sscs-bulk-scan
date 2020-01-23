@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
@@ -102,7 +105,7 @@ public class CcdCallbackHandler {
             callback.getCaseDetails().getCaseData().setInterlocReviewState("none");
         }
 
-        callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(sscsDataHelper.getCreatedInGapsFromField(callback.getCaseDetails().getCaseData().getAppeal()));
+        setUnsavedFieldsOnCallback(callback);
 
         Map<String, Object> appealData = new HashMap<>();
 
@@ -128,6 +131,33 @@ public class CcdCallbackHandler {
             }
 
             return preSubmitCallbackResponse;
+        }
+    }
+
+    private void setUnsavedFieldsOnCallback(Callback<SscsCaseData> callback) {
+        Appeal appeal = callback.getCaseDetails().getCaseData().getAppeal();
+        callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(sscsDataHelper.getCreatedInGapsFromField(appeal));
+        callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
+
+        if (appeal != null) {
+            if (appeal.getAppellant() != null) {
+                if (appeal.getAppellant().getName() != null) {
+                    callback.getCaseDetails().getCaseData().setGeneratedSurname(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getName().getLastName());
+                }
+                if (appeal.getAppellant().getIdentity() != null) {
+                    callback.getCaseDetails().getCaseData().setGeneratedNino(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getIdentity().getNino());
+                    callback.getCaseDetails().getCaseData().setGeneratedDob(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getIdentity().getDob());
+                }
+            }
+
+            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null) {
+                String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+                String issueCode = generateIssueCode();
+
+                callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
+                callback.getCaseDetails().getCaseData().setIssueCode(issueCode);
+                callback.getCaseDetails().getCaseData().setCaseCode(generateCaseCode(benefitCode, issueCode));
+            }
         }
     }
 
