@@ -8,11 +8,14 @@ import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @Component
 public class SscsDataHelper {
@@ -21,11 +24,14 @@ public class SscsDataHelper {
 
     private final List<String> offices;
 
+    private final DwpAddressLookupService dwpAddressLookupService;
 
     public SscsDataHelper(CaseEvent caseEvent,
-                          @Value("#{'${readyToList.offices}'.split(',')}") List<String> offices) {
+                          @Value("#{'${readyToList.offices}'.split(',')}") List<String> offices,
+                          DwpAddressLookupService dwpAddressLookupService) {
         this.caseEvent = caseEvent;
         this.offices = offices;
+        this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
     public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions) {
@@ -33,6 +39,7 @@ public class SscsDataHelper {
         appealData.put("sscsDocument", sscsDocuments);
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
         appealData.put("subscriptions", subscriptions);
+
 
         if (appeal != null) {
             if (appeal.getAppellant() != null) {
@@ -51,6 +58,14 @@ public class SscsDataHelper {
                 appealData.put("benefitCode", benefitCode);
                 appealData.put("issueCode", issueCode);
                 appealData.put("caseCode", generateCaseCode(benefitCode, issueCode));
+
+                if (appeal.getMrnDetails() != null && appeal.getMrnDetails().getDwpIssuingOffice() != null) {
+                    Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(
+                        appeal.getBenefitType().getCode(),
+                        appeal.getMrnDetails().getDwpIssuingOffice());
+
+                    officeMapping.ifPresent(office -> appealData.put("dwpRegionalCentre", office.getMapping().getDwpRegionCentre()));
+                }
             }
             appealData.put("createdInGapsFrom", getCreatedInGapsFromField(appeal));
         }
