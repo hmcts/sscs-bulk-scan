@@ -178,6 +178,8 @@ configurations.all {
         details.useVersion '2.10.0'
       }
     }
+    force 'org.apache.sling:javax.activate:1.0.12'
+
   }
 }
 
