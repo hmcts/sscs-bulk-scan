@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.service.bulkscan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
@@ -20,7 +21,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
@@ -33,6 +33,9 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.model.dwp.Mapping;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @RunWith(SpringRunner.class)
 public class CcdCallbackHandlerTest {
@@ -51,15 +54,19 @@ public class CcdCallbackHandlerTest {
     private CaseDataHandler caseDataHandler;
 
     @Mock
-    private CaseDataHelper caseDataHelper;
+    private DwpAddressLookupService dwpAddressLookupService;
 
     private SscsDataHelper sscsDataHelper;
 
     @Before
     public void setUp() {
-        sscsDataHelper = new SscsDataHelper(null, new ArrayList<>());
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper);
+        sscsDataHelper = new SscsDataHelper(null, new ArrayList<>(), dwpAddressLookupService);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper,
+            dwpAddressLookupService);
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
+        given(dwpAddressLookupService.getDwpMappingByOffice("PIP", "3"))
+            .willReturn(Optional.of(OfficeMapping.builder().mapping(Mapping.builder().dwpRegionCentre("Springburn")
+                .build()).build()));
     }
 
     @Test
@@ -163,6 +170,8 @@ public class CcdCallbackHandlerTest {
                 .name(Name.builder().firstName("Fred").lastName("Ward").build())
                 .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
                 .build())
+            .mrnDetails(MrnDetails.builder().dwpIssuingOffice("3").build())
+            .benefitType(BenefitType.builder().code("PIP").build())
             .build();
 
         SscsCaseDetails caseDetails = SscsCaseDetails
@@ -181,6 +190,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
+        assertThat(ccdCallbackResponse.getData().getGeneratedSurname()).isEqualTo("Ward");
+        assertThat(ccdCallbackResponse.getData().getGeneratedNino()).isEqualTo("JT123456N");
+        assertThat(ccdCallbackResponse.getData().getGeneratedDob()).isEqualTo("12/08/1990");
+        assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("002");
+        assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
+        assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
+        assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Springburn");
     }
 
     @Test

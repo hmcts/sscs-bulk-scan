@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
@@ -36,6 +37,9 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.model.dwp.Mapping;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -46,6 +50,9 @@ public class SscsCaseTransformerTest {
 
     @Mock
     SscsKeyValuePairValidator keyValuePairValidator;
+
+    @Mock
+    DwpAddressLookupService dwpAddressLookupService;
 
     SscsDataHelper sscsDataHelper;
 
@@ -68,7 +75,7 @@ public class SscsCaseTransformerTest {
         offices.add("1");
         offices.add("Balham DRT");
 
-        sscsDataHelper = new SscsDataHelper(null, offices);
+        sscsDataHelper = new SscsDataHelper(null, offices, dwpAddressLookupService);
         transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
@@ -180,7 +187,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
-
+        given(dwpAddressLookupService.getDwpMappingByOffice(eq(BENEFIT_TYPE), eq(OFFICE))).willReturn(Optional.of(OfficeMapping.builder().code(OFFICE).mapping(Mapping.builder().dwpRegionCentre(DWP_REGIONAL_CENTRE).build()).build()));
         pairs.put("benefit_type_description", BENEFIT_TYPE);
         pairs.put("mrn_date", MRN_DATE_VALUE);
         pairs.put("office", OFFICE);
@@ -222,6 +229,7 @@ public class SscsCaseTransformerTest {
         assertEquals(BENEFIT_CODE, result.getTransformedCase().get("benefitCode"));
         assertEquals(ISSUE_CODE, result.getTransformedCase().get("issueCode"));
         assertEquals(CASE_CODE, result.getTransformedCase().get("caseCode"));
+        assertEquals(DWP_REGIONAL_CENTRE, result.getTransformedCase().get("dwpRegionalCentre"));
 
         assertTrue(result.getErrors().isEmpty());
     }

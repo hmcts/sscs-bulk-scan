@@ -11,23 +11,28 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @RunWith(SpringRunner.class)
 public class SscsDataHelperTest {
 
     private SscsDataHelper caseDataHelper;
 
+    @Mock
+    private DwpAddressLookupService dwpAddressLookupService;
+
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Before
     public void setUp() {
-        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), new ArrayList<>());
+        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), new ArrayList<>(), dwpAddressLookupService);
     }
 
     @Test

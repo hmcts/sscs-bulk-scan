@@ -1,10 +1,13 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,8 +22,11 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @Component
 @Slf4j
@@ -36,6 +42,8 @@ public class CcdCallbackHandler {
 
     private final SscsDataHelper sscsDataHelper;
 
+    private final DwpAddressLookupService dwpAddressLookupService;
+
     @Value("${feature.debug_json}")
     private Boolean debugJson;
 
@@ -43,12 +51,14 @@ public class CcdCallbackHandler {
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         CaseDataHandler caseDataHandler,
-        SscsDataHelper sscsDataHelper
+        SscsDataHelper sscsDataHelper,
+        DwpAddressLookupService dwpAddressLookupService
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
         this.sscsDataHelper = sscsDataHelper;
+        this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
     public CallbackResponse handle(ExceptionCaseData exceptionCaseData, Token token) {
@@ -101,7 +111,7 @@ public class CcdCallbackHandler {
             callback.getCaseDetails().getCaseData().setInterlocReviewState("none");
         }
 
-        callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(sscsDataHelper.getCreatedInGapsFromField(callback.getCaseDetails().getCaseData().getAppeal()));
+        setUnsavedFieldsOnCallback(callback);
 
         Map<String, Object> appealData = new HashMap<>();
 
@@ -127,6 +137,43 @@ public class CcdCallbackHandler {
             }
 
             return preSubmitCallbackResponse;
+        }
+    }
+
+    private void setUnsavedFieldsOnCallback(Callback<SscsCaseData> callback) {
+        Appeal appeal = callback.getCaseDetails().getCaseData().getAppeal();
+        callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(sscsDataHelper.getCreatedInGapsFromField(appeal));
+        callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
+
+        if (appeal != null) {
+            if (appeal.getAppellant() != null) {
+                if (appeal.getAppellant().getName() != null) {
+                    callback.getCaseDetails().getCaseData().setGeneratedSurname(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getName().getLastName());
+                }
+                if (appeal.getAppellant().getIdentity() != null) {
+                    callback.getCaseDetails().getCaseData().setGeneratedNino(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getIdentity().getNino());
+                    callback.getCaseDetails().getCaseData().setGeneratedDob(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getIdentity().getDob());
+                }
+            }
+
+            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null) {
+                String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+                String issueCode = generateIssueCode();
+
+                callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
+                callback.getCaseDetails().getCaseData().setIssueCode(issueCode);
+                callback.getCaseDetails().getCaseData().setCaseCode(generateCaseCode(benefitCode, issueCode));
+
+                if (callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails() != null
+                    && callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails().getDwpIssuingOffice() != null) {
+
+                    Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(
+                        appeal.getBenefitType().getCode(),
+                        appeal.getMrnDetails().getDwpIssuingOffice());
+
+                    officeMapping.ifPresent(office -> callback.getCaseDetails().getCaseData().setDwpRegionalCentre(office.getMapping().getDwpRegionCentre()));
+                }
+            }
         }
     }
 
