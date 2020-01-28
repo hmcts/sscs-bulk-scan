@@ -61,9 +61,12 @@ public class CcdCallbackHandlerTest {
     @Before
     public void setUp() {
         sscsDataHelper = new SscsDataHelper(null, new ArrayList<>(), dwpAddressLookupService);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper, dwpAddressLookupService);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper,
+            dwpAddressLookupService);
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
-        given(dwpAddressLookupService.getDwpMappingByOffice("PIP", "3")).willReturn(Optional.of(OfficeMapping.builder().mapping(Mapping.builder().dwpRegionCentre("Springburn").build()).build()));
+        given(dwpAddressLookupService.getDwpMappingByOffice("PIP", "3"))
+            .willReturn(Optional.of(OfficeMapping.builder().mapping(Mapping.builder().dwpRegionCentre("Springburn")
+                .build()).build()));
     }
 
     @Test

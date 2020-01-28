@@ -3,7 +3,11 @@ package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -95,7 +99,8 @@ public class CcdCallbackHandler {
                 }
             }
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-            return update(exceptionCaseData, caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token, exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
+            return update(exceptionCaseData, caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token,
+                exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
         }
     }
 
