@@ -63,7 +63,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
-        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(Objects.requireNonNull(callbackResponse).getErrors()).isNull();
         assertThat(callbackResponse.getWarnings()).isEmpty();
         assertThat(callbackResponse.getData()).contains(
             entry("caseReference", "1539878003972756"),
@@ -207,7 +207,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
-        assertThat(callbackResponse.getErrors()).isNull();
+        assertThat(Objects.requireNonNull(callbackResponse).getErrors()).isNull();
         assertThat(callbackResponse.getData()).contains(
             entry("caseReference", "1539878003972756"),
             entry("state", "ScannedRecordCaseCreated")
@@ -604,7 +604,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ccdServer.stubFor(post(concat(SUBMIT_EVENT_URL))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
-            .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_VALUE))
             .withRequestBody(equalToJson(createCaseRequest, false, true))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
@@ -624,7 +624,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ccdServer.stubFor(post(concat(SUBMIT_UPDATE_EVENT_URL))
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
-            .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .withHeader(CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON_VALUE))
             .withRequestBody(equalToJson(createCaseRequest, false, true))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)

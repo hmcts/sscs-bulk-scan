@@ -6,7 +6,7 @@ plugins {
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.4.5'
   id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-  id 'org.springframework.boot' version '2.1.9.RELEASE'
+  id 'org.springframework.boot' version '2.2.4.RELEASE'
   id 'org.owasp.dependencycheck' version '5.2.4'
   id 'com.github.ben-manes.versions' version '0.25.0'
 }
@@ -202,16 +202,19 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
-
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.1.11'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.1.17'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.5.0'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.5.0'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-  testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+
+  testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+
+  functionalTestCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
   testCompile (group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot) {
     exclude group: "com.vaadin.external.google", module:"android-json"

@@ -3,14 +3,17 @@ package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
@@ -22,6 +25,8 @@ import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @Component
 @Slf4j
@@ -37,7 +42,7 @@ public class CcdCallbackHandler {
 
     private final SscsDataHelper sscsDataHelper;
 
-    private final CaseDataHelper caseDataHelper;
+    private final DwpAddressLookupService dwpAddressLookupService;
 
     @Value("${feature.debug_json}")
     private Boolean debugJson;
@@ -47,13 +52,13 @@ public class CcdCallbackHandler {
         CaseValidator caseValidator,
         CaseDataHandler caseDataHandler,
         SscsDataHelper sscsDataHelper,
-        CaseDataHelper caseDataHelper
+        DwpAddressLookupService dwpAddressLookupService
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.caseDataHandler = caseDataHandler;
         this.sscsDataHelper = sscsDataHelper;
-        this.caseDataHelper = caseDataHelper;
+        this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
     public CallbackResponse handle(ExceptionCaseData exceptionCaseData, Token token) {
@@ -94,7 +99,8 @@ public class CcdCallbackHandler {
                 }
             }
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-            return update(exceptionCaseData, caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token, exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
+            return update(exceptionCaseData, caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token,
+                exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
         }
     }
 
@@ -157,6 +163,16 @@ public class CcdCallbackHandler {
                 callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
                 callback.getCaseDetails().getCaseData().setIssueCode(issueCode);
                 callback.getCaseDetails().getCaseData().setCaseCode(generateCaseCode(benefitCode, issueCode));
+
+                if (callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails() != null
+                    && callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails().getDwpIssuingOffice() != null) {
+
+                    Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(
+                        appeal.getBenefitType().getCode(),
+                        appeal.getMrnDetails().getDwpIssuingOffice());
+
+                    officeMapping.ifPresent(office -> callback.getCaseDetails().getCaseData().setDwpRegionalCentre(office.getMapping().getDwpRegionCentre()));
+                }
             }
         }
     }
