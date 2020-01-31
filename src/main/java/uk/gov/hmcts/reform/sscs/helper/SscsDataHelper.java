@@ -8,7 +8,6 @@ import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
-import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @Component
@@ -63,13 +61,9 @@ public class SscsDataHelper {
                 appealData.put("caseCode", generateCaseCode(benefitCode, issueCode));
 
                 if (appeal.getMrnDetails() != null && appeal.getMrnDetails().getDwpIssuingOffice() != null) {
-                    Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(
+                    String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
                         appeal.getBenefitType().getCode(),
                         appeal.getMrnDetails().getDwpIssuingOffice());
-
-                    String dwpRegionCentre = "PIP".equalsIgnoreCase(appeal.getBenefitType().getCode())
-                        ? officeMapping.map(mapping -> mapping.getMapping().getDwpRegionCentre()).orElse(null) :
-                        officeMapping.map(mapping -> mapping.getMapping().getCcd()).orElse(null);
 
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
