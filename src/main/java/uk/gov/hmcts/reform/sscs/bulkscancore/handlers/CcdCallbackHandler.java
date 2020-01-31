@@ -171,7 +171,11 @@ public class CcdCallbackHandler {
                         appeal.getBenefitType().getCode(),
                         appeal.getMrnDetails().getDwpIssuingOffice());
 
-                    officeMapping.ifPresent(office -> callback.getCaseDetails().getCaseData().setDwpRegionalCentre(office.getMapping().getDwpRegionCentre()));
+                    String dwpRegionCentre = "PIP".equalsIgnoreCase(appeal.getBenefitType().getCode())
+                        ? officeMapping.map(mapping -> mapping.getMapping().getDwpRegionCentre()).orElse(null) :
+                        officeMapping.map(mapping -> mapping.getMapping().getCcd()).orElse(null);
+
+                    callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
                 }
             }
         }

@@ -67,6 +67,9 @@ public class CcdCallbackHandlerTest {
         given(dwpAddressLookupService.getDwpMappingByOffice("PIP", "3"))
             .willReturn(Optional.of(OfficeMapping.builder().mapping(Mapping.builder().dwpRegionCentre("Springburn")
                 .build()).build()));
+        given(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Balham DRT"))
+            .willReturn(Optional.of(OfficeMapping.builder().mapping(Mapping.builder().ccd("Balham")
+                .build()).build()));
     }
 
     @Test
@@ -163,7 +166,7 @@ public class CcdCallbackHandlerTest {
     }
 
     @Test
-    public void should_return_no_warnings_or_errors_or_data_when_validation_endpoint_is_successful() {
+    public void should_return_no_warnings_or_errors_or_data_when_validation_endpoint_is_successful_for_pip_case() {
 
         Appeal appeal = Appeal.builder()
             .appellant(Appellant.builder()
@@ -199,6 +202,45 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Springburn");
+    }
+
+    @Test
+    public void should_return_no_warnings_or_errors_or_data_when_validation_endpoint_is_successful_for_esa_case() {
+
+        Appeal appeal = Appeal.builder()
+            .appellant(Appellant.builder()
+                .name(Name.builder().firstName("Fred").lastName("Ward").build())
+                .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
+                .build())
+            .mrnDetails(MrnDetails.builder().dwpIssuingOffice("Balham DRT").build())
+            .benefitType(BenefitType.builder().code("ESA").build())
+            .build();
+
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
+        when(caseValidator.validate(any())).thenReturn(caseValidationResponse);
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
+
+        assertThat(ccdCallbackResponse.getData()).isNotNull();
+        assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
+        assertThat(ccdCallbackResponse.getData().getGeneratedSurname()).isEqualTo("Ward");
+        assertThat(ccdCallbackResponse.getData().getGeneratedNino()).isEqualTo("JT123456N");
+        assertThat(ccdCallbackResponse.getData().getGeneratedDob()).isEqualTo("12/08/1990");
+        assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
+        assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
+        assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
+        assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
     }
 
     @Test

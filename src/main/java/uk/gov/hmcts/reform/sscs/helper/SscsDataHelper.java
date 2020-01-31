@@ -12,7 +12,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
@@ -64,7 +67,11 @@ public class SscsDataHelper {
                         appeal.getBenefitType().getCode(),
                         appeal.getMrnDetails().getDwpIssuingOffice());
 
-                    officeMapping.ifPresent(office -> appealData.put("dwpRegionalCentre", office.getMapping().getDwpRegionCentre()));
+                    String dwpRegionCentre = "PIP".equalsIgnoreCase(appeal.getBenefitType().getCode())
+                        ? officeMapping.map(mapping -> mapping.getMapping().getDwpRegionCentre()).orElse(null) :
+                        officeMapping.map(mapping -> mapping.getMapping().getCcd()).orElse(null);
+
+                    appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
             }
             appealData.put("createdInGapsFrom", getCreatedInGapsFromField(appeal));

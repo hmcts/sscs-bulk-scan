@@ -186,7 +186,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellant() {
+    public void givenKeyValuePairsWithPerson1AndPipBenefitType_thenBuildAnAppealWithAppellant() {
         given(dwpAddressLookupService.getDwpMappingByOffice(eq(BENEFIT_TYPE), eq(OFFICE))).willReturn(Optional.of(OfficeMapping.builder().code(OFFICE).mapping(Mapping.builder().dwpRegionCentre(DWP_REGIONAL_CENTRE).build()).build()));
         pairs.put("benefit_type_description", BENEFIT_TYPE);
         pairs.put("mrn_date", MRN_DATE_VALUE);
@@ -230,6 +230,19 @@ public class SscsCaseTransformerTest {
         assertEquals(ISSUE_CODE, result.getTransformedCase().get("issueCode"));
         assertEquals(CASE_CODE, result.getTransformedCase().get("caseCode"));
         assertEquals(DWP_REGIONAL_CENTRE, result.getTransformedCase().get("dwpRegionalCentre"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenKeyValuePairsWithEsaBenefitType_thenBuildAnAppealWithAppellant() {
+        given(dwpAddressLookupService.getDwpMappingByOffice(eq("ESA"), eq("Balham DRT"))).willReturn(Optional.of(OfficeMapping.builder().code("Balham DRT").mapping(Mapping.builder().ccd("Balham").build()).build()));
+        pairs.put("benefit_type_description", "ESA");
+        pairs.put("office", "Balham DRT");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("Balham", result.getTransformedCase().get("dwpRegionalCentre"));
 
         assertTrue(result.getErrors().isEmpty());
     }
