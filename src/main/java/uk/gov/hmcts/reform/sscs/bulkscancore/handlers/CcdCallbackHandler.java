@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,6 @@ import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
-import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @Component
@@ -167,11 +165,11 @@ public class CcdCallbackHandler {
                 if (callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails() != null
                     && callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails().getDwpIssuingOffice() != null) {
 
-                    Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(
+                    String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
                         appeal.getBenefitType().getCode(),
                         appeal.getMrnDetails().getDwpIssuingOffice());
 
-                    officeMapping.ifPresent(office -> callback.getCaseDetails().getCaseData().setDwpRegionalCentre(office.getMapping().getDwpRegionCentre()));
+                    callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
                 }
             }
         }
