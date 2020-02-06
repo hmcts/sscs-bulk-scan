@@ -33,8 +33,6 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
-import uk.gov.hmcts.reform.sscs.model.dwp.Mapping;
-import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @RunWith(SpringRunner.class)
@@ -64,12 +62,10 @@ public class CcdCallbackHandlerTest {
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper,
             dwpAddressLookupService);
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
-        given(dwpAddressLookupService.getDwpMappingByOffice("PIP", "3"))
-            .willReturn(Optional.of(OfficeMapping.builder().mapping(Mapping.builder().dwpRegionCentre("Springburn")
-                .build()).build()));
-        given(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Balham DRT"))
-            .willReturn(Optional.of(OfficeMapping.builder().mapping(Mapping.builder().ccd("Balham")
-                .build()).build()));
+        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("PIP", "3"))
+            .willReturn("Springburn");
+        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("ESA", "Balham DRT"))
+            .willReturn("Balham");
     }
 
     @Test

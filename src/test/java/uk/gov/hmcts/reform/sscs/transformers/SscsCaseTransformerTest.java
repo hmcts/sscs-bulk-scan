@@ -37,8 +37,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
-import uk.gov.hmcts.reform.sscs.model.dwp.Mapping;
-import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
@@ -187,7 +185,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithPerson1AndPipBenefitType_thenBuildAnAppealWithAppellant() {
-        given(dwpAddressLookupService.getDwpMappingByOffice(eq(BENEFIT_TYPE), eq(OFFICE))).willReturn(Optional.of(OfficeMapping.builder().code(OFFICE).mapping(Mapping.builder().dwpRegionCentre(DWP_REGIONAL_CENTRE).build()).build()));
+        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq(BENEFIT_TYPE), eq(OFFICE))).willReturn(DWP_REGIONAL_CENTRE);
         pairs.put("benefit_type_description", BENEFIT_TYPE);
         pairs.put("mrn_date", MRN_DATE_VALUE);
         pairs.put("office", OFFICE);
@@ -236,7 +234,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithEsaBenefitType_thenBuildAnAppealWithAppellant() {
-        given(dwpAddressLookupService.getDwpMappingByOffice(eq("ESA"), eq("Balham DRT"))).willReturn(Optional.of(OfficeMapping.builder().code("Balham DRT").mapping(Mapping.builder().ccd("Balham").build()).build()));
+        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq("ESA"), eq("Balham DRT"))).willReturn("Balham");
         pairs.put("benefit_type_description", "ESA");
         pairs.put("office", "Balham DRT");
 
