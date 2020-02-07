@@ -109,3 +109,7 @@ data "azurerm_key_vault_secret" "robotics_email_to" {
   vault_uri = "${local.permanent_vault_uri}"
 }
 
+data "azurerm_key_vault_secret" "appinsights_instrumentation_key" {
+  name      = "AppInsightsInstrumentationKey"
+  vault_uri = "${local.permanent_vault_uri}"
+}
