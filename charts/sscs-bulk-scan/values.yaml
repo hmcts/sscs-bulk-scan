@@ -10,6 +10,7 @@ java:
         - idam-sscs-systemupdate-user
         - idam-sscs-systemupdate-password
         - idam-sscs-oauth2-client-secret
+        - AppInsightsInstrumentationKey
   environment:
     ROOT_LOGGING_LEVEL: INFO
     LOG_OUTPUT: single
