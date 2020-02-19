@@ -16,7 +16,6 @@ import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-
 import org.apache.commons.codec.Charsets;
 import org.junit.Before;
 import org.junit.Test;

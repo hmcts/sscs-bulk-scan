@@ -4,9 +4,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.SEND_TO_DWP;
 
 import feign.FeignException;
-
 import java.util.*;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
