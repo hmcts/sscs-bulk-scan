@@ -96,9 +96,10 @@ public class SscsCaseValidator implements CaseValidator {
             errors.add("There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf");
         });
 
-        sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentFileName() != null
-            && sscsDocument.getValue().getDocumentFileName().indexOf('.') == -1).forEach(sscsDocument -> {
-                errors.add("There is a file attached to the case called " + sscsDocument.getValue().getDocumentFileName()
+        sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentLink() != null
+            && sscsDocument.getValue().getDocumentLink().getDocumentFilename() != null
+            && sscsDocument.getValue().getDocumentLink().getDocumentFilename().indexOf('.') == -1).forEach(sscsDocument -> {
+                errors.add("There is a file attached to the case called " + sscsDocument.getValue().getDocumentLink().getDocumentFilename()
                     + ", filenames must have extension, e.g. filename.pdf");
             });
     }

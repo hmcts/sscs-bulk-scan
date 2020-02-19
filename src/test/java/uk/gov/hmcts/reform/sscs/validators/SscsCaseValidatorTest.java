@@ -798,7 +798,7 @@ public class SscsCaseValidatorTest {
         List<SscsDocument> documentDetails = new ArrayList<>();
 
         SscsDocumentDetails details = SscsDocumentDetails.builder()
-            .documentFileName(filename).build();
+            .documentFileName(filename).documentLink(DocumentLink.builder().documentFilename(filename).build()).build();
         documentDetails.add(SscsDocument.builder().value(details).build());
 
         return documentDetails;
