@@ -191,9 +191,6 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
-        assertThat(ccdCallbackResponse.getData().getGeneratedSurname()).isEqualTo("Ward");
-        assertThat(ccdCallbackResponse.getData().getGeneratedNino()).isEqualTo("JT123456N");
-        assertThat(ccdCallbackResponse.getData().getGeneratedDob()).isEqualTo("12/08/1990");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("002");
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
@@ -230,9 +227,6 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
-        assertThat(ccdCallbackResponse.getData().getGeneratedSurname()).isEqualTo("Ward");
-        assertThat(ccdCallbackResponse.getData().getGeneratedNino()).isEqualTo("JT123456N");
-        assertThat(ccdCallbackResponse.getData().getGeneratedDob()).isEqualTo("12/08/1990");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");

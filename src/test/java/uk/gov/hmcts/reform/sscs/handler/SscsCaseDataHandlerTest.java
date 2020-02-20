@@ -184,15 +184,16 @@ public class SscsCaseDataHandlerTest {
     @Test
     public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwpCheckMatches() {
 
+        String nino = "testnino";
+
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
             .benefitType(BenefitType.builder().build())
             .appellant(Appellant.builder().address(
                 Address.builder().postcode("CM120HN").build())
+                .identity(Identity.builder().nino(nino).build())
                 .build()).build();
 
-        String nino = "testnino";
         Map<String, Object> transformedCase = new HashMap<>();
-        transformedCase.put("generatedNino", nino);
         transformedCase.put("appeal", appeal);
 
         uk.gov.hmcts.reform.ccd.client.model.CaseDetails matchingCase = uk.gov.hmcts.reform.ccd.client.model.CaseDetails.builder().id(12345678L).build();
@@ -522,7 +523,7 @@ public class SscsCaseDataHandlerTest {
 
     private Map<String, String> getSearchCriteria() {
         Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.generatedNino", "");
+        searchCriteria.put("case.appeal.appellant.identity.nino", "");
         searchCriteria.put("case.appeal.benefitType.code", "");
         searchCriteria.put("case.appeal.mrnDetails.mrnDate", "");
         return searchCriteria;
@@ -530,17 +531,15 @@ public class SscsCaseDataHandlerTest {
 
     private Map<String, String> getSearchCriteria(String nino, String benefitCode, String mrnDate) {
         Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.generatedNino", nino);
+        searchCriteria.put("case.appeal.appellant.identity.nino", nino);
         searchCriteria.put("case.appeal.benefitType.code", benefitCode);
         searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
         return searchCriteria;
     }
 
-
-
     private Map<String,String> getMatchSearchCriteria(String nino) {
         Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.generatedNino", nino);
+        searchCriteria.put("case.appeal.appellant.identity.nino", nino);
         return searchCriteria;
     }
 }

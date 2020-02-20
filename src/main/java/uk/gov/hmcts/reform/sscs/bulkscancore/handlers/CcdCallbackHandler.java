@@ -144,16 +144,6 @@ public class CcdCallbackHandler {
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
         if (appeal != null) {
-            if (appeal.getAppellant() != null) {
-                if (appeal.getAppellant().getName() != null) {
-                    callback.getCaseDetails().getCaseData().setGeneratedSurname(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getName().getLastName());
-                }
-                if (appeal.getAppellant().getIdentity() != null) {
-                    callback.getCaseDetails().getCaseData().setGeneratedNino(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getIdentity().getNino());
-                    callback.getCaseDetails().getCaseData().setGeneratedDob(callback.getCaseDetails().getCaseData().getAppeal().getAppellant().getIdentity().getDob());
-                }
-            }
-
             if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null) {
                 String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
                 String issueCode = generateIssueCode();

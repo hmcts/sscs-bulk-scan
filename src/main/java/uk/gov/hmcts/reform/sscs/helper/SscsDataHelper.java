@@ -41,17 +41,7 @@ public class SscsDataHelper {
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
         appealData.put("subscriptions", subscriptions);
 
-
         if (appeal != null) {
-            if (appeal.getAppellant() != null) {
-                if (appeal.getAppellant().getName() != null) {
-                    appealData.put("generatedSurname", appeal.getAppellant().getName().getLastName());
-                }
-                if (appeal.getAppellant().getIdentity() != null) {
-                    appealData.put("generatedNino", appeal.getAppellant().getIdentity().getNino());
-                    appealData.put("generatedDOB", appeal.getAppellant().getIdentity().getDob());
-                }
-            }
             if (appeal.getBenefitType() != null) {
                 String benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
                 String issueCode = generateIssueCode();

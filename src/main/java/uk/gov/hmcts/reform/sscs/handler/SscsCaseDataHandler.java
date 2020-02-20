@@ -53,26 +53,30 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
             String caseReference = String.valueOf(Optional.ofNullable(
                 exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
-            String generatedNino = String.valueOf(Optional.ofNullable(
-                caseValidationResponse.getTransformedCase().get("generatedNino")).orElse(""));
             Appeal appeal = (Appeal) caseValidationResponse.getTransformedCase().get("appeal");
             String mrnDate = "";
             String benefitType = "";
-            if (appeal != null && appeal.getMrnDetails() != null) {
-                mrnDate = appeal.getMrnDetails().getMrnDate();
+            String nino = "";
+
+            if (appeal != null) {
+                if (appeal.getMrnDetails() != null) {
+                    mrnDate = appeal.getMrnDetails().getMrnDate();
+                }
+                if (appeal.getBenefitType() != null) {
+                    benefitType = appeal.getBenefitType().getCode();
+                }
+                if (appeal.getAppellant() != null && appeal.getAppellant().getIdentity() != null) {
+                    nino = appeal.getAppellant().getIdentity().getNino();
+                }
             }
-            if (appeal != null && appeal.getBenefitType() != null) {
-                benefitType = appeal.getBenefitType().getCode();
-            }
-            Long caseId;
 
             if (!StringUtils.isEmpty(caseReference)) {
                 log.info("Case {} already exists for exception record id {}", caseReference, exceptionRecordId);
                 isCaseAlreadyExists = true;
-            } else if (!StringUtils.isEmpty(generatedNino) && !StringUtils.isEmpty(benefitType)
+            } else if (!StringUtils.isEmpty(nino) && !StringUtils.isEmpty(benefitType)
                 && !StringUtils.isEmpty(mrnDate)) {
                 Map<String, String> searchCriteria = new HashMap<>();
-                searchCriteria.put("case.generatedNino", generatedNino);
+                searchCriteria.put("case.appeal.appellant.identity.nino", nino);
                 searchCriteria.put("case.appeal.benefitType.code", benefitType);
                 searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
@@ -82,7 +86,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 if (!CollectionUtils.isEmpty(caseDetails)) {
                     log.info("Duplicate case found for Nino {} , benefit type {} and mrnDate {}. "
                             + "No need to continue with post create case processing.",
-                        generatedNino, benefitType, mrnDate);
+                        nino, benefitType, mrnDate);
                     isCaseAlreadyExists = true;
                     caseReference = String.valueOf(caseDetails.get(0).getId());
                 }
@@ -92,9 +96,9 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 if (!isCaseAlreadyExists) {
                     Map<String, Object> sscsCaseData = caseValidationResponse.getTransformedCase();
 
-                    sscsCaseData = checkForMatches(generatedNino, sscsCaseData, token);
+                    sscsCaseData = checkForMatches(nino, sscsCaseData, token);
 
-                    caseId = caseDataHelper.createCase(sscsCaseData,
+                    Long caseId = caseDataHelper.createCase(sscsCaseData,
                         token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId(), eventId);
 
                     log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
@@ -120,11 +124,11 @@ public class SscsCaseDataHandler implements CaseDataHandler {
         return null;
     }
 
-    protected Map<String, Object> checkForMatches(String generatedNino, Map<String, Object> sscsCaseData, Token token) {
+    protected Map<String, Object> checkForMatches(String nino, Map<String, Object> sscsCaseData, Token token) {
         List<CaseDetails> matchedByNinoCases = new ArrayList<>();
-        if (generatedNino != null && !generatedNino.equals("")) {
+        if (nino != null && !nino.equals("")) {
             Map<String, String> linkCasesCriteria = new HashMap<>();
-            linkCasesCriteria.put("case.generatedNino", generatedNino);
+            linkCasesCriteria.put("case.appeal.appellant.identity.nino", nino);
             matchedByNinoCases = caseDataHelper.findCaseBy(linkCasesCriteria, token.getUserAuthToken(), token.getServiceAuthToken(), token.getUserId());
         }
         sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
