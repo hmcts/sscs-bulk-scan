@@ -60,7 +60,8 @@
     "agree_less_hearing_notice": {"type": "string"},
     "signature_name": {"type": "string"},
     "signature_appeal_date": {"type": "string"},
-    "office": {"type": "string"}
+    "office": {"type": "string"},
+    "tell_tribunal_about_dates": {"type": "string"}
   },
   "additionalProperties": false
 }
