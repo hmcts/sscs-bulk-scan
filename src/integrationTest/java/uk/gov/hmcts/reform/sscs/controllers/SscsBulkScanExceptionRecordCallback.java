@@ -304,6 +304,28 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     @Test
+    public void should_return_warnings_when_tell_tribunal_about_dates_is_true_and_no_excluded_dates_provided() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithNoExcludedHearingDates()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getWarnings())
+            .contains("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as tell_tribunal_about_dates is true. Is this correct?");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
     public void should_return_403_status_when_usertoken_does_not_have_access_to_jurisdiction() throws Exception {
         // Given
         HttpHeaders headers = new HttpHeaders();
@@ -380,6 +402,21 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.add(ocrEntry(
             VALUE,
             ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, true))
+        );
+
+        return exceptionRecord(ocrList, null);
+    }
+
+    private Map<String, Object> caseDataWithNoExcludedHearingDates() {
+        List<Object> ocrList = new ArrayList<>();
+
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "tell_tribunal_about_dates", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "hearing_options_exclude_dates", VALUE, ""))
         );
 
         return exceptionRecord(ocrList, null);
