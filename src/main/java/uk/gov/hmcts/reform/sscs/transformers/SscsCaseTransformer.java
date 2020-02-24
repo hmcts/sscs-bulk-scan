@@ -1,29 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.AGREE_LESS_HEARING_NOTICE_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.APPEAL_GROUNDS;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.DEFAULT_SIGN_LANGUAGE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_DIALECT_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_EXCLUDE_DATES_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_HEARING_LOOP_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_SUPPORT_ARRANGEMENTS_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_PAPER;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_BENEFIT_TYPE_ESA;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_BENEFIT_TYPE_PIP;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_HEARING_TYPE_ORAL_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_HEARING_TYPE_PAPER_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.NO_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON1_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON2_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.REPRESENTATIVE_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.YES_LITERAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.areBooleansValid;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.checkBooleanValue;
@@ -102,6 +80,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private SscsDataHelper sscsDataHelper;
 
     private Set<String> errors;
+    private Set<String> warnings;
 
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
                                SscsKeyValuePairValidator keyValuePairValidator,
@@ -127,6 +106,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         log.info("Key value pairs validated while transforming exception record {}", caseId);
 
         errors = new HashSet<>();
+        warnings = new HashSet<>();
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
 
@@ -145,7 +125,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
 
-        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).build();
+        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
     }
 
     private String extractOpeningDate(CaseDetails caseDetails) {
@@ -364,7 +344,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String wantsSupport = !arrangements.isEmpty() ? YES_LITERAL : NO_LITERAL;
 
-        List<ExcludeDate> excludedDates = buildExcludedDates(pairs);
+        List<ExcludeDate> excludedDates = extractExcludedDates(pairs, getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));;
 
         String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)
             ? convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
@@ -423,16 +403,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         return null;
     }
 
-    private List<ExcludeDate> buildExcludedDates(Map<String, Object> pairs) {
-
-        if (pairs.containsKey(HEARING_OPTIONS_EXCLUDE_DATES_LITERAL)) {
-            return extractExcludedDates(getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));
-        } else {
-            return null;
-        }
-    }
-
-    private List<ExcludeDate> extractExcludedDates(String excludedDatesList) {
+    private List<ExcludeDate> extractExcludedDates(Map<String, Object> pairs, String excludedDatesList) {
         List<ExcludeDate> excludeDates = new ArrayList<>();
 
         if (excludedDatesList != null && !excludedDatesList.isEmpty()) {
@@ -442,7 +413,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 List<String> range = Arrays.asList(item.split("\\s*-\\s*"));
                 String errorMessage = "hearing_options_exclude_dates contains an invalid date range. "
                     + "Should be single dates separated by commas and/or a date range "
-                    + "e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019";
+                    + "e.g. 01/01/2020, 07/01/2020, 12/01/2020 - 15/01/2020";
 
                 if (range.size() > 2) {
                     errors.add(errorMessage);
@@ -457,6 +428,15 @@ public class SscsCaseTransformer implements CaseTransformer {
                 }
                 excludeDates.add(ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
             }
+        }
+        if (excludeDates.size() == 0) {
+            String tellTribunalAboutDates = checkBooleanValue(pairs, errors, TELL_TRIBUNAL_ABOUT_DATES)
+                ? convertBooleanToYesNoString(getBoolean(pairs, errors, TELL_TRIBUNAL_ABOUT_DATES)) : null;
+
+            if (("Yes").equals(tellTribunalAboutDates)) {
+                warnings.add("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?");
+            }
+            return null;
         }
         return excludeDates;
     }
