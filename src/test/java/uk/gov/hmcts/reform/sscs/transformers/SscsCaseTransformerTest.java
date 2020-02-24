@@ -1273,10 +1273,26 @@ public class SscsCaseTransformerTest {
 
     @Test
     @Parameters({"true", "Yes"})
-    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesIsNotProvided_thenProvideWarningToCaseworker(String tellTribunalAboutDates) {
+    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesIsEmpty_thenProvideWarningToCaseworker(String tellTribunalAboutDates) {
 
         pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
-        pairs.put("hearing_options_exclude_dates", null);
+        pairs.put("hearing_options_exclude_dates", "");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(1, result.getWarnings().size());
+        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesIsNotPresent_thenProvideWarningToCaseworker(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 

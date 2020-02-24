@@ -344,7 +344,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String wantsSupport = !arrangements.isEmpty() ? YES_LITERAL : NO_LITERAL;
 
-        List<ExcludeDate> excludedDates = buildExcludedDates(pairs);
+        List<ExcludeDate> excludedDates = extractExcludedDates(pairs, getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));;
 
         String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)
             ? convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
@@ -401,15 +401,6 @@ public class SscsCaseTransformer implements CaseTransformer {
             return signLanguageType != null ? signLanguageType : DEFAULT_SIGN_LANGUAGE;
         }
         return null;
-    }
-
-    private List<ExcludeDate> buildExcludedDates(Map<String, Object> pairs) {
-
-        if (pairs.containsKey(HEARING_OPTIONS_EXCLUDE_DATES_LITERAL)) {
-            return extractExcludedDates(pairs, getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));
-        } else {
-            return null;
-        }
     }
 
     private List<ExcludeDate> extractExcludedDates(Map<String, Object> pairs, String excludedDatesList) {
