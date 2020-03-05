@@ -72,8 +72,8 @@ public class SscsCaseValidatorTest {
                 "person1_first_name is empty",
                 "person1_last_name is empty",
                 "person1_address_line1 is empty",
+                "person1_address_line2 is empty",
                 "person1_address_line3 is empty",
-                "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_nino is empty",
                 "mrn_date is empty",
@@ -148,8 +148,8 @@ public class SscsCaseValidatorTest {
             .containsOnly(
                 "person1_title is empty",
                 "person1_address_line1 is empty",
+                "person1_address_line2 is empty",
                 "person1_address_line3 is empty",
-                "person1_address_line4 is empty",
                 "person1_postcode is empty");
     }
 
@@ -636,6 +636,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenARepresentativeDoesNotContainATown_thenAddAWarning() {
         Representative representative = buildRepresentative();
+        representative.getAddress().setLine2("101 Street");
         representative.getAddress().setTown(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
@@ -714,8 +715,9 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppointeeDoesNotContainAnAddressLine4_thenAddAWarning() {
+    public void givenAnAppointeeHasAddressAll4LinesAndDoesNotContainAnAddressLine4_thenAddAWarning() {
         Appellant appellant = buildAppellant(true);
+        appellant.getAppointee().getAddress().setLine2("101 Street");
         appellant.getAppointee().getAddress().setCounty(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));

@@ -188,15 +188,19 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkPersonAddressAndDob(Address address, Identity identity, String personType, Map<String, Object> caseData, Appellant appellant) {
 
+        boolean isAddressLine4Present = doesAddressLine2Exist(address);
+
         if (!doesAddressLine1Exist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, IS_EMPTY));
         }
         if (!doesAddressTownExist(address)) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE3, IS_EMPTY));
+            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
 
         }
         if (!doesAddressCountyExist(address)) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE4, IS_EMPTY));
+            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE4 : ADDRESS_LINE3;
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
         }
         if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(PERSON1_VALUE)) {
             RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
@@ -241,6 +245,13 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private Boolean doesAddressLine1Exist(Address address) {
+        if (address != null) {
+            return address.getLine1() != null;
+        }
+        return false;
+    }
+
+    private Boolean doesAddressLine2Exist(Address address) {
         if (address != null) {
             return address.getLine1() != null;
         }
