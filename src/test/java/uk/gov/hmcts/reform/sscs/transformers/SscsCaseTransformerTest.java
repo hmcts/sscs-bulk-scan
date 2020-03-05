@@ -661,7 +661,7 @@ public class SscsCaseTransformerTest {
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
 
-        assertTrue(excludeDates.isEmpty());
+        assertNull(excludeDates);
         assertTrue(result.getErrors().isEmpty());
     }
 
@@ -674,7 +674,7 @@ public class SscsCaseTransformerTest {
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
 
-        assertTrue(excludeDates.isEmpty());
+        assertNull(excludeDates);
         assertTrue(result.getErrors().isEmpty());
     }
 
@@ -730,7 +730,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019"));
+        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2020, 07/01/2020, 12/01/2020 - 15/01/2020"));
     }
 
     @Test
@@ -740,7 +740,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019"));
+        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2020, 07/01/2020, 12/01/2020 - 15/01/2020"));
     }
 
     @Test
@@ -1253,6 +1253,66 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesProvided_thenBuildAnAppealWithExcludedDates(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
+        pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesIsEmpty_thenProvideWarningToCaseworker(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
+        pairs.put("hearing_options_exclude_dates", "");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(1, result.getWarnings().size());
+        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesIsNotPresent_thenProvideWarningToCaseworker(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(1, result.getWarnings().size());
+        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"false", "No"})
+    public void givenTellTribunalAboutDatesIsNotRequired_thenBuildAnAppealWithNoExcludedDates(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
 
         assertTrue(result.getErrors().isEmpty());
     }

@@ -66,10 +66,10 @@ public class CcdCallbackHandler {
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionCaseData.getCaseDetails());
-        AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrors(caseTransformationResponse, exceptionRecordId);
+        AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrorsAndWarnings(caseTransformationResponse, exceptionRecordId, exceptionCaseData.isIgnoreWarnings());
 
         if (transformErrorResponse != null) {
-            log.info("Errors found while transforming exception record id {}", exceptionRecordId);
+            log.info("Errors or warnings found while transforming exception record id {}", exceptionRecordId);
             return transformErrorResponse;
         }
 
@@ -205,6 +205,19 @@ public class CcdCallbackHandler {
             log.info("Errors found while transforming exception record id {}", exceptionRecordId);
             return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(caseResponse.getErrors())
+                .build();
+        }
+        return null;
+    }
+
+    private AboutToStartOrSubmitCallbackResponse checkForErrorsAndWarnings(CaseResponse caseResponse,
+                                                                           String exceptionRecordId, boolean ignoreWarnings) {
+
+        if (!ObjectUtils.isEmpty(caseResponse.getErrors()) || (!ObjectUtils.isEmpty(caseResponse.getWarnings()) && !ignoreWarnings)) {
+            log.info("Errors or warnings found while transforming exception record id {}", exceptionRecordId);
+            return AboutToStartOrSubmitCallbackResponse.builder()
+                .errors(caseResponse.getErrors())
+                .warnings(caseResponse.getWarnings())
                 .build();
         }
         return null;
