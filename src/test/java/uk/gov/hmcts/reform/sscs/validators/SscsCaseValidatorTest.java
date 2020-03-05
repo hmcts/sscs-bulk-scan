@@ -257,7 +257,7 @@ public class SscsCaseValidatorTest {
         appellant.getAddress().setLine2(null);
         appellant.getAddress().setTown(null);
 
-        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+        CaseResponse response = validator.validate(transformErrorResponse, buildMinimumAppealData(appellant, true));
 
         assertEquals("person1_address_line2 is empty", response.getWarnings().get(0));
     }
@@ -279,7 +279,7 @@ public class SscsCaseValidatorTest {
         appellant.getAddress().setLine2(null);
         appellant.getAddress().setCounty(null);
 
-        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+        CaseResponse response = validator.validate(transformErrorResponse, buildMinimumAppealData(appellant, true));
 
         assertEquals("person1_address_line3 is empty", response.getWarnings().get(0));
     }
@@ -689,7 +689,7 @@ public class SscsCaseValidatorTest {
         representative.getAddress().setLine2(null);
         representative.getAddress().setCounty(null);
 
-        CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+        CaseResponse response = validator.validate(transformErrorResponse, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
         assertEquals("representative_address_line3 is empty", response.getWarnings().get(0));
     }
@@ -761,7 +761,7 @@ public class SscsCaseValidatorTest {
         appellant.getAppointee().getAddress().setLine2(null);
         appellant.getAppointee().getAddress().setTown(null);
 
-        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+        CaseResponse response = validator.validate(transformErrorResponse, buildMinimumAppealData(appellant, true));
 
         assertEquals("person1_address_line2 is empty", response.getWarnings().get(0));
     }
@@ -783,7 +783,7 @@ public class SscsCaseValidatorTest {
         appellant.getAppointee().getAddress().setLine2(null);
         appellant.getAppointee().getAddress().setCounty(null);
 
-        CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
+        CaseResponse response = validator.validate(transformErrorResponse, buildMinimumAppealData(appellant, true));
 
         assertEquals("person1_address_line3 is empty", response.getWarnings().get(0));
     }
