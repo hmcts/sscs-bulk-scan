@@ -73,7 +73,6 @@ public class SscsCaseValidatorTest {
                 "person1_last_name is empty",
                 "person1_address_line1 is empty",
                 "person1_address_line3 is empty",
-                "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_nino is empty",
                 "mrn_date is empty",
@@ -149,7 +148,6 @@ public class SscsCaseValidatorTest {
                 "person1_title is empty",
                 "person1_address_line1 is empty",
                 "person1_address_line3 is empty",
-                "person1_address_line4 is empty",
                 "person1_postcode is empty");
     }
 
@@ -247,13 +245,13 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppellantDoesNotContainACounty_thenAddAWarning() {
+    public void givenAnAppellantDoesNotContainACounty_thenNoAWarning() {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setCounty(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
 
-        assertEquals("person1_address_line4 is empty", response.getWarnings().get(0));
+        assertTrue(response.getWarnings().isEmpty());
     }
 
     @Test
@@ -644,13 +642,13 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenARepresentativeDoesNotContainACounty_thenAddAWarning() {
+    public void givenARepresentativeDoesNotContainACounty_thenNoWarning() {
         Representative representative = buildRepresentative();
         representative.getAddress().setCounty(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
-        assertEquals("representative_address_line4 is empty", response.getWarnings().get(0));
+        assertTrue(response.getWarnings().isEmpty());
     }
 
     @Test
@@ -714,13 +712,13 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppointeeDoesNotContainAnAddressLine4_thenAddAWarning() {
+    public void givenAnAppointeeDoesNotContainAnAddressLine4_thenNoAWarning() {
         Appellant appellant = buildAppellant(true);
         appellant.getAppointee().getAddress().setCounty(null);
 
         CaseResponse response = validator.validate(buildMinimumAppealData(appellant, true));
 
-        assertEquals("person1_address_line4 is empty", response.getWarnings().get(0));
+        assertTrue(response.getWarnings().isEmpty());
     }
 
     @Test
