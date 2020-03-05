@@ -188,18 +188,18 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkPersonAddressAndDob(Address address, Identity identity, String personType, Map<String, Object> caseData, Appellant appellant) {
 
-        boolean isAddressLine4Present = doesAddressLine2Exist(address);
+        boolean isAddressLine2Present = doesAddressLine2Exist(address);
 
         if (!doesAddressLine1Exist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, IS_EMPTY));
         }
         if (!doesAddressTownExist(address)) {
-            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
+            String addressLine = (isAddressLine2Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
 
         }
         if (!doesAddressCountyExist(address)) {
-            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE4 : ADDRESS_LINE3;
+            String addressLine = (isAddressLine2Present) ? ADDRESS_LINE4 : ADDRESS_LINE3;
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
         }
         if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(PERSON1_VALUE)) {
@@ -253,7 +253,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean doesAddressLine2Exist(Address address) {
         if (address != null) {
-            return address.getLine1() != null;
+            return address.getLine2() != null;
         }
         return false;
     }
