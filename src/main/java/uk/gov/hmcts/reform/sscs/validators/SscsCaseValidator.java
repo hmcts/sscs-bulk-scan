@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
@@ -52,8 +53,8 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     @Override
-    public CaseResponse validate(Map<String, Object> caseData) {
-        warnings = new ArrayList<>();
+    public CaseResponse validate(AboutToStartOrSubmitCallbackResponse transformErrorResponse, Map<String, Object> caseData) {
+        warnings = transformErrorResponse != null && transformErrorResponse.getWarnings() != null ? transformErrorResponse.getWarnings() : new ArrayList<>();
         errors = new ArrayList<>();
 
         validateAppeal(caseData);

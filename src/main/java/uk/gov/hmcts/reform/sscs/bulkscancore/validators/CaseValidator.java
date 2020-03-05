@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.validators;
 
 import java.util.Map;
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 
 /**
@@ -8,5 +9,5 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
  * If case validation is not required then return original case data in the transformation.
  */
 public interface CaseValidator {
-    CaseResponse validate(Map<String, Object> caseData);
+    CaseResponse validate(AboutToStartOrSubmitCallbackResponse transformErrorResponse, Map<String, Object> caseData);
 }

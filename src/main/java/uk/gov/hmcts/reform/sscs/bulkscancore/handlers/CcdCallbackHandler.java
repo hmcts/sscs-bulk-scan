@@ -68,8 +68,8 @@ public class CcdCallbackHandler {
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionCaseData.getCaseDetails());
         AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrorsAndWarnings(caseTransformationResponse, exceptionRecordId, exceptionCaseData.isIgnoreWarnings());
 
-        if (transformErrorResponse != null) {
-            log.info("Errors or warnings found while transforming exception record id {}", exceptionRecordId);
+        if (transformErrorResponse != null && transformErrorResponse.getErrors() != null && transformErrorResponse.getErrors().size() > 0) {
+            log.info("Errors found while transforming exception record id {}", exceptionRecordId);
             return transformErrorResponse;
         }
 
@@ -79,7 +79,7 @@ public class CcdCallbackHandler {
 
         log.info("About to validate transformed case from exception id {}", exceptionRecordId);
 
-        CaseResponse caseValidationResponse = caseValidator.validate(transformedCase);
+        CaseResponse caseValidationResponse = caseValidator.validate(transformErrorResponse, transformedCase);
 
         AboutToStartOrSubmitCallbackResponse validationErrorResponse = checkForErrors(caseValidationResponse, exceptionRecordId);
 
@@ -118,7 +118,7 @@ public class CcdCallbackHandler {
             callback.getCaseDetails().getCaseData().getSscsDocument(),
             callback.getCaseDetails().getCaseData().getSubscriptions());
 
-        CaseResponse caseValidationResponse = caseValidator.validate(appealData);
+        CaseResponse caseValidationResponse = caseValidator.validate(null, appealData);
 
         PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
 
