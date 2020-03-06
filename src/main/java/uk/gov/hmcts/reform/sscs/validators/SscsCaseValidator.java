@@ -227,7 +227,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean doesTitleExist(Name name) {
         if (name != null) {
-            return name.getTitle() != null;
+            return StringUtils.isNotEmpty(name.getTitle());
         }
         return false;
     }
@@ -242,35 +242,35 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean doesFirstNameExist(Name name) {
         if (name != null) {
-            return name.getFirstName() != null;
+            return StringUtils.isNotEmpty(name.getFirstName());
         }
         return false;
     }
 
     private Boolean doesLastNameExist(Name name) {
         if (name != null) {
-            return name.getLastName() != null;
+            return StringUtils.isNotEmpty(name.getLastName());
         }
         return false;
     }
 
     private Boolean doesAddressLine1Exist(Address address) {
         if (address != null) {
-            return address.getLine1() != null;
+            return StringUtils.isNotEmpty(address.getLine1());
         }
         return false;
     }
 
     private Boolean doesAddressTownExist(Address address) {
         if (address != null) {
-            return address.getTown() != null;
+            return StringUtils.isNotEmpty(address.getTown());
         }
         return false;
     }
 
     private Boolean doesAddressCountyExist(Address address) {
         if (address != null) {
-            return address.getCounty() != null;
+            return StringUtils.isNotEmpty(address.getCounty());
         }
         return false;
     }
@@ -326,7 +326,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean doesIssuingOfficeExist(Appeal appeal) {
         if (appeal.getMrnDetails() != null) {
-            return appeal.getMrnDetails().getDwpIssuingOffice() != null;
+            return StringUtils.isNotEmpty(appeal.getMrnDetails().getDwpIssuingOffice());
         }
         return false;
     }
