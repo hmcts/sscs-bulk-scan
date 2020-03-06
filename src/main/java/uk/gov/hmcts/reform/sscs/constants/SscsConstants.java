@@ -40,6 +40,7 @@ public final class SscsConstants {
     public static final String ADDRESS_LINE1 = "_address_line1";
     public static final String ADDRESS_LINE2 = "_address_line2";
     public static final String ADDRESS_LINE3 = "_address_line3";
+    public static final String ADDRESS_LINE3_COUNTRY = "_address_line3";
     public static final String ADDRESS_LINE4 = "_address_line4";
     public static final String ADDRESS_POSTCODE = "_postcode";
     public static final String PHONE = "_phone";
