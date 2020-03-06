@@ -63,6 +63,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @Component
@@ -79,15 +80,20 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private SscsDataHelper sscsDataHelper;
 
+    @Autowired
+    private FuzzyMatcherService fuzzyMatcherService;
+
     private Set<String> errors;
     private Set<String> warnings;
 
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
                                SscsKeyValuePairValidator keyValuePairValidator,
-                               SscsDataHelper sscsDataHelper) {
+                               SscsDataHelper sscsDataHelper,
+                               FuzzyMatcherService fuzzyMatcherService) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
         this.sscsDataHelper = sscsDataHelper;
+        this.fuzzyMatcherService = fuzzyMatcherService;
     }
 
     @Override
@@ -218,6 +224,11 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private BenefitType getBenefitType(Map<String, Object> pairs) {
         String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
+
+        if (code != null) {
+            code = fuzzyMatcherService.matchBenefitType(code);
+        }
+
         if (areBooleansValid(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP)) {
             doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP);
         }

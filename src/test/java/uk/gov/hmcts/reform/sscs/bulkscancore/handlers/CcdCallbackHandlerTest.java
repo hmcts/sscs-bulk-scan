@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.sscs.service.bulkscan;
+package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
