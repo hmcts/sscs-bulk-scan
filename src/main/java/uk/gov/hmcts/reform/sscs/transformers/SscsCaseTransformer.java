@@ -277,11 +277,22 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Name buildPersonName(Map<String, Object> pairs, String personType) {
+        String title = transformTitle(getField(pairs, personType + "_title"));
+
         return Name.builder()
-            .title(getField(pairs, personType + "_title"))
+            .title(title)
             .firstName(getField(pairs, personType + "_first_name"))
             .lastName(getField(pairs, personType + "_last_name"))
             .build();
+    }
+
+    private String transformTitle(String title) {
+        if ("doctor".equalsIgnoreCase(title)) {
+            return "Dr";
+        } else if ("reverend".equalsIgnoreCase(title)) {
+            return "Rev";
+        }
+        return title;
     }
 
     private Address buildPersonAddress(Map<String, Object> pairs, String personType) {

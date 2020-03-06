@@ -1338,6 +1338,19 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
     }
 
+    @Test
+    @Parameters({"Doctor, Dr", "Reverend, Rev"})
+    public void givenTitleIsLong_thenConvertToShortenedVersion(String ocrTitle, String outputTitle) {
+
+        pairs.put("person1_title", ocrTitle);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(outputTitle, ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getName().getTitle());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
