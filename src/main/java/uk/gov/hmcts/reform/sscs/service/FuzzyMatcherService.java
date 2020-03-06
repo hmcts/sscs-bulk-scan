@@ -11,35 +11,32 @@ import uk.gov.hmcts.reform.sscs.domain.FuzzyMatchList;
 @Slf4j
 public class FuzzyMatcherService {
 
-    private static List<String> pipFuzzyList = new FuzzyMatchList() {{
-            add("personal");
-            add("independence");
-            add("p.i.p");
-        }};
+    private static List<String> pipFuzzyList = new FuzzyMatchList();
+    private static List<String> pipExactMatchList = new ExactMatchList();
+    private static List<String> esaFuzzyList = new FuzzyMatchList();
+    private static List<String> esaExactMatchList = new ExactMatchList();
+    private static List<String> ucFuzzyList = new FuzzyMatchList();
+    private static List<String> ucExactMatchList = new ExactMatchList();
 
-    private static List<String> pipExactMatchList = new ExactMatchList() {{
-            add("pip");
-        }};
+    public FuzzyMatcherService() {
+        pipFuzzyList.add("personal");
+        pipFuzzyList.add("independence");
+        pipFuzzyList.add("p.i.p");
 
-    private static List<String> esaFuzzyList = new FuzzyMatchList() {{
-            add("employment");
-            add("support");
-            add("e.s.a");
-        }};
+        pipExactMatchList.add("pip");
 
-    private static List<String> esaExactMatchList = new ExactMatchList() {{
-            add("esa");
-        }};
+        esaFuzzyList.add("employment");
+        esaFuzzyList.add("support");
+        esaFuzzyList.add("e.s.a");
 
-    private static List<String> ucFuzzyList = new FuzzyMatchList() {{
-            add("universal");
-            add("credit");
-            add("u.c");
-        }};
+        esaExactMatchList.add("esa");
 
-    private static List<String> ucExactMatchList = new ExactMatchList() {{
-            add("uc");
-        }};
+        ucFuzzyList.add("universal");
+        ucFuzzyList.add("credit");
+        ucFuzzyList.add("u.c");
+
+        ucExactMatchList.add("uc");
+    }
 
     public String matchBenefitType(String ocrBenefitValue) {
         if (pipFuzzyList.contains(ocrBenefitValue) || pipExactMatchList.contains(ocrBenefitValue)) {
