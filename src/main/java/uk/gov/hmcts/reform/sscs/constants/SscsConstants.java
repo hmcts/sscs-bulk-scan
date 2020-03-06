@@ -38,6 +38,7 @@ public final class SscsConstants {
     public static final String FIRST_NAME = "_first_name";
     public static final String LAST_NAME = "_last_name";
     public static final String ADDRESS_LINE1 = "_address_line1";
+    public static final String ADDRESS_LINE2 = "_address_line2";
     public static final String ADDRESS_LINE3 = "_address_line3";
     public static final String ADDRESS_LINE4 = "_address_line4";
     public static final String ADDRESS_POSTCODE = "_postcode";
