@@ -4,6 +4,7 @@ import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
@@ -1171,6 +1173,8 @@ public class SscsCaseTransformerTest {
         pairs.put(IS_BENEFIT_TYPE_PIP, true);
         pairs.put(IS_BENEFIT_TYPE_ESA, false);
 
+        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "1")).thenReturn(Optional.of(OfficeMapping.builder().code("1").build()));
+
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
@@ -1198,6 +1202,8 @@ public class SscsCaseTransformerTest {
         pairs.put("office", "Balham DRT");
         pairs.put(IS_BENEFIT_TYPE_PIP, false);
         pairs.put(IS_BENEFIT_TYPE_ESA, true);
+
+        when(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Balham DRT")).thenReturn(Optional.of(OfficeMapping.builder().code("Balham DRT").build()));
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
