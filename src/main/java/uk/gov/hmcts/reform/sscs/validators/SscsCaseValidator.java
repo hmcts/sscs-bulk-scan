@@ -209,7 +209,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         }
         if (!doesAddressCountyExist(address)) {
-            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTRY";
+            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTY";
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
         }
         if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(PERSON1_VALUE)) {
