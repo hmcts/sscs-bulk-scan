@@ -24,7 +24,7 @@ public enum WarningMessage {
     REPRESENTATIVE_ADDRESS_LINE2(ADDRESS_LINE2, "Representative address town"),
     APPELLANT_ADDRESS_LINE3(ADDRESS_LINE3, "Appellant address town"),
     APPOINTEE_ADDRESS_LINE3(ADDRESS_LINE3, "Appointee address town"),
-    REPRESENTATIVE_ADDRESS_LINE3(ADDRESS_LINE3, "Representative address towm"),
+    REPRESENTATIVE_ADDRESS_LINE3(ADDRESS_LINE3, "Representative address town"),
     APPELLANT_ADDRESS_LINE3_COUNTRY(ADDRESS_LINE3_COUNTRY, "Appellant address county"),
     APPOINTEE_ADDRESS_LINE3_COUNTRY(ADDRESS_LINE3_COUNTRY, "Appointee address county"),
     REPRESENTATIVE_ADDRESS_LINE3_COUNTRY(ADDRESS_LINE3_COUNTRY, "Representative address county"),
