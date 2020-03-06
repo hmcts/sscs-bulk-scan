@@ -1,10 +1,16 @@
 package uk.gov.hmcts.reform.sscs.service;
 
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
 import uk.gov.hmcts.reform.sscs.domain.ExactMatchList;
 import uk.gov.hmcts.reform.sscs.domain.FuzzyMatchList;
 
+@Service
+@Slf4j
 public class FuzzyMatcherService {
 
     private static List<String> pipFuzzyList = new FuzzyMatchList() {{
