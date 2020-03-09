@@ -1,13 +1,13 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,9 +15,11 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @RunWith(SpringRunner.class)
@@ -30,9 +32,15 @@ public class SscsDataHelperTest {
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    private List<String> offices = new ArrayList<>();
+
     @Before
     public void setUp() {
-        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), new ArrayList<>(), dwpAddressLookupService);
+        offices = new ArrayList<>();
+        offices.add("3");
+        offices.add("Balham DRT");
+
+        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), offices, dwpAddressLookupService);
     }
 
     @Test
@@ -83,5 +91,29 @@ public class SscsDataHelperTest {
         List<SscsDocument> evidence = new ArrayList<>();
 
         assertEquals("No", caseDataHelper.hasEvidence(evidence));
+    }
+
+    @Test
+    public void givenAPipOfficeThatIsDigital_thenReturnReadyToList() {
+        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "3")).thenReturn(Optional.of(OfficeMapping.builder().code("3").build()));
+        String result = caseDataHelper.getCreatedInGapsFromField(Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().dwpIssuingOffice("3").build()).build());
+
+        assertEquals(READY_TO_LIST.getId(), result);
+    }
+
+    @Test
+    public void givenAPipOfficeThatContainsTextAndIsDigital_thenReturnReadyToList() {
+        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "My PIP Office 3")).thenReturn(Optional.of(OfficeMapping.builder().code("3").build()));
+        String result = caseDataHelper.getCreatedInGapsFromField(Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().dwpIssuingOffice("My PIP Office 3").build()).build());
+
+        assertEquals(READY_TO_LIST.getId(), result);
+    }
+
+    @Test
+    public void givenAPipOfficeThatContainsTextAndIsNonDigital_thenReturnValidAppeal() {
+        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "My PIP Office 4")).thenReturn(Optional.of(OfficeMapping.builder().code("4").build()));
+        String result = caseDataHelper.getCreatedInGapsFromField(Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().dwpIssuingOffice("My PIP Office 4").build()).build());
+
+        assertEquals(VALID_APPEAL.getId(), result);
     }
 }
