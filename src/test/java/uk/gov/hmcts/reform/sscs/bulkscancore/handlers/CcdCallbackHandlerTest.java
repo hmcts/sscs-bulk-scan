@@ -1,8 +1,8 @@
-package uk.gov.hmcts.reform.sscs.service.bulkscan;
+package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -91,7 +91,7 @@ public class CcdCallbackHandlerTest {
 
         // No errors and warnings are populated hence validation would be successful
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validate(transformErrorResponse, caseDataCreator.sscsCaseData()))
+        when(caseValidator.validate(transformErrorResponse, caseDetails, caseDataCreator.sscsCaseData()))
             .thenReturn(caseValidationResponse);
 
         // Return case id for successful ccd case creation
@@ -152,7 +152,7 @@ public class CcdCallbackHandlerTest {
                 .build()
             );
 
-        when(caseValidator.validate(transformErrorResponse, caseDataCreator.sscsCaseData()))
+        when(caseValidator.validate(transformErrorResponse, caseDetails, caseDataCreator.sscsCaseData()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
@@ -186,7 +186,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validate(eq(transformErrorResponse), any())).thenReturn(caseValidationResponse);
+        when(caseValidator.validate(eq(transformErrorResponse), isNull(), any())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -225,7 +225,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validate(eq(transformErrorResponse), any())).thenReturn(caseValidationResponse);
+        when(caseValidator.validate(eq(transformErrorResponse), isNull(), any())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -253,7 +253,7 @@ public class CcdCallbackHandlerTest {
             .caseId("1234")
             .build();
 
-        when(caseValidator.validate(eq(transformErrorResponse), any()))
+        when(caseValidator.validate(eq(transformErrorResponse), isNull(), any()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
@@ -275,7 +275,7 @@ public class CcdCallbackHandlerTest {
             .caseId("1234")
             .build();
 
-        when(caseValidator.validate(eq(transformErrorResponse), any()))
+        when(caseValidator.validate(eq(transformErrorResponse), isNull(), any()))
             .thenReturn(CaseResponse.builder()
                 .warnings(ImmutableList.of("Postcode is invalid"))
                 .build());
@@ -312,13 +312,13 @@ public class CcdCallbackHandlerTest {
         warnings2.add("Second warning");
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings2).build();
-        when(caseValidator.validate(any(), eq(caseDataCreator.sscsCaseData())))
+        when(caseValidator.validate(any(), eq(caseDetails), eq(caseDataCreator.sscsCaseData())))
             .thenReturn(caseValidationResponse);
 
         AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
             (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
 
-        verify(caseValidator).validate(warningCaptor.capture(), eq(caseDataCreator.sscsCaseData()));
+        verify(caseValidator).validate(warningCaptor.capture(), eq(caseDetails), eq(caseDataCreator.sscsCaseData()));
 
         assertThat(warningCaptor.getAllValues().get(0).getWarnings().size()).isEqualTo(1);
         assertThat(warningCaptor.getAllValues().get(0).getWarnings().get(0)).isEqualTo("First warning");

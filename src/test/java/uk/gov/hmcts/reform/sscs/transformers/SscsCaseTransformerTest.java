@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -53,6 +54,9 @@ public class SscsCaseTransformerTest {
 
     @Mock
     DwpAddressLookupService dwpAddressLookupService;
+
+    @Mock
+    FuzzyMatcherService fuzzyMatcherService;
 
     SscsDataHelper sscsDataHelper;
 
@@ -76,7 +80,7 @@ public class SscsCaseTransformerTest {
         offices.add("Balham DRT");
 
         sscsDataHelper = new SscsDataHelper(null, offices, dwpAddressLookupService);
-        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -124,6 +128,19 @@ public class SscsCaseTransformerTest {
     @Test
     public void benefitTypeIsDefinedByDescriptionFieldWhenIsEsaOrIsPipIsNotSet() {
         pairs.put("benefit_type_description", BENEFIT_TYPE);
+        given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals(BENEFIT_TYPE,  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    public void givenBenefitTypeIsMisspelt_thenFuzzyMatchStillFindsCorrectType() {
+        pairs.put("benefit_type_description", "Personal misspelt payment");
+        given(fuzzyMatcherService.matchBenefitType("Personal misspelt payment")).willReturn("PIP");
+
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
@@ -188,6 +205,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenKeyValuePairsWithPerson1AndPipBenefitType_thenBuildAnAppealWithAppellant() {
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq(BENEFIT_TYPE), eq(OFFICE))).willReturn(DWP_REGIONAL_CENTRE);
+        given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
+
         pairs.put("benefit_type_description", BENEFIT_TYPE);
         pairs.put("mrn_date", MRN_DATE_VALUE);
         pairs.put("office", OFFICE);
@@ -237,6 +256,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenKeyValuePairsWithEsaBenefitType_thenBuildAnAppealWithAppellant() {
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq("ESA"), eq("Balham DRT"))).willReturn("Balham");
+        given(fuzzyMatcherService.matchBenefitType("ESA")).willReturn("ESA");
+
         pairs.put("benefit_type_description", "ESA");
         pairs.put("office", "Balham DRT");
 
@@ -1319,6 +1340,19 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"Doctor, Dr", "Reverend, Rev"})
+    public void givenTitleIsLong_thenConvertToShortenedVersion(String ocrTitle, String outputTitle) {
+
+        pairs.put("person1_title", ocrTitle);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(outputTitle, ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getName().getTitle());
 
         assertTrue(result.getErrors().isEmpty());
     }

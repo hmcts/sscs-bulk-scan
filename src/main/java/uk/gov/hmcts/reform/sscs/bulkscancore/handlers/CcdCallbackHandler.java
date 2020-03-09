@@ -79,7 +79,7 @@ public class CcdCallbackHandler {
 
         log.info("About to validate transformed case from exception id {}", exceptionRecordId);
 
-        CaseResponse caseValidationResponse = caseValidator.validate(transformErrorResponse, transformedCase);
+        CaseResponse caseValidationResponse = caseValidator.validate(transformErrorResponse, exceptionCaseData.getCaseDetails(), transformedCase);
 
         AboutToStartOrSubmitCallbackResponse validationErrorResponse = checkForErrors(caseValidationResponse, exceptionRecordId);
 
@@ -118,7 +118,7 @@ public class CcdCallbackHandler {
             callback.getCaseDetails().getCaseData().getSscsDocument(),
             callback.getCaseDetails().getCaseData().getSubscriptions());
 
-        CaseResponse caseValidationResponse = caseValidator.validate(null, appealData);
+        CaseResponse caseValidationResponse = caseValidator.validate(null, null, appealData);
 
         PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
 
