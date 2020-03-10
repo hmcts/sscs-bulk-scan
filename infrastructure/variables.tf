@@ -43,40 +43,11 @@ variable "infrastructure_env" {
   description = "Infrastructure environment to point to"
 }
 
-variable "idam_s2s_auth_microservice" {
-  default = "sscs_bulkscan"
-}
-
-variable "idam_oauth2_client_id" {
-  default = "sscs"
-}
-
-variable "idam_redirect_url" {
-  default = "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
-}
-
-variable "idam_url" {
-  default = "http://testing.test"
-}
-
-variable "debug_json" {
-  type    = "string"
-  default = "false"
-}
-
 variable "appinsights_instrumentation_key" {
   description = "Instrumentation key of the App Insights instance this webapp should use. Module will create own App Insights resource if this is not provided"
   default     = ""
 }
 
 variable "managed_identity_object_id" {
-  default = ""
-}
-
-variable "enable_ase" {
-  default = false
-}
-
-variable "ready_to_list_offices" {
   default = ""
 }
