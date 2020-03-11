@@ -155,7 +155,6 @@ public class SscsCaseValidator implements CaseValidator {
                 warnings.add(getMessageByCallbackType(callbackType, "", REPRESENTATIVE_NAME_OR_ORGANISATION_DESCRIPTION, ARE_EMPTY));
             }
 
-            checkPhoneNumber(repsContact, REPRESENTATIVE_VALUE);
             checkMobileNumber(repsContact, REPRESENTATIVE_VALUE);
         }
     }
@@ -413,18 +412,12 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkMobileNumber(Contact contact, String personType) {
-        if (contact != null && contact.getMobile() != null && !isPhoneOrMobileNumberValid(contact.getMobile())) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + MOBILE, IS_INVALID));
+        if (contact != null && contact.getMobile() != null && !isMobileNumberValid(contact.getMobile())) {
+            errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + MOBILE, IS_INVALID));
         }
     }
 
-    private void checkPhoneNumber(Contact contact, String personType) {
-        if (contact != null && contact.getPhone() != null && !isPhoneOrMobileNumberValid(contact.getPhone())) {
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + PHONE, IS_INVALID));
-        }
-    }
-
-    private boolean isPhoneOrMobileNumberValid(String number) {
+    private boolean isMobileNumberValid(String number) {
         if (number != null) {
             return number.matches(PHONE_REGEX);
         }
