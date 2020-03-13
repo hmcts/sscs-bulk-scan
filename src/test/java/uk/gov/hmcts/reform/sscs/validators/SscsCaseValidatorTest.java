@@ -509,14 +509,25 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantMobileNumberLessThan10Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidAppellantMobileNumberLessThan10Digits_thenAddAnError() {
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("07776156"), true));
 
         assertEquals("person1_mobile is invalid", response.getErrors().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidRepresentativeMobileNumberLessThan10Digits_thenAddAnError() {
+        Representative representative = buildRepresentative();
+        representative.setContact(Contact.builder().build());
+        representative.getContact().setMobile("0123456");
+
+        CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+
+        assertEquals("representative_mobile is invalid", response.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAnError() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile(VALID_MOBILE);
         appellant.setAppointee(buildAppointeeWithMobileNumber("07776156"));
@@ -526,7 +537,7 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAnError() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile("07776157");
         appellant.setAppointee(buildAppointeeWithMobileNumber("07776156"));
@@ -537,14 +548,25 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantMobileNumberGreaterThan11Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidAppellantMobileNumberGreaterThan11Digits_thenAddAnError() {
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("077761560000"), true));
 
         assertEquals("person1_mobile is invalid", response.getErrors().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberGreaterThan11Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidRepresentativeMobileNumberGreaterThan11Digits_thenAddAnError() {
+        Representative representative = buildRepresentative();
+        representative.setContact(Contact.builder().build());
+        representative.getContact().setMobile("0123456789000");
+
+        CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
+
+        assertEquals("representative_mobile is invalid", response.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberGreaterThan11Digits_thenAddAnError() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile(VALID_MOBILE);
         appellant.setAppointee(buildAppointeeWithMobileNumber("077761560000"));
@@ -554,7 +576,7 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantAnInvalidAppointeeMobileNumberGreaterThan11Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidAppellantAnInvalidAppointeeMobileNumberGreaterThan11Digits_thenAddAnError() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile("077761560000");
         appellant.setAppointee(buildAppointeeWithMobileNumber("077761560000"));
