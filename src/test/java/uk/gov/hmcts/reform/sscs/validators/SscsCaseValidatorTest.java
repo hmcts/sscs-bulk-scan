@@ -509,81 +509,81 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantMobileNumberLessThan10Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidAppellantMobileNumberLessThan10Digits_thenAddAnError() {
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("07776156"), true));
 
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person1_mobile is invalid", response.getErrors().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidRepresentativePhoneNumberLessThan10Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidRepresentativeMobileNumberLessThan10Digits_thenAddAnError() {
         Representative representative = buildRepresentative();
         representative.setContact(Contact.builder().build());
-        representative.getContact().setPhone("0123456");
+        representative.getContact().setMobile("0123456");
 
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
-        assertEquals("representative_phone is invalid", response.getWarnings().get(0));
+        assertEquals("representative_mobile is invalid", response.getErrors().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAWarning() {
+    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAnError() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile(VALID_MOBILE);
         appellant.setAppointee(buildAppointeeWithMobileNumber("07776156"));
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
 
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person1_mobile is invalid", response.getErrors().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsAnInValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInValidAppellantAnInvalidAppointeeMobileNumberLessThan10Digits_thenAddAnError() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile("07776157");
         appellant.setAppointee(buildAppointeeWithMobileNumber("07776156"));
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
 
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
-        assertEquals("person2_mobile is invalid", response.getWarnings().get(1));
+        assertEquals("person1_mobile is invalid", response.getErrors().get(0));
+        assertEquals("person2_mobile is invalid", response.getErrors().get(1));
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantMobileNumberGreaterThan11Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidAppellantMobileNumberGreaterThan11Digits_thenAddAnError() {
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("077761560000"), true));
 
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person1_mobile is invalid", response.getErrors().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidRepresentativePhoneNumberGreaterThan11Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidRepresentativeMobileNumberGreaterThan11Digits_thenAddAnError() {
         Representative representative = buildRepresentative();
         representative.setContact(Contact.builder().build());
-        representative.getContact().setPhone("0123456789000");
+        representative.getContact().setMobile("0123456789000");
 
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true));
 
-        assertEquals("representative_phone is invalid", response.getWarnings().get(0));
+        assertEquals("representative_mobile is invalid", response.getErrors().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberGreaterThan11Digits_thenAddAWarning() {
+    public void givenAnAppealContainsValidAppellantAnInvalidAppointeeMobileNumberGreaterThan11Digits_thenAddAnError() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile(VALID_MOBILE);
         appellant.setAppointee(buildAppointeeWithMobileNumber("077761560000"));
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
 
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person1_mobile is invalid", response.getErrors().get(0));
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidAppellantAnInvalidAppointeeMobileNumberGreaterThan11Digits_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidAppellantAnInvalidAppointeeMobileNumberGreaterThan11Digits_thenAddAnError() {
         Appellant appellant = buildAppellant(true);
         appellant.getContact().setMobile("077761560000");
         appellant.setAppointee(buildAppointeeWithMobileNumber("077761560000"));
         CaseResponse response = validator.validate(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", appellant, true));
 
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
-        assertEquals("person2_mobile is invalid", response.getWarnings().get(1));
+        assertEquals("person1_mobile is invalid", response.getErrors().get(0));
+        assertEquals("person2_mobile is invalid", response.getErrors().get(1));
     }
 
     @Test
