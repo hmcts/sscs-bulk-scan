@@ -1053,9 +1053,10 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes() {
+    @Parameters({"SSCS1", "SSCS1PE"})
+    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes(String sscs1Type) {
         List<ScannedRecord> records = new ArrayList<>();
-        ScannedRecord scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build(), "SSCS1");
+        ScannedRecord scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build(), sscs1Type);
         ScannedRecord scannedRecord2 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test2.com").build(), "My subtype");
         records.add(scannedRecord1);
         records.add(scannedRecord2);

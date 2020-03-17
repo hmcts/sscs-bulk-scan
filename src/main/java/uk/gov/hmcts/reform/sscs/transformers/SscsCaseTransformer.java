@@ -487,7 +487,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (records != null) {
             for (ScannedRecord record : records) {
 
-                String documentType = record.getSubtype() != null && record.getSubtype().equalsIgnoreCase("sscs1") ? "sscs1" : "appellantEvidence";
+                String documentType = StringUtils.startsWithIgnoreCase(record.getSubtype(), "sscs1") ? "sscs1" : "appellantEvidence";
 
                 checkFileExtensionValid(record.getFileName());
 
