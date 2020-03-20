@@ -217,6 +217,8 @@ public class SscsCaseValidator implements CaseValidator {
             if (rpc != null) {
                 caseData.put("region", rpc.getName());
                 caseData.put("regionalProcessingCenter", rpc);
+            } else {
+                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a postcode that maps to a regional processing center"));
             }
         }
         if (identity != null) {

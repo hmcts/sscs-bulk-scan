@@ -328,6 +328,7 @@ public class SscsCaseValidatorTest {
 
         assertNull(response.getTransformedCase().get("regionalProcessingCenter"));
         assertNull(response.getTransformedCase().get("region"));
+        assertEquals("person1_postcode is not a postcode that maps to a regional processing center", response.getWarnings().get(0));
     }
 
     @Test
