@@ -295,8 +295,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         assertThat(result.getBody().getWarnings())
             .containsOnly("person1_last_name is empty",
                 "person1_address_line1 is empty",
+                "person1_address_line2 is empty",
                 "person1_address_line3 is empty",
-                "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_nino is empty");
 
