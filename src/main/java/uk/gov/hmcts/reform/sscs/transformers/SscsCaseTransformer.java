@@ -63,6 +63,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
@@ -83,22 +84,26 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private FuzzyMatcherService fuzzyMatcherService;
 
+    @Autowired
+    private DwpAddressLookupService dwpAddressLookupService;
+
     private Set<String> errors;
     private Set<String> warnings;
 
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
                                SscsKeyValuePairValidator keyValuePairValidator,
                                SscsDataHelper sscsDataHelper,
-                               FuzzyMatcherService fuzzyMatcherService) {
+                               FuzzyMatcherService fuzzyMatcherService,
+                               DwpAddressLookupService dwpAddressLookupService) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.fuzzyMatcherService = fuzzyMatcherService;
+        this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
     @Override
     public CaseResponse transformExceptionRecordToCase(CaseDetails caseDetails) {
-
         String caseId = caseDetails.getCaseId();
         log.info("Transforming exception record {}", caseId);
 
@@ -195,7 +200,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .appellant(appellant)
                 .appealReasons(appealReasons)
                 .rep(buildRepresentative(pairs))
-                .mrnDetails(buildMrnDetails(pairs))
+                .mrnDetails(buildMrnDetails(pairs, benefitType))
                 .hearingType(hearingType)
                 .hearingOptions(buildHearingOptions(pairs, hearingType))
                 .signer(getField(pairs, "signature_name"))
@@ -267,13 +272,31 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
     }
 
-    private MrnDetails buildMrnDetails(Map<String, Object> pairs) {
+    private MrnDetails buildMrnDetails(Map<String, Object> pairs, BenefitType benefitType) {
+
+        String office = getDwpIssuingOffice(pairs, benefitType);
 
         return MrnDetails.builder()
             .mrnDate(generateDateForCcd(pairs, errors, "mrn_date"))
             .mrnLateReason(getField(pairs, "appeal_late_reason"))
-            .dwpIssuingOffice(getField(pairs, "office"))
+            .dwpIssuingOffice(office)
             .build();
+    }
+
+    private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
+        String dwpIssuingOffice = getField(pairs, "office");
+
+        if (dwpIssuingOffice != null) {
+
+            if (benefitType != null) {
+                return dwpAddressLookupService.getDwpMappingByOffice(benefitType.getCode(), dwpIssuingOffice)
+                    .map(office -> office.getMapping().getCcd())
+                    .orElse(null);
+            } else {
+                return dwpIssuingOffice;
+            }
+        }
+        return null;
     }
 
     private Name buildPersonName(Map<String, Object> pairs, String personType) {
