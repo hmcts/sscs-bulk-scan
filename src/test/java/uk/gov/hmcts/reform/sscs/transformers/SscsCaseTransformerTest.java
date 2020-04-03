@@ -2,9 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
@@ -38,8 +36,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
-import uk.gov.hmcts.reform.sscs.model.dwp.Mapping;
-import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
@@ -53,7 +49,6 @@ public class SscsCaseTransformerTest {
     @Mock
     SscsKeyValuePairValidator keyValuePairValidator;
 
-    @Mock
     DwpAddressLookupService dwpAddressLookupService;
 
     @Mock
@@ -78,7 +73,9 @@ public class SscsCaseTransformerTest {
 
         offices = new ArrayList<>();
         offices.add("1");
-        offices.add("Balham DRT");
+        offices.add("Watford DRT");
+
+        dwpAddressLookupService = new DwpAddressLookupService();
 
         sscsDataHelper = new SscsDataHelper(null, offices, dwpAddressLookupService);
         transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService);
@@ -205,9 +202,6 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithPerson1AndPipBenefitType_thenBuildAnAppealWithAppellant() {
-        when(dwpAddressLookupService.getDwpMappingByOffice(BENEFIT_TYPE, OFFICE)).thenReturn(Optional.of(OfficeMapping.builder().code("5").mapping(Mapping.builder().ccd("DWP PIP (5)").build()).build()));
-        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq(BENEFIT_TYPE), eq("DWP PIP (5)"))).willReturn(DWP_REGIONAL_CENTRE);
-
         given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
 
         pairs.put("benefit_type_description", BENEFIT_TYPE);
@@ -258,8 +252,6 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithEsaBenefitType_thenBuildAnAppealWithAppellant() {
-        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq("ESA"), eq("Balham DRT"))).willReturn("Balham");
-        when(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Balham DRT")).thenReturn(Optional.of(OfficeMapping.builder().code("Balham DRT").mapping(Mapping.builder().ccd("Balham DRT").build()).build()));
         given(fuzzyMatcherService.matchBenefitType("ESA")).willReturn("ESA");
 
         pairs.put("benefit_type_description", "ESA");
@@ -267,7 +259,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertEquals("Balham", result.getTransformedCase().get("dwpRegionalCentre"));
+        assertEquals("Watford DRT", result.getTransformedCase().get("dwpRegionalCentre"));
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1199,8 +1191,6 @@ public class SscsCaseTransformerTest {
         pairs.put(IS_BENEFIT_TYPE_PIP, true);
         pairs.put(IS_BENEFIT_TYPE_ESA, false);
 
-        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "1")).thenReturn(Optional.of(OfficeMapping.builder().code("1").mapping(Mapping.builder().ccd("1").build()).build()));
-
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
@@ -1211,8 +1201,6 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenAPipCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
-        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "2")).thenReturn(Optional.of(OfficeMapping.builder().code("2").mapping(Mapping.builder().ccd("2").build()).build()));
-
         pairs.put("office", "2");
         pairs.put(IS_BENEFIT_TYPE_PIP, true);
         pairs.put(IS_BENEFIT_TYPE_ESA, false);
@@ -1231,8 +1219,6 @@ public class SscsCaseTransformerTest {
         pairs.put(IS_BENEFIT_TYPE_PIP, false);
         pairs.put(IS_BENEFIT_TYPE_ESA, true);
 
-        when(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Balham DRT")).thenReturn(Optional.of(OfficeMapping.builder().code("Balham DRT").mapping(Mapping.builder().ccd("Balham DRT").build()).build()));
-
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
@@ -1243,8 +1229,6 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenAEsaCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
-        when(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Chesterfield DRT")).thenReturn(Optional.of(OfficeMapping.builder().code("Chesterfield DRT").mapping(Mapping.builder().ccd("Chesterfield DRT").build()).build()));
-
         pairs.put("office", "Chesterfield DRT");
         pairs.put(IS_BENEFIT_TYPE_PIP, false);
         pairs.put(IS_BENEFIT_TYPE_ESA, true);
@@ -1253,6 +1237,21 @@ public class SscsCaseTransformerTest {
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
         assertEquals(VALID_APPEAL.getId(), createdInGapsFrom);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"(AE)", "AE", "DWP PIP (AE)"})
+    public void givenAPipAeCase_thenAcceptOfficeWithFuzzyMatching(String pipAe) {
+        pairs.put("office", pipAe);
+        pairs.put(IS_BENEFIT_TYPE_PIP, true);
+        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("AE", result.getTransformedCase().get("dwpRegionalCentre"));
+        assertEquals("DWP PIP (AE)", ((Appeal) result.getTransformedCase().get("appeal")).getMrnDetails().getDwpIssuingOffice());
 
         assertTrue(result.getErrors().isEmpty());
     }
