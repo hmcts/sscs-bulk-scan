@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.model.dwp.Mapping;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
@@ -80,7 +81,7 @@ public class SscsCaseTransformerTest {
         offices.add("Balham DRT");
 
         sscsDataHelper = new SscsDataHelper(null, offices, dwpAddressLookupService);
-        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -204,7 +205,9 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithPerson1AndPipBenefitType_thenBuildAnAppealWithAppellant() {
-        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq(BENEFIT_TYPE), eq(OFFICE))).willReturn(DWP_REGIONAL_CENTRE);
+        when(dwpAddressLookupService.getDwpMappingByOffice(BENEFIT_TYPE, OFFICE)).thenReturn(Optional.of(OfficeMapping.builder().code("5").mapping(Mapping.builder().ccd("DWP PIP (5)").build()).build()));
+        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq(BENEFIT_TYPE), eq("DWP PIP (5)"))).willReturn(DWP_REGIONAL_CENTRE);
+
         given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
 
         pairs.put("benefit_type_description", BENEFIT_TYPE);
@@ -256,6 +259,7 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenKeyValuePairsWithEsaBenefitType_thenBuildAnAppealWithAppellant() {
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq("ESA"), eq("Balham DRT"))).willReturn("Balham");
+        when(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Balham DRT")).thenReturn(Optional.of(OfficeMapping.builder().code("Balham DRT").mapping(Mapping.builder().ccd("Balham DRT").build()).build()));
         given(fuzzyMatcherService.matchBenefitType("ESA")).willReturn("ESA");
 
         pairs.put("benefit_type_description", "ESA");
@@ -1195,7 +1199,7 @@ public class SscsCaseTransformerTest {
         pairs.put(IS_BENEFIT_TYPE_PIP, true);
         pairs.put(IS_BENEFIT_TYPE_ESA, false);
 
-        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "1")).thenReturn(Optional.of(OfficeMapping.builder().code("1").build()));
+        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "1")).thenReturn(Optional.of(OfficeMapping.builder().code("1").mapping(Mapping.builder().ccd("1").build()).build()));
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
@@ -1207,6 +1211,8 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenAPipCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
+        when(dwpAddressLookupService.getDwpMappingByOffice("PIP", "2")).thenReturn(Optional.of(OfficeMapping.builder().code("2").mapping(Mapping.builder().ccd("2").build()).build()));
+
         pairs.put("office", "2");
         pairs.put(IS_BENEFIT_TYPE_PIP, true);
         pairs.put(IS_BENEFIT_TYPE_ESA, false);
@@ -1225,7 +1231,7 @@ public class SscsCaseTransformerTest {
         pairs.put(IS_BENEFIT_TYPE_PIP, false);
         pairs.put(IS_BENEFIT_TYPE_ESA, true);
 
-        when(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Balham DRT")).thenReturn(Optional.of(OfficeMapping.builder().code("Balham DRT").build()));
+        when(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Balham DRT")).thenReturn(Optional.of(OfficeMapping.builder().code("Balham DRT").mapping(Mapping.builder().ccd("Balham DRT").build()).build()));
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
@@ -1237,6 +1243,8 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenAEsaCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
+        when(dwpAddressLookupService.getDwpMappingByOffice("ESA", "Chesterfield DRT")).thenReturn(Optional.of(OfficeMapping.builder().code("Chesterfield DRT").mapping(Mapping.builder().ccd("Chesterfield DRT").build()).build()));
+
         pairs.put("office", "Chesterfield DRT");
         pairs.put(IS_BENEFIT_TYPE_PIP, false);
         pairs.put(IS_BENEFIT_TYPE_ESA, true);
@@ -1381,7 +1389,7 @@ public class SscsCaseTransformerTest {
             .appellant(appellant)
             .appealReasons(AppealReasons.builder().reasons(Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(APPEAL_REASON).build()).build())).build())
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
-            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice(OFFICE).mrnLateReason(APPEAL_LATE_REASON).build())
+            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice("DWP PIP (5)").mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingOptions(HearingOptions.builder()
                 .scheduleHearing(YES_LITERAL)
