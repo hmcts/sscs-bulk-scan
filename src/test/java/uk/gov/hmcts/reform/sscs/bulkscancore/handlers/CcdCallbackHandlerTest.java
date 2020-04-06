@@ -351,7 +351,7 @@ public class CcdCallbackHandlerTest {
             State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
 
         return ccdCallbackHandler.handleValidationAndUpdate(
-            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL)
+            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false)
         );
     }
 
