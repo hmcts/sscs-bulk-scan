@@ -1,21 +1,21 @@
-package uk.gov.hmcts.reform.sscs.service.bulkscan;
+package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDateTime;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -56,6 +56,11 @@ public class CcdCallbackHandlerTest {
 
     private SscsDataHelper sscsDataHelper;
 
+    private AboutToStartOrSubmitCallbackResponse transformErrorResponse;
+
+    @Captor
+    private ArgumentCaptor<AboutToStartOrSubmitCallbackResponse> warningCaptor;
+
     @Before
     public void setUp() {
         sscsDataHelper = new SscsDataHelper(null, new ArrayList<>(), dwpAddressLookupService);
@@ -86,7 +91,7 @@ public class CcdCallbackHandlerTest {
 
         // No errors and warnings are populated hence validation would be successful
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validate(caseDataCreator.sscsCaseData()))
+        when(caseValidator.validate(transformErrorResponse, caseDetails, caseDataCreator.sscsCaseData()))
             .thenReturn(caseValidationResponse);
 
         // Return case id for successful ccd case creation
@@ -147,7 +152,7 @@ public class CcdCallbackHandlerTest {
                 .build()
             );
 
-        when(caseValidator.validate(caseDataCreator.sscsCaseData()))
+        when(caseValidator.validate(transformErrorResponse, caseDetails, caseDataCreator.sscsCaseData()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
@@ -181,7 +186,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validate(any())).thenReturn(caseValidationResponse);
+        when(caseValidator.validate(eq(transformErrorResponse), isNull(), any())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -217,7 +222,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validate(any())).thenReturn(caseValidationResponse);
+        when(caseValidator.validate(eq(transformErrorResponse), isNull(), any())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -242,7 +247,7 @@ public class CcdCallbackHandlerTest {
             .caseId("1234")
             .build();
 
-        when(caseValidator.validate(any()))
+        when(caseValidator.validate(eq(transformErrorResponse), isNull(), any()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
@@ -264,7 +269,7 @@ public class CcdCallbackHandlerTest {
             .caseId("1234")
             .build();
 
-        when(caseValidator.validate(any()))
+        when(caseValidator.validate(eq(transformErrorResponse), isNull(), any()))
             .thenReturn(CaseResponse.builder()
                 .warnings(ImmutableList.of("Postcode is invalid"))
                 .build());
@@ -275,6 +280,44 @@ public class CcdCallbackHandlerTest {
         // then
         assertThat(ccdCallbackResponse.getErrors()).containsOnly("Postcode is invalid");
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void givenAWarningInTransformationServiceAndAnotherWarningInValidationService_thenShowBothWarnings() {
+        CaseDetails caseDetails = CaseDetails
+            .builder()
+            .caseData(caseDataCreator.exceptionCaseData())
+            .state("ScannedRecordReceived")
+            .build();
+
+        List<String> warnings = new ArrayList<>();
+        warnings.add("First warning");
+
+        CaseResponse caseResponse = CaseResponse.builder()
+            .transformedCase(caseDataCreator.sscsCaseData())
+            .warnings(warnings)
+            .build();
+
+        when(caseTransformer.transformExceptionRecordToCase(caseDetails))
+            .thenReturn(caseResponse);
+
+        List<String> warnings2 = new ArrayList<>();
+        warnings2.add("First warning");
+        warnings2.add("Second warning");
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings2).build();
+        when(caseValidator.validate(any(), eq(caseDetails), eq(caseDataCreator.sscsCaseData())))
+            .thenReturn(caseValidationResponse);
+
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
+
+        verify(caseValidator).validate(warningCaptor.capture(), eq(caseDetails), eq(caseDataCreator.sscsCaseData()));
+
+        assertThat(warningCaptor.getAllValues().get(0).getWarnings().size()).isEqualTo(1);
+        assertThat(warningCaptor.getAllValues().get(0).getWarnings().get(0)).isEqualTo("First warning");
+
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(2);
     }
 
     private void assertExceptionDataEntries(AboutToStartOrSubmitCallbackResponse ccdCallbackResponse) {
@@ -302,7 +345,7 @@ public class CcdCallbackHandlerTest {
             State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
 
         return ccdCallbackHandler.handleValidationAndUpdate(
-            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL)
+            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false)
         );
     }
 

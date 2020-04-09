@@ -29,6 +29,7 @@ public final class SscsConstants {
     public static final String BENEFIT_TYPE_DESCRIPTION = "benefit_type_description";
     public static final String HEARING_TYPE_DESCRIPTION = "hearing_type";
     public static final String REPRESENTATIVE_NAME_OR_ORGANISATION_DESCRIPTION = "representative_name_or_organisation";
+    public static final String TELL_TRIBUNAL_ABOUT_DATES = "tell_tribunal_about_dates";
     public static final String MRN_DATE = "mrn_date";
     public static final String ISSUING_OFFICE = "office";
     public static final String YES_LITERAL = "Yes";
@@ -37,6 +38,7 @@ public final class SscsConstants {
     public static final String FIRST_NAME = "_first_name";
     public static final String LAST_NAME = "_last_name";
     public static final String ADDRESS_LINE1 = "_address_line1";
+    public static final String ADDRESS_LINE2 = "_address_line2";
     public static final String ADDRESS_LINE3 = "_address_line3";
     public static final String ADDRESS_LINE4 = "_address_line4";
     public static final String ADDRESS_POSTCODE = "_postcode";

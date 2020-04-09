@@ -1,9 +1,1 @@
-infrastructure_env = "preprod"
-
-idam_redirect_url = "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
-
-idam_url = "https://idam-api.demo.platform.hmcts.net"
-
-enable_ase = true
-
-ready_to_list_offices = "3"
+managed_identity_object_id="849efd96-bf5b-4153-846c-effe25eb739b"

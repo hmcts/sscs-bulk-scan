@@ -168,14 +168,13 @@ public class SscsCaseDataHandlerTest {
             .benefitType(BenefitType.builder().code(benifitCode).build()).build();
         Map<String, Object> transformedCase = new HashMap<>();
         transformedCase.put("appeal", appeal);
-        transformedCase.put("generatedNino", nino);
         transformedCase.put("benefitCode", benifitCode);
 
         given(caseDataHelper.findCaseBy(getSearchCriteria(nino, benifitCode, mrnDate.toString()), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(caseDetails);
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(new ArrayList<>()).transformedCase(transformedCase).build();
 
-        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
+        sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
             Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
 
         verify(caseDataHelper).findCaseBy(getSearchCriteria(nino, benifitCode, mrnDate.toString()), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID);
@@ -185,12 +184,10 @@ public class SscsCaseDataHandlerTest {
     public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwpCheckMatches() {
 
         String nino = "testnino";
-
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
             .benefitType(BenefitType.builder().build())
-            .appellant(Appellant.builder().address(
-                Address.builder().postcode("CM120HN").build())
-                .identity(Identity.builder().nino(nino).build())
+            .appellant(Appellant.builder().identity(Identity.builder().nino(nino).build())
+                .address(Address.builder().postcode("CM120HN").build())
                 .build()).build();
 
         Map<String, Object> transformedCase = new HashMap<>();

@@ -295,10 +295,32 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         assertThat(result.getBody().getWarnings())
             .containsOnly("person1_last_name is empty",
                 "person1_address_line1 is empty",
+                "person1_address_line2 is empty",
                 "person1_address_line3 is empty",
-                "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_nino is empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_warnings_when_tell_tribunal_about_dates_is_true_and_no_excluded_dates_provided() {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithNoExcludedHearingDates()),
+            httpHeaders()
+        );
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getWarnings())
+            .contains("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as tell_tribunal_about_dates is true. Is this correct?");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -380,6 +402,21 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.add(ocrEntry(
             VALUE,
             ImmutableMap.of(KEY, "is_hearing_type_paper", VALUE, true))
+        );
+
+        return exceptionRecord(ocrList, null);
+    }
+
+    private Map<String, Object> caseDataWithNoExcludedHearingDates() {
+        List<Object> ocrList = new ArrayList<>();
+
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "tell_tribunal_about_dates", VALUE, true))
+        );
+        ocrList.add(ocrEntry(
+            VALUE,
+            ImmutableMap.of(KEY, "hearing_options_exclude_dates", VALUE, ""))
         );
 
         return exceptionRecord(ocrList, null);
@@ -721,7 +758,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     private String getParamsUrl(String mrnDate) {
         Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.generatedNino", "BB000000B");
+        searchCriteria.put("case.appeal.appellant.identity.nino", "BB000000B");
         searchCriteria.put("case.appeal.benefitType.code", "ESA");
         searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
@@ -734,7 +771,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     private String getParamsMatchCaseUrl() {
         Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.generatedNino", "BB000000B");
+        searchCriteria.put("case.appeal.appellant.identity.nino", "BB000000B");
 
         return searchCriteria.entrySet().stream()
             .map(p -> p.getKey() + "=" + p.getValue())

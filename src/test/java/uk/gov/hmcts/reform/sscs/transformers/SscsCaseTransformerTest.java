@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
@@ -38,6 +37,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -49,8 +49,10 @@ public class SscsCaseTransformerTest {
     @Mock
     SscsKeyValuePairValidator keyValuePairValidator;
 
-    @Mock
     DwpAddressLookupService dwpAddressLookupService;
+
+    @Mock
+    FuzzyMatcherService fuzzyMatcherService;
 
     SscsDataHelper sscsDataHelper;
 
@@ -71,10 +73,12 @@ public class SscsCaseTransformerTest {
 
         offices = new ArrayList<>();
         offices.add("1");
-        offices.add("Balham DRT");
+        offices.add("Watford DRT");
+
+        dwpAddressLookupService = new DwpAddressLookupService();
 
         sscsDataHelper = new SscsDataHelper(null, offices, dwpAddressLookupService);
-        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -122,6 +126,19 @@ public class SscsCaseTransformerTest {
     @Test
     public void benefitTypeIsDefinedByDescriptionFieldWhenIsEsaOrIsPipIsNotSet() {
         pairs.put("benefit_type_description", BENEFIT_TYPE);
+        given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals(BENEFIT_TYPE,  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    public void givenBenefitTypeIsMisspelt_thenFuzzyMatchStillFindsCorrectType() {
+        pairs.put("benefit_type_description", "Personal misspelt payment");
+        given(fuzzyMatcherService.matchBenefitType("Personal misspelt payment")).willReturn("PIP");
+
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
@@ -185,7 +202,8 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithPerson1AndPipBenefitType_thenBuildAnAppealWithAppellant() {
-        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq(BENEFIT_TYPE), eq(OFFICE))).willReturn(DWP_REGIONAL_CENTRE);
+        given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
+
         pairs.put("benefit_type_description", BENEFIT_TYPE);
         pairs.put("mrn_date", MRN_DATE_VALUE);
         pairs.put("office", OFFICE);
@@ -234,13 +252,14 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithEsaBenefitType_thenBuildAnAppealWithAppellant() {
-        given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(eq("ESA"), eq("Balham DRT"))).willReturn("Balham");
+        given(fuzzyMatcherService.matchBenefitType("ESA")).willReturn("ESA");
+
         pairs.put("benefit_type_description", "ESA");
         pairs.put("office", "Balham DRT");
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertEquals("Balham", result.getTransformedCase().get("dwpRegionalCentre"));
+        assertEquals("Watford DRT", result.getTransformedCase().get("dwpRegionalCentre"));
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -661,7 +680,7 @@ public class SscsCaseTransformerTest {
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
 
-        assertTrue(excludeDates.isEmpty());
+        assertNull(excludeDates);
         assertTrue(result.getErrors().isEmpty());
     }
 
@@ -674,7 +693,7 @@ public class SscsCaseTransformerTest {
 
         List<ExcludeDate> excludeDates = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
 
-        assertTrue(excludeDates.isEmpty());
+        assertNull(excludeDates);
         assertTrue(result.getErrors().isEmpty());
     }
 
@@ -730,7 +749,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019"));
+        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2020, 07/01/2020, 12/01/2020 - 15/01/2020"));
     }
 
     @Test
@@ -740,7 +759,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
-        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2019, 07/01/2019, 12/01/2019 - 15/01/2019"));
+        assertTrue(result.getErrors().contains("hearing_options_exclude_dates contains an invalid date range. Should be single dates separated by commas and/or a date range e.g. 01/01/2020, 07/01/2020, 12/01/2020 - 15/01/2020"));
     }
 
     @Test
@@ -1030,9 +1049,10 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes() {
+    @Parameters({"SSCS1", "SSCS1PE"})
+    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes(String sscs1Type) {
         List<ScannedRecord> records = new ArrayList<>();
-        ScannedRecord scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build(), "SSCS1");
+        ScannedRecord scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build(), sscs1Type);
         ScannedRecord scannedRecord2 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test2.com").build(), "My subtype");
         records.add(scannedRecord1);
         records.add(scannedRecord2);
@@ -1186,6 +1206,21 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    @Parameters({"(AE)", "AE", "DWP PIP (AE)"})
+    public void givenAPipAeCase_thenAcceptOfficeWithFuzzyMatching(String pipAe) {
+        pairs.put("office", pipAe);
+        pairs.put(IS_BENEFIT_TYPE_PIP, true);
+        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("AE", result.getTransformedCase().get("dwpRegionalCentre"));
+        assertEquals("DWP PIP (AE)", ((Appeal) result.getTransformedCase().get("appeal")).getMrnDetails().getDwpIssuingOffice());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     public void givenACaseWithNoReadyToListOffice_thenSetCreatedInGapsFromFieldToNull() {
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 
@@ -1221,6 +1256,79 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
     }
 
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesProvided_thenBuildAnAppealWithExcludedDates(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
+        pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesIsEmpty_thenProvideWarningToCaseworker(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
+        pairs.put("hearing_options_exclude_dates", "");
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(1, result.getWarnings().size());
+        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "Yes"})
+    public void givenTellTribunalAboutDatesIsRequiredAndExcludedDatesIsNotPresent_thenProvideWarningToCaseworker(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(1, result.getWarnings().size());
+        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"false", "No"})
+    public void givenTellTribunalAboutDatesIsNotRequired_thenBuildAnAppealWithNoExcludedDates(String tellTribunalAboutDates) {
+
+        pairs.put("tell_tribunal_about_dates", tellTribunalAboutDates);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"Doctor, Dr", "Reverend, Rev"})
+    public void givenTitleIsLong_thenConvertToShortenedVersion(String ocrTitle, String outputTitle) {
+
+        pairs.put("person1_title", ocrTitle);
+
+        CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
+
+        assertEquals(outputTitle, ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getName().getTitle());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
@@ -1244,7 +1352,7 @@ public class SscsCaseTransformerTest {
             .appellant(appellant)
             .appealReasons(AppealReasons.builder().reasons(Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(APPEAL_REASON).build()).build())).build())
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
-            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice(OFFICE).mrnLateReason(APPEAL_LATE_REASON).build())
+            .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice("DWP PIP (5)").mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingOptions(HearingOptions.builder()
                 .scheduleHearing(YES_LITERAL)

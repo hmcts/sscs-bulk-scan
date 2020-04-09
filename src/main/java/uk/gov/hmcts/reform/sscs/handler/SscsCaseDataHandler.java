@@ -51,8 +51,6 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
             stampReferredCase(caseValidationResponse, eventId);
 
-            String caseReference = String.valueOf(Optional.ofNullable(
-                exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
             Appeal appeal = (Appeal) caseValidationResponse.getTransformedCase().get("appeal");
             String mrnDate = "";
             String benefitType = "";
@@ -65,10 +63,14 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 if (appeal.getBenefitType() != null) {
                     benefitType = appeal.getBenefitType().getCode();
                 }
-                if (appeal.getAppellant() != null && appeal.getAppellant().getIdentity() != null) {
+                if (appeal.getAppellant() != null
+                    && appeal.getAppellant().getIdentity() != null && appeal.getAppellant().getIdentity().getNino() != null) {
                     nino = appeal.getAppellant().getIdentity().getNino();
                 }
             }
+
+            String caseReference = String.valueOf(Optional.ofNullable(
+                exceptionCaseData.getCaseDetails().getCaseData().get("caseReference")).orElse(""));
 
             if (!StringUtils.isEmpty(caseReference)) {
                 log.info("Case {} already exists for exception record id {}", caseReference, exceptionRecordId);
@@ -112,7 +114,6 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                     }
                     caseReference = String.valueOf(caseId);
                 }
-
 
                 return HandlerResponse.builder().state("ScannedRecordCaseCreated").caseId(caseReference).build();
             } catch (FeignException e) {
