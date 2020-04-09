@@ -19,11 +19,8 @@ public class SampleCaseDataCreator {
 
     public Map<String, Object> sscsCaseData() {
         return ImmutableMap.of(
-            "generatedEmail", "sscstest@test.com",
             "caseReference", "123456789",
-            "caseCreated", "2018-01-11",
-            "generatedNino", "SR11111",
-            "generatedSurname", "Smith"
+            "caseCreated", "2018-01-11"
         );
     }
 

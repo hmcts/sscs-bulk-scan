@@ -238,15 +238,16 @@ public class SscsCaseDataHandlerTest {
     @Test
     public void givenACaseWithNoWarnings_thenCreateCaseWithAppealCreatedEventAndSendToDwp() {
 
+        String nino = "testnino";
+
         Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build())
             .benefitType(BenefitType.builder().build())
             .appellant(Appellant.builder().address(
                 Address.builder().postcode("CM120HN").build())
+                .identity(Identity.builder().nino(nino).build())
                 .build()).build();
 
-        String nino = "testnino";
         Map<String, Object> transformedCase = new HashMap<>();
-        transformedCase.put("generatedNino", nino);
         transformedCase.put("appeal", appeal);
 
         final CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
