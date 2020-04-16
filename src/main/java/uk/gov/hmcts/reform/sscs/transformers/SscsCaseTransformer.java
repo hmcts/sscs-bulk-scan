@@ -107,7 +107,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         String caseId = caseDetails.getCaseId();
         log.info("Transforming exception record {}", caseId);
 
-        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseDetails.getCaseData());
+        //FIXME: Look at maybe removing this validation when bulk scan migration complete
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseDetails.getCaseData(), "scanOCRData");
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record {}", caseId);

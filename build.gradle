@@ -225,6 +225,7 @@ dependencies {
   testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.5'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
   testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1', withoutJunit4
+  testCompile group: 'com.typesafe', name: 'config', version: '1.4.0'
 
   integrationTestCompile (group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
     exclude group: "com.github.tomakehurst", module:"wiremock-standalone"
@@ -270,4 +271,8 @@ bootJar {
   manifest {
     attributes('Implementation-Version': project.version.toString())
   }
+}
+
+tasks.withType(Test) {
+  useJUnitPlatform()
 }

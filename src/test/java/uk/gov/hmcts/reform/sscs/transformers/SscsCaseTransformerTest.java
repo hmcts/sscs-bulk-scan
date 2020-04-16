@@ -83,7 +83,7 @@ public class SscsCaseTransformerTest {
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
 
-        given(keyValuePairValidator.validate(ocrMap)).willReturn(CaseResponse.builder().build());
+        given(keyValuePairValidator.validate(ocrMap, "scanOCRData")).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(ocrMap)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         caseDetails = CaseDetails.builder().caseData(ocrMap).build();
@@ -907,7 +907,7 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenACaseWithFailedSchemaValidation_thenAddErrorToList() {
 
-        given(keyValuePairValidator.validate(ocrMap)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        given(keyValuePairValidator.validate(ocrMap, "scanOCRData")).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecordToCase(caseDetails);
 

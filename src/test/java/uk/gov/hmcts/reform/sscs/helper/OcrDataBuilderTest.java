@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.junit.Assert.*;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public class OcrDataBuilderTest {
         valueMap.put("key", "person1_first_name");
         valueMap.put("value", "Bob");
 
-        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap));
+        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap), "scanOCRData");
 
         assertEquals("Bob", result.get("person1_first_name"));
     }
@@ -30,7 +31,7 @@ public class OcrDataBuilderTest {
         valueMap.put("key", "person1_first_name");
         valueMap.put("value", null);
 
-        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap));
+        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap), "scanOCRData");
 
         assertNull(result.get("person1_first_name"));
     }
@@ -42,7 +43,7 @@ public class OcrDataBuilderTest {
         valueMap.put("key", "person1_first_name");
         valueMap.put("value", "");
 
-        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap));
+        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap), "scanOCRData");
 
         assertNull(result.get("person1_first_name"));
     }
@@ -54,9 +55,21 @@ public class OcrDataBuilderTest {
         valueMap.put("key", null);
         valueMap.put("value", null);
 
-        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap));
+        Map<String, Object> result = build(buildScannedOcrData("scanOCRData", valueMap), "scanOCRData");
 
         assertEquals(0, result.size());
+    }
+
+    @Test
+    public void givenValidationOcrData_thenConvertIntoKeyValuePairs() {
+        Map<String, Object> valueMap = new HashMap<>();
+
+        valueMap.put("name", "person1_first_name");
+        valueMap.put("value", "Bob");
+
+        Map<String, Object> result = build2(buildScannedValidationOcrData("ocr_data_fields", valueMap), "ocr_data_fields");
+
+        assertEquals("Bob", result.get("person1_first_name"));
     }
 
     @SafeVarargs
@@ -72,6 +85,15 @@ public class OcrDataBuilderTest {
         }
 
         scannedOcrDataMap.put(key, ocrList);
+
+        return scannedOcrDataMap;
+    }
+
+    @SafeVarargs
+    public static final Map<String, Object> buildScannedValidationOcrData(String key, Map<String, Object>... valueMap) {
+        Map<String, Object> scannedOcrDataMap = new HashMap<>();
+
+        scannedOcrDataMap.put(key, valueMap);
 
         return scannedOcrDataMap;
     }

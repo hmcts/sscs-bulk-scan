@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.sscs.exceptions.BulkScanJsonException;
 public class SscsJsonExtractor {
 
     public ScannedData extractJson(Map<String, Object> exceptionCaseData) {
-        Map<String, Object> ocrPairs = build(exceptionCaseData);
+        Map<String, Object> ocrPairs = build(exceptionCaseData, "scanOCRData");
         List<ScannedRecord> documents = buildScannedDocumentData(exceptionCaseData, "scannedDocuments");
         return ScannedData.builder().ocrCaseData(ocrPairs).records(documents).build();
     }
