@@ -1,10 +1,12 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 
 public class OcrDataBuilder {
 
@@ -16,7 +18,8 @@ public class OcrDataBuilder {
 
     }
 
-    public static Map<String, Object> build(Map<String, Object> exceptionCaseData, String property) {
+    //FIXME: Remove this after bulk scan migration
+    public static Map<String, Object> buildOld(Map<String, Object> exceptionCaseData, String property) {
         Map<String, Object> pairs = new HashMap<>();
 
         JSONArray jsonArray = new JSONArray((List) exceptionCaseData.get(property));
@@ -34,17 +37,18 @@ public class OcrDataBuilder {
         return pairs;
     }
 
-    public static Map<String, Object> build2(Map<String, Object> exceptionCaseData, String property) {
+    public static Map<String, Object> build(List<OcrDataField> exceptionCaseData) {
         Map<String, Object> pairs = new HashMap<>();
 
-        JSONArray jsonArray = (JSONArray) new JSONObject(exceptionCaseData).get(property);
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject j = jsonArray.optJSONObject(i);
-
-            if (j.has(NAME)) {
-                pairs.put(j.get(NAME).toString(), j.get(VALUE));
+        if (exceptionCaseData != null) {
+            for (OcrDataField ocrDataField : exceptionCaseData) {
+                if (!StringUtils.isEmpty(ocrDataField.getName())) {
+                    String value = !StringUtils.isEmpty(ocrDataField.getValue()) ? ocrDataField.getValue() : null;
+                    pairs.put(ocrDataField.getName(), value);
+                }
             }
         }
+
         return pairs;
     }
 }

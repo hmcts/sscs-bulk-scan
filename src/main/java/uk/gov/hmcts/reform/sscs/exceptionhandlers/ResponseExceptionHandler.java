@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.sscs.exceptionhandlers;
 
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static java.util.Collections.emptyList;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.ResponseEntity.status;
 
 import feign.FeignException;
@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ErrorResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
+import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.exceptions.UnauthorizedException;
 
 @ControllerAdvice
@@ -59,5 +61,10 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         errors.add("There was an unknown error when processing the case. If the error persists, please contact the Bulk Scan development team");
 
         return ResponseEntity.ok(CaseResponse.builder().errors(errors).build());
+    }
+
+    @ExceptionHandler(InvalidExceptionRecordException.class)
+    protected ResponseEntity<ErrorResponse> handleInvalidExceptionRecord(InvalidExceptionRecordException exc) {
+        return status(UNPROCESSABLE_ENTITY).body(new ErrorResponse(exc.getErrors(), emptyList()));
     }
 }

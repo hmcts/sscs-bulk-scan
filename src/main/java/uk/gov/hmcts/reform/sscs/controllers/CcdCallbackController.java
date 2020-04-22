@@ -77,7 +77,7 @@ public class CcdCallbackController {
         Token token = Token.builder().serviceAuthToken(serviceAuthToken).userAuthToken(userAuthToken).userId(userId).build();
 
         CallbackResponse ccdCallbackResponse =
-            ccdCallbackHandler.handle(caseData, token);
+            ccdCallbackHandler.handleOld(caseData, token);
 
         return ResponseEntity.ok(ccdCallbackResponse);
     }

@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.doNothing;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
@@ -47,7 +46,7 @@ public class CcdCallbackControllerTest {
 
     @Test
     public void should_successfully_handle_callback_and_return_exception_record_response() throws Exception {
-        given(ccdCallbackHandler.handle(
+        given(ccdCallbackHandler.handleOld(
             any(ExceptionCaseData.class),
             eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
         ).willReturn(AboutToStartOrSubmitCallbackResponse.builder()
@@ -82,7 +81,7 @@ public class CcdCallbackControllerTest {
 
     @Test
     public void should_throw_exception_when_handler_fails() throws Exception {
-        given(ccdCallbackHandler.handle(
+        given(ccdCallbackHandler.handleOld(
             any(ExceptionCaseData.class),
             eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
         ).willThrow(RuntimeException.class);

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.functional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpStatus.OK;
 
 import io.restassured.mapper.ObjectMapperType;
 import io.restassured.response.Response;
@@ -25,9 +26,7 @@ public class OcrFormValidationFunctionalTest extends BaseFunctionalTest {
     @Parameters({"SSCS1", "SSCS1PE"})
     public void should_validate_ocr_data_and_return_success(String formType) throws IOException {
         String json = getJson("validation/valid-ocr-form-data.json");
-        Response response = validateOcrEndpointRequest(json, formType);
-
-        assertThat(response.getStatusCode()).isEqualTo(200);
+        Response response = validateOcrEndpointRequest(json, formType, OK.value());
 
         OcrValidationResponse validationResponse = response.getBody()
             .as(OcrValidationResponse.class, ObjectMapperType.JACKSON_2);

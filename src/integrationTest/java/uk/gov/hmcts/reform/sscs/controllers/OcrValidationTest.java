@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -9,22 +9,16 @@ import static uk.gov.hmcts.reform.sscs.helper.TestConstants.SERVICE_AUTH_TOKEN;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import java.io.IOException;
-import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
-import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
-import uk.gov.hmcts.reform.sscs.BaseTest;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 
 
 @AutoConfigureMockMvc

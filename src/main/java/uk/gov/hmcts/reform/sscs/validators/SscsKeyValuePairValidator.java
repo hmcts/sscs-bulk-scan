@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.sscs.validators;
 import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.ERRORS;
 import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.SUCCESS;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build2;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.buildOld;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,26 +17,41 @@ import org.json.JSONTokener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 
 @Component
 public class SscsKeyValuePairValidator {
 
-    //FIXME: Remove this schema when bulk scan migration complete
     private final String schemaResourceLocation = "/schema/sscs-bulk-scan-schema.json";
-    //FIXME: Can only really do this if form type sent as part of transformation as well
-    //    private final String schemaSscs1ResourceLocation = "/schema/sscs1-form-bulk-scan-schema.json";
-    //    private final String schemaSscs1PeResourceLocation = "/schema/sscs1pe-form-bulk-scan-schema.json";
+
     private Schema schema = null;
 
-    public CaseResponse validate(Map<String, Object> keyValuePairs, String property) {
+    //FIXME: Remove after bulk scan migration
+    public CaseResponse validateOld(Map<String, Object> keyValuePairs, String property) {
         tryLoadSchema(schemaResourceLocation);
 
         List<String> errors = null;
 
         try {
-            Map<String, Object> builtMap = property.equals("ocr_data_fields") ? build2(keyValuePairs, property) : build(keyValuePairs, property);
+            Map<String, Object> builtMap = property.equals("ocr_data_fields") ? null : buildOld(keyValuePairs, property);
             schema.validate(new JSONObject(builtMap));
+        } catch (ValidationException ex) {
+            errors = new ArrayList<>();
+            for (String message : ex.getAllMessages()) {
+                errors.add(message);
+            }
+        }
+        return CaseResponse.builder().errors(errors).status(getValidationStatus(errors)).build();
+    }
+
+    public CaseResponse validate(List<OcrDataField> ocrDataValidationRequest) {
+        tryLoadSchema(schemaResourceLocation);
+
+        List<String> errors = null;
+
+        try {
+            schema.validate(new JSONObject(build(ocrDataValidationRequest)));
         } catch (ValidationException ex) {
             errors = new ArrayList<>();
             for (String message : ex.getAllMessages()) {

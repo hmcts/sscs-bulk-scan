@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 
 @Component
 @Slf4j
+//FIXME: Delete this after migration
 public class SscsCaseDataHandler implements CaseDataHandler {
 
     private static final String INTERLOC_REFERRAL_REASON = "interlocReferralReason";

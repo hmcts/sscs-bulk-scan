@@ -3,63 +3,19 @@ package uk.gov.hmcts.reform.sscs.transformers;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.areBooleansValid;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.checkBooleanValue;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.doValuesContradict;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.findBooleanExists;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.generateDateForCcd;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getBoolean;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getDateForCcd;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.hasPerson;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReason;
-import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasonDetails;
-import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasons;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appointee;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
-import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Contact;
-import uk.gov.hmcts.reform.sscs.ccd.domain.DateRange;
-import uk.gov.hmcts.reform.sscs.ccd.domain.ExcludeDate;
-import uk.gov.hmcts.reform.sscs.ccd.domain.HearingOptions;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Identity;
-import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Name;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Representative;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocumentDetails;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Subscription;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
@@ -70,7 +26,6 @@ import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 @Component
 @Slf4j
 public class SscsCaseTransformer implements CaseTransformer {
-    private static DateTimeFormatter DATE_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     @Autowired
     private SscsJsonExtractor sscsJsonExtractor;
@@ -103,12 +58,11 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     @Override
-    public CaseResponse transformExceptionRecordToCase(CaseDetails caseDetails) {
-        String caseId = caseDetails.getCaseId();
+    public CaseResponse transformExceptionRecordToCase(ExceptionRecord exceptionRecord) {
+        String caseId = exceptionRecord.getId();
         log.info("Transforming exception record {}", caseId);
 
-        //FIXME: Look at maybe removing this validation when bulk scan migration complete
-        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseDetails.getCaseData(), "scanOCRData");
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record {}", caseId);
@@ -120,9 +74,40 @@ public class SscsCaseTransformer implements CaseTransformer {
         errors = new HashSet<>();
         warnings = new HashSet<>();
 
-        ScannedData scannedData = sscsJsonExtractor.extractJson(caseDetails.getCaseData());
+        ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
 
-        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseDetails.getCaseId());
+        Map<String, Object> transformed = transformData(caseId, scannedData);
+
+        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
+    }
+
+    @Override
+    public CaseResponse transformExceptionRecordToCaseOld(CaseDetails caseDetails) {
+        String caseId = caseDetails.getCaseId();
+
+        log.info("Transforming exception record {}", caseId);
+
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validateOld(caseDetails.getCaseData(), "scanOCRData");
+
+        if (keyValuePairValidatorResponse.getErrors() != null) {
+            log.info("Errors found while validating key value pairs while transforming exception record {}", caseId);
+            return CaseResponse.builder().errors(keyValuePairValidatorResponse.getErrors()).build();
+        }
+
+        log.info("Key value pairs validated while transforming exception record {}", caseId);
+
+        errors = new HashSet<>();
+        warnings = new HashSet<>();
+
+        ScannedData scannedData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
+
+        Map<String, Object> transformed = transformData(caseId, scannedData);
+
+        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
+    }
+
+    private Map<String, Object> transformData(String caseId, ScannedData scannedData) {
+        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
@@ -132,19 +117,11 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         transformed.put("bulkScanCaseReference", caseId);
 
-        String caseCreated = extractOpeningDate(caseDetails);
-        transformed.put("caseCreated", caseCreated);
+        transformed.put("caseCreated", scannedData.getOpeningDate());
 
-        log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, caseCreated);
+        log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, scannedData.getOpeningDate());
 
-        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
-    }
-
-    private String extractOpeningDate(CaseDetails caseDetails) {
-        String openingDate = (String) caseDetails.getCaseData().get("openingDate");
-        return (StringUtils.isEmpty(openingDate) || openingDate.length() < 10)
-            ? DATE_FORMAT.print(new DateTime())
-            : ((String) caseDetails.getCaseData().get("openingDate")).substring(0, 10);
+        return transformed;
     }
 
     private Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {
@@ -506,18 +483,20 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     }
 
-    private List<SscsDocument> buildDocumentsFromData(List<ScannedRecord> records) {
+    private List<SscsDocument> buildDocumentsFromData(List<InputScannedDoc> records) {
         List<SscsDocument> documentDetails = new ArrayList<>();
         if (records != null) {
-            for (ScannedRecord record : records) {
+            for (InputScannedDoc record : records) {
 
                 String documentType = StringUtils.startsWithIgnoreCase(record.getSubtype(), "sscs1") ? "sscs1" : "appellantEvidence";
 
                 checkFileExtensionValid(record.getFileName());
 
+                String scannedDate = record.getScannedDate() != null ? record.getScannedDate().toLocalDate().toString() : null;
+
                 SscsDocumentDetails details = SscsDocumentDetails.builder()
                     .documentLink(record.getUrl())
-                    .documentDateAdded(stripTimeFromDocumentDate(record.getScannedDate()))
+                    .documentDateAdded(scannedDate)
                     .documentFileName(record.getFileName())
                     .documentType(documentType).build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
@@ -536,12 +515,5 @@ public class SscsCaseTransformer implements CaseTransformer {
         } else {
             errors.add("File name field must not be empty");
         }
-    }
-
-
-    private String stripTimeFromDocumentDate(String documentDate) {
-        return documentDate == null
-            ? null
-            : LocalDateTime.parse(documentDate).toLocalDate().toString();
     }
 }

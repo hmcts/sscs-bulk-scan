@@ -93,7 +93,7 @@ class OcrValidationControllerTest {
 
         given(authService.authenticate("testServiceAuthHeader")).willReturn("testServiceName");
 
-        given(keyValuePairValidator.validate(any(), eq("ocr_data_fields")))
+        given(keyValuePairValidator.validateOld(any(), eq("ocr_data_fields")))
             .willReturn(CaseResponse.builder().warnings(emptyList()).errors(emptyList()).status(SUCCESS).build());
 
         mockMvc

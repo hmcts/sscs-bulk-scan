@@ -8,7 +8,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Map;
 import javax.validation.Valid;
 import org.apache.commons.lang3.EnumUtils;
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import org.springframework.web.util.UriUtils;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.domain.FormType;
+import uk.gov.hmcts.reform.sscs.domain.validation.OcrDataValidationRequest;
 import uk.gov.hmcts.reform.sscs.domain.validation.OcrValidationResponse;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
@@ -56,7 +56,7 @@ public class OcrValidationController {
     public ResponseEntity<OcrValidationResponse> validateOcrData(
         @RequestHeader(name = "ServiceAuthorization", required = false) String serviceAuthHeader,
         @PathVariable(name = "form-type", required = false) String formType,
-        @Valid @RequestBody Map<String, Object> request
+        @Valid @RequestBody OcrDataValidationRequest request
     ) {
         String encodedFormType = UriUtils.encode(formType, StandardCharsets.UTF_8);
         if (!EnumUtils.isValidEnum(FormType.class, encodedFormType)) {
@@ -75,7 +75,7 @@ public class OcrValidationController {
         authService.assertIsAllowedToHandleCallback(serviceName);
 
         //FIXME: Put form type in
-        CaseResponse result = keyValuePairValidator.validate(request, "ocr_data_fields");
+        CaseResponse result = keyValuePairValidator.validate(request.getOcrDataFields());
 
         return ok().body(new OcrValidationResponse(result.getWarnings(), result.getErrors(), result.getStatus()));
     }

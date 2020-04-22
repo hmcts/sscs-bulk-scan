@@ -60,7 +60,7 @@ public class BaseFunctionalTest {
         log.info("idamTokens.getIdamOauth2Token()" + idamTokens.getIdamOauth2Token());
     }
 
-    protected Response simulateCcdCallback(String json, String urlPath) {
+    protected Response simulateCcdCallback(String json, String urlPath, int expectedStatusCode) {
         final String callbackUrl = testUrl + urlPath;
 
         RestAssured.useRelaxedHTTPSValidation();
@@ -74,7 +74,7 @@ public class BaseFunctionalTest {
             .when()
             .post(callbackUrl);
 
-        assertEquals(200, response.getStatusCode());
+        assertEquals(expectedStatusCode, response.getStatusCode());
 
         return response;
     }
@@ -99,15 +99,19 @@ public class BaseFunctionalTest {
         return FileUtils.readFileToString(new File(file), StandardCharsets.UTF_8.name());
     }
 
-    protected Response exceptionRecordEndpointRequest(String json) {
-        return simulateCcdCallback(json, "/exception-record");
+    protected Response exceptionRecordEndpointRequest(String json, int statusCode) {
+        return simulateCcdCallback(json, "/exception-record", statusCode);
     }
 
-    protected Response validateRecordEndpointRequest(String json) {
-        return simulateCcdCallback(json, "/validate-record");
+    protected Response validateRecordEndpointRequest(String json, int statusCode) {
+        return simulateCcdCallback(json, "/validate-record", statusCode);
     }
 
-    protected Response validateOcrEndpointRequest(String json, String formType) {
-        return simulateCcdCallback(json, "/forms/" + formType + "/validate-ocr");
+    protected Response validateOcrEndpointRequest(String json, String formType, int statusCode) {
+        return simulateCcdCallback(json, "/forms/" + formType + "/validate-ocr", statusCode);
+    }
+
+    protected Response transformExceptionRequest(String json, int statusCode) {
+        return simulateCcdCallback(json, "/transform-exception-record", statusCode);
     }
 }

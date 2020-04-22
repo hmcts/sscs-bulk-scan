@@ -272,7 +272,3 @@ bootJar {
     attributes('Implementation-Version': project.version.toString())
   }
 }
-
-tasks.withType(Test) {
-  useJUnitPlatform()
-}

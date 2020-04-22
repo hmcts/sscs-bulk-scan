@@ -6,11 +6,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import com.google.common.collect.ImmutableList;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,23 +20,22 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
-import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
-import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
-import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
+//FIXME: delete this test class after migration
 @RunWith(SpringRunner.class)
-public class CcdCallbackHandlerTest {
+public class CcdCallbackHandlerTestOld {
 
     private CcdCallbackHandler ccdCallbackHandler;
 
@@ -62,13 +60,9 @@ public class CcdCallbackHandlerTest {
     @Captor
     private ArgumentCaptor<AboutToStartOrSubmitCallbackResponse> warningCaptor;
 
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    private Map<String, Object> transformedCase;
-
     @Before
     public void setUp() {
-        sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), new ArrayList<>(), dwpAddressLookupService);
+        sscsDataHelper = new SscsDataHelper(null, new ArrayList<>(), dwpAddressLookupService);
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper,
             dwpAddressLookupService);
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
@@ -76,89 +70,132 @@ public class CcdCallbackHandlerTest {
             .willReturn("Springburn");
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("ESA", "Balham DRT"))
             .willReturn("Balham");
-
-        LocalDate localDate = LocalDate.now();
-
-        Appeal appeal = Appeal.builder().mrnDetails(MrnDetails.builder().mrnDate(localDate.format(formatter)).build()).build();
-        transformedCase = new HashMap<>();
-        transformedCase.put("appeal", appeal);
     }
 
     @Test
     public void should_return_exception_data_with_case_id_and_state_when_transformation_and_validation_are_successful() {
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().build();
+        ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", true);
+        // given
+        CaseDetails caseDetails = CaseDetails
+            .builder()
+            .caseData(caseDataCreator.exceptionCaseData())
+            .state("ScannedRecordReceived")
+            .build();
 
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord))
+        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails))
             .thenReturn(CaseResponse.builder()
-                .transformedCase(transformedCase)
-                .build());
-
-        // No errors and warnings are populated hence validation would be successful
-        CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
-        when(caseValidator.validateExceptionRecord(transformErrorResponse, exceptionRecord, transformedCase))
-            .thenReturn(caseValidationResponse);
-
-        SuccessfulTransformationResponse ccdCallbackResponse = invokeCallbackHandler(exceptionRecord);
-
-        assertExceptionDataEntries(ccdCallbackResponse);
-        assertThat(ccdCallbackResponse.getWarnings()).isNull();
-    }
-
-    @Test(expected = InvalidExceptionRecordException.class)
-    public void should_return_exception_record_and_errors_in_callback_response_when_transformation_fails() {
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().build();
-
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord))
-            .thenReturn(CaseResponse.builder()
-                .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
-                .build());
-
-        invokeCallbackHandler(exceptionRecord);
-    }
-
-    @Test(expected = InvalidExceptionRecordException.class)
-    public void should_return_exc_data_and_errors_in_callback_when_transformation_success_and_validation_fails_with_errors() {
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().build();
-
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord))
-            .thenReturn(CaseResponse.builder()
-                .transformedCase(transformedCase)
+                .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
             );
 
-        when(caseValidator.validateExceptionRecord(transformErrorResponse, exceptionRecord, transformedCase))
+        // No errors and warnings are populated hence validation would be successful
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
+        when(caseValidator.validateExceptionRecordOld(transformErrorResponse, caseDetails, caseDataCreator.sscsCaseData()))
+            .thenReturn(caseValidationResponse);
+
+        // Return case id for successful ccd case creation
+        when(caseDataHandler.handle(
+            any(ExceptionCaseData.class),
+            eq(caseValidationResponse),
+            eq(false),
+            eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()),
+            eq(null))
+        ).thenReturn(HandlerResponse.builder().state("DocUpdated").build());
+
+        // when
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
+
+        assertExceptionDataEntries(ccdCallbackResponse);
+        assertThat(ccdCallbackResponse.getErrors()).isNull();
+        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+    }
+
+    @Test
+    public void should_return_exception_record_and_errors_in_callback_response_when_transformation_fails() {
+        // given
+        CaseDetails caseDetails = CaseDetails
+            .builder()
+            .caseData(caseDataCreator.exceptionCaseData())
+            .state("ScannedRecordReceived")
+            .build();
+
+        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails))
+            .thenReturn(CaseResponse.builder()
+                .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
+                .build()
+            );
+
+        // when
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
+
+        // then
+        assertThat(ccdCallbackResponse.getErrors())
+            .containsOnly("Cannot transform Appellant Date of Birth. Please enter valid date");
+        assertThat(ccdCallbackResponse.getWarnings()).isNull();
+    }
+
+    @Test
+    public void should_return_exc_data_and_errors_in_callback_when_transformation_success_and_validation_fails_with_errors() {
+        // given
+        CaseDetails caseDetails = CaseDetails
+            .builder()
+            .caseData(caseDataCreator.exceptionCaseData())
+            .state("ScannedRecordReceived")
+            .build();
+
+        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails))
+            .thenReturn(CaseResponse.builder()
+                .transformedCase(caseDataCreator.sscsCaseData())
+                .build()
+            );
+
+        when(caseValidator.validateExceptionRecordOld(transformErrorResponse, caseDetails, caseDataCreator.sscsCaseData()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
 
-        invokeCallbackHandler(exceptionRecord);
+        // when
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
+
+        // then
+        assertThat(ccdCallbackResponse.getErrors()).containsOnly("NI Number is invalid");
+        assertThat(ccdCallbackResponse.getWarnings()).isNull();
     }
 
     @Test
     public void givenAWarningInTransformationServiceAndAnotherWarningInValidationService_thenShowBothWarnings() {
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().build();
+        CaseDetails caseDetails = CaseDetails
+            .builder()
+            .caseData(caseDataCreator.exceptionCaseData())
+            .state("ScannedRecordReceived")
+            .build();
 
         List<String> warnings = new ArrayList<>();
         warnings.add("First warning");
 
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord))
-            .thenReturn(CaseResponse.builder()
-                .transformedCase(transformedCase)
-                .warnings(warnings)
-                .build());
+        CaseResponse caseResponse = CaseResponse.builder()
+            .transformedCase(caseDataCreator.sscsCaseData())
+            .warnings(warnings)
+            .build();
+
+        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails))
+            .thenReturn(caseResponse);
 
         List<String> warnings2 = new ArrayList<>();
         warnings2.add("First warning");
         warnings2.add("Second warning");
 
-        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings2).transformedCase(transformedCase).build();
-
-        when(caseValidator.validateExceptionRecord(any(), eq(exceptionRecord), eq(transformedCase)))
+        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings2).build();
+        when(caseValidator.validateExceptionRecordOld(any(), eq(caseDetails), eq(caseDataCreator.sscsCaseData())))
             .thenReturn(caseValidationResponse);
 
-        SuccessfulTransformationResponse ccdCallbackResponse = invokeCallbackHandler(exceptionRecord);
+        AboutToStartOrSubmitCallbackResponse ccdCallbackResponse =
+            (AboutToStartOrSubmitCallbackResponse) invokeCallbackHandler(caseDetails);
 
-        verify(caseValidator).validateExceptionRecord(warningCaptor.capture(), eq(exceptionRecord), eq(transformedCase));
+        verify(caseValidator).validateExceptionRecordOld(warningCaptor.capture(), eq(caseDetails), eq(caseDataCreator.sscsCaseData()));
 
         assertThat(warningCaptor.getAllValues().get(0).getWarnings().size()).isEqualTo(1);
         assertThat(warningCaptor.getAllValues().get(0).getWarnings().get(0)).isEqualTo("First warning");
@@ -288,14 +325,24 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
     }
 
-    private void assertExceptionDataEntries(SuccessfulTransformationResponse successfulTransformationResponse) {
-        assertThat(successfulTransformationResponse.getCaseCreationDetails().getCaseTypeId().equals("Benefit"));
-        assertThat(successfulTransformationResponse.getCaseCreationDetails().getEventId().equals("validAppealCreated"));
-        assertThat(successfulTransformationResponse.getCaseCreationDetails().getCaseData()).isEqualTo(transformedCase);
+    private void assertExceptionDataEntries(AboutToStartOrSubmitCallbackResponse ccdCallbackResponse) {
+        assertThat(ccdCallbackResponse.getData()).contains(
+            entry("journeyClassification", "New Application"),
+            entry("poBoxJurisdiction", "SSCS"),
+            entry("poBox", "SSCSPO"),
+            entry("openingDate", "2018-01-11"),
+            entry("scannedDocuments", caseDataCreator.ocrData())
+        );
     }
 
-    private SuccessfulTransformationResponse invokeCallbackHandler(ExceptionRecord exceptionRecord) {
-        return ccdCallbackHandler.handle(exceptionRecord);
+    private CallbackResponse invokeCallbackHandler(CaseDetails caseDetails) {
+        return ccdCallbackHandler.handleOld(
+            ExceptionCaseData.builder()
+                .caseDetails(caseDetails)
+                .eventId("createNewCase")
+                .build(),
+            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
+        );
     }
 
     private PreSubmitCallbackResponse<SscsCaseData> invokeValidationCallbackHandler(SscsCaseData caseDetails) {
@@ -305,5 +352,9 @@ public class CcdCallbackHandlerTest {
         return ccdCallbackHandler.handleValidationAndUpdate(
             new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false)
         );
+    }
+
+    private static <K, V> Map.Entry<K, V> entry(K key, V value) {
+        return new AbstractMap.SimpleImmutableEntry<>(key, value);
     }
 }

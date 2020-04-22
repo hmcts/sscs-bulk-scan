@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.functional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.OK;
 
 import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils;
 import io.restassured.response.Response;
@@ -28,7 +29,7 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
     public void create_appeal_created_case_when_all_fields_entered() throws IOException {
         String json = getJson("import/all_fields_entered.json");
         json = replaceNino(json);
-        Response response = exceptionRecordEndpointRequest(json);
+        Response response = exceptionRecordEndpointRequest(json, OK.value());
 
         //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
         List<String> possibleStates = new ArrayList<>(Arrays.asList("validAppeal", "withDwp"));
@@ -43,7 +44,7 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
         String json = getJson("import/some_mandatory_fields_missing.json");
         json = replaceNino(json);
-        Response response = exceptionRecordEndpointRequest(json);
+        Response response = exceptionRecordEndpointRequest(json, OK.value());
 
         assertEquals("incompleteApplication", findCaseInCcd(response).getState());
     }
@@ -55,7 +56,7 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
         String json = getJson("import/mrn_date_greater_than_13_months.json");
         json = json.replace("APPEAL_GROUNDS", appealGrounds);
         json = replaceNino(json);
-        Response response = exceptionRecordEndpointRequest(json);
+        Response response = exceptionRecordEndpointRequest(json, OK.value());
 
         SscsCaseDetails caseInCcd = findCaseInCcd(response);
         assertEquals("interlocutoryReviewState", caseInCcd.getState());
@@ -68,7 +69,7 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
         String json = getJson("import/validate_appeal_created_case_request.json");
         json = json.replace("CASE_ID_TO_BE_REPLACED", ccdCaseId);
 
-        validateRecordEndpointRequest(json);
+        validateRecordEndpointRequest(json, OK.value());
 
         SscsCaseDetails caseDetails = ccdService.getByCaseId(Long.valueOf(ccdCaseId), idamTokens);
 
@@ -81,7 +82,7 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
         String json = getJson("import/validate_appeal_created_case_request.json");
         json = json.replace("CASE_ID_TO_BE_REPLACED", ccdCaseId);
 
-        validateRecordEndpointRequest(json);
+        validateRecordEndpointRequest(json, OK.value());
 
         SscsCaseDetails caseDetails = ccdService.getByCaseId(Long.valueOf(ccdCaseId), idamTokens);
 
