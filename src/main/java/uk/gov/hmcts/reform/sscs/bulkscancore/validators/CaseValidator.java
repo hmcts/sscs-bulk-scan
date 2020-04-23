@@ -15,5 +15,5 @@ public interface CaseValidator {
 
     CaseResponse validateValidationRecord(Map<String, Object> caseData);
 
-    CaseResponse validateExceptionRecord(AboutToStartOrSubmitCallbackResponse transformErrorResponse, ExceptionRecord exceptionRecord, Map<String, Object> caseData);
+    CaseResponse validateExceptionRecord(CaseResponse transformResponse, ExceptionRecord exceptionRecord, Map<String, Object> caseData, boolean combineWarnings);
 }

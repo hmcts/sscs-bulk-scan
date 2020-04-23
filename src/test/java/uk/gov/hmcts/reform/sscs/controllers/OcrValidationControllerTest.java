@@ -1,15 +1,15 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.SUCCESS;
+import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -24,9 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
 import uk.gov.hmcts.reform.sscs.exceptions.UnauthorizedException;
-import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @WebMvcTest(OcrValidationController.class)
 class OcrValidationControllerTest {
@@ -35,7 +35,7 @@ class OcrValidationControllerTest {
     private transient MockMvc mockMvc;
 
     @MockBean
-    private SscsKeyValuePairValidator keyValuePairValidator;
+    private CcdCallbackHandler handler;
 
     @MockBean
     private AuthService authService;
@@ -93,7 +93,7 @@ class OcrValidationControllerTest {
 
         given(authService.authenticate("testServiceAuthHeader")).willReturn("testServiceName");
 
-        given(keyValuePairValidator.validateOld(any(), eq("ocr_data_fields")))
+        given(handler.handleValidation(any()))
             .willReturn(CaseResponse.builder().warnings(emptyList()).errors(emptyList()).status(SUCCESS).build());
 
         mockMvc
@@ -106,6 +106,48 @@ class OcrValidationControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_VALUE))
             .andExpect(content().json(readResource("validation/valid-ocr-response.json")));
+    }
+
+    @Test
+    void should_return_success_message_when_ocr_data_has_warnings() throws Exception {
+        String requestBody = readResource("validation/valid-ocr-data.json");
+
+        given(authService.authenticate("testServiceAuthHeader")).willReturn("testServiceName");
+
+        given(handler.handleValidation(any()))
+            .willReturn(CaseResponse.builder().warnings(newArrayList("warning1")).errors(emptyList()).status(WARNINGS).build());
+
+        mockMvc
+            .perform(
+                post("/forms/SSCS1/validate-ocr")
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .header("ServiceAuthorization", "testServiceAuthHeader")
+                    .content(requestBody)
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+            .andExpect(content().json(readResource("validation/valid-ocr-response-warnings.json")));
+    }
+
+    @Test
+    void should_return_error_response_when_ocr_data_has_errors() throws Exception {
+        String requestBody = readResource("validation/valid-ocr-data.json");
+
+        given(authService.authenticate("testServiceAuthHeader")).willReturn("testServiceName");
+
+        given(handler.handleValidation(any()))
+            .willReturn(CaseResponse.builder().warnings(newArrayList(emptyList())).errors(newArrayList("error1")).status(ERRORS).build());
+
+        mockMvc
+            .perform(
+                post("/forms/SSCS1/validate-ocr")
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .header("ServiceAuthorization", "testServiceAuthHeader")
+                    .content(requestBody)
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+            .andExpect(content().json(readResource("validation/valid-ocr-response-errors.json")));
     }
 
     @Test

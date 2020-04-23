@@ -1335,6 +1335,27 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
     }
 
+    @Test
+    public void givenAnAppealWithAnErrorAndCombineWarningsTrue_thenMoveErrorsToWarnings() {
+        pairs.put("person1_dob", "12/99/1987");
+
+        CaseResponse result = transformer.transformExceptionRecordForValidation(exceptionRecord);
+
+        assertTrue(result.getWarnings().contains("person1_dob is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy"));
+        assertEquals(0, result.getErrors().size());
+    }
+
+    @Test
+    public void givenATransformForValidationRequestFailsSchemaValidation_thenReturnErrors() {
+        pairs.put("bla", "12/99/1987");
+
+        given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+
+        CaseResponse result = transformer.transformExceptionRecordForValidation(exceptionRecord);
+
+        assertEquals("NI Number is invalid", result.getErrors().get(0));
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();

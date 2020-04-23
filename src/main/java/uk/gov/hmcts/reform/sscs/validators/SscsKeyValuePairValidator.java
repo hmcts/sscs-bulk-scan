@@ -1,9 +1,8 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
-import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.ERRORS;
-import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.SUCCESS;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.buildOld;
+import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,10 +14,8 @@ import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
-import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 
 @Component
 public class SscsKeyValuePairValidator {
@@ -42,7 +39,7 @@ public class SscsKeyValuePairValidator {
                 errors.add(message);
             }
         }
-        return CaseResponse.builder().errors(errors).status(getValidationStatus(errors)).build();
+        return CaseResponse.builder().errors(errors).build();
     }
 
     public CaseResponse validate(List<OcrDataField> ocrDataValidationRequest) {
@@ -58,7 +55,7 @@ public class SscsKeyValuePairValidator {
                 errors.add(message);
             }
         }
-        return CaseResponse.builder().errors(errors).status(getValidationStatus(errors)).build();
+        return CaseResponse.builder().errors(errors).warnings(new ArrayList<>()).status(getValidationStatus(errors, null)).build();
     }
 
     private synchronized void tryLoadSchema(String schemaLocation) {
@@ -71,10 +68,4 @@ public class SscsKeyValuePairValidator {
         schema = SchemaLoader.load(new JSONObject(new JSONTokener(inputStream)));
     }
 
-    private ValidationStatus getValidationStatus(List<String> errors) {
-        if (!ObjectUtils.isEmpty(errors)) {
-            return ERRORS;
-        }
-        return SUCCESS;
-    }
 }

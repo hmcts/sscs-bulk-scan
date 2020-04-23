@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
+import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
@@ -59,17 +60,38 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     @Override
     public CaseResponse transformExceptionRecordToCase(ExceptionRecord exceptionRecord) {
-        String caseId = exceptionRecord.getId();
-        log.info("Transforming exception record {}", caseId);
-
-        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
+        CaseResponse keyValuePairValidatorResponse = validateAgainstSchema(exceptionRecord);
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
-            log.info("Errors found while validating key value pairs while transforming exception record {}", caseId);
-            return CaseResponse.builder().errors(keyValuePairValidatorResponse.getErrors()).build();
+            log.info("Errors found while validating key value pairs while transforming exception record {}", exceptionRecord.getId());
+            return keyValuePairValidatorResponse;
         }
 
-        log.info("Key value pairs validated while transforming exception record {}", caseId);
+        return extractAndTransform(exceptionRecord, false);
+    }
+
+    @Override
+    public CaseResponse transformExceptionRecordForValidation(ExceptionRecord exceptionRecord) {
+        CaseResponse keyValuePairValidatorResponse = validateAgainstSchema(exceptionRecord);
+
+        if (keyValuePairValidatorResponse.getErrors() != null) {
+            log.info("Errors found while validating key value pairs while transforming exception record {}", exceptionRecord.getId());
+            return keyValuePairValidatorResponse;
+        }
+
+        return extractAndTransform(exceptionRecord, true);
+    }
+
+    private CaseResponse validateAgainstSchema(ExceptionRecord exceptionRecord) {
+        log.info("Validating exception record against schema {}", exceptionRecord.getId());
+
+        return keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
+    }
+
+    private CaseResponse extractAndTransform(ExceptionRecord exceptionRecord, boolean combineWarnings) {
+        String caseId = exceptionRecord.getId();
+
+        log.info("Extracting and transforming exception record {}", caseId);
 
         errors = new HashSet<>();
         warnings = new HashSet<>();
@@ -78,7 +100,22 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         Map<String, Object> transformed = transformData(caseId, scannedData);
 
-        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
+        if (combineWarnings) {
+            warnings = combineWarnings();
+        }
+
+        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings))
+            .status(getValidationStatus(new ArrayList<>(errors), new ArrayList<>(warnings))).build();
+    }
+
+    private Set<String> combineWarnings() {
+        Set<String> mergedWarnings = new HashSet<>();
+
+        mergedWarnings.addAll(warnings);
+        mergedWarnings.addAll(errors);
+        errors.clear();
+
+        return mergedWarnings;
     }
 
     @Override
@@ -91,7 +128,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record {}", caseId);
-            return CaseResponse.builder().errors(keyValuePairValidatorResponse.getErrors()).build();
+            return keyValuePairValidatorResponse;
         }
 
         log.info("Key value pairs validated while transforming exception record {}", caseId);

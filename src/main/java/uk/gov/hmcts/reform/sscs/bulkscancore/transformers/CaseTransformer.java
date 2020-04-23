@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 public interface CaseTransformer {
     CaseResponse transformExceptionRecordToCase(ExceptionRecord exceptionRecord);
 
+    CaseResponse transformExceptionRecordForValidation(ExceptionRecord exceptionRecord);
+
     CaseResponse transformExceptionRecordToCaseOld(CaseDetails caseDetails);
 
 }

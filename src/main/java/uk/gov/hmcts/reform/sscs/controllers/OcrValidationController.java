@@ -18,25 +18,25 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriUtils;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
+import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.domain.FormType;
-import uk.gov.hmcts.reform.sscs.domain.validation.OcrDataValidationRequest;
 import uk.gov.hmcts.reform.sscs.domain.validation.OcrValidationResponse;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
-import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RestController
 public class OcrValidationController {
     private static final Logger logger = getLogger(OcrValidationController.class);
 
     @Autowired
-    private SscsKeyValuePairValidator keyValuePairValidator;
+    private CcdCallbackHandler handler;
     private final AuthService authService;
 
     public OcrValidationController(
-        SscsKeyValuePairValidator keyValuePairValidator,
+        CcdCallbackHandler handler,
         AuthService authService
     ) {
-        this.keyValuePairValidator = keyValuePairValidator;
+        this.handler = handler;
         this.authService = authService;
     }
 
@@ -56,7 +56,7 @@ public class OcrValidationController {
     public ResponseEntity<OcrValidationResponse> validateOcrData(
         @RequestHeader(name = "ServiceAuthorization", required = false) String serviceAuthHeader,
         @PathVariable(name = "form-type", required = false) String formType,
-        @Valid @RequestBody OcrDataValidationRequest request
+        @Valid @RequestBody ExceptionRecord exceptionRecord
     ) {
         String encodedFormType = UriUtils.encode(formType, StandardCharsets.UTF_8);
         if (!EnumUtils.isValidEnum(FormType.class, encodedFormType)) {
@@ -74,8 +74,7 @@ public class OcrValidationController {
 
         authService.assertIsAllowedToHandleCallback(serviceName);
 
-        //FIXME: Put form type in
-        CaseResponse result = keyValuePairValidator.validate(request.getOcrDataFields());
+        CaseResponse result = handler.handleValidation(exceptionRecord);
 
         return ok().body(new OcrValidationResponse(result.getWarnings(), result.getErrors(), result.getStatus()));
     }

@@ -46,6 +46,11 @@ sourceSets {
   }
 }
 
+dependencies {
+  integrationTestCompile(sourceSets.test.output)
+  functionalTestCompile(sourceSets.test.output)
+}
+
 tasks.withType(JavaCompile) {
   options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
@@ -142,6 +147,11 @@ pitest {
 }
 
 project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
+check.dependsOn integration
+checkstyleMain.shouldRunAfter(compileJava)
+test.shouldRunAfter(checkstyleTest)
+integration.shouldRunAfter(checkstyleIntegrationTest)
+integration.shouldRunAfter(test)
 
 sonarqube {
   properties {
@@ -264,6 +274,10 @@ run {
 }
 
 mainClassName = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
+
+tasks.withType(Test) {
+  useJUnitPlatform()
+}
 
 bootJar {
   archiveName = 'sscs-bulk-scan.jar'

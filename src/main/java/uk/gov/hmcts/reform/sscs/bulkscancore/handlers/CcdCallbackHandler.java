@@ -65,22 +65,38 @@ public class CcdCallbackHandler {
         this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
+    public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
+        String exceptionRecordId = exceptionRecord.getId();
+
+        log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
+
+        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordForValidation(exceptionRecord);
+
+        if (caseTransformationResponse != null && caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
+            log.info("Errors found during validation for id {}", exceptionRecordId);
+            return caseTransformationResponse;
+        }
+
+        log.info("Exception record id {} transformed successfully ready for validation");
+
+        return caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), true);
+    }
+
     public SuccessfulTransformationResponse handle(ExceptionRecord exceptionRecord) {
         String exceptionRecordId = exceptionRecord.getId();
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionRecord);
-        AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrorsAndWarnings2(caseTransformationResponse, exceptionRecordId);
 
-        if (transformErrorResponse != null && transformErrorResponse.getErrors() != null && transformErrorResponse.getErrors().size() > 0) {
+        if (caseTransformationResponse != null && caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
             log.info("Errors found while transforming exception record id {}", exceptionRecordId);
-            throw new InvalidExceptionRecordException(transformErrorResponse.getErrors());
+            throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
         }
 
         log.info("Exception record id {} transformed successfully. About to validate transformed case from exception");
 
-        CaseResponse caseValidationResponse = caseValidator.validateExceptionRecord(transformErrorResponse, exceptionRecord, caseTransformationResponse.getTransformedCase());
+        CaseResponse caseValidationResponse = caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), false);
 
         if (!ObjectUtils.isEmpty(caseValidationResponse.getErrors())) {
             log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
@@ -108,7 +124,7 @@ public class CcdCallbackHandler {
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCaseOld(exceptionCaseData.getCaseDetails());
-        AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrorsAndWarnings(caseTransformationResponse, exceptionRecordId, exceptionCaseData.isIgnoreWarnings());
+        AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrorsAndWarningsOld(caseTransformationResponse, exceptionRecordId, exceptionCaseData.isIgnoreWarnings());
 
         if (transformErrorResponse != null && transformErrorResponse.getErrors() != null && transformErrorResponse.getErrors().size() > 0) {
             log.info("Errors found while transforming exception record id {}", exceptionRecordId);
@@ -252,21 +268,8 @@ public class CcdCallbackHandler {
         return null;
     }
 
-    private AboutToStartOrSubmitCallbackResponse checkForErrorsAndWarnings2(CaseResponse caseResponse,
-                                                                           String exceptionRecordId) {
-
-        if (!ObjectUtils.isEmpty(caseResponse.getErrors()) || (!ObjectUtils.isEmpty(caseResponse.getWarnings()))) {
-            log.info("Errors or warnings found while transforming exception record id {}", exceptionRecordId);
-            return AboutToStartOrSubmitCallbackResponse.builder()
-                .errors(caseResponse.getErrors())
-                .warnings(caseResponse.getWarnings())
-                .build();
-        }
-        return null;
-    }
-
-    private AboutToStartOrSubmitCallbackResponse checkForErrorsAndWarnings(CaseResponse caseResponse,
-                                                                           String exceptionRecordId, boolean ignoreWarnings) {
+    private AboutToStartOrSubmitCallbackResponse checkForErrorsAndWarningsOld(CaseResponse caseResponse,
+                                                                              String exceptionRecordId, boolean ignoreWarnings) {
 
         if (!ObjectUtils.isEmpty(caseResponse.getErrors()) || (!ObjectUtils.isEmpty(caseResponse.getWarnings()) && !ignoreWarnings)) {
             log.info("Errors or warnings found while transforming exception record id {}", exceptionRecordId);

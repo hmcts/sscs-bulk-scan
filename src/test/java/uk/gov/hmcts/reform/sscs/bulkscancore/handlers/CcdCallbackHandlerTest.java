@@ -20,7 +20,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -57,10 +56,8 @@ public class CcdCallbackHandlerTest {
 
     private SscsDataHelper sscsDataHelper;
 
-    private AboutToStartOrSubmitCallbackResponse transformErrorResponse;
-
     @Captor
-    private ArgumentCaptor<AboutToStartOrSubmitCallbackResponse> warningCaptor;
+    private ArgumentCaptor<CaseResponse> warningCaptor;
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -88,14 +85,13 @@ public class CcdCallbackHandlerTest {
     public void should_return_exception_data_with_case_id_and_state_when_transformation_and_validation_are_successful() {
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().build();
 
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord))
-            .thenReturn(CaseResponse.builder()
-                .transformedCase(transformedCase)
-                .build());
+        CaseResponse response = CaseResponse.builder().transformedCase(transformedCase).build();
+
+        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord)).thenReturn(response);
 
         // No errors and warnings are populated hence validation would be successful
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
-        when(caseValidator.validateExceptionRecord(transformErrorResponse, exceptionRecord, transformedCase))
+        when(caseValidator.validateExceptionRecord(response, exceptionRecord, transformedCase, false))
             .thenReturn(caseValidationResponse);
 
         SuccessfulTransformationResponse ccdCallbackResponse = invokeCallbackHandler(exceptionRecord);
@@ -120,13 +116,11 @@ public class CcdCallbackHandlerTest {
     public void should_return_exc_data_and_errors_in_callback_when_transformation_success_and_validation_fails_with_errors() {
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().build();
 
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord))
-            .thenReturn(CaseResponse.builder()
-                .transformedCase(transformedCase)
-                .build()
-            );
+        CaseResponse response = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        when(caseValidator.validateExceptionRecord(transformErrorResponse, exceptionRecord, transformedCase))
+        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord)).thenReturn(response);
+
+        when(caseValidator.validateExceptionRecord(response, exceptionRecord, transformedCase, false))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
@@ -153,12 +147,12 @@ public class CcdCallbackHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings2).transformedCase(transformedCase).build();
 
-        when(caseValidator.validateExceptionRecord(any(), eq(exceptionRecord), eq(transformedCase)))
+        when(caseValidator.validateExceptionRecord(any(), eq(exceptionRecord), eq(transformedCase), eq(false)))
             .thenReturn(caseValidationResponse);
 
         SuccessfulTransformationResponse ccdCallbackResponse = invokeCallbackHandler(exceptionRecord);
 
-        verify(caseValidator).validateExceptionRecord(warningCaptor.capture(), eq(exceptionRecord), eq(transformedCase));
+        verify(caseValidator).validateExceptionRecord(warningCaptor.capture(), eq(exceptionRecord), eq(transformedCase), eq(false));
 
         assertThat(warningCaptor.getAllValues().get(0).getWarnings().size()).isEqualTo(1);
         assertThat(warningCaptor.getAllValues().get(0).getWarnings().get(0)).isEqualTo("First warning");

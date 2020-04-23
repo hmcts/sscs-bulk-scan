@@ -4,6 +4,7 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCallbackType;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.VALIDATION_CALLBACK;
+import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.findBooleanExists;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
 
@@ -77,8 +78,8 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     @Override
-    public CaseResponse validateExceptionRecord(AboutToStartOrSubmitCallbackResponse transformErrorResponse, ExceptionRecord exceptionRecord, Map<String, Object> caseData) {
-        warnings = transformErrorResponse != null && transformErrorResponse.getWarnings() != null ? transformErrorResponse.getWarnings() : new ArrayList<>();
+    public CaseResponse validateExceptionRecord(CaseResponse transformResponse, ExceptionRecord exceptionRecord, Map<String, Object> caseData, boolean combineWarnings) {
+        warnings = transformResponse != null && transformResponse.getWarnings() != null ? transformResponse.getWarnings() : new ArrayList<>();
         errors = new ArrayList<>();
         callbackType = EXCEPTION_CALLBACK;
 
@@ -86,11 +87,26 @@ public class SscsCaseValidator implements CaseValidator {
 
         validateAppeal(ocrCaseData.getOcrCaseData(), caseData);
 
+        if (combineWarnings) {
+            warnings = combineWarnings();
+        }
+
         return CaseResponse.builder()
             .errors(errors)
             .warnings(warnings)
             .transformedCase(caseData)
+            .status(getValidationStatus(errors, warnings))
             .build();
+    }
+
+    private List<String> combineWarnings() {
+        List<String> mergedWarnings = new ArrayList<>();
+
+        mergedWarnings.addAll(warnings);
+        mergedWarnings.addAll(errors);
+        errors.clear();
+
+        return mergedWarnings;
     }
 
     @Override
