@@ -100,7 +100,10 @@ public class SscsDataHelper {
 
     public String getCreatedInGapsFromField(Appeal appeal) {
 
-        if (null != appeal && null != appeal.getMrnDetails() && null != appeal.getMrnDetails().getDwpIssuingOffice()) {
+        if (null != appeal
+                && null != appeal.getMrnDetails()
+                && null != appeal.getMrnDetails().getDwpIssuingOffice()
+                && null != appeal.getBenefitType()) {
             Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
 
             return officeMapping.isPresent() && offices.contains(officeMapping.get().getCode()) ? READY_TO_LIST.getId() : VALID_APPEAL.getId();
