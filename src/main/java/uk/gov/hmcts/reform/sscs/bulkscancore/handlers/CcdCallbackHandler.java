@@ -15,7 +15,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
@@ -28,6 +31,7 @@ import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationRe
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @Component
@@ -70,9 +74,9 @@ public class CcdCallbackHandler {
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
-        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordForValidation(exceptionRecord);
+        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, true);
 
-        if (caseTransformationResponse != null && caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
+        if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
             log.info("Errors found during validation for id {}", exceptionRecordId);
             return caseTransformationResponse;
         }
@@ -87,9 +91,9 @@ public class CcdCallbackHandler {
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
-        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCase(exceptionRecord);
+        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, false);
 
-        if (caseTransformationResponse != null && caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
+        if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
             log.info("Errors found while transforming exception record id {}", exceptionRecordId);
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
         }
@@ -117,13 +121,13 @@ public class CcdCallbackHandler {
     }
 
     //FIXME: Remove after bulk scan migration
-    public CallbackResponse handleOld(ExceptionCaseData exceptionCaseData, Token token) {
+    public CallbackResponse handleOld(ExceptionCaseData exceptionCaseData, IdamTokens token) {
 
         String exceptionRecordId = exceptionCaseData.getCaseDetails().getCaseId();
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
-        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCaseOld(exceptionCaseData.getCaseDetails());
+        CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecordToCaseOld(exceptionCaseData.getCaseDetails(), token);
         AboutToStartOrSubmitCallbackResponse transformErrorResponse = checkForErrorsAndWarningsOld(caseTransformationResponse, exceptionRecordId, exceptionCaseData.isIgnoreWarnings());
 
         if (transformErrorResponse != null && transformErrorResponse.getErrors() != null && transformErrorResponse.getErrors().size() > 0) {
@@ -155,12 +159,12 @@ public class CcdCallbackHandler {
                 }
             }
             log.info("Exception record id {} validated successfully", exceptionRecordId);
-            return update(exceptionCaseData, caseValidationResponse, exceptionCaseData.isIgnoreWarnings(), token,
-                exceptionRecordId, exceptionCaseData.getCaseDetails().getCaseData());
+
+            return update(exceptionCaseData, caseValidationResponse, token, exceptionRecordId);
         }
     }
 
-    public PreSubmitCallbackResponse<SscsCaseData> handleValidationAndUpdate(Callback<SscsCaseData> callback) {
+    public PreSubmitCallbackResponse<SscsCaseData> handleValidationAndUpdate(Callback<SscsCaseData> callback, IdamTokens token) {
         log.info("Processing validation and update request for SSCS exception record id {}", callback.getCaseDetails().getId());
 
         if (null != callback.getCaseDetails().getCaseData().getInterlocReviewState()) {
@@ -191,6 +195,8 @@ public class CcdCallbackHandler {
             if (caseValidationResponse.getWarnings() != null) {
                 preSubmitCallbackResponse.addWarnings(caseValidationResponse.getWarnings());
             }
+
+            caseValidationResponse.setTransformedCase(caseTransformer.checkForMatches(caseValidationResponse.getTransformedCase(), token));
 
             return preSubmitCallbackResponse;
         }
@@ -233,13 +239,15 @@ public class CcdCallbackHandler {
         }
     }
 
-    private CallbackResponse update(ExceptionCaseData exceptionCaseData, CaseResponse caseValidationResponse, Boolean isIgnoreWarnings, Token token, String exceptionRecordId, Map<String, Object> exceptionRecordData) {
+    private CallbackResponse update(ExceptionCaseData exceptionCaseData, CaseResponse caseValidationResponse, IdamTokens token, String exceptionRecordId) {
         HandlerResponse handlerResponse = (HandlerResponse) caseDataHandler.handle(
             exceptionCaseData,
             caseValidationResponse,
-            isIgnoreWarnings,
+            exceptionCaseData.isIgnoreWarnings(),
             token,
             exceptionRecordId);
+
+        Map<String, Object> exceptionRecordData = exceptionCaseData.getCaseDetails().getCaseData();
 
         if (handlerResponse != null) {
             String state = handlerResponse.getState();

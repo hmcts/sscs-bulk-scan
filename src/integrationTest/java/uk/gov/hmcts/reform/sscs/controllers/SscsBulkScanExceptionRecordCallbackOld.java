@@ -219,6 +219,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
     public void should_not_create_duplicate_non_compliant_case_when_case_reference_not_null() throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         Map<String,Object> exceptionData = caseDataWithMrnDate("01/01/2017");
         exceptionData.put("caseReference","1539878003972756");
@@ -250,6 +251,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
     public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benifit_code_case_exists() throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
                 exceptionCaseData(caseDataWithMrnDate("01/01/2017")),
@@ -334,6 +336,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
         headers.set(USER_ID_HEADER, USER_ID);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         findCaseByForCaseworkerWithUserTokenHavingNoAccess(FIND_CASE_EVENT_URL, "2018-12-09");
         startForCaseworkerStubWithUserTokenHavingNoAccess(START_EVENT_VALID_APPEAL_CREATED_URL);
@@ -730,19 +733,6 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
                         .withBody("[]")));
     }
 
-    private void checkForLinkedCases(String eventUrl) {
-        String queryUrl = getParamsMatchCaseUrl();
-
-        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
-            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
-            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
-            .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
-            .willReturn(aResponse()
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .withStatus(200)
-                .withBody("[]")));
-    }
-
     private void findCaseByForCaseworkerReturnCaseDetails(String eventUrl, String mrnDate) throws Exception {
         String queryUrl = getParamsUrl(mrnDate);
 
@@ -754,30 +744,6 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .withStatus(200)
                         .withBody(loadJson("mappings/existing-case-details-200-response.json"))));
-    }
-
-    private String getParamsUrl(String mrnDate) {
-        Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.appeal.appellant.identity.nino", "BB000000B");
-        searchCriteria.put("case.appeal.benefitType.code", "ESA");
-        searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
-
-        return searchCriteria.entrySet().stream()
-                .map(p -> p.getKey() + "=" + p.getValue())
-                .reduce((p1, p2) -> p1 + "&" + p2)
-                .map(s -> "?" + s)
-                .orElse("");
-    }
-
-    private String getParamsMatchCaseUrl() {
-        Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.appeal.appellant.identity.nino", "BB000000B");
-
-        return searchCriteria.entrySet().stream()
-            .map(p -> p.getKey() + "=" + p.getValue())
-            .reduce((p1, p2) -> p1 + "&" + p2)
-            .map(s -> "?" + s)
-            .orElse("");
     }
 
     private static String loadJson(String fileName) throws IOException {

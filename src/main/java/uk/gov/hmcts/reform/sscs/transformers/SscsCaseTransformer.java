@@ -17,8 +17,11 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.idam.IdamService;
+import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
@@ -43,6 +46,12 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Autowired
     private DwpAddressLookupService dwpAddressLookupService;
 
+    @Autowired
+    private final IdamService idamService;
+
+    @Autowired
+    private final CcdService ccdService;
+
     private Set<String> errors;
     private Set<String> warnings;
 
@@ -50,16 +59,22 @@ public class SscsCaseTransformer implements CaseTransformer {
                                SscsKeyValuePairValidator keyValuePairValidator,
                                SscsDataHelper sscsDataHelper,
                                FuzzyMatcherService fuzzyMatcherService,
-                               DwpAddressLookupService dwpAddressLookupService) {
+                               DwpAddressLookupService dwpAddressLookupService,
+                               IdamService idamService,
+                               CcdService ccdService) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.fuzzyMatcherService = fuzzyMatcherService;
         this.dwpAddressLookupService = dwpAddressLookupService;
+        this.idamService = idamService;
+        this.ccdService = ccdService;
     }
 
     @Override
-    public CaseResponse transformExceptionRecordToCase(ExceptionRecord exceptionRecord) {
+    public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
+        IdamTokens token = idamService.getIdamTokens();
+
         CaseResponse keyValuePairValidatorResponse = validateAgainstSchema(exceptionRecord);
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
@@ -67,19 +82,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             return keyValuePairValidatorResponse;
         }
 
-        return extractAndTransform(exceptionRecord, false);
-    }
-
-    @Override
-    public CaseResponse transformExceptionRecordForValidation(ExceptionRecord exceptionRecord) {
-        CaseResponse keyValuePairValidatorResponse = validateAgainstSchema(exceptionRecord);
-
-        if (keyValuePairValidatorResponse.getErrors() != null) {
-            log.info("Errors found while validating key value pairs while transforming exception record {}", exceptionRecord.getId());
-            return keyValuePairValidatorResponse;
-        }
-
-        return extractAndTransform(exceptionRecord, true);
+        return extractAndTransform(exceptionRecord, combineWarnings, token);
     }
 
     private CaseResponse validateAgainstSchema(ExceptionRecord exceptionRecord) {
@@ -88,7 +91,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         return keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
     }
 
-    private CaseResponse extractAndTransform(ExceptionRecord exceptionRecord, boolean combineWarnings) {
+    private CaseResponse extractAndTransform(ExceptionRecord exceptionRecord, boolean combineWarnings, IdamTokens token) {
         String caseId = exceptionRecord.getId();
 
         log.info("Extracting and transforming exception record {}", caseId);
@@ -98,7 +101,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
 
-        Map<String, Object> transformed = transformData(caseId, scannedData);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token);
 
         if (combineWarnings) {
             warnings = combineWarnings();
@@ -119,7 +122,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     @Override
-    public CaseResponse transformExceptionRecordToCaseOld(CaseDetails caseDetails) {
+    public CaseResponse transformExceptionRecordToCaseOld(CaseDetails caseDetails, IdamTokens token) {
         String caseId = caseDetails.getCaseId();
 
         log.info("Transforming exception record {}", caseId);
@@ -138,12 +141,12 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         ScannedData scannedData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
 
-        Map<String, Object> transformed = transformData(caseId, scannedData);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token);
 
         return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
     }
 
-    private Map<String, Object> transformData(String caseId, ScannedData scannedData) {
+    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token) {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
@@ -157,6 +160,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         transformed.put("caseCreated", scannedData.getOpeningDate());
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, scannedData.getOpeningDate());
+
+        transformed = checkForMatches(transformed, token);
 
         return transformed;
     }
@@ -552,5 +557,44 @@ public class SscsCaseTransformer implements CaseTransformer {
         } else {
             errors.add("File name field must not be empty");
         }
+    }
+
+    public Map<String, Object> checkForMatches(Map<String, Object> sscsCaseData, IdamTokens token) {
+        Appeal appeal = (Appeal) sscsCaseData.get("appeal");
+        String nino = "";
+        if (appeal != null && appeal.getAppellant() != null
+            && appeal.getAppellant().getIdentity() != null && appeal.getAppellant().getIdentity().getNino() != null) {
+            nino = appeal.getAppellant().getIdentity().getNino();
+        }
+
+        List<SscsCaseDetails> matchedByNinoCases = new ArrayList<>();
+
+        if (!StringUtils.isEmpty(nino)) {
+            Map<String, String> linkCasesCriteria = new HashMap<>();
+            linkCasesCriteria.put("case.appeal.appellant.identity.nino", nino);
+            matchedByNinoCases = ccdService.findCaseBy(linkCasesCriteria, token);
+        }
+
+        sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
+        return sscsCaseData;
+    }
+
+    private Map<String, Object> addAssociatedCases(Map<String, Object> sscsCaseData, List<SscsCaseDetails> matchedByNinoCases) {
+        List<CaseLink> associatedCases = new ArrayList<>();
+
+        for (SscsCaseDetails sscsCaseDetails : matchedByNinoCases) {
+            CaseLink caseLink = CaseLink.builder().value(
+                CaseLinkDetails.builder().caseReference(sscsCaseDetails.getId().toString()).build()).build();
+            associatedCases.add(caseLink);
+            log.info("Added associated case " + sscsCaseDetails.getId().toString());
+        }
+        if (associatedCases.size() > 0) {
+            sscsCaseData.put("associatedCase", associatedCases);
+            sscsCaseData.put("linkedCasesBoolean", "Yes");
+        } else {
+            sscsCaseData.put("linkedCasesBoolean", "No");
+        }
+
+        return sscsCaseData;
     }
 }

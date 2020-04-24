@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @RunWith(SpringRunner.class)
@@ -63,11 +65,15 @@ public class CcdCallbackHandlerTest {
 
     private Map<String, Object> transformedCase;
 
+    private IdamTokens idamTokens;
+
     @Before
     public void setUp() {
         sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), new ArrayList<>(), dwpAddressLookupService);
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper,
             dwpAddressLookupService);
+        idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
+
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("PIP", "3"))
             .willReturn("Springburn");
@@ -87,7 +93,7 @@ public class CcdCallbackHandlerTest {
 
         CaseResponse response = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord)).thenReturn(response);
+        when(caseTransformer.transformExceptionRecord(exceptionRecord, false)).thenReturn(response);
 
         // No errors and warnings are populated hence validation would be successful
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
@@ -104,7 +110,7 @@ public class CcdCallbackHandlerTest {
     public void should_return_exception_record_and_errors_in_callback_response_when_transformation_fails() {
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().build();
 
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord))
+        when(caseTransformer.transformExceptionRecord(exceptionRecord, false))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
                 .build());
@@ -118,7 +124,7 @@ public class CcdCallbackHandlerTest {
 
         CaseResponse response = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord)).thenReturn(response);
+        when(caseTransformer.transformExceptionRecord(exceptionRecord, false)).thenReturn(response);
 
         when(caseValidator.validateExceptionRecord(response, exceptionRecord, transformedCase, false))
             .thenReturn(CaseResponse.builder()
@@ -135,7 +141,7 @@ public class CcdCallbackHandlerTest {
         List<String> warnings = new ArrayList<>();
         warnings.add("First warning");
 
-        when(caseTransformer.transformExceptionRecordToCase(exceptionRecord))
+        when(caseTransformer.transformExceptionRecord(exceptionRecord, false))
             .thenReturn(CaseResponse.builder()
                 .transformedCase(transformedCase)
                 .warnings(warnings)
@@ -297,7 +303,6 @@ public class CcdCallbackHandlerTest {
             State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
 
         return ccdCallbackHandler.handleValidationAndUpdate(
-            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false)
-        );
+            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false), idamTokens);
     }
 }

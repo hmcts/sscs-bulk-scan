@@ -77,7 +77,8 @@
       "caseCreated": "2018-01-11",
       "createdInGapsFrom": "validAppeal",
       "dwpRegionalCentre": "Watford DRT",
-      "issueCode": "DD"
+      "issueCode": "DD",
+      "linkedCasesBoolean": "No"
     },
     "case_type_id": "Benefit",
     "event_id": "incompleteApplicationReceived"

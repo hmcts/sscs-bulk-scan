@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 //FIXME: delete this test class after migration
@@ -60,16 +61,21 @@ public class CcdCallbackHandlerTestOld {
     @Captor
     private ArgumentCaptor<AboutToStartOrSubmitCallbackResponse> warningCaptor;
 
+    private IdamTokens idamTokens;
+
     @Before
     public void setUp() {
         sscsDataHelper = new SscsDataHelper(null, new ArrayList<>(), dwpAddressLookupService);
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper,
             dwpAddressLookupService);
+        idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
+
         ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("PIP", "3"))
             .willReturn("Springburn");
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("ESA", "Balham DRT"))
             .willReturn("Balham");
+
     }
 
     @Test
@@ -82,7 +88,7 @@ public class CcdCallbackHandlerTestOld {
             .state("ScannedRecordReceived")
             .build();
 
-        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails))
+        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails, idamTokens))
             .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
@@ -98,7 +104,7 @@ public class CcdCallbackHandlerTestOld {
             any(ExceptionCaseData.class),
             eq(caseValidationResponse),
             eq(false),
-            eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()),
+            eq(idamTokens),
             eq(null))
         ).thenReturn(HandlerResponse.builder().state("DocUpdated").build());
 
@@ -120,7 +126,7 @@ public class CcdCallbackHandlerTestOld {
             .state("ScannedRecordReceived")
             .build();
 
-        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails))
+        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails, idamTokens))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Cannot transform Appellant Date of Birth. Please enter valid date"))
                 .build()
@@ -145,7 +151,7 @@ public class CcdCallbackHandlerTestOld {
             .state("ScannedRecordReceived")
             .build();
 
-        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails))
+        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails, idamTokens))
             .thenReturn(CaseResponse.builder()
                 .transformedCase(caseDataCreator.sscsCaseData())
                 .build()
@@ -181,7 +187,7 @@ public class CcdCallbackHandlerTestOld {
             .warnings(warnings)
             .build();
 
-        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails))
+        when(caseTransformer.transformExceptionRecordToCaseOld(caseDetails, idamTokens))
             .thenReturn(caseResponse);
 
         List<String> warnings2 = new ArrayList<>();
@@ -340,8 +346,7 @@ public class CcdCallbackHandlerTestOld {
             ExceptionCaseData.builder()
                 .caseDetails(caseDetails)
                 .eventId("createNewCase")
-                .build(),
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()
+                .build(), idamTokens
         );
     }
 
@@ -350,8 +355,7 @@ public class CcdCallbackHandlerTestOld {
             State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
 
         return ccdCallbackHandler.handleValidationAndUpdate(
-            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false)
-        );
+            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false), idamTokens);
     }
 
     private static <K, V> Map.Entry<K, V> entry(K key, V value) {

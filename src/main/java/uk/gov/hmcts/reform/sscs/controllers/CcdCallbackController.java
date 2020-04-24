@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.deserialisation.SscsCaseCallbackDeserializer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @RestController
 public class CcdCallbackController {
@@ -74,7 +74,7 @@ public class CcdCallbackController {
 
         logger.info("Service {} allowed for exception record id {}, proceeding to create access token", serviceName, exceptionRecordId);
 
-        Token token = Token.builder().serviceAuthToken(serviceAuthToken).userAuthToken(userAuthToken).userId(userId).build();
+        IdamTokens token = IdamTokens.builder().serviceAuthorization(serviceAuthToken).idamOauth2Token(userAuthToken).userId(userId).build();
 
         CallbackResponse ccdCallbackResponse =
             ccdCallbackHandler.handleOld(caseData, token);
@@ -93,7 +93,9 @@ public class CcdCallbackController {
         @ApiResponse(code = 500, message = "Internal Server Error")
     })
     public ResponseEntity<PreSubmitCallbackResponse<SscsCaseData>> handleValidationCallback(
+        @RequestHeader(value = "Authorization") String userAuthToken,
         @RequestHeader(value = "serviceauthorization", required = false) String serviceAuthToken,
+        @RequestHeader(value = "user-id") String userId,
         @RequestBody String message) {
 
         Callback<SscsCaseData> callback = deserializer.deserialize(message);
@@ -106,7 +108,9 @@ public class CcdCallbackController {
 
         authService.assertIsAllowedToHandleCallback(serviceName);
 
-        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = ccdCallbackHandler.handleValidationAndUpdate(callback);
+        IdamTokens token = IdamTokens.builder().serviceAuthorization(serviceAuthToken).idamOauth2Token(userAuthToken).userId(userId).build();
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = ccdCallbackHandler.handleValidationAndUpdate(callback, token);
 
         return ResponseEntity.ok(ccdCallbackResponse);
     }

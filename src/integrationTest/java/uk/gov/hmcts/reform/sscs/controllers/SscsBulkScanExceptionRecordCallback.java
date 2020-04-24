@@ -49,6 +49,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     @Test
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -81,7 +82,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     @Test
     public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
-        // Given
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
@@ -386,19 +387,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
                         .withBody(loadJson("mappings/existing-case-details-200-response.json"))));
     }
 
-    private String getParamsUrl(String mrnDate) {
-        Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.appeal.appellant.identity.nino", "BB000000B");
-        searchCriteria.put("case.appeal.benefitType.code", "ESA");
-        searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
-
-        return searchCriteria.entrySet().stream()
-                .map(p -> p.getKey() + "=" + p.getValue())
-                .reduce((p1, p2) -> p1 + "&" + p2)
-                .map(s -> "?" + s)
-                .orElse("");
-    }
-
     private static String loadJson(String fileName) throws IOException {
         URL url = getResource(fileName);
         return Resources.toString(url, Charsets.toCharset("UTF-8"));
@@ -431,5 +419,16 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         headers.set(SERVICE_AUTHORIZATION_HEADER_KEY, SERVICE_AUTH_TOKEN);
         headers.set(USER_ID_HEADER, USER_ID);
         return headers;
+    }
+
+    private String getParamsMatchCaseUrl() {
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("case.appeal.appellant.identity.nino", "BB000000B");
+
+        return searchCriteria.entrySet().stream()
+            .map(p -> p.getKey() + "=" + p.getValue())
+            .reduce((p1, p2) -> p1 + "&" + p2)
+            .map(s -> "?" + s)
+            .orElse("");
     }
 }

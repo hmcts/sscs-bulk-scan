@@ -9,7 +9,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import org.junit.Test;
@@ -24,11 +25,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
 import uk.gov.hmcts.reform.sscs.exceptions.UnauthorizedException;
+import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(CcdCallbackController.class)
@@ -48,7 +49,7 @@ public class CcdCallbackControllerTest {
     public void should_successfully_handle_callback_and_return_exception_record_response() throws Exception {
         given(ccdCallbackHandler.handleOld(
             any(ExceptionCaseData.class),
-            eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
+            eq(IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
         ).willReturn(AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataCreator.exceptionCaseData())
             .build()
@@ -83,7 +84,7 @@ public class CcdCallbackControllerTest {
     public void should_throw_exception_when_handler_fails() throws Exception {
         given(ccdCallbackHandler.handleOld(
             any(ExceptionCaseData.class),
-            eq(Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
+            eq(IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
         ).willThrow(RuntimeException.class);
 
         given(authService.authenticate("test-header"))
