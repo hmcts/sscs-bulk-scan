@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.OK;
 
-import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils;
 import io.restassured.response.Response;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -87,11 +86,5 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
         SscsCaseDetails caseDetails = ccdService.getByCaseId(Long.valueOf(ccdCaseId), idamTokens);
 
         assertEquals("appealCreated", caseDetails.getState());
-    }
-
-    private String replaceNino(String json) {
-        json = json.replace("{PERSON1_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "A");
-        json = json.replace("{PERSON2_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "B");
-        return json;
     }
 }

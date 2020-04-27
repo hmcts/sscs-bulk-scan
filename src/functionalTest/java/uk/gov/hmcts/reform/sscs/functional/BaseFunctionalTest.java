@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.functional;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
@@ -113,5 +114,11 @@ public class BaseFunctionalTest {
 
     protected Response transformExceptionRequest(String json, int statusCode) {
         return simulateCcdCallback(json, "/transform-exception-record", statusCode);
+    }
+
+    protected String replaceNino(String json) {
+        json = json.replace("{PERSON1_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "A");
+        json = json.replace("{PERSON2_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "B");
+        return json;
     }
 }
