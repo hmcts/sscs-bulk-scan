@@ -35,10 +35,10 @@ spec:
         env:
           - name: IDAM_OAUTH2_CLIENT_SECRET
             value: "${IDAM_OAUTH2_CLIENT_SECRET}"
-          - name: IDAM_OAUTH2_USER_EMAIL
-            value: "${IDAM_OAUTH2_USER_EMAIL}"
-          - name: IDAM_OAUTH2_USER_PASSWORD
-            value: "${IDAM_OAUTH2_USER_PASSWORD}"
+          - name: IDAM_SSCS_SYSTEMUPDATE_USER
+            value: "${IDAM_SSCS_SYSTEMUPDATE_USER}"
+          - name: IDAM_SSCS_SYSTEMUPDATE_PASSWORD
+            value: "${IDAM_SSCS_SYSTEMUPDATE_PASSWORD}"
           - name: IDAM_OAUTH2_REDIRECT_URL
               value: "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
           - name: S2S_SECRET

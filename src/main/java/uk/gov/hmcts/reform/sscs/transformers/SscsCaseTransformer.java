@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
-import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
@@ -47,7 +46,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private DwpAddressLookupService dwpAddressLookupService;
 
     @Autowired
-    private final IdamService idamService;
+    private final IdamService2 idamService;
 
     @Autowired
     private final CcdService ccdService;
@@ -60,7 +59,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                                SscsDataHelper sscsDataHelper,
                                FuzzyMatcherService fuzzyMatcherService,
                                DwpAddressLookupService dwpAddressLookupService,
-                               IdamService idamService,
+                               IdamService2 idamService,
                                CcdService ccdService) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;

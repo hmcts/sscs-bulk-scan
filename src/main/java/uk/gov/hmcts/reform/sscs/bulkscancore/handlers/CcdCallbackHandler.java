@@ -38,7 +38,7 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 @Slf4j
 public class CcdCallbackHandler {
 
-    private static final String LOGSTR_VALIDATION_ERRORS = "\"Errors found while validating exception record id {}\"";
+    private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {}";
 
     private final CaseTransformer caseTransformer;
 
