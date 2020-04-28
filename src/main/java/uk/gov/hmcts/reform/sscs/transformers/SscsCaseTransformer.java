@@ -573,12 +573,6 @@ public class SscsCaseTransformer implements CaseTransformer {
             Map<String, String> linkCasesCriteria = new HashMap<>();
             linkCasesCriteria.put("case.appeal.appellant.identity.nino", nino);
             matchedByNinoCases = ccdService.findCaseBy(linkCasesCriteria, token);
-
-            if (matchedByNinoCases != null) {
-                log.info("matchedByNinoCases nino: " + nino);
-                log.info("matchedByNinoCases size: " + matchedByNinoCases.size());
-            }
-
         }
 
         sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);

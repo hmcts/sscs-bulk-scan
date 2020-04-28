@@ -12,7 +12,6 @@ import java.util.List;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +47,6 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
     }
 
     @Test
-    @Ignore
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
         String json = getJson("import/some_mandatory_fields_missing.json");
         json = replaceNino(json);
@@ -59,7 +57,6 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
 
     @Test
     @Parameters({"see scanned SSCS1 form,over13months", ",over13MonthsAndGroundsMissing"})
-    @Ignore
     public void create_interlocutory_review_case_when_mrn_date_greater_than_13_months(String appealGrounds,
                                                                                       String expected) throws IOException {
         String json = getJson("import/mrn_date_greater_than_13_months.json");
@@ -73,7 +70,6 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
     }
 
     @Test
-    @Ignore
     public void validate_nino_normalised() throws IOException {
         createCase();
         String json = getJson("import/validate_appeal_created_case_request.json");
@@ -87,7 +83,6 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
     }
 
     @Test
-    @Ignore
     public void validate_and_update_incomplete_case_to_appeal_created_case() throws IOException {
         createCase();
         String json = getJson("import/validate_appeal_created_case_request.json");
