@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
@@ -46,7 +47,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private DwpAddressLookupService dwpAddressLookupService;
 
     @Autowired
-    private final IdamService2 idamService;
+    private final IdamService idamService;
 
     @Autowired
     private final CcdService ccdService;
@@ -59,7 +60,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                                SscsDataHelper sscsDataHelper,
                                FuzzyMatcherService fuzzyMatcherService,
                                DwpAddressLookupService dwpAddressLookupService,
-                               IdamService2 idamService,
+                               IdamService idamService,
                                CcdService ccdService) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
@@ -572,6 +573,12 @@ public class SscsCaseTransformer implements CaseTransformer {
             Map<String, String> linkCasesCriteria = new HashMap<>();
             linkCasesCriteria.put("case.appeal.appellant.identity.nino", nino);
             matchedByNinoCases = ccdService.findCaseBy(linkCasesCriteria, token);
+
+            if (matchedByNinoCases != null) {
+                log.info("matchedByNinoCases nino: " + nino);
+                log.info("matchedByNinoCases size: " + matchedByNinoCases.size());
+            }
+
         }
 
         sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);

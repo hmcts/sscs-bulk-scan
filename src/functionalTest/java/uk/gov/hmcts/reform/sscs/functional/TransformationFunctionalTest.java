@@ -13,6 +13,7 @@ import java.util.Map;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +27,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    @Ignore
     public void transform_appeal_created_case_when_all_fields_entered() throws IOException {
         String json = getJson("exception/all_fields_entered.json");
         Response response = transformExceptionRequest(json, OK.value());
@@ -51,6 +53,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    @Ignore
     public void transform_incomplete_case_when_missing_mandatory_fields() throws IOException {
         String json = getJson("exception/some_mandatory_fields_missing.json");
         Response response = transformExceptionRequest(json, OK.value());
@@ -76,6 +79,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    @Ignore
     @Parameters({"see scanned SSCS1 form,over13months", ",over13MonthsAndGroundsMissing"})
     public void transform_interlocutory_review_case_when_mrn_date_greater_than_13_months(String appealGrounds,
                                                                                       String expected) throws IOException {
@@ -105,6 +109,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
     }
 
     @Test
+    @Ignore
     public void should_not_transform_exception_record_when_schema_validation_fails_and_respond_with_422() throws IOException {
         String json = getJson("exception/invalid_name_key.json");
 
@@ -122,6 +127,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
     }
 
     @Test
+    @Ignore
     public void should_not_transform_exception_record_when_validation_error_and_respond_with_422() throws IOException {
         String json = getJson("exception/invalid_mobile_number.json");
 

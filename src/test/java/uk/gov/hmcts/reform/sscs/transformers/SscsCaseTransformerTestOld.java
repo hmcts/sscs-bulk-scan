@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
@@ -58,7 +59,7 @@ public class SscsCaseTransformerTestOld {
     DwpAddressLookupService dwpAddressLookupService;
 
     @Mock
-    IdamService2 idamService;
+    IdamService idamService;
 
     @Mock
     CcdService ccdService;
