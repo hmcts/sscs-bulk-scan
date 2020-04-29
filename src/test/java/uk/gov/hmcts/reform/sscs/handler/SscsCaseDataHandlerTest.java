@@ -1,28 +1,16 @@
 package uk.gov.hmcts.reform.sscs.handler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.SEND_TO_DWP;
-import static uk.gov.hmcts.reform.sscs.common.TestHelper.TEST_SERVICE_AUTH_TOKEN;
-import static uk.gov.hmcts.reform.sscs.common.TestHelper.TEST_USER_AUTH_TOKEN;
-import static uk.gov.hmcts.reform.sscs.common.TestHelper.TEST_USER_ID;
+import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.assertj.core.util.Lists;
@@ -38,17 +26,17 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.Token;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
+import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @RunWith(JUnitParamsRunner.class)
 public class SscsCaseDataHandlerTest {
-    private final Token token = Token.builder()
-        .userAuthToken(TEST_USER_AUTH_TOKEN)
-        .serviceAuthToken(TEST_SERVICE_AUTH_TOKEN)
+    private final IdamTokens token = IdamTokens.builder()
+        .idamOauth2Token(TEST_USER_AUTH_TOKEN)
+        .serviceAuthorization(TEST_SERVICE_AUTH_TOKEN)
         .userId(TEST_USER_ID)
         .build();
     private SscsCaseDataHandler sscsCaseDataHandler;
@@ -148,8 +136,7 @@ public class SscsCaseDataHandlerTest {
         when(caseDetails.getCaseData()).thenReturn(caseData);
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(new ArrayList<>()).transformedCase(transformedCase).build();
 
-        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        CallbackResponse response = sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false, token, null);
 
         verifyZeroInteractions(caseDataHelper);
     }
@@ -174,8 +161,7 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(new ArrayList<>()).transformedCase(transformedCase).build();
 
-        sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
-            Token.builder().userAuthToken(TEST_USER_AUTH_TOKEN).serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(), null);
+        sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false, token, null);
 
         verify(caseDataHelper).findCaseBy(getSearchCriteria(nino, benifitCode, mrnDate.toString()), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID);
     }
@@ -216,19 +202,6 @@ public class SscsCaseDataHandlerTest {
 
         verify(caseDataHelper).createCase(transformedCaseCaptor.capture(), eq(TEST_USER_AUTH_TOKEN), eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_USER_ID), eq("validAppealCreated"));
-
-        List<Map<String, Object>> list = transformedCaseCaptor.getAllValues();
-
-        boolean associatedCaseListCheck = list.stream()
-            .filter(m -> m.containsKey("associatedCase"))
-            .anyMatch(m -> ((List)m.get("associatedCase")).size() == 1);
-        assertTrue(associatedCaseListCheck);
-
-
-        boolean linkedCasesBooleanCheck = list.stream()
-            .filter(m -> m.containsKey("linkedCasesBoolean"))
-            .anyMatch(m -> m.containsValue("Yes"));
-        assertTrue(linkedCasesBooleanCheck);
 
         verify(caseDataHelper).updateCase(transformedCase,
             TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(),
@@ -276,11 +249,6 @@ public class SscsCaseDataHandlerTest {
             .filter(m -> m.containsKey("interlocReferralReason"))
             .anyMatch(m -> m.containsValue("over13months"));
         assertFalse(interlocReferralReasonFieldAndValueCheck);
-
-        boolean linkedCasesBooleanCheck = transformedCaseCaptor.getAllValues().stream()
-            .filter(m -> m.containsKey("linkedCasesBoolean"))
-            .anyMatch(m -> m.containsValue("No"));
-        assertTrue(linkedCasesBooleanCheck);
 
         verify(caseDataHelper).updateCase(transformedCase,
             TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, SEND_TO_DWP.getCcdType(),
@@ -512,10 +480,7 @@ public class SscsCaseDataHandlerTest {
         given(sscsDataHelper.findEventToCreateCase(caseValidationResponse)).willReturn("appealCreated");
 
         sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
-            Token.builder()
-                .userAuthToken(TEST_USER_AUTH_TOKEN)
-                .serviceAuthToken(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build(),
-            null);
+            token, null);
     }
 
     private Map<String, String> getSearchCriteria() {

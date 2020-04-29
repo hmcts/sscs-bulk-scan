@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.helper;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
+import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import java.time.LocalDate;
@@ -11,12 +12,14 @@ import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
@@ -106,6 +109,16 @@ public class SscsDataHelper {
             return officeMapping.isPresent() && offices.contains(officeMapping.get().getCode()) ? READY_TO_LIST.getId() : VALID_APPEAL.getId();
         }
         return null;
+    }
+
+    public static ValidationStatus getValidationStatus(List<String> errors, List<String> warnings) {
+        if (!ObjectUtils.isEmpty(errors)) {
+            return ERRORS;
+        }
+        if (!ObjectUtils.isEmpty(warnings)) {
+            return WARNINGS;
+        }
+        return SUCCESS;
     }
 
 }

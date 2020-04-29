@@ -6,7 +6,19 @@
       "poBox": "SSCSPO",
       "journeyClassification": "New Application",
       "poBoxJurisdiction": "SSCS",
-      "scannedDocuments": [],
+      "scannedDocuments":[{
+        "value":{
+          "fileName":"test.pdf",
+          "type":"form",
+          "scannedDate":"2020-04-01T01:01:01.000",
+          "subtype":"sscs1",
+          "url":{
+            "document_binary_url":"{DM_STORE}/documents/f0069466-a14e-4368-8cf7-14420899ab7d/binary",
+            "document_filename":"result15.pdf",
+            "document_url":"{DM_STORE}/documents/f0069466-a14e-4368-8cf7-14420899ab7d"},
+          "controlNumber":"20058040100230001"
+        }
+      }],
       "scanOCRData": [
         {
           "value": {

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+//FIXME: Look at deleting this after bulk scan migration
 public class ExceptionCaseData {
     private String token;
     @JsonProperty("event_id")

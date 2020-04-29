@@ -33,6 +33,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         String validationJson = loadJson("mappings/validation/validate-appeal-created-case-request.json");
 
@@ -60,6 +61,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
 
         String validationJson = loadJson("mappings/validation/validate-interloc-appeal-created-case-request.json");
 
