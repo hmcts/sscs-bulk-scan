@@ -924,6 +924,34 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    @Parameters({"true", "false"})
+    public void givenACaseAlreadyExistsWithSameNinoBenefitTypeAndMrnDate_thenReturnAWarningWhenWarningsCombined(boolean combineWarnings) {
+
+        pairs.put(PERSON1_VALUE + NINO, APPELLANT_NINO);
+        pairs.put(MRN_DATE, MRN_DATE_VALUE);
+        pairs.put(IS_BENEFIT_TYPE_PIP, YES_LITERAL);
+
+        Map<String, String> map = new HashMap<>();
+        map.put("case.appeal.appellant.identity.nino", APPELLANT_NINO);
+        map.put("case.appeal.benefitType.code", "PIP");
+        map.put("case.appeal.mrnDetails.mrnDate", "2048-11-01");
+
+        List<SscsCaseDetails> caseDetails = new ArrayList<>();
+        caseDetails.add(SscsCaseDetails.builder().id(123L).build());
+
+        given(ccdService.findCaseBy(eq(map), any())).willReturn(caseDetails);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, combineWarnings);
+
+        String message = "Duplicate case already exists - please reject this exception record";
+        if (combineWarnings) {
+            assertEquals(message, result.getWarnings().get(0));
+        } else {
+            assertEquals(message, result.getErrors().get(0));
+        }
+    }
+
+    @Test
     public void givenACaseWithNullOcrData_thenAddErrorToList() {
 
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(null).build());
