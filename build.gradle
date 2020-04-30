@@ -249,7 +249,6 @@ dependencies {
 
   smokeTestCompile sourceSets.main.runtimeClasspath
   smokeTestCompile sourceSets.test.runtimeClasspath
-
 }
 
 dependencyManagement {
@@ -274,6 +273,10 @@ run {
 }
 
 mainClassName = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
+
+tasks.withType(Test) {
+  useJUnitPlatform()
+}
 
 bootJar {
   archiveName = 'sscs-bulk-scan.jar'

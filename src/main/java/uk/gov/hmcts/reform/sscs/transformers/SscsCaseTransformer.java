@@ -13,6 +13,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -73,25 +74,16 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     @Override
     public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
-        IdamTokens token = idamService.getIdamTokens();
 
-        CaseResponse keyValuePairValidatorResponse = validateAgainstSchema(exceptionRecord);
+        log.info("Validating exception record against schema {}", exceptionRecord.getId());
+
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record {}", exceptionRecord.getId());
             return keyValuePairValidatorResponse;
         }
 
-        return extractAndTransform(exceptionRecord, combineWarnings, token);
-    }
-
-    private CaseResponse validateAgainstSchema(ExceptionRecord exceptionRecord) {
-        log.info("Validating exception record against schema {}", exceptionRecord.getId());
-
-        return keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
-    }
-
-    private CaseResponse extractAndTransform(ExceptionRecord exceptionRecord, boolean combineWarnings, IdamTokens token) {
         String caseId = exceptionRecord.getId();
 
         log.info("Extracting and transforming exception record {}", caseId);
@@ -101,7 +93,11 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
 
+        IdamTokens token = idamService.getIdamTokens();
+
         Map<String, Object> transformed = transformData(caseId, scannedData, token);
+
+        duplicateCaseCheck(caseId, transformed, token);
 
         if (combineWarnings) {
             warnings = combineWarnings();
@@ -596,5 +592,38 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
 
         return sscsCaseData;
+    }
+
+    private void duplicateCaseCheck(String caseId, Map<String, Object> sscsCaseData, IdamTokens token) {
+        Appeal appeal = (Appeal) sscsCaseData.get("appeal");
+        String nino = "";
+        String mrnDate = "";
+        String benefitType = "";
+
+        if (appeal != null && appeal.getAppellant() != null
+            && appeal.getAppellant().getIdentity() != null && appeal.getAppellant().getIdentity().getNino() != null) {
+            nino = appeal.getAppellant().getIdentity().getNino();
+        }
+        if (appeal != null && appeal.getMrnDetails() != null) {
+            mrnDate = appeal.getMrnDetails().getMrnDate();
+        }
+        if (appeal != null && appeal.getBenefitType() != null) {
+            benefitType = appeal.getBenefitType().getCode();
+        }
+
+        if (!StringUtils.isEmpty(nino) && !StringUtils.isEmpty(benefitType)
+            && !StringUtils.isEmpty(mrnDate)) {
+            Map<String, String> searchCriteria = new HashMap<>();
+            searchCriteria.put("case.appeal.appellant.identity.nino", nino);
+            searchCriteria.put("case.appeal.benefitType.code", benefitType);
+            searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
+
+            List<SscsCaseDetails> duplicateCases = ccdService.findCaseBy(searchCriteria, token);
+
+            if (!CollectionUtils.isEmpty(duplicateCases)) {
+                log.info("Duplicate case already exists for exception record id {}", caseId);
+                errors.add("Duplicate case already exists - please reject this exception record");
+            }
+        }
     }
 }

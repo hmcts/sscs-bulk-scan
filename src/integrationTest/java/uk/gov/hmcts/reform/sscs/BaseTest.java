@@ -75,6 +75,19 @@ public abstract class BaseTest {
         ccdServer.stop();
     }
 
+    protected void findCaseByForCaseworker(String eventUrl, String mrnDate) {
+        String queryUrl = getParamsUrl(mrnDate);
+
+        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
+            .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
+            .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
+            .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .withStatus(200)
+                .withBody("[]")));
+    }
+
     protected void checkForLinkedCases(String eventUrl) {
         String queryUrl = getParamsMatchCaseUrl();
 

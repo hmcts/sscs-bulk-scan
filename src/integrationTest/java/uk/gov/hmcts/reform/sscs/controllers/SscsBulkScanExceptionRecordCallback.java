@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import org.apache.commons.codec.Charsets;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.http.HttpEntity;
@@ -50,10 +49,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2020-04-09");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate("09/12/2019")),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate("09/04/2020")),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -83,6 +83,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     @Test
     public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2017-01-01");
+
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
@@ -140,41 +142,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
-    @Test
-    @Ignore
-    public void should_not_create_duplicate_non_compliant_case_when_case_reference_not_null() throws Exception {
-        // Given
-        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-
-        Map<String,Object> exceptionData = caseDataWithMrnDate("01/01/2017");
-        exceptionData.put("caseReference","1539878003972756");
-
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            exceptionCaseData(exceptionData),
-            httpHeaders()
-        );
-
-        // When
-        ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl, request, SuccessfulTransformationResponse.class);
-
-        // Then
-        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-
-        SuccessfulTransformationResponse callbackResponse = result.getBody();
-
-        assertThat(callbackResponse.getCaseCreationDetails().getCaseData()).contains(
-            entry("caseReference", "1539878003972756"),
-            entry("state", "ScannedRecordCaseCreated")
-        );
-
-        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-    }
 
     @Test
-    @Ignore
     public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benefit_code_case_exists() throws Exception {
         // Given
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
@@ -185,22 +157,15 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         findCaseByForCaseworkerReturnCaseDetails(FIND_CASE_EVENT_URL, "2017-01-01");
 
         // When
-        ResponseEntity<SuccessfulTransformationResponse> result =
-                this.restTemplate.postForEntity(baseUrl, request, SuccessfulTransformationResponse.class);
+        ResponseEntity<ErrorResponse> result =
+                this.restTemplate.postForEntity(baseUrl, request, ErrorResponse.class);
 
         // Then
-        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-
-        SuccessfulTransformationResponse callbackResponse = result.getBody();
-
-        assertThat(callbackResponse.getCaseCreationDetails().getCaseData()).contains(
-                entry("caseReference", "1539878003972756"),
-                entry("state", "ScannedRecordCaseCreated")
-        );
+        assertThat(result.getStatusCodeValue()).isEqualTo(422);
+        assertThat(result.getBody().errors).containsOnly("Duplicate case already exists - please reject this exception record");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
-
 
     @Test
     public void should_return_warnings_when_tell_tribunal_about_dates_is_true_and_no_excluded_dates_provided() {
