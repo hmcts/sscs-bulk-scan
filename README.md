@@ -82,6 +82,14 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+## Testing End To End With Excela or Bulk Scan Processor
+
+To test the service fully end to end with Excela or the Bulk Scan Processor service then there are 2 options:
+
+1. Push your change to Demo environment and get the BSP team to push through some test data on CCD.
+2. Configure your local setup using these instructions:
+https://tools.hmcts.net/confluence/display/BSP/How+to+test+BSP+end+to+end
+
 ## Import Test Data
 
 ```bash

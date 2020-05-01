@@ -25,6 +25,7 @@ public class CaseDataHelper {
         this.caseType = caseType;
     }
 
+    //FIXME: Delete after bulk scan migration
     public Long createCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId, String eventId) {
         StartEventResponse startEventResponse = coreCaseDataApi.startForCaseworker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, eventId
@@ -39,6 +40,7 @@ public class CaseDataHelper {
         return caseDetails.getId();
     }
 
+    //FIXME: Delete after bulk scan migration
     public void updateCase(Map<String, Object> sscsCaseData, String userAuthToken, String serviceAuthToken, String userId, String eventId, Long caseId, String summary, String description) {
         StartEventResponse startEventResponse = coreCaseDataApi.startEventForCaseWorker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, String.valueOf(caseId), eventId
@@ -55,6 +57,7 @@ public class CaseDataHelper {
         return coreCaseDataApi.searchForCaseworker(userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, searchCriteria);
     }
 
+    //FIXME: Delete after bulk scan migration
     private CaseDataContent caseDataContent(Map<String, Object> sscsCaseData, String eventToken, String eventId, String summary, String description) {
         return CaseDataContent.builder()
             .data(sscsCaseData)

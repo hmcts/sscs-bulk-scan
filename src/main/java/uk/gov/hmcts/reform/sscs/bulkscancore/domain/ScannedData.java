@@ -11,6 +11,8 @@ public class ScannedData {
 
     private Map<String, Object> ocrCaseData;
 
-    private List<ScannedRecord> records;
+    private List<InputScannedDoc> records;
+
+    private String openingDate;
 
 }

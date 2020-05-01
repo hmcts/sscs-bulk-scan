@@ -46,6 +46,11 @@ sourceSets {
   }
 }
 
+dependencies {
+  integrationTestCompile(sourceSets.test.output)
+  functionalTestCompile(sourceSets.test.output)
+}
+
 tasks.withType(JavaCompile) {
   options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
@@ -142,6 +147,11 @@ pitest {
 }
 
 project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
+check.dependsOn integration
+checkstyleMain.shouldRunAfter(compileJava)
+test.shouldRunAfter(checkstyleTest)
+integration.shouldRunAfter(checkstyleIntegrationTest)
+integration.shouldRunAfter(test)
 
 sonarqube {
   properties {
@@ -225,6 +235,7 @@ dependencies {
   testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.5'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
   testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1', withoutJunit4
+  testCompile group: 'com.typesafe', name: 'config', version: '1.4.0'
 
   integrationTestCompile (group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
     exclude group: "com.github.tomakehurst", module:"wiremock-standalone"
@@ -238,7 +249,6 @@ dependencies {
 
   smokeTestCompile sourceSets.main.runtimeClasspath
   smokeTestCompile sourceSets.test.runtimeClasspath
-
 }
 
 dependencyManagement {
@@ -263,6 +273,10 @@ run {
 }
 
 mainClassName = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
+
+tasks.withType(Test) {
+  useJUnitPlatform()
+}
 
 bootJar {
   archiveName = 'sscs-bulk-scan.jar'

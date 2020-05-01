@@ -2,16 +2,20 @@ package uk.gov.hmcts.reform.sscs.json;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedOcrData;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTestOld.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.json.JSONObject;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.InputScannedDoc;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 
 public class SscsJsonExtractorTest {
@@ -24,17 +28,17 @@ public class SscsJsonExtractorTest {
         sscsJsonExtractor = new SscsJsonExtractor();
     }
 
+    LocalDateTime now = LocalDateTime.now();
+
     @Test
     public void givenExceptionCaseData_thenExtractIntoKeyValuePairs() {
 
         Map<String, Object> valueMap = new HashMap<>();
 
-        valueMap.put("key", "person1_first_name");
+        valueMap.put("name", "person1_first_name");
         valueMap.put("value", "Bob");
 
-        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanOCRData", valueMap);
-
-        ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
+        ScannedData result = sscsJsonExtractor.extractJson(buildExceptionRecordFromOcrData(valueMap));
 
         assertEquals("Bob", result.getOcrCaseData().get("person1_first_name"));
     }
@@ -42,87 +46,37 @@ public class SscsJsonExtractorTest {
     @Test
     public void givenDocumentData_thenExtractIntoSscsDocumentObject() {
 
-        Map<String, Object> valueMap = new HashMap<>();
+        List<InputScannedDoc> inputScannedDocs = new ArrayList<>();
+        InputScannedDoc scannedDoc = new InputScannedDoc("1",
+            "my subtype", DocumentLink.builder().documentUrl("www.test.com").build(),
+            "4", "Test_doc", now, now);
 
-        valueMap.put("fileName", "Test_doc");
-        valueMap.put("scannedDate", "2018-08-10");
-        valueMap.put("type", "1");
-        valueMap.put("subtype", "my subtype");
-        valueMap.put("controlNumber", "4");
-        JSONObject item = new JSONObject();
-        item.put("document_url", "www.test.com");
-        valueMap.put("url", item);
+        inputScannedDocs.add(scannedDoc);
 
-        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scannedDocuments", valueMap);
+        ScannedData result = sscsJsonExtractor.extractJson(ExceptionRecord.builder().scannedDocuments(inputScannedDocs).build());
 
-        ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
-
-        ScannedRecord expectedRecord = ScannedRecord.builder()
-            .type("1").subtype("my subtype").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
-
-        assertEquals(expectedRecord, result.getRecords().get(0));
-    }
-
-    @Test
-    public void givenDocumentData_thenExtractIntoSscsDocumentObjectWhenUnknownPropertiesPresent() {
-
-        Map<String, Object> valueMap = new HashMap<>();
-
-        valueMap.put("fileName", "Test_doc");
-        valueMap.put("scannedDate", "2018-08-10");
-        valueMap.put("deliveryDate", "2018-08-10");
-        valueMap.put("type", "1");
-        valueMap.put("subtype", "my subtype");
-        valueMap.put("controlNumber", "4");
-        JSONObject item = new JSONObject();
-        item.put("document_url", "www.test.com");
-        valueMap.put("url", item);
-
-        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scannedDocuments", valueMap);
-
-        ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
-
-        ScannedRecord expectedRecord = ScannedRecord.builder()
-            .type("1").subtype("my subtype").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
-
-        assertEquals(expectedRecord, result.getRecords().get(0));
+        assertEquals(scannedDoc, result.getRecords().get(0));
     }
 
     @Test
     public void givenMultipleDocumentData_thenExtractIntoSscsDocumentObject() {
 
-        Map<String, Object> valueMap1 = new HashMap<>();
-        valueMap1.put("fileName", "Test_doc");
-        valueMap1.put("scannedDate", "2018-08-10");
-        valueMap1.put("type", "1");
-        valueMap1.put("subtype", "my subtype1");
-        valueMap1.put("controlNumber", "4");
-        JSONObject item = new JSONObject();
-        item.put("document_url", "www.test.com");
-        valueMap1.put("url", item);
+        List<InputScannedDoc> inputScannedDocs = new ArrayList<>();
+        InputScannedDoc scannedDoc1 = new InputScannedDoc("1",
+            "my subtype1", DocumentLink.builder().documentUrl("www.test.com").build(),
+            "4", "Test_doc", now, now);
 
-        Map<String, Object> valueMap2 = new HashMap<>();
-        valueMap2.put("fileName", "Second_test_doc");
-        valueMap2.put("scannedDate", "2018-10-29");
-        valueMap2.put("type", "2");
-        valueMap2.put("subtype", "my subtype2");
-        valueMap2.put("controlNumber", "3");
-        JSONObject item2 = new JSONObject();
-        item2.put("document_url", "www.hello.com");
-        valueMap2.put("url", item2);
+        InputScannedDoc scannedDoc2 = new InputScannedDoc("2",
+            "my subtype2", DocumentLink.builder().documentUrl("www.test.com").build(),
+            "4", "Test_doc", now, now);
 
-        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scannedDocuments", valueMap1, valueMap2);
+        inputScannedDocs.add(scannedDoc1);
+        inputScannedDocs.add(scannedDoc2);
 
-        ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
+        ScannedData result = sscsJsonExtractor.extractJson(ExceptionRecord.builder().scannedDocuments(inputScannedDocs).build());
 
-        ScannedRecord expectedRecord1 = ScannedRecord.builder()
-            .type("1").subtype("my subtype1").fileName("Test_doc").url(DocumentLink.builder().documentUrl("www.test.com").build()).scannedDate("2018-08-10").build();
-
-        ScannedRecord expectedRecord2 = ScannedRecord.builder()
-            .type("2").subtype("my subtype2").fileName("Second_test_doc").url(DocumentLink.builder().documentUrl("www.hello.com").build()).scannedDate("2018-10-29").build();
-
-        assertEquals(expectedRecord1, result.getRecords().get(0));
-        assertEquals(expectedRecord2, result.getRecords().get(1));
+        assertEquals(scannedDoc1, result.getRecords().get(0));
+        assertEquals(scannedDoc2, result.getRecords().get(1));
     }
 
     @Test
@@ -130,13 +84,27 @@ public class SscsJsonExtractorTest {
 
         Map<String, Object> valueMap = new HashMap<>();
 
-        valueMap.put("key", "appellant_first_name");
+        valueMap.put("name", "appellant_first_name");
         valueMap.put("value", null);
 
-        Map<String, Object> scannedOcrDataMap = buildScannedOcrData("scanOCRData", valueMap);
-
-        ScannedData result = sscsJsonExtractor.extractJson(scannedOcrDataMap);
+        ScannedData result = sscsJsonExtractor.extractJson(buildExceptionRecordFromOcrData(valueMap));
 
         assertNull(result.getOcrCaseData().get("appellant_first_name"));
+    }
+
+    @Test
+    public void givenExceptionCaseDataWithValidOpeningDate_thenSetCorrectOpeningDate() {
+
+        ScannedData result = sscsJsonExtractor.extractJson(ExceptionRecord.builder().openingDate(LocalDateTime.now().minusYears(3)).build());
+
+        assertEquals(DateTime.now().minusYears(3).toLocalDate().toString(), result.getOpeningDate());
+    }
+
+    @Test
+    public void givenExceptionCaseDataWithNullOpeningDate_thenSetOpeningDateToToday() {
+
+        ScannedData result = sscsJsonExtractor.extractJson(ExceptionRecord.builder().openingDate(null).build());
+
+        assertEquals(DateTime.now().toLocalDate().toString(), result.getOpeningDate());
     }
 }
