@@ -171,7 +171,7 @@ sonarqube {
 // it is important to specify logback classic and core packages explicitly as libraries like spring boot
 // enforces it's own (older) version which is not recommended.
 def versions = [
-  reformLogging: '5.1.0',
+  reformLogging: '5.1.5',
   springBoot: springBoot.class.package.implementationVersion,
   springfoxSwagger: '2.9.2',
   lombok: '1.18.8',
@@ -255,6 +255,9 @@ dependencyManagement {
   dependencies {
 
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.2'
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.13.2'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
     dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.34') {
