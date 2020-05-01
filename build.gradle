@@ -211,7 +211,6 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version:'0.0.4'
   compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
-  compile group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.13.2'
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.1.1'
   compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.2.17'
 
@@ -256,6 +255,8 @@ dependencyManagement {
   dependencies {
 
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.13.2'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
     dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.34') {
