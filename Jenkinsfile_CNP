@@ -58,7 +58,7 @@ withPipeline("java", product, component) {
   enableSlackNotifications('#sscs-tech')
   installCharts()
   loadVaultSecrets(secrets)
-  disableLegacyDeployment()
+  deployLegacyDeployment()
   enableAksStagingDeployment()
 }
 
