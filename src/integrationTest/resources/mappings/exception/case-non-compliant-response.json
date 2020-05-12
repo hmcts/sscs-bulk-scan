@@ -3,7 +3,7 @@
     "case_data": {
       "appeal": {
         "mrnDetails": {
-          "dwpIssuingOffice": "Watford DRT",
+          "dwpIssuingOffice": "Sheffield DRT",
           "mrnDate": "2017-01-01",
           "mrnLateReason": null,
           "mrnMissingReason": null
@@ -113,7 +113,7 @@
       "caseCode": "051DD",
       "caseCreated": "2018-01-11",
       "createdInGapsFrom": "validAppeal",
-      "dwpRegionalCentre": "Watford DRT",
+      "dwpRegionalCentre": "Sheffield DRT",
       "issueCode": "DD",
       "linkedCasesBoolean": "No"
     },
