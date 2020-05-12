@@ -89,6 +89,7 @@ public class SscsCaseTransformerTestOld {
         offices = new ArrayList<>();
         offices.add("1");
         offices.add("Watford DRT");
+        offices.add("Sheffield DRT");
 
         dwpAddressLookupService = new DwpAddressLookupService();
 
@@ -276,7 +277,7 @@ public class SscsCaseTransformerTestOld {
 
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
 
-        assertEquals("Watford DRT", result.getTransformedCase().get("dwpRegionalCentre"));
+        assertEquals("Sheffield DRT", result.getTransformedCase().get("dwpRegionalCentre"));
 
         assertTrue(result.getErrors().isEmpty());
     }
