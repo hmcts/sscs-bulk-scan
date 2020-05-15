@@ -48,7 +48,7 @@ idam:
     redirectUrl: ${IDAM_OAUTH2_REDIRECT_URL:https://localhost:3000/authenticated}
     jwkUrl: ${IDAM_API_JWK_URL:http://localhost:5000/jwks}
 
-allowed-services-for-callback : ccd_data,sscs_bulkscan  # comma separated list of service names
+allowed-services-for-callback : ccd_data,sscs_bulkscan,bulk_scan_processor  # comma separated list of service names
 
 document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://dm-store:5005}
 
