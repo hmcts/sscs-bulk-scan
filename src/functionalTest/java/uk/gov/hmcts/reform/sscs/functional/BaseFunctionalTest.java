@@ -61,6 +61,23 @@ public class BaseFunctionalTest {
         log.info("idamTokens.getIdamOauth2Token()" + idamTokens.getIdamOauth2Token());
     }
 
+    protected Response simulateCcdCallbackNoUserIdOrAuthorization(String json, String urlPath, int expectedStatusCode) {
+        final String callbackUrl = testUrl + urlPath;
+
+        RestAssured.useRelaxedHTTPSValidation();
+        Response response = RestAssured
+            .given()
+            .header("ServiceAuthorization", "" + idamTokens.getServiceAuthorization())
+            .contentType("application/json")
+            .body(json)
+            .when()
+            .post(callbackUrl);
+
+        assertEquals(expectedStatusCode, response.getStatusCode());
+
+        return response;
+    }
+
     protected Response simulateCcdCallback(String json, String urlPath, int expectedStatusCode) {
         final String callbackUrl = testUrl + urlPath;
 
@@ -109,11 +126,11 @@ public class BaseFunctionalTest {
     }
 
     protected Response validateOcrEndpointRequest(String json, String formType, int statusCode) {
-        return simulateCcdCallback(json, "/forms/" + formType + "/validate-ocr", statusCode);
+        return simulateCcdCallbackNoUserIdOrAuthorization(json, "/forms/" + formType + "/validate-ocr", statusCode);
     }
 
     protected Response transformExceptionRequest(String json, int statusCode) {
-        return simulateCcdCallback(json, "/transform-exception-record", statusCode);
+        return simulateCcdCallbackNoUserIdOrAuthorization(json, "/transform-exception-record", statusCode);
     }
 
     protected String replaceNino(String json) {
