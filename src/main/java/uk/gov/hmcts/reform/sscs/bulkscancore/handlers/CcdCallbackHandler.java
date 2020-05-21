@@ -70,14 +70,10 @@ public class CcdCallbackHandler {
     }
 
     public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
-        String exceptionRecordId = exceptionRecord.getId();
-
-        log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, true);
 
         if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
-            log.info("Errors found during validation for id {}", exceptionRecordId);
             return caseTransformationResponse;
         }
 
