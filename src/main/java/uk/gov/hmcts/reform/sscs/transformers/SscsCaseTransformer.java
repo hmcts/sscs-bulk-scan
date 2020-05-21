@@ -622,9 +622,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             List<SscsCaseDetails> duplicateCases = ccdService.findCaseBy(searchCriteria, token);
 
             if (!CollectionUtils.isEmpty(duplicateCases)) {
-                if (caseId != null) {
-                    log.info("Duplicate case already exists for exception record id {}", caseId);
-                }
+                log.info("Duplicate case already exists for exception record id {}", caseId);
                 errors.add("Duplicate case already exists - please reject this exception record");
             }
         }
