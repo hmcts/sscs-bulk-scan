@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
 import uk.gov.hmcts.reform.sscs.domain.FormType;
+import uk.gov.hmcts.reform.sscs.domain.validation.OcrDataValidationRequest;
 import uk.gov.hmcts.reform.sscs.domain.validation.OcrValidationResponse;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 
@@ -56,7 +57,7 @@ public class OcrValidationController {
     public ResponseEntity<OcrValidationResponse> validateOcrData(
         @RequestHeader(name = "ServiceAuthorization", required = false) String serviceAuthHeader,
         @PathVariable(name = "form-type", required = false) String formType,
-        @Valid @RequestBody ExceptionRecord exceptionRecord
+        @Valid @RequestBody OcrDataValidationRequest ocrDataValidationRequest
     ) {
         String encodedFormType = UriUtils.encode(formType, StandardCharsets.UTF_8);
         if (!EnumUtils.isValidEnum(FormType.class, encodedFormType)) {
@@ -74,7 +75,7 @@ public class OcrValidationController {
 
         authService.assertIsAllowedToHandleCallback(serviceName);
 
-        CaseResponse result = handler.handleValidation(exceptionRecord);
+        CaseResponse result = handler.handleValidation(ExceptionRecord.builder().ocrDataFields(ocrDataValidationRequest.getOcrDataFields()).build());
 
         return ok().body(new OcrValidationResponse(result.getWarnings(), result.getErrors(), result.getStatus()));
     }

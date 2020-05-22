@@ -75,18 +75,17 @@ public class SscsCaseTransformer implements CaseTransformer {
     @Override
     public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
 
-        log.info("Validating exception record against schema {}", exceptionRecord.getId());
+        String caseId = exceptionRecord.getId() != null ? exceptionRecord.getId() : "N/A";
+        log.info("Validating exception record against schema caseId {}", caseId);
 
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
-            log.info("Errors found while validating key value pairs while transforming exception record {}", exceptionRecord.getId());
+            log.info("Errors found while validating key value pairs while transforming exception record caseId {}", caseId);
             return keyValuePairValidatorResponse;
         }
 
-        String caseId = exceptionRecord.getId();
-
-        log.info("Extracting and transforming exception record {}", caseId);
+        log.info("Extracting and transforming exception record caseId {}", caseId);
 
         errors = new HashSet<>();
         warnings = new HashSet<>();
@@ -582,7 +581,9 @@ public class SscsCaseTransformer implements CaseTransformer {
             CaseLink caseLink = CaseLink.builder().value(
                 CaseLinkDetails.builder().caseReference(sscsCaseDetails.getId().toString()).build()).build();
             associatedCases.add(caseLink);
-            log.info("Added associated case " + sscsCaseDetails.getId().toString());
+
+            String caseId = null != sscsCaseDetails.getId() ? sscsCaseDetails.getId().toString() : "N/A";
+            log.info("Added associated case {}" + caseId);
         }
         if (associatedCases.size() > 0) {
             sscsCaseData.put("associatedCase", associatedCases);
