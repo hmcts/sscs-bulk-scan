@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.sscs.handler;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.SEND_TO_DWP;
 
 import feign.FeignException;
 import java.util.HashMap;
@@ -21,11 +20,9 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
-import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
-
 
 @Component
 @Slf4j
@@ -35,14 +32,11 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     private static final String INTERLOC_REFERRAL_REASON = "interlocReferralReason";
     private final SscsDataHelper sscsDataHelper;
     private final CaseDataHelper caseDataHelper;
-    private final CaseEvent caseEvent;
 
     public SscsCaseDataHandler(SscsDataHelper sscsDataHelper,
-                               CaseDataHelper caseDataHelper,
-                               CaseEvent caseEvent) {
+                               CaseDataHelper caseDataHelper) {
         this.sscsDataHelper = sscsDataHelper;
         this.caseDataHelper = caseDataHelper;
-        this.caseEvent = caseEvent;
     }
 
     public CallbackResponse handle(ExceptionCaseData exceptionCaseData,
@@ -105,13 +99,6 @@ public class SscsCaseDataHandler implements CaseDataHandler {
 
                     log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
 
-                    if (isCaseCreatedEvent(eventId)) {
-                        log.info("About to update case with sendToDwp event for id {}", caseId);
-                        caseDataHelper.updateCase(caseValidationResponse.getTransformedCase(), token.getIdamOauth2Token(),
-                            token.getServiceAuthorization(), token.getUserId(), SEND_TO_DWP.getCcdType(), caseId,
-                            "Send to DWP", "Send to DWP event has been triggered from Bulk Scan service");
-                        log.info("Case updated with sendToDwp event for id {}", caseId);
-                    }
                     caseReference = String.valueOf(caseId);
                 }
 
@@ -152,12 +139,7 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             || StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getDescription()));
     }
 
-    private boolean isCaseCreatedEvent(String eventId) {
-        return eventId.equals(caseEvent.getCaseCreatedEventId())
-            || eventId.equals(caseEvent.getValidAppealCreatedEventId());
-    }
-
-    private Boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings) {
+    private boolean canCreateCase(CaseResponse caseValidationResponse, boolean ignoreWarnings) {
         return ((!isEmpty(caseValidationResponse.getWarnings()) && ignoreWarnings)
             || isEmpty(caseValidationResponse.getWarnings()));
     }
