@@ -4,11 +4,11 @@ plugins {
   id 'pmd'
   id 'org.sonarqube' version '2.8'
   id 'jacoco'
-  id 'info.solidsoft.pitest' version '1.4.6'
+  id 'info.solidsoft.pitest' version '1.5.1'
   id 'io.spring.dependency-management' version '1.0.9.RELEASE'
-  id 'org.springframework.boot' version '2.2.4.RELEASE'
-  id 'org.owasp.dependencycheck' version '5.2.4'
-  id 'com.github.ben-manes.versions' version '0.27.0'
+  id 'org.springframework.boot' version '2.3.0.RELEASE'
+  id 'org.owasp.dependencycheck' version '5.3.2.1'
+  id 'com.github.ben-manes.versions' version '0.28.0'
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -44,6 +44,11 @@ sourceSets {
     }
     resources.srcDir file('src/smokeTest/resources')
   }
+}
+
+dependencies {
+  integrationTestCompile(sourceSets.test.output)
+  functionalTestCompile(sourceSets.test.output)
 }
 
 tasks.withType(JavaCompile) {
@@ -142,6 +147,11 @@ pitest {
 }
 
 project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
+check.dependsOn integration
+checkstyleMain.shouldRunAfter(compileJava)
+test.shouldRunAfter(checkstyleTest)
+integration.shouldRunAfter(checkstyleIntegrationTest)
+integration.shouldRunAfter(test)
 
 sonarqube {
   properties {
@@ -161,21 +171,22 @@ sonarqube {
 // it is important to specify logback classic and core packages explicitly as libraries like spring boot
 // enforces it's own (older) version which is not recommended.
 def versions = [
-  reformLogging: '5.1.0',
+  reformLogging: '5.1.5',
   springBoot: springBoot.class.package.implementationVersion,
   springfoxSwagger: '2.9.2',
   lombok: '1.18.8',
   springCloudWiremock: '2.1.0.RELEASE',
   gradlePitest    : '1.3.0',
   pitest          : '1.4.2',
-  sonarPitest     : '0.5'
+  sonarPitest     : '0.5',
+  restAssured     : '4.2.0'
 ]
 
 configurations.all {
   resolutionStrategy {
     eachDependency { DependencyResolveDetails details ->
       if (details.requested.group in ['com.fasterxml.jackson.core', 'com.fasterxml.jackson.module', 'com.fasterxml.jackson.datatype']) {
-        details.useVersion '2.10.0'
+        details.useVersion '2.11.0'
       }
     }
   }
@@ -190,22 +201,24 @@ dependencies {
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
 
-  compile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
+  compile group: 'io.rest-assured', name: 'rest-assured', version: versions.restAssured
+  compile group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
+  compile group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
   compile group: 'io.github.openfeign', name: 'feign-jackson', version: '10.1.0'
   compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.12.0'
+  compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
 
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
 
-  compile group: 'uk.gov.hmcts.reform', name: 'health-spring-boot-starter', version:'0.0.5'
   compile group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version:'0.0.4'
   compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
-  compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.2.18-RC1'
+  compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.1.1'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.2.33-RC-SSCS-7187'
 
-  compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.5.1'
-  compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.5.1'
+  compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.0'
+  compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.0'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
@@ -222,9 +235,10 @@ dependencies {
 
   testCompile 'pl.pragmatists:JUnitParams:1.1.1'
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
-  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.5'
+  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.5.1'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
   testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1', withoutJunit4
+  testCompile group: 'com.typesafe', name: 'config', version: '1.4.0'
 
   integrationTestCompile (group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
     exclude group: "com.github.tomakehurst", module:"wiremock-standalone"
@@ -238,7 +252,6 @@ dependencies {
 
   smokeTestCompile sourceSets.main.runtimeClasspath
   smokeTestCompile sourceSets.test.runtimeClasspath
-
 }
 
 dependencyManagement {
@@ -246,8 +259,11 @@ dependencyManagement {
 
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.3'
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.13.3'
+
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.31') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.35') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
@@ -263,6 +279,10 @@ run {
 }
 
 mainClassName = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
+
+tasks.withType(Test) {
+  useJUnitPlatform()
+}
 
 bootJar {
   archiveName = 'sscs-bulk-scan.jar'

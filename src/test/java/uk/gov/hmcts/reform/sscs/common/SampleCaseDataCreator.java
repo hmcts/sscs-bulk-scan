@@ -1,10 +1,15 @@
 package uk.gov.hmcts.reform.sscs.common;
 
 import com.google.common.collect.ImmutableMap;
+import java.time.LocalDateTime;
 import java.util.*;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 
 public class SampleCaseDataCreator {
 
+    //FIXME: Delete this after migration
     public Map<String, Object> exceptionCaseData() {
         // Can't use Immutable map here as it will be modified by the handler
         Map<String, Object> exceptionRecord = new HashMap<>();
@@ -17,6 +22,15 @@ public class SampleCaseDataCreator {
         return exceptionRecord;
     }
 
+    public ExceptionRecord exceptionCaseData2() {
+        return ExceptionRecord.builder()
+            .journeyClassification(JourneyClassification.NEW_APPLICATION)
+            .poBox("SSCSPO")
+            .openingDate(LocalDateTime.now())
+            .ocrDataFields(ocrData2())
+            .build();
+    }
+
     public Map<String, Object> sscsCaseData() {
         return ImmutableMap.of(
             "caseReference", "123456789",
@@ -24,6 +38,7 @@ public class SampleCaseDataCreator {
         );
     }
 
+    //FIXME: Remove after bulk scan migration
     public List<ScannedOcrData> ocrData() {
         ScannedOcrData ocrData1 = new ScannedOcrData();
         ocrData1.setValue(ImmutableMap.of("key", "firstName", "value", "John"));
@@ -34,6 +49,17 @@ public class SampleCaseDataCreator {
         ocrData2.setId("d55a7f14-92c3-4134-af78-f2aa2b201841");
 
         List<ScannedOcrData> ocrDataArray = new ArrayList<>();
+        ocrDataArray.add(ocrData1);
+        ocrDataArray.add(ocrData2);
+
+        return ocrDataArray;
+    }
+
+    public List<OcrDataField> ocrData2() {
+        OcrDataField ocrData1 = new OcrDataField("firstName", "John");
+        OcrDataField ocrData2 = new OcrDataField("lastName", "Smith");
+
+        List<OcrDataField> ocrDataArray = new ArrayList<>();
         ocrDataArray.add(ocrData1);
         ocrDataArray.add(ocrData2);
 

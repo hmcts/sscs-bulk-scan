@@ -22,7 +22,7 @@ public class TestDataConstants {
     public static final String APPELLANT_MOBILE = "07929292929";
     public static final String APPELLANT_EMAIL = "appellant@example.com";
     public static final String APPELLANT_DATE_OF_BIRTH = "12/08/1987";
-    public static final String APPELLANT_NINO = "JT 07 23 19 B";
+    public static final String APPELLANT_NINO = "JT072319B";
     public static final String APPOINTEE_TITLE = "Mrs";
     public static final String APPOINTEE_FIRST_NAME = "Wendy";
     public static final String APPOINTEE_LAST_NAME = "Baker";

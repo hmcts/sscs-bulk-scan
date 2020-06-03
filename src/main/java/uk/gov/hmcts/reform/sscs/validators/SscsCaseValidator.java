@@ -4,6 +4,7 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCallbackType;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.VALIDATION_CALLBACK;
+import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.findBooleanExists;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
 
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
@@ -56,12 +59,16 @@ public class SscsCaseValidator implements CaseValidator {
         this.sscsJsonExtractor = sscsJsonExtractor;
     }
 
+    //FIXME: Remove after bulk scan migration
     @Override
-    public CaseResponse validate(AboutToStartOrSubmitCallbackResponse transformErrorResponse, CaseDetails caseDetails, Map<String, Object> caseData) {
+    public CaseResponse validateExceptionRecordOld(AboutToStartOrSubmitCallbackResponse transformErrorResponse, CaseDetails caseDetails, Map<String, Object> caseData) {
         warnings = transformErrorResponse != null && transformErrorResponse.getWarnings() != null ? transformErrorResponse.getWarnings() : new ArrayList<>();
         errors = new ArrayList<>();
+        callbackType = EXCEPTION_CALLBACK;
 
-        validateAppeal(caseDetails, caseData);
+        ScannedData ocrCaseData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
+
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -70,17 +77,59 @@ public class SscsCaseValidator implements CaseValidator {
             .build();
     }
 
-    private List<String> validateAppeal(CaseDetails caseDetails, Map<String, Object> caseData) {
+    @Override
+    public CaseResponse validateExceptionRecord(CaseResponse transformResponse, ExceptionRecord exceptionRecord, Map<String, Object> caseData, boolean combineWarnings) {
+        warnings = transformResponse != null && transformResponse.getWarnings() != null ? transformResponse.getWarnings() : new ArrayList<>();
+        errors = new ArrayList<>();
+        callbackType = EXCEPTION_CALLBACK;
+
+        ScannedData ocrCaseData = sscsJsonExtractor.extractJson(exceptionRecord);
+
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData);
+
+        if (combineWarnings) {
+            warnings = combineWarnings();
+        }
+
+        return CaseResponse.builder()
+            .errors(errors)
+            .warnings(warnings)
+            .transformedCase(caseData)
+            .status(getValidationStatus(errors, warnings))
+            .build();
+    }
+
+    private List<String> combineWarnings() {
+        List<String> mergedWarnings = new ArrayList<>();
+
+        mergedWarnings.addAll(warnings);
+        mergedWarnings.addAll(errors);
+        errors.clear();
+
+        return mergedWarnings;
+    }
+
+    @Override
+    public CaseResponse validateValidationRecord(Map<String, Object> caseData) {
+        warnings = new ArrayList<>();
+        errors = new ArrayList<>();
+        callbackType = VALIDATION_CALLBACK;
 
         Map<String, Object> ocrCaseData = new HashMap<>();
+
+        validateAppeal(ocrCaseData, caseData);
+
+        return CaseResponse.builder()
+            .errors(errors)
+            .warnings(warnings)
+            .transformedCase(caseData)
+            .build();
+    }
+
+    private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
+
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
-
-        callbackType = caseData.get("bulkScanCaseReference") != null ? EXCEPTION_CALLBACK : VALIDATION_CALLBACK;
-
-        if (EXCEPTION_CALLBACK.equals(callbackType)) {
-            ocrCaseData = sscsJsonExtractor.extractJson(caseDetails.getCaseData()).getOcrCaseData();
-        }
 
         checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType);
         checkRepresentative(appeal, ocrCaseData, caseData);

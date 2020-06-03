@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ScannedRecord {
 
+    //FIXME: Can probably delete this after migration
     private DocumentLink url;
     private String scannedDate;
     private String fileName;

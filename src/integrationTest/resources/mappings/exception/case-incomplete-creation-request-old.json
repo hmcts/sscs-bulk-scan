@@ -1,14 +1,14 @@
 {
   "event": {
-    "id": "validAppealCreated",
+    "id": "incompleteApplicationReceived",
     "summary": "Case created",
     "description": "Case created from exception record"
   },
   "data": {
     "appeal": {
       "mrnDetails": {
-        "dwpIssuingOffice": "Watford DRT",
-        "mrnDate": "2019-12-09",
+        "dwpIssuingOffice": "Sheffield DRT",
+        "mrnDate": "2018-12-09",
         "mrnLateReason": null,
         "mrnMissingReason": null
       },
@@ -16,24 +16,19 @@
         "name": {
           "title": "Mr",
           "firstName": "John",
-          "lastName": "Smith"
+          "lastName": null
         },
-        "address": {
-          "line1": "2 Drake Close",
-          "line2": "Hutton",
-          "town": "Brentwood",
-          "county": "Essex",
-          "postcode": "CM13 1AQ"
-        },
+        "address": { },
         "contact": {
           "email": null,
-          "phone": "01234567899",
-          "mobile": "07411222222"
+          "phone": null,
+          "mobile": null
         },
         "identity": {
-          "dob": "1976-11-11",
-          "nino": "BB000000B"
+          "dob": null,
+          "nino": null
         },
+        "isAppointee" : "No",
         "appointee": null,
         "isAddressSameAsAppointee" : null
       },
@@ -46,13 +41,7 @@
         "wantsSupport" : "No",
         "languageInterpreter": "No",
         "arrangements" : [],
-        "scheduleHearing" : "Yes",
-        "excludeDates" : [{
-          "value" : {
-              "start" : "2030-12-01",
-              "end" : null
-            }
-         }]
+        "scheduleHearing" : "No"
       },
       "appealReasons": null,
       "rep": {
@@ -66,23 +55,12 @@
       "hearingType": "oral",
       "receivedVia" : "Paper"
     },
-    "sscsDocument" : [ {
-      "value" : {
-        "documentType" : "appellantEvidence",
-        "documentFileName" : "11111.pdf",
-        "documentDateAdded" : "2018-10-10",
-        "documentLink" : {
-          "document_url" : "http://www.bbc.com",
-          "document_binary_url" : "http://www.bbc.com/binary",
-          "document_filename" : "myfile.jpg"
-        }
-      }
-    } ],
+    "sscsDocument" : [ ],
     "subscriptions": {
       "appellantSubscription": {
         "wantSmsNotifications": "No",
         "email": null,
-        "mobile": "07411222222",
+        "mobile": null,
         "subscribeEmail": null,
         "subscribeSms": "No",
         "reason": null
@@ -91,20 +69,7 @@
       "representativeSubscription" : null,
       "appointeeSubscription" : null
     },
-    "region": "BRADFORD",
-    "regionalProcessingCenter": {
-      "name": "BRADFORD",
-      "address1": "HM Courts & Tribunals Service",
-      "address2": "Social Security & Child Support Appeals",
-      "address3": "Phoenix House",
-      "address4": "Rushton Avenue",
-      "city": "BRADFORD",
-      "postcode": "BD3 7BH",
-      "phoneNumber": "0300 123 1142",
-      "faxNumber": "0126 434 7983",
-      "email": "SSCS_Bradford@justice.gov.uk"
-    },
-    "evidencePresent" : "Yes",
+    "evidencePresent" : "No",
     "bulkScanCaseReference" : "1234567890",
     "caseCreated" : "2018-01-11"
   },

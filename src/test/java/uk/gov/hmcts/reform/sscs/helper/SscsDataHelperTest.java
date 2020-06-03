@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
@@ -115,5 +116,13 @@ public class SscsDataHelperTest {
         String result = caseDataHelper.getCreatedInGapsFromField(Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().dwpIssuingOffice("My PIP Office 4").build()).build());
 
         assertEquals(VALID_APPEAL.getId(), result);
+    }
+
+    @Test
+    public void givenNoBenefitTypeThatContainsTextAndIsNonDigital_thenReturnNull() {
+        when(dwpAddressLookupService.getDwpMappingByOffice(null, "My PIP Office 4")).thenReturn(Optional.of(OfficeMapping.builder().code("4").build()));
+        String result = caseDataHelper.getCreatedInGapsFromField(Appeal.builder().mrnDetails(MrnDetails.builder().dwpIssuingOffice("My PIP Office 4").build()).build());
+
+        assertNull(result);
     }
 }
