@@ -349,7 +349,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(403);
-        assertThat(result.getBody()).contains("status 403");
+        assertThat(result.getBody()).contains("403");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
