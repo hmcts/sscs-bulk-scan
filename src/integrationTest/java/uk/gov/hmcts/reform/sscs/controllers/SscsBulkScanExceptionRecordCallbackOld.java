@@ -383,6 +383,8 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
         // Given
         startForCaseworkerStubWithCcdUnavailable(START_EVENT_INCOMPLETE_CASE_URL);
 
+        Thread.sleep(2000);
+
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()), httpHeaders());
