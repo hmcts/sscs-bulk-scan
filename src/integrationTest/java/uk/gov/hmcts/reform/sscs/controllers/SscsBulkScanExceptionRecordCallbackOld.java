@@ -158,6 +158,8 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
 
         submitForCaseworkerStub("incompleteApplication");
 
+        Thread.sleep(2000);
+
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
             exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()),
             httpHeaders()
