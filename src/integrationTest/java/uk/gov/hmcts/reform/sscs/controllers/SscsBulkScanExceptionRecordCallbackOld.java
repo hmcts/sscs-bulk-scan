@@ -158,6 +158,8 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
 
         submitForCaseworkerStub("incompleteApplication");
 
+        Thread.sleep(2000);
+
         HttpEntity<ExceptionCaseData> request = new HttpEntity<>(
             exceptionCaseDataWithIgnoreWarnings(caseDataWithMissingAppellantDetails()),
             httpHeaders()
@@ -349,7 +351,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(403);
-        assertThat(result.getBody()).contains("status 403");
+        assertThat(result.getBody()).contains("403");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -380,6 +382,8 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
     public void should_return_503_status_when_ccd_service_is_not_available_when_creating_incomplete_appeal() throws Exception {
         // Given
         startForCaseworkerStubWithCcdUnavailable(START_EVENT_INCOMPLETE_CASE_URL);
+
+        Thread.sleep(2000);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
