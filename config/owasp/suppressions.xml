@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-  <!--Currently need to suppress this due to pipeline issue-->
-  <suppress>
-    <notes><![CDATA[
-   CVE-2018-1257: we do not use STOMP message broker, so this does not affect us
-   CVE-2018-1258: we do not use Spring Method Security, so this does not affect us
-   ]]></notes>
-    <gav regex="true">^org\.springframework:spring-.*:.*$</gav>
-    <cve>CVE-2018-1257</cve>
-    <cve>CVE-2018-1258</cve>
-    <cve>CVE-2018-11039</cve>
-    <cve>CVE-2018-11040</cve>
-    <cve>CVE-2018-10237</cve><!-- shaded guava dependency v20.0 -->
-  </suppress>
   <suppress>
     <notes><![CDATA[
    CVE-2018-1258: we do not use Spring Method Security, so this does not affect us
@@ -22,72 +9,10 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: wiremock-standalone-2.20.0.jar: handlebars-v4.0.4.js
-   ]]></notes>
-    <packageUrl regex="true">^pkg:javascript/handlebars\.js@.*$</packageUrl>
-    <vulnerabilityName>A prototype pollution vulnerability in handlebars is exploitable if an attacker can control the template</vulnerabilityName>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
    file name: guava-20.0.jar
    ]]></notes>
     <gav regex="true">^com\.google\.guava:guava:.*$</gav>
     <cve>CVE-2018-10237</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: groovy-xml-2.4.15.jar
-   ]]></notes>
-    <gav regex="true">^org\.codehaus\.groovy:groovy-xml:.*$</gav>
-    <cve>CVE-2016-6497</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: groovy-json-2.4.15.jar
-   ]]></notes>
-    <gav regex="true">^org\.codehaus\.groovy:groovy-json:.*$</gav>
-    <cve>CVE-2016-6497</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-      file name: stax-api-1.0.1.jar
-	   ]]></notes>
-    <cve>CVE-2017-16224</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[No fix is available]]></notes>
-    <gav regex="true">^org\.springframework\.security:spring-security-rsa:1\.0\.7\.RELEASE$</gav>
-    <cve>CVE-2011-2731</cve>
-    <cve>CVE-2011-2732</cve>
-    <cve>CVE-2012-5055</cve>
-    <cve>CVE-2018-1260</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: gradle-pitest-plugin-1.5.1.jar
-   ]]></notes>
-    <sha1>a3708198f6ac6fadf387199c9db6e8f824de5e5a</sha1>
-    <cve>CVE-2019-11065</cve>
-    <cve>CVE-2019-15052</cve>
-    <cve>CVE-2019-16370</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-            file name: jruby-stdlib-9.2.7.0.jar: jquery.js
-            JRuby ships a pretty old version of jquery in some dependency for Rdoc.
-            We don't generate any rdoc, so we should be fine.
-        ]]>
-    </notes>
-    <cve>CVE-2012-6708</cve>
-    <cve>CVE-2015-9251</cve>
-    <cve>CVE-2019-11358</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: spring-cloud-contract-wiremock-2.1.0.RELEASE.jar
-   ]]></notes>
-    <cve>CVE-2018-9116</cve>
-    <cve>CVE-2018-9117</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
@@ -106,12 +31,5 @@
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.sling/org\.apache\.sling\.javax\.activation@.*$</packageUrl>
     <cve>CVE-2016-6798</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: handlebars-4.1.2.jar: handlebars-v4.0.4.js
-   ]]></notes>
-    <packageUrl regex="true">^pkg:javascript/handlebars\.js@.*$</packageUrl>
-    <vulnerabilityName>Prototype pollution</vulnerabilityName>
   </suppress>
 </suppressions>
