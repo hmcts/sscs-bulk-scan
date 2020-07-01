@@ -46,26 +46,18 @@
           "wantsToAttend": "Yes"
         }
       },
-      "generatedSurname": "Smith",
-      "generatedEmail": "sscstest@test.com",
       "caseCreated" : "2018-01-11",
-      "generatedNino" :"SR11111",
       "evidencePresent" : "No"
     },
     "data_classification": {
       "caseReference": "PUBLIC",
-      "generatedSurname": "PUBLIC",
-      "generatedEmail": "PUBLIC",
-      "caseCreated" : "PUBLIC",
-      "generatedNino" :"PUBLIC"
+      "caseCreated" : "PUBLIC"
     },
     "after_submit_callback_response": null,
     "callback_response_status_code": 200,
     "callback_response_status": "INCOMPLETE",
     "security_classifications": {
-      "caseReference": "PUBLIC",
-      "generatedSurname": "PUBLIC",
-      "generatedEmail": "PUBLIC"
+      "caseReference": "PUBLIC"
     }
   }
 ]
