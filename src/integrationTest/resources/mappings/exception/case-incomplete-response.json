@@ -67,9 +67,6 @@
         "representativeSubscription": null,
         "appointeeSubscription": null
       },
-      "generatedNino": null,
-      "generatedSurname": null,
-      "generatedDOB": null,
       "evidencePresent": "No",
       "bulkScanCaseReference": "1234567890",
       "benefitCode": "051",

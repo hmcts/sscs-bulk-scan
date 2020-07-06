@@ -54,15 +54,18 @@ public class SscsCaseDataHandler implements CaseDataHandler {
             String mrnDate = "";
             String benefitType = "";
             String nino = "";
-            if (appeal != null && appeal.getMrnDetails() != null) {
-                mrnDate = appeal.getMrnDetails().getMrnDate();
-            }
-            if (appeal != null && appeal.getBenefitType() != null) {
-                benefitType = appeal.getBenefitType().getCode();
-            }
-            if (appeal != null && appeal.getAppellant() != null
-                && appeal.getAppellant().getIdentity() != null && appeal.getAppellant().getIdentity().getNino() != null) {
-                nino = appeal.getAppellant().getIdentity().getNino();
+
+            if (appeal != null) {
+                if (appeal.getMrnDetails() != null) {
+                    mrnDate = appeal.getMrnDetails().getMrnDate();
+                }
+                if (appeal.getBenefitType() != null) {
+                    benefitType = appeal.getBenefitType().getCode();
+                }
+                if (appeal.getAppellant() != null
+                    && appeal.getAppellant().getIdentity() != null && appeal.getAppellant().getIdentity().getNino() != null) {
+                    nino = appeal.getAppellant().getIdentity().getNino();
+                }
             }
 
             String caseReference = String.valueOf(Optional.ofNullable(

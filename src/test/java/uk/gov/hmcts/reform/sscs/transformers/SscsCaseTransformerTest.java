@@ -1194,42 +1194,6 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenAnAppellantDateOfBirth_thenSetGeneratedDobField() {
-        pairs.put("person1_dob", "12/01/1987");
-
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-
-        String generatedDob = ((String) result.getTransformedCase().get("generatedDOB"));
-        assertEquals("1987-01-12", generatedDob);
-
-        assertTrue(result.getErrors().isEmpty());
-    }
-
-    @Test
-    public void givenAnAppellantSurname_thenSetGeneratedSurnameField() {
-        pairs.put("person1_last_name", "Smith");
-
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-
-        String generatedSurname = ((String) result.getTransformedCase().get("generatedSurname"));
-        assertEquals("Smith", generatedSurname);
-
-        assertTrue(result.getErrors().isEmpty());
-    }
-
-    @Test
-    public void givenAnAppellantNino_thenSetGeneratedNinoField() {
-        pairs.put("person1_nino", "JT0123456B");
-
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-
-        String generatedNino = ((String) result.getTransformedCase().get("generatedNino"));
-        assertEquals("JT0123456B", generatedNino);
-
-        assertTrue(result.getErrors().isEmpty());
-    }
-
-    @Test
     public void givenAPipCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
         pairs.put("office", "1");
         pairs.put(IS_BENEFIT_TYPE_PIP, true);
