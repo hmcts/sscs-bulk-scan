@@ -27,7 +27,10 @@ import uk.gov.hmcts.reform.sscs.ccd.deserialisation.SscsCaseCallbackDeserializer
     basePackageClasses = BulkScanApplication.class,
     lazyInit = true
 )
-@EnableFeignClients
+@EnableFeignClients(basePackages =
+    {
+        "uk.gov.hmcts.reform.idam.client"
+    })
 @EnableScheduling
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, its not a utility class
 public class BulkScanApplication {
