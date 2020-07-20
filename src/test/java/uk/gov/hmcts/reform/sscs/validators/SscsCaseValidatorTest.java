@@ -2,10 +2,10 @@ package uk.gov.hmcts.reform.sscs.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
@@ -26,10 +28,10 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
+@RunWith(MockitoJUnitRunner.class)
 public class SscsCaseValidatorTest {
 
     private static final String VALID_MOBILE = "07832882849";
-    private static final String VALID_PHONE_NUMBER = "01234567898";
     private static final String VALID_POSTCODE = "CM13 0GD";
 
     @Mock
@@ -37,6 +39,9 @@ public class SscsCaseValidatorTest {
 
     @Mock
     SscsJsonExtractor sscsJsonExtractor;
+
+    @Mock
+    private PostcodeValidator postcodeValidator;
 
     DwpAddressLookupService dwpAddressLookupService;
 
@@ -60,11 +65,10 @@ public class SscsCaseValidatorTest {
 
     @Before
     public void setup() {
-        initMocks(this);
         dwpAddressLookupService = new DwpAddressLookupService();
         scannedData = mock(ScannedData.class);
         caseDetails = mock(CaseDetails.class);
-        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, sscsJsonExtractor);
+        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, postcodeValidator, sscsJsonExtractor);
         transformResponse = CaseResponse.builder().build();
 
         defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2018-12-09").build();
@@ -82,6 +86,7 @@ public class SscsCaseValidatorTest {
 
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(scannedData);
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
+        given(postcodeValidator.isValid(anyString())).willReturn(true);
     }
 
     @Test
@@ -319,7 +324,7 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_postcode is empty", response.getWarnings().get(0));
-        verifyZeroInteractions(regionalProcessingCenterService);
+        verifyNoInteractions(regionalProcessingCenterService);
     }
 
     @Test
@@ -901,7 +906,7 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false));
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
-        verifyZeroInteractions(regionalProcessingCenterService);
+        verifyNoInteractions(regionalProcessingCenterService);
     }
 
     @Test

@@ -46,6 +46,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private final RegionalProcessingCenterService regionalProcessingCenterService;
     private final DwpAddressLookupService dwpAddressLookupService;
+    private final PostcodeValidator postcodeValidator;
     private final SscsJsonExtractor sscsJsonExtractor;
 
     @Value("#{'${validation.titles}'.split(',')}")
@@ -53,9 +54,11 @@ public class SscsCaseValidator implements CaseValidator {
 
     public SscsCaseValidator(RegionalProcessingCenterService regionalProcessingCenterService,
                              DwpAddressLookupService dwpAddressLookupService,
+                             PostcodeValidator postcodeValidator,
                              SscsJsonExtractor sscsJsonExtractor) {
         this.regionalProcessingCenterService = regionalProcessingCenterService;
         this.dwpAddressLookupService = dwpAddressLookupService;
+        this.postcodeValidator = postcodeValidator;
         this.sscsJsonExtractor = sscsJsonExtractor;
     }
 
@@ -327,7 +330,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
         if (address != null && address.getPostcode() != null) {
-            if (address.getPostcode().matches("^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$")) {
+            if (address.getPostcode().matches("^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$") && postcodeValidator.isValid(address.getPostcode())) {
                 return true;
             } else {
                 warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
