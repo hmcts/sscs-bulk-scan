@@ -57,7 +57,7 @@
           "wantSmsNotifications": "No",
           "email": null,
           "mobile": null,
-          "subscribeEmail": null,
+          "subscribeEmail": "No",
           "subscribeSms": "No",
           "reason": null,
           "lastLoggedIntoMya": null,
