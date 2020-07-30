@@ -19,6 +19,7 @@ import org.mockito.quality.Strictness;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 @RunWith(JUnitParamsRunner.class)
@@ -81,5 +82,26 @@ public class PostcodeValidatorTest {
     public void shouldReturnTrueWhenNotEnabled() {
         PostcodeValidator postcodeValidator = new PostcodeValidator(URL, false, restTemplate);
         assertTrue(postcodeValidator.isValid("W11 1AA"));
+    }
+
+    @Test
+    public void shouldHandleRestClientResponseException() {
+        when(restTemplate
+            .exchange(
+                any(String.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(byte[].class),
+                any(String.class)
+            )
+        ).thenThrow(new RestClientResponseException("error", 404, "error", null, null, null));
+        assertFalse(postcodeValidator.isValid("70002"));
+    }
+
+    @Test
+    public void shouldHandleNon200Exception() {
+        setupRestTemplateResponse();
+        when(responseEntity.getStatusCodeValue()).thenReturn(404);
+        assertFalse(postcodeValidator.isValid("80202"));
     }
 }
