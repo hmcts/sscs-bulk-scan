@@ -23,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 
 @RunWith(JUnitParamsRunner.class)
 public class PostcodeValidatorTest {
-    private static final String URL = "https://api.postcodes.io/postcodes/{postcode}";
+    private static final String URL = "https://api.postcodes.io/postcodes/{postcode}/validate";
     @Rule
     public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
@@ -54,7 +54,7 @@ public class PostcodeValidatorTest {
     private void setUpSuccessResponse() {
         setupRestTemplateResponse();
         when(responseEntity.getStatusCodeValue()).thenReturn(200);
-        when(responseEntity.getBody()).thenReturn("postcode".getBytes());
+        when(responseEntity.getBody()).thenReturn("true".getBytes());
     }
 
     private void setUpFailureResponse() {

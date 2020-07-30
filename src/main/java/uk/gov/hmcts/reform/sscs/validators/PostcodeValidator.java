@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 @Component
 @Slf4j
 public class PostcodeValidator {
-    private static final String POSTCODE = "postcode";
+    private static final String POSTCODE_RESULT = "true";
     private final String url;
     private final boolean enabled;
     private final RestTemplate restTemplate;
@@ -48,7 +48,7 @@ public class PostcodeValidator {
                     postCode
                 );
             logIfNotValidPostCode(postCode, response.getStatusCodeValue());
-            return response.getStatusCodeValue() == 200 && nonNull(response.getBody()) && contains(new String(response.getBody()), POSTCODE);
+            return response.getStatusCodeValue() == 200 && nonNull(response.getBody()) && contains(new String(response.getBody()), POSTCODE_RESULT);
 
         } catch (RestClientResponseException e) {
             if (e.getRawStatusCode() != 200) {

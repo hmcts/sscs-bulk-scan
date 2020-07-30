@@ -67,7 +67,7 @@ feature:
   debug_json: ${DEBUG_JSON:false}
 
 postcode-validator:
-  url: ${POSTCODE_VALIDATOR_URL:https://api.postcodes.io/postcodes/{postcode}}
+  url: ${POSTCODE_VALIDATOR_URL:https://api.postcodes.io/postcodes/{postcode}/validate}
   enabled: ${POSTCODE_VALIDATOR_ENABLED:true}
 
 readyToList:
