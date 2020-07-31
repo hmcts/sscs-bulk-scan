@@ -183,7 +183,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         String mobile = getField(pairs,personType + "_mobile");
 
         boolean wantEmailNotifications = false;
-        if (PERSON1_VALUE.equals(personType) && StringUtils.isNotBlank(email)) {
+        if ((PERSON1_VALUE.equals(personType) || REPRESENTATIVE_VALUE.equals(personType))
+            && StringUtils.isNotBlank(email)) {
             wantEmailNotifications = true;
         }
 
