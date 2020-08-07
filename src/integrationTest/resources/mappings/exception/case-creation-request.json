@@ -84,7 +84,7 @@
         "wantSmsNotifications": "No",
         "email": null,
         "mobile": "07411222222",
-        "subscribeEmail": null,
+        "subscribeEmail": "No",
         "subscribeSms": "No",
         "reason": null
       },
