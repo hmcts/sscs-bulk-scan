@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
@@ -16,8 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
@@ -29,8 +31,10 @@ import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 public class SscsCaseValidatorTest {
 
     private static final String VALID_MOBILE = "07832882849";
-    private static final String VALID_PHONE_NUMBER = "01234567898";
     private static final String VALID_POSTCODE = "CM13 0GD";
+
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     RegionalProcessingCenterService regionalProcessingCenterService;
@@ -60,7 +64,6 @@ public class SscsCaseValidatorTest {
 
     @Before
     public void setup() {
-        initMocks(this);
         dwpAddressLookupService = new DwpAddressLookupService();
         scannedData = mock(ScannedData.class);
         caseDetails = mock(CaseDetails.class);
@@ -319,7 +322,7 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_postcode is empty", response.getWarnings().get(0));
-        verifyZeroInteractions(regionalProcessingCenterService);
+        verifyNoMoreInteractions(regionalProcessingCenterService);
     }
 
     @Test
@@ -335,15 +338,16 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppointeeContainsPostcodeWithNoRegionalProcessingCenter_thenDoNotAddRegionalProcessingCenter() {
+    public void givenAnAppointee_thenRegionalProcessingCenterIsAlwaysFromTheAppellantsPostcode() {
         Appellant appellant = buildAppellant(true);
-        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(null);
+        RegionalProcessingCenter rpc = RegionalProcessingCenter.builder().name("person2_postcode").build();
+        given(regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode())).willReturn(rpc);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
-        assertNull(response.getTransformedCase().get("regionalProcessingCenter"));
-        assertNull(response.getTransformedCase().get("region"));
-        assertEquals("person1_postcode is not a postcode that maps to a regional processing center", response.getWarnings().get(0));
+        assertEquals(rpc, response.getTransformedCase().get("regionalProcessingCenter"));
+        assertEquals(rpc.getName(), response.getTransformedCase().get("region"));
+        assertTrue(response.getWarnings().size() == 0);
     }
 
     @Test
@@ -901,7 +905,7 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false));
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
-        verifyZeroInteractions(regionalProcessingCenterService);
+        verifyNoMoreInteractions(regionalProcessingCenterService);
     }
 
     @Test

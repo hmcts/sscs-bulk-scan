@@ -333,15 +333,16 @@ public class SscsCaseValidatorTestOld {
     }
 
     @Test
-    public void givenAnAppointeeContainsPostcodeWithNoRegionalProcessingCenter_thenDoNotAddRegionalProcessingCenter() {
+    public void givenAnAppointee_thenRegionalProcessingCenterIsAlwaysFromTheAppellantsPostcode() {
         Appellant appellant = buildAppellant(true);
-        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(null);
+        RegionalProcessingCenter rpc = RegionalProcessingCenter.builder().name("person2_postcode").build();
+        given(regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode())).willReturn(rpc);
 
         CaseResponse response = validator.validateExceptionRecordOld(transformErrorResponse, caseDetails, buildMinimumAppealData(appellant, true));
 
-        assertNull(response.getTransformedCase().get("regionalProcessingCenter"));
-        assertNull(response.getTransformedCase().get("region"));
-        assertEquals("person1_postcode is not a postcode that maps to a regional processing center", response.getWarnings().get(0));
+        assertEquals(rpc, response.getTransformedCase().get("regionalProcessingCenter"));
+        assertEquals(rpc.getName(), response.getTransformedCase().get("region"));
+        assertTrue(response.getWarnings().size() == 0);
     }
 
     @Test
