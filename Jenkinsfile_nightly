@@ -39,6 +39,9 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 withNightlyPipeline(type, product, component) {
   env.TEST_URL = params.URL_TO_TEST
+  env.Rules = params.SecurityRules
+
+  loadVaultSecrets(secrets)
 
   // Vars needed for AKS testing
   env.IDAM_S2S_AUTH = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
