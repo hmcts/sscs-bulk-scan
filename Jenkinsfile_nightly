@@ -4,7 +4,7 @@ properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
   pipelineTriggers([cron('H 22 * * *')]),
   parameters([
-    string(name: 'URL_TO_TEST', defaultValue: 'https://sscs-bulk-scan-aat.service.core-compute-aat.internal', description: 'The URL you want to run these tests against'),
+    string(name: 'URL_TO_TEST', defaultValue: 'http://sscs-bulk-scan-aat.service.core-compute-aat.internal', description: 'The URL you want to run these tests against'),
      string(name: 'SecurityRules',
       defaultValue: 'http://raw.githubusercontent.com/hmcts/security-test-rules/master/conf/security-rules.conf',
       description: 'The URL you want to run these tests against'),
@@ -17,10 +17,43 @@ def type = "java"
 def product = "sscs"
 def component = "bulk-scan"
 
+def secrets = [
+  'sscs-bulk-scan-${env}'      : [
+    secret('sscs-s2s-secret', 'S2S_SECRET'),
+
+    secret('idam-sscs-systemupdate-user', 'IDAM_SSCS_SYSTEMUPDATE_USER'),
+    secret('idam-sscs-systemupdate-password', 'IDAM_SSCS_SYSTEMUPDATE_PASSWORD'),
+    secret('idam-sscs-oauth2-client-secret', 'IDAM_OAUTH2_CLIENT_SECRET'),
+    secret('AppInsightsInstrumentationKey', 'APPINSIGHTS_INSTRUMENTATIONKEY'),
+  ]
+]
+
+static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+  [ $class: 'AzureKeyVaultSecret',
+    secretType: 'Secret',
+    name: secretName,
+    version: '',
+    envVariable: envVar
+  ]
+}
+
 withNightlyPipeline(type, product, component) {
   env.TEST_URL = params.URL_TO_TEST
+  env.Rules = params.SecurityRules
+
+  loadVaultSecrets(secrets)
+
+  // Vars needed for AKS testing
+  env.IDAM_S2S_AUTH = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+  env.IDAM_URL = "https://idam-api.aat.platform.hmcts.net"
+  env.IDAM_OAUTH2_REDIRECT_URL = "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
+  env.CORE_CASE_DATA_API_URL = "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+  env.DOCUMENT_MANAGEMENT_URL = 'http://dm-store-aat.service.core-compute-aat.internal'
+  env.IDAM_OAUTH2_CLIENT_ID = "sscs"
+  env.IDAM_S2S_AUTH_MICROSERVICE = "sscs_bulkscan"
 
   enableMutationTest()
   enableSecurityScan()
+  enableFullFunctionalTest()
   enableSlackNotifications('#sscs-tech')
 }
