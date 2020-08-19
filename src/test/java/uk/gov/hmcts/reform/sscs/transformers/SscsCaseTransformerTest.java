@@ -188,7 +188,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     @Parameters({"Yes", "No"})
-    public void willGenerateSubscriptionsWithEmailAndPhone(String subscribeSms) {
+    public void willGenerateSubscriptionsWithEmailAndPhoneAndSubscribeToEmail(String subscribeSms) {
 
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -211,6 +211,37 @@ public class SscsCaseTransformerTest {
             .subscribeSms(subscribeSms)
             .mobile(APPELLANT_MOBILE)
             .email(APPELLANT_EMAIL)
+            .subscribeEmail(YES_LITERAL)
+            .tya(subscriptions.getAppellantSubscription().getTya())
+            .build();
+
+        assertEquals(expectedSubscription, subscriptions.getAppellantSubscription());
+    }
+
+    @Test
+    @Parameters({"Yes", "No"})
+    public void willGenerateSubscriptionsWithEmailAndPhoneAndNotSubscribeToEmail(String subscribeSms) {
+
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+
+        pairs.put("person1_want_sms_notifications", subscribeSms.equals("Yes"));
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        Subscriptions subscriptions = (Subscriptions) result.getTransformedCase().get("subscriptions");
+
+        Subscription expectedSubscription = Subscription.builder()
+            .wantSmsNotifications(subscribeSms)
+            .subscribeSms(subscribeSms)
+            .mobile(APPELLANT_MOBILE)
+            .subscribeEmail(NO_LITERAL)
             .tya(subscriptions.getAppellantSubscription().getTya())
             .build();
 

@@ -16,10 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
@@ -28,11 +29,13 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
-@RunWith(MockitoJUnitRunner.class)
 public class SscsCaseValidatorTest {
 
     private static final String VALID_MOBILE = "07832882849";
     private static final String VALID_POSTCODE = "CM13 0GD";
+
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     RegionalProcessingCenterService regionalProcessingCenterService;
@@ -340,15 +343,16 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppointeeContainsPostcodeWithNoRegionalProcessingCenter_thenDoNotAddRegionalProcessingCenter() {
+    public void givenAnAppointee_thenRegionalProcessingCenterIsAlwaysFromTheAppellantsPostcode() {
         Appellant appellant = buildAppellant(true);
-        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(null);
+        RegionalProcessingCenter rpc = RegionalProcessingCenter.builder().name("person2_postcode").build();
+        given(regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode())).willReturn(rpc);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
-        assertNull(response.getTransformedCase().get("regionalProcessingCenter"));
-        assertNull(response.getTransformedCase().get("region"));
-        assertEquals("person1_postcode is not a postcode that maps to a regional processing center", response.getWarnings().get(0));
+        assertEquals(rpc, response.getTransformedCase().get("regionalProcessingCenter"));
+        assertEquals(rpc.getName(), response.getTransformedCase().get("region"));
+        assertTrue(response.getWarnings().size() == 0);
     }
 
     @Test

@@ -5,6 +5,7 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
 import java.util.*;
@@ -181,7 +182,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         String email = getField(pairs,personType + "_email");
         String mobile = getField(pairs,personType + "_mobile");
 
+        boolean wantEmailNotifications = false;
+        if ((PERSON1_VALUE.equals(personType) || REPRESENTATIVE_VALUE.equals(personType))
+            && StringUtils.isNotBlank(email)) {
+            wantEmailNotifications = true;
+        }
+
         return Subscription.builder().email(email).mobile(mobile).subscribeSms(convertBooleanToYesNoString(wantsSms))
+            .subscribeEmail(convertBooleanToYesNoString(wantEmailNotifications))
             .wantSmsNotifications(convertBooleanToYesNoString(wantsSms)).tya(generateAppealNumber()).build();
     }
 
