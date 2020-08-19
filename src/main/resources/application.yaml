@@ -69,6 +69,7 @@ feature:
 postcode-validator:
   url: ${POSTCODE_VALIDATOR_URL:https://api.postcodes.io/postcodes/{postcode}/validate}
   enabled: ${POSTCODE_VALIDATOR_ENABLED:true}
+  test-postcodes: ${POSTCODE_VALIDATOR_TEST_POSTCODES:TS1 1ST, TS2 2ST, TS3 3ST}
 
 readyToList:
   offices: ${READY_TO_LIST_OFFICES:3}

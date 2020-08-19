@@ -1,9 +1,14 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.contains;
+import static org.apache.commons.lang3.StringUtils.split;
 
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -18,20 +23,30 @@ public class PostcodeValidator {
     private final String url;
     private final boolean enabled;
     private final RestTemplate restTemplate;
+    private final List<String> testPostcodes;
 
     @Autowired
     public PostcodeValidator(
         @Value("${postcode-validator.url}") final String url,
-        @Value("${postcode-validator.enabled}")final boolean enabled,
+        @Value("${postcode-validator.enabled}") final boolean enabled,
+        @Value("${postcode-validator.test-postcodes}") final String testPostcodes,
         RestTemplate restTemplate) {
         this.url = url;
         this.enabled = enabled;
         this.restTemplate = restTemplate;
+        this.testPostcodes = stream(split(testPostcodes, ","))
+            .map(StringUtils::stripToNull)
+            .filter(StringUtils::isNotBlank)
+            .collect(toList());
     }
 
-    public boolean isValid(String postCode) {
+    public boolean isValid(String postcode) {
         if (!enabled) {
             log.info("PostcodeValidator is not enabled");
+            return true;
+        }
+        if (testPostcodes.contains(postcode)) {
+            log.info("PostcodeValidator received a test postcode ", postcode);
             return true;
         }
         HttpHeaders headers = new HttpHeaders();
@@ -45,14 +60,14 @@ public class PostcodeValidator {
                     HttpMethod.GET,
                     requestEntity,
                     byte[].class,
-                    postCode
+                    postcode
                 );
-            logIfNotValidPostCode(postCode, response.getStatusCodeValue());
+            logIfNotValidPostCode(postcode, response.getStatusCodeValue());
             return response.getStatusCodeValue() == 200 && nonNull(response.getBody()) && contains(new String(response.getBody()), POSTCODE_RESULT);
 
         } catch (RestClientResponseException e) {
             if (e.getRawStatusCode() != 200) {
-                log.info("Post code search returned statusCode {} for postcode {}", e.getRawStatusCode(), postCode);
+                log.info("Post code search returned statusCode {} for postcode {}", e.getRawStatusCode(), postcode);
             }
             return false;
         }

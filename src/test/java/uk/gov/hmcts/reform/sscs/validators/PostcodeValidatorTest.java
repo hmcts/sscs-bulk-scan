@@ -25,6 +25,8 @@ import org.springframework.web.client.RestTemplate;
 @RunWith(JUnitParamsRunner.class)
 public class PostcodeValidatorTest {
     private static final String URL = "https://api.postcodes.io/postcodes/{postcode}/validate";
+    private static final String TEST_POSTCODES = "TS2 2ST, TS1 1ST";
+
     @Rule
     public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
@@ -34,10 +36,9 @@ public class PostcodeValidatorTest {
 
     private PostcodeValidator postcodeValidator;
 
-
     @Before
     public void setup() {
-        postcodeValidator = new PostcodeValidator(URL, true, restTemplate);
+        postcodeValidator = new PostcodeValidator(URL, true, TEST_POSTCODES, restTemplate);
     }
 
     private void setupRestTemplateResponse() {
@@ -80,8 +81,15 @@ public class PostcodeValidatorTest {
 
     @Test
     public void shouldReturnTrueWhenNotEnabled() {
-        PostcodeValidator postcodeValidator = new PostcodeValidator(URL, false, restTemplate);
+        PostcodeValidator postcodeValidator = new PostcodeValidator(URL, false, TEST_POSTCODES, restTemplate);
         assertTrue(postcodeValidator.isValid("W11 1AA"));
+    }
+
+    @Test
+    @Parameters({"TS1 1ST", "TS2 2ST"})
+    public void shouldReturnTrueForTheTestPostCode(String postcode) {
+        boolean valid = postcodeValidator.isValid(postcode);
+        assertTrue(valid);
     }
 
     @Test
