@@ -226,6 +226,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .mrnDetails(buildMrnDetails(pairs, benefitType))
                 .hearingType(hearingType)
                 .hearingOptions(buildHearingOptions(pairs, hearingType))
+                .hearingSubtype(buildHearingSubtype(pairs))
                 .signer(getField(pairs, "signature_name"))
                 .receivedVia("Paper")
                 .build();
@@ -238,7 +239,10 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private AppealReasons findAppealReasons(Map<String, Object> pairs) {
-        String appealReason = getField(pairs, APPEAL_GROUNDS);
+
+        String appealReason = getField(pairs, APPEAL_GROUNDS) != null
+            ? getField(pairs, APPEAL_GROUNDS) : getField(pairs, APPEAL_GROUNDS_2);
+
         if (appealReason != null) {
             List<AppealReason> reasons = Collections.singletonList(AppealReason.builder()
                 .value(AppealReasonDetails.builder()
@@ -393,6 +397,33 @@ public class SscsCaseTransformer implements CaseTransformer {
             return BooleanUtils.toBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
         }
         return null;
+    }
+
+    private HearingSubtype buildHearingSubtype(Map<String, Object> pairs) {
+        if (getField(pairs, HEARING_TELEPHONE_LITERAL) != null
+            || getField(pairs, HEARING_TELEPHONE_LITERAL) != null
+            || getField(pairs, HEARING_TYPE_VIDEO_LITERAL) != null
+            || getField(pairs, HEARING_VIDEO_EMAIL_LITERAL) != null
+            || getField(pairs, HEARING_TYPE_FACE_TO_FACE_LITERAL) != null) {
+
+            String hearingTypeTelephone = checkBooleanValue(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)
+                ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)) : null;
+
+            String hearingTypeVideo = checkBooleanValue(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)
+                ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)) : null;
+
+            String hearingTypeFaceToFace = checkBooleanValue(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)
+                ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)) : null;
+
+            return HearingSubtype.builder()
+                .wantsHearingTypeTelephone(hearingTypeTelephone)
+                .hearingTelephoneNumber(getField(pairs, HEARING_TELEPHONE_LITERAL))
+                .wantsHearingTypeVideo(hearingTypeVideo)
+                .hearingVideoEmail(getField(pairs, HEARING_VIDEO_EMAIL_LITERAL))
+                .wantsHearingTypeFaceToFace(hearingTypeFaceToFace)
+                .build();
+        }
+        return HearingSubtype.builder().build();
     }
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs, String hearingType) {

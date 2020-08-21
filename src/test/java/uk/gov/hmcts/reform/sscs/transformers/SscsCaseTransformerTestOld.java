@@ -1360,6 +1360,7 @@ public class SscsCaseTransformerTestOld {
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob(formatDate(APPELLANT_DATE_OF_BIRTH)).build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).email(APPELLANT_EMAIL).build();
         Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(appellantContact).build();
+        HearingSubtype hearingSubtype = HearingSubtype.builder().build();
 
         Name repName = Name.builder().title(REPRESENTATIVE_PERSON_TITLE).firstName(REPRESENTATIVE_PERSON_FIRST_NAME).lastName(REPRESENTATIVE_PERSON_LAST_NAME).build();
         Address repAddress = Address.builder().line1(REPRESENTATIVE_ADDRESS_LINE1).line2(REPRESENTATIVE_ADDRESS_LINE2).town(REPRESENTATIVE_ADDRESS_LINE3).county(REPRESENTATIVE_ADDRESS_LINE4).postcode(REPRESENTATIVE_POSTCODE).build();
@@ -1379,6 +1380,7 @@ public class SscsCaseTransformerTestOld {
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice("DWP PIP (5)").mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
+            .hearingSubtype(hearingSubtype)
             .hearingOptions(HearingOptions.builder()
                 .scheduleHearing(YES_LITERAL)
                 .excludeDates(excludedDates)

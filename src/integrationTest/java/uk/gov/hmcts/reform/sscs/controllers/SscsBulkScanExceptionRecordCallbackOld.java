@@ -606,7 +606,6 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
             VALUE,
             ImmutableMap.of(KEY, "hearing_options_exclude_dates", VALUE, "01/12/2030"))
         );
-
         return exceptionRecord(ocrList, docList);
     }
 

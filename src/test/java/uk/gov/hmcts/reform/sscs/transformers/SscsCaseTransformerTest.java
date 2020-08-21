@@ -1425,12 +1425,56 @@ public class SscsCaseTransformerTest {
         assertEquals("NI Number is invalid", result.getErrors().get(0));
     }
 
+    @Test
+    @Parameters({"true", "Yes", "false", "No"})
+    public void givenHearingSubtypeDetailsAreProvided_thenBuildAnAppealHearingSubtypeDetails(String hearingSubtypeFlag) {
+
+        pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, hearingSubtypeFlag);
+        pairs.put(HEARING_TELEPHONE_LITERAL, HEARING_TELEPHONE_NUMBER);
+        pairs.put(HEARING_TYPE_VIDEO_LITERAL, hearingSubtypeFlag);
+        pairs.put(HEARING_VIDEO_EMAIL_LITERAL, HEARING_VIDEO_EMAIL);
+        pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
+        String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
+        assertEquals(HEARING_TELEPHONE_NUMBER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
+        assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
+    }
+
+    @Test
+    public void givenInvalidHearingSubtypeDetailsAreProvided_thenShowWarnings() {
+
+        pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, "test");
+        pairs.put(HEARING_TYPE_VIDEO_LITERAL, "test");
+        pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, "test");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertEquals(3, result.getErrors().size());
+        assertEquals(HEARING_TYPE_TELEPHONE_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(0));
+        assertEquals(HEARING_TYPE_FACE_TO_FACE_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(1));
+        assertEquals(HEARING_TYPE_VIDEO_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(2));
+    }
+
+    @Test
+    public void givenAppealGrounds2Provided_thenBuildAnAppealWithAppealReasons() {
+
+        pairs.put(APPEAL_GROUNDS, null);
+        pairs.put(APPEAL_GROUNDS_2, "My appeal grounds");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertEquals("My appeal grounds", ((Appeal) result.getTransformedCase().get("appeal")).getAppealReasons().getReasons().get(0).getValue().getDescription());
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob(formatDate(APPELLANT_DATE_OF_BIRTH)).build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).email(APPELLANT_EMAIL).build();
         Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(appellantContact).build();
+        HearingSubtype hearingSubtype = HearingSubtype.builder().build();
 
         Name repName = Name.builder().title(REPRESENTATIVE_PERSON_TITLE).firstName(REPRESENTATIVE_PERSON_FIRST_NAME).lastName(REPRESENTATIVE_PERSON_LAST_NAME).build();
         Address repAddress = Address.builder().line1(REPRESENTATIVE_ADDRESS_LINE1).line2(REPRESENTATIVE_ADDRESS_LINE2).town(REPRESENTATIVE_ADDRESS_LINE3).county(REPRESENTATIVE_ADDRESS_LINE4).postcode(REPRESENTATIVE_POSTCODE).build();
@@ -1450,6 +1494,7 @@ public class SscsCaseTransformerTest {
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice("DWP PIP (5)").mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
+            .hearingSubtype(hearingSubtype)
             .hearingOptions(HearingOptions.builder()
                 .scheduleHearing(YES_LITERAL)
                 .excludeDates(excludedDates)

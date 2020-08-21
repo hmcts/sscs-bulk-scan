@@ -43,8 +43,14 @@
       },
       "hearingOptions": {
         "wantsToAttend": "Yes"
-      }
-    },
+      },
+      "hearingSubtype": {
+        "wantsHearingTypeTelephone": "Yes",
+        "hearingTelephoneNumber": "01234555996",
+        "wantsHearingTypeVideo": "Yes",
+        "hearingVideoEmail": "my@email.com",
+        "wantsHearingTypeFaceToFace": "No"
+      },
     "caseCreated" : "2018-01-11",
     "evidencePresent" : "No"
   },

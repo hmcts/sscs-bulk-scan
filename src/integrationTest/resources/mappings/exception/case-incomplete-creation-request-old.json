@@ -36,6 +36,7 @@
         "code": "ESA",
         "description": "Employment and Support Allowance"
       },
+      "hearingSubtype": {},
       "hearingOptions": {
         "wantsToAttend" : "Yes",
         "wantsSupport" : "No",
