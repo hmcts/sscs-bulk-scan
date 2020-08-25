@@ -6,7 +6,6 @@ zap-cli --zap-url http://0.0.0.0 -p 1001 report -o /zap/api-report.html -f html
 echo "listings of zap folder"
 ls -la /zap
 cp /zap/api-report.html functional-output/
-zap-cli -p 1001 alerts -l High
 curl --fail http://0.0.0.0:1001/OTHER/core/other/jsonreport/?formMethod=GET --output report.json
 cp *.* functional-output/
-zap-cli --zap-url http://0.0.0.0 -p 1001 alerts -l Informational --exit-code False
+zap-cli --zap-url http://0.0.0.0 -p 1001 alerts -l High --exit-code False

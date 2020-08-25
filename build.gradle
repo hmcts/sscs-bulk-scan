@@ -3,7 +3,7 @@ plugins {
   id 'pmd'
   id 'org.sonarqube' version '3.0'
   id 'jacoco'
-  id 'info.solidsoft.pitest' version '1.5.1'
+  id 'info.solidsoft.pitest' version '1.5.2'
   id 'io.spring.dependency-management' version '1.0.10.RELEASE'
   id 'org.springframework.boot' version '2.3.3.RELEASE'
   id 'uk.gov.hmcts.java' version '0.11.0'
@@ -211,7 +211,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.1.2'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.4.6'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '3.4.52'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.1'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.1'
@@ -231,7 +231,7 @@ dependencies {
 
   testCompile 'pl.pragmatists:JUnitParams:1.1.1'
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
-  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.5.1'
+  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.5.2'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
   testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1', withoutJunit4
   testCompile group: 'com.typesafe', name: 'config', version: '1.4.0'
