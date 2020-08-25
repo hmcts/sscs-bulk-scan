@@ -400,7 +400,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private HearingSubtype buildHearingSubtype(Map<String, Object> pairs) {
-        if (getField(pairs, HEARING_TELEPHONE_LITERAL) != null
+        if (getField(pairs, HEARING_TYPE_TELEPHONE_LITERAL) != null
             || getField(pairs, HEARING_TELEPHONE_LITERAL) != null
             || getField(pairs, HEARING_TYPE_VIDEO_LITERAL) != null
             || getField(pairs, HEARING_VIDEO_EMAIL_LITERAL) != null
