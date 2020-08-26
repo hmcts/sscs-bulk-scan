@@ -621,10 +621,10 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidPostcode_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidPostcode_thenAddAnError() {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithPostcode("Bla Bla"), true), false);
 
-        assertEquals("person1_postcode is not a valid postcode", response.getWarnings().get(0));
+        assertEquals("person1_postcode is not a valid postcode", response.getErrors().get(0));
     }
 
     @Test

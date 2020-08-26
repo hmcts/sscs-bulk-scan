@@ -336,7 +336,7 @@ public class SscsCaseValidator implements CaseValidator {
             if (address.getPostcode().matches(POSTCODE_REGEX) && postcodeValidator.isValid(address.getPostcode())) {
                 return true;
             } else {
-                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
+                errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
                 return false;
             }
         }
