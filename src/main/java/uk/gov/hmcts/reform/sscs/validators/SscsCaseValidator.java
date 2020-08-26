@@ -289,7 +289,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private boolean isTitleValid(String title) {
-        if (title != null) {
+        if (StringUtils.isNotBlank(title)) {
             String strippedTitle = title.replaceAll("[-+.^:,'_]", "");
             return titles.stream().anyMatch(strippedTitle::equalsIgnoreCase);
         }

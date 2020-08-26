@@ -15,9 +15,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.converters.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -29,6 +33,7 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
+@RunWith(JUnitParamsRunner.class)
 public class SscsCaseValidatorTest {
 
     private static final String VALID_MOBILE = "07832882849";
@@ -588,6 +593,30 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true), false);
 
         assertEquals("representative_mobile is invalid", response.getErrors().get(0));
+    }
+
+    @Test
+    public void givenARepresentativeTitleIsInvalid_thenAddWarning() {
+        Representative representative = buildRepresentative();
+        representative.setContact(Contact.builder().build());
+        representative.getName().setTitle("%54 3434 ^7*");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true), false);
+
+        assertEquals("representative_title is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    @Parameters({"", "null", " "})
+    public void givenARepresentativeTitleIsEmpty_thenDoNotAddAnyWarnings(@Nullable String title) {
+        Representative representative = buildRepresentative();
+        representative.setContact(Contact.builder().build());
+        representative.getName().setTitle(title);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true), false);
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
