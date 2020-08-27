@@ -228,6 +228,31 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    @Test
+    public void should_return_error_when_postcode_is_invalid()
+        throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+
+        final String invalidPostcode = "CM13 9HY";
+        String validationJson = loadJson("mappings/validation/validate-appeal-created-case-request.json")
+            .replaceAll("CF48 2HY", invalidPostcode);
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("Appellant postcode is not a valid postcode");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
     private static String loadJson(String fileName) throws IOException {
         URL url = getResource(fileName);
         return Resources.toString(url, Charsets.toCharset("UTF-8"));

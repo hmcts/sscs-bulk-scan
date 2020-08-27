@@ -33,12 +33,15 @@ import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 @Slf4j
 public class SscsCaseValidator implements CaseValidator {
 
+    @SuppressWarnings("squid:S5843")
     private static final String PHONE_REGEX =
         "^((?:(?:\\(?(?:0(?:0|11)\\)?[\\s-]?\\(?|\\+)\\d{1,4}\\)?[\\s-]?(?:\\(?0\\)?[\\s-]?)?)|(?:\\(?0))(?:"
             + "(?:\\d{5}\\)?[\\s-]?\\d{4,5})|(?:\\d{4}\\)?[\\s-]?(?:\\d{5}|\\d{3}[\\s-]?\\d{3}))|(?:\\d{3}\\)"
             + "?[\\s-]?\\d{3}[\\s-]?\\d{3,4})|(?:\\d{2}\\)?[\\s-]?\\d{4}[\\s-]?\\d{4}))(?:[\\s-]?(?:x|ext\\.?|\\#)"
             + "\\d{3,4})?)?$";
 
+    @SuppressWarnings("squid:S5843")
+    private static final String POSTCODE_REGEX = "^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$";
     List<String> warnings;
     List<String> errors;
 
@@ -46,6 +49,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private final RegionalProcessingCenterService regionalProcessingCenterService;
     private final DwpAddressLookupService dwpAddressLookupService;
+    private final PostcodeValidator postcodeValidator;
     private final SscsJsonExtractor sscsJsonExtractor;
 
     @Value("#{'${validation.titles}'.split(',')}")
@@ -53,9 +57,11 @@ public class SscsCaseValidator implements CaseValidator {
 
     public SscsCaseValidator(RegionalProcessingCenterService regionalProcessingCenterService,
                              DwpAddressLookupService dwpAddressLookupService,
+                             PostcodeValidator postcodeValidator,
                              SscsJsonExtractor sscsJsonExtractor) {
         this.regionalProcessingCenterService = regionalProcessingCenterService;
         this.dwpAddressLookupService = dwpAddressLookupService;
+        this.postcodeValidator = postcodeValidator;
         this.sscsJsonExtractor = sscsJsonExtractor;
     }
 
@@ -327,10 +333,10 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
         if (address != null && address.getPostcode() != null) {
-            if (address.getPostcode().matches("^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$")) {
+            if (address.getPostcode().matches(POSTCODE_REGEX) && postcodeValidator.isValid(address.getPostcode())) {
                 return true;
             } else {
-                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
+                errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
                 return false;
             }
         }

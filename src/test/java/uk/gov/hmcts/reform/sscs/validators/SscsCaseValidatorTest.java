@@ -2,9 +2,10 @@ package uk.gov.hmcts.reform.sscs.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
@@ -47,6 +48,9 @@ public class SscsCaseValidatorTest {
     @Mock
     SscsJsonExtractor sscsJsonExtractor;
 
+    @Mock
+    private PostcodeValidator postcodeValidator;
+
     DwpAddressLookupService dwpAddressLookupService;
 
     private SscsCaseValidator validator;
@@ -72,7 +76,7 @@ public class SscsCaseValidatorTest {
         dwpAddressLookupService = new DwpAddressLookupService();
         scannedData = mock(ScannedData.class);
         caseDetails = mock(CaseDetails.class);
-        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, sscsJsonExtractor);
+        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, postcodeValidator, sscsJsonExtractor);
         transformResponse = CaseResponse.builder().build();
 
         defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2018-12-09").build();
@@ -90,6 +94,7 @@ public class SscsCaseValidatorTest {
 
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(scannedData);
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
+        given(postcodeValidator.isValid(anyString())).willReturn(true);
     }
 
     @Test
@@ -327,7 +332,7 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_postcode is empty", response.getWarnings().get(0));
-        verifyNoMoreInteractions(regionalProcessingCenterService);
+        verifyNoInteractions(regionalProcessingCenterService);
     }
 
     @Test
@@ -645,10 +650,10 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidPostcode_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidPostcode_thenAddAnError() {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithPostcode("Bla Bla"), true), false);
 
-        assertEquals("person1_postcode is not a valid postcode", response.getWarnings().get(0));
+        assertEquals("person1_postcode is not a valid postcode", response.getErrors().get(0));
     }
 
     @Test
@@ -934,7 +939,7 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false));
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
-        verifyNoMoreInteractions(regionalProcessingCenterService);
+        verifyNoInteractions(regionalProcessingCenterService);
     }
 
     @Test
