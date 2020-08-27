@@ -52,6 +52,10 @@ public final class SscsOcrDataUtil {
         return Stream.of(values).allMatch(value -> checkBooleanValue(pairs, errors, value));
     }
 
+    public static boolean isExactlyOneBooleanTrue(Map<String, Object> pairs, Set<String> errors, String... values) {
+        return Stream.of(values).map(value -> extractBooleanValue(pairs, errors, value)).filter(v -> v.booleanValue()).count() == 1;
+    }
+
     public static boolean checkBooleanValue(Map<String, Object> pairs, Set<String> errors, String value) {
         if (pairs.get(value) != null) {
             Boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
@@ -63,6 +67,19 @@ public final class SscsOcrDataUtil {
         }
         return false;
     }
+
+    public static boolean extractBooleanValue(Map<String, Object> pairs, Set<String> errors, String value) {
+        if (pairs.get(value) != null) {
+            Boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
+            if (booleanValue) {
+                return booleanValue.booleanValue();
+            } else {
+                errors.add(value + " has an invalid value. Should be Yes/No or True/False");
+            }
+        }
+        return false;
+    }
+
 
     public static boolean getBoolean(Map<String, Object> pairs, Set<String> errors, String value) {
         return checkBooleanValue(pairs, errors, value) && BooleanUtils.toBoolean(pairs.get(value).toString());

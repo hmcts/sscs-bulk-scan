@@ -20,6 +20,7 @@ public class SscsKeyValuePairValidatorTest {
         Map<String, Object> pairs = new HashMap<>();
         pairs.put("is_benefit_type_pip", true);
         pairs.put("is_benefit_type_esa", false);
+        pairs.put("is_benefit_type_uc", false);
         pairs.put("person1_email", "me@example.com");
         pairs.put("person1_want_sms_notifications", false);
         pairs.put("representative_email", "me@example.com");

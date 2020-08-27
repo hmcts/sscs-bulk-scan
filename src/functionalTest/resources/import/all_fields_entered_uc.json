@@ -380,14 +380,14 @@
         {
           "value": {
             "key": "is_benefit_type_esa",
-            "value": "yes"
+            "value": "no"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },
         {
           "value": {
             "key": "is_benefit_type_uc",
-            "value": "no"
+            "value": "yes"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },

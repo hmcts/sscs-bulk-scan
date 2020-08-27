@@ -260,14 +260,25 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (code != null) {
             code = fuzzyMatcherService.matchBenefitType(code);
         }
-
-        if (areBooleansValid(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP)) {
-            doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP);
+        if (areBooleansValid(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP, IS_BENEFIT_TYPE_UC)) {
+            isExactlyOneBooleanTrue(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP, IS_BENEFIT_TYPE_UC);
+        } else {
+            if (areBooleansValid(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP)) {
+                doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP);
+            }
+            if (areBooleansValid(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_UC)) {
+                doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_UC);
+            }
+            if (areBooleansValid(pairs, errors, IS_BENEFIT_TYPE_PIP, IS_BENEFIT_TYPE_UC)) {
+                doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_PIP, IS_BENEFIT_TYPE_UC);
+            }
         }
         if (checkBooleanValue(pairs, errors, IS_BENEFIT_TYPE_PIP) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_PIP).toString())) {
             code = Benefit.PIP.name();
         } else if (checkBooleanValue(pairs, errors, IS_BENEFIT_TYPE_ESA) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_ESA).toString())) {
             code = Benefit.ESA.name();
+        } else if (checkBooleanValue(pairs, errors, IS_BENEFIT_TYPE_UC) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_UC).toString())) {
+            code = Benefit.UC.name();
         }
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
     }
