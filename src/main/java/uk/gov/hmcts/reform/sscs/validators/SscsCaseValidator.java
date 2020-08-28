@@ -190,10 +190,8 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {
-        if (hearingSubtype != null) {
-            if (hearingSubtype.getHearingTelephoneNumber() != null && !isMobileNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
-                errors.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_LITERAL, IS_INVALID));
-            }
+        if (hearingSubtype != null && hearingSubtype.getHearingTelephoneNumber() != null && !isMobileNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
+            errors.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_LITERAL, IS_INVALID));
         }
     }
 
