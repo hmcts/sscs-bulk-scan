@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
@@ -31,10 +33,10 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 //FIXME: Remove after bulk scan migration
+@RunWith(MockitoJUnitRunner.class)
 public class SscsCaseValidatorTestOld {
 
     private static final String VALID_MOBILE = "07832882849";
-    private static final String VALID_PHONE_NUMBER = "01234567898";
     private static final String VALID_POSTCODE = "CM13 0GD";
 
     @Mock
@@ -42,6 +44,9 @@ public class SscsCaseValidatorTestOld {
 
     @Mock
     SscsJsonExtractor sscsJsonExtractor;
+
+    @Mock
+    private PostcodeValidator postcodeValidator;
 
     DwpAddressLookupService dwpAddressLookupService;
 
@@ -65,7 +70,7 @@ public class SscsCaseValidatorTestOld {
         dwpAddressLookupService = new DwpAddressLookupService();
         scannedData = mock(ScannedData.class);
         caseDetails = mock(CaseDetails.class);
-        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, sscsJsonExtractor);
+        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, postcodeValidator, sscsJsonExtractor);
         transformErrorResponse = AboutToStartOrSubmitCallbackResponse.builder().build();
 
         defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2018-12-09").build();
@@ -80,6 +85,7 @@ public class SscsCaseValidatorTestOld {
         given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
         given(sscsJsonExtractor.extractJsonOld(anyMap())).willReturn(scannedData);
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
+        given(postcodeValidator.isValid(anyString())).willReturn(true);
     }
 
     @Test
@@ -611,10 +617,10 @@ public class SscsCaseValidatorTestOld {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidPostcode_thenAddAWarning() {
+    public void givenAnAppealContainsAnInvalidPostcode_thenAddAnError() {
         CaseResponse response = validator.validateExceptionRecordOld(transformErrorResponse, caseDetails, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithPostcode("Bla Bla"), true));
 
-        assertEquals("person1_postcode is not a valid postcode", response.getWarnings().get(0));
+        assertEquals("person1_postcode is not a valid postcode", response.getErrors().get(0));
     }
 
     @Test
