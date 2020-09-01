@@ -9,9 +9,6 @@ public final class SscsConstants {
     public static final String AGREE_LESS_HEARING_NOTICE_LITERAL = "agree_less_hearing_notice";
     public static final String APPEAL_GROUNDS = "appeal_grounds";
     public static final String APPEAL_GROUNDS_2 = "appeal_grounds_2";
-    public static final String IS_BENEFIT_TYPE_PIP = "is_benefit_type_pip";
-    public static final String IS_BENEFIT_TYPE_ESA = "is_benefit_type_esa";
-    public static final String IS_BENEFIT_TYPE_UC = "is_benefit_type_uc";
     public static final String PERSON1_VALUE = "person1";
     public static final String PERSON2_VALUE = "person2";
     public static final String REPRESENTATIVE_VALUE = "representative";

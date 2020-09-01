@@ -124,6 +124,129 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
+    public void givenTwoBooleansNotDefined_thenAreBooleansValid_ShouldReturnFalse_WithNoErrors() {
+        assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void givenOneBooleanNotDefinedAndOneBooleanValid_then_AreBooleansValid_ShouldReturnFalse_WithNoErrors() {
+        pairs.put("hearing_type_oral", "No");
+        assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(errors.isEmpty());
+
+    }
+
+    @Test
+    public void givenOneBooleanNotDefinedAndOneBooleanInvalid_then_AreBooleansValid_ShouldReturnFalse_WithOneError() {
+        pairs.put("hearing_type_oral", "blah");
+        assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(errors.size() == 1);
+        assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
+    }
+
+    @Test
+    public void givenTwoBooleansDefinedWithOneBooleanInvalid_then_AreBooleansValid_ShouldReturnFalse_WithOneError() {
+        pairs.put("hearing_type_oral", "No");
+        pairs.put("hearing_type_paper", "blah");
+        assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(errors.size() == 1);
+    }
+
+    @Test
+    public void givenTwoBooleansDefinedWithBothBooleansInvalid_then_AreBooleansValid_ShouldReturnFalse_WithTwoErrors() {
+        pairs.put("hearing_type_oral", "blah");
+        pairs.put("hearing_type_paper", "blah");
+        assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(errors.size() == 1);
+        assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
+    }
+
+    @Test
+    public void givenTwoBooleansDefinedWithBothBooleansNo_then_AreBooleansValid_ShouldReturnTrue_WithNoErrors() {
+        pairs.put("hearing_type_oral", "no");
+        pairs.put("hearing_type_paper", "no");
+        assertTrue(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void givenTwoBooleansDefinedWithBothBooleansYes_then_AreBooleansValid_ShouldReturnTrue_WithNoErrors() {
+        pairs.put("hearing_type_oral", "yes");
+        pairs.put("hearing_type_paper", "yes");
+        assertTrue(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void givenTwoBooleansNotDefined_then_extractValuesWhereBooleansValidBooleans_ShouldEmptyList_WithNoErrors() {
+        List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
+        assertTrue(extracted.isEmpty());
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void givenOneBooleanNotDefinedAndOneBooleanValid_then_extractValuesWhereBooleansValidBooleans_ShouldReturnSingletonList_WithNoErrors() {
+        pairs.put("hearing_type_oral", "No");
+        List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
+        assertTrue(extracted.size() == 1);
+        assertEquals(Arrays.asList("hearing_type_oral"), extracted);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void givenOneBooleanNotDefinedAndOneBooleanInvalid_then_extractValuesWhereBooleansValidBooleans_ShouldReturnEmptyList_WithOneError() {
+        pairs.put("hearing_type_oral", "blah");
+        List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
+        assertTrue(extracted.isEmpty());
+        assertTrue(errors.size() == 1);
+        assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
+    }
+
+    @Test
+    public void givenTwoBooleansDefinedWithOneBooleanInvalid_then_extractValuesWhereBooleansValidBooleans_ShouldReturnSingletonList_WithOneError() {
+        pairs.put("hearing_type_oral", "No");
+        pairs.put("hearing_type_paper", "blah");
+        List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
+        assertTrue(extracted.size() == 1);
+        assertEquals(Arrays.asList("hearing_type_oral"), extracted);
+        assertTrue(errors.size() == 1);
+        assertEquals("hearing_type_paper has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
+    }
+
+    @Test
+    public void givenTwoBooleansDefinedWithBothBooleansInvalid_then_extractValuesWhereBooleansValidBooleans_ShouldReturnEmptyList_WithTwoErrors() {
+        pairs.put("hearing_type_oral", "blah");
+        pairs.put("hearing_type_paper", "blah");
+        List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
+        assertTrue(extracted.isEmpty());
+        assertTrue(errors.size() == 2);
+        Iterator<String> errorsIterator = errors.iterator();
+        assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errorsIterator.next());
+        assertEquals("hearing_type_paper has an invalid value. Should be Yes/No or True/False", errorsIterator.next());
+    }
+
+    @Test
+    public void givenTwoBooleansDefinedWithBothBooleansNo_then_extractValuesWhereBooleansValidBooleans_ShouldReturnBothValues_WithNoErrors() {
+        pairs.put("hearing_type_oral", "no");
+        pairs.put("hearing_type_paper", "no");
+        List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
+        assertTrue(extracted.size() == 2);
+        assertEquals(Arrays.asList("hearing_type_oral", "hearing_type_paper"), extracted);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void givenTwoBooleansDefinedWithBothBooleansYes_then_extractValuesWhereBooleansValidBooleans_ShouldReturnBothValues_WithNoErrors() {
+        pairs.put("hearing_type_oral", "yes");
+        pairs.put("hearing_type_paper", "yes");
+        List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
+        assertTrue(extracted.size() == 2);
+        assertEquals(Arrays.asList("hearing_type_oral", "hearing_type_paper"), extracted);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
     public void givenTwoBooleansDoNotContradict_thenReturnFalse() {
         pairs.put("hearing_type_oral", true);
         pairs.put("hearing_type_paper", false);
@@ -203,4 +326,6 @@ public class SscsOcrDataUtilTest {
 
         assertEquals("hearing_options_hearing_loop has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
     }
+
+
 }
