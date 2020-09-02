@@ -11,8 +11,6 @@ public enum BenefitTypeIndicator {
     ESA("is_benefit_type_esa", Benefit.ESA),
     UC("is_benefit_type_uc", Benefit.UC);
 
-    public static final List<String> ALL_INDICATOR_STRINGS = Arrays.stream(values()).map(v -> v.getIndicatorString()).collect(Collectors.toList());
-
     private final String indicatorString;
     private final Benefit benefit;
 
@@ -21,8 +19,12 @@ public enum BenefitTypeIndicator {
         this.benefit = benefit;
     }
 
+    public static List<String> getAllIndicatorStrings() {
+        return Arrays.stream(values()).map(BenefitTypeIndicator::getIndicatorString).collect(Collectors.toList());
+    }
+
     public static Optional<Benefit> findByIndicatorString(String indicatorString) {
-        return  Arrays.stream(values()).filter(v -> v.getIndicatorString().equals(indicatorString)).map(v -> v.getBenefit()).findFirst();
+        return  Arrays.stream(values()).filter(v -> v.getIndicatorString().equals(indicatorString)).map(BenefitTypeIndicator::getBenefit).findFirst();
     }
 
     public String getIndicatorString() {

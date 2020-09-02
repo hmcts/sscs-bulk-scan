@@ -33,4 +33,9 @@ public class BenefitTypeIndicatorTest {
         Optional<Benefit> optional = BenefitTypeIndicator.findByIndicatorString("something");
         assertTrue(optional.isEmpty());
     }
+
+    @Test
+    public void testGetAllIndicatorStrings() {
+         assertEquals(BenefitTypeIndicator.values().length, BenefitTypeIndicator.getAllIndicatorStrings().size());
+    }
 }

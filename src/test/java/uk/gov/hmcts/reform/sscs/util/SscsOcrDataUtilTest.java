@@ -141,7 +141,7 @@ public class SscsOcrDataUtilTest {
     public void givenOneBooleanNotDefinedAndOneBooleanInvalid_then_AreBooleansValid_ShouldReturnFalse_WithOneError() {
         pairs.put("hearing_type_oral", "blah");
         assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
-        assertTrue(errors.size() == 1);
+        assertEquals(1, errors.size());
         assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
     }
 
@@ -150,7 +150,7 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", "No");
         pairs.put("hearing_type_paper", "blah");
         assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
-        assertTrue(errors.size() == 1);
+        assertEquals(1, errors.size());
     }
 
     @Test
@@ -158,7 +158,7 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", "blah");
         pairs.put("hearing_type_paper", "blah");
         assertFalse(areBooleansValid(pairs, errors, "hearing_type_oral", "hearing_type_paper"));
-        assertTrue(errors.size() == 1);
+        assertEquals(1, errors.size());
         assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
     }
 
@@ -189,7 +189,7 @@ public class SscsOcrDataUtilTest {
     public void givenOneBooleanNotDefinedAndOneBooleanValid_then_extractValuesWhereBooleansValidBooleans_ShouldReturnSingletonList_WithNoErrors() {
         pairs.put("hearing_type_oral", "No");
         List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
-        assertTrue(extracted.size() == 1);
+        assertEquals(1, extracted.size());
         assertEquals(Arrays.asList("hearing_type_oral"), extracted);
         assertTrue(errors.isEmpty());
     }
@@ -199,7 +199,7 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", "blah");
         List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
         assertTrue(extracted.isEmpty());
-        assertTrue(errors.size() == 1);
+        assertEquals(2, errors.size());
         assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
     }
 
@@ -208,9 +208,9 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", "No");
         pairs.put("hearing_type_paper", "blah");
         List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
-        assertTrue(extracted.size() == 1);
+        assertEquals(1, extracted.size());
         assertEquals(Arrays.asList("hearing_type_oral"), extracted);
-        assertTrue(errors.size() == 1);
+        assertEquals(2, errors.size());
         assertEquals("hearing_type_paper has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
     }
 
@@ -220,7 +220,7 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_paper", "blah");
         List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
         assertTrue(extracted.isEmpty());
-        assertTrue(errors.size() == 2);
+        assertEquals(2, errors.size());
         Iterator<String> errorsIterator = errors.iterator();
         assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errorsIterator.next());
         assertEquals("hearing_type_paper has an invalid value. Should be Yes/No or True/False", errorsIterator.next());
@@ -231,7 +231,7 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", "no");
         pairs.put("hearing_type_paper", "no");
         List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
-        assertTrue(extracted.size() == 2);
+        assertEquals(2, extracted.size());
         assertEquals(Arrays.asList("hearing_type_oral", "hearing_type_paper"), extracted);
         assertTrue(errors.isEmpty());
     }
@@ -241,7 +241,7 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", "yes");
         pairs.put("hearing_type_paper", "yes");
         List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
-        assertTrue(extracted.size() == 2);
+        assertEquals(2, extracted.size());
         assertEquals(Arrays.asList("hearing_type_oral", "hearing_type_paper"), extracted);
         assertTrue(errors.isEmpty());
     }

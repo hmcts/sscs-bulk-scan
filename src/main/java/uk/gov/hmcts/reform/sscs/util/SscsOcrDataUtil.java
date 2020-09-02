@@ -72,7 +72,7 @@ public final class SscsOcrDataUtil {
     }
 
     public static boolean isExactlyOneBooleanTrue(Map<String, Object> pairs, Set<String> errors, String... values) {
-        return Stream.of(values).map(value -> extractBooleanValue(pairs, errors, value)).filter(v -> v.booleanValue()).count() == 1;
+        return Stream.of(values).map(value -> extractBooleanValue(pairs, errors, value)).filter(Boolean::booleanValue).count() == 1;
     }
 
     public static boolean checkBooleanValue(Map<String, Object> pairs, Set<String> errors, String value) {

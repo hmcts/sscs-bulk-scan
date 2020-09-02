@@ -263,14 +263,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
 
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
-        List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.ALL_INDICATOR_STRINGS);
+        List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.getAllIndicatorStrings());
 
         // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
         // for conflicting values.
         if (!validProvidedBooleanValues.isEmpty()) {
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
             if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
-                String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().get();
+                String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
                 Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
                 if (benefit.isPresent()) {
                     code = benefit.get().name();
