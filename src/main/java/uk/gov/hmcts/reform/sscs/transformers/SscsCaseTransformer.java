@@ -276,7 +276,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     code = benefit.get().name();
                 }
             } else {
-                errors.add(uk.gov.hmcts.reform.sscs.util.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
+                errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
             }
         }
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
