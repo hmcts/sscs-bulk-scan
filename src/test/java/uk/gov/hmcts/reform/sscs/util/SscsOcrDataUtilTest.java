@@ -199,7 +199,7 @@ public class SscsOcrDataUtilTest {
         pairs.put("hearing_type_oral", "blah");
         List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
         assertTrue(extracted.isEmpty());
-        assertEquals(2, errors.size());
+        assertEquals(1, errors.size());
         assertEquals("hearing_type_oral has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
     }
 
@@ -210,7 +210,7 @@ public class SscsOcrDataUtilTest {
         List<String> extracted = extractValuesWhereBooleansValid(pairs, errors, Arrays.asList("hearing_type_oral", "hearing_type_paper"));
         assertEquals(1, extracted.size());
         assertEquals(Arrays.asList("hearing_type_oral"), extracted);
-        assertEquals(2, errors.size());
+        assertEquals(1, errors.size());
         assertEquals("hearing_type_paper has an invalid value. Should be Yes/No or True/False", errors.iterator().next());
     }
 
