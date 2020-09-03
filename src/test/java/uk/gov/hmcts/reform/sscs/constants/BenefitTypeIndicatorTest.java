@@ -36,6 +36,6 @@ public class BenefitTypeIndicatorTest {
 
     @Test
     public void testGetAllIndicatorStrings() {
-         assertEquals(BenefitTypeIndicator.values().length, BenefitTypeIndicator.getAllIndicatorStrings().size());
+        assertEquals(BenefitTypeIndicator.values().length, BenefitTypeIndicator.getAllIndicatorStrings().size());
     }
 }
