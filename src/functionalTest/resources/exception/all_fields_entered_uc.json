@@ -29,7 +29,7 @@
     },
     {
       "name": "mrn_date",
-      "value": "09/06/2017"
+      "value": "09/04/2020"
     },
     {
       "name": "office",
@@ -169,7 +169,7 @@
     },
     {
       "name": "appeal_grounds",
-      "value": "APPEAL_GROUNDS"
+      "value": "see scanned SSCS1 form"
     },
     {
       "name": "appeal_late_reason",
@@ -233,11 +233,11 @@
     },
     {
       "name": "is_benefit_type_esa",
-      "value": "yes"
-    },
-    {
-      "name": "is_benefit_type_uc",
       "value": "no"
+    },
+     {
+      "name": "is_benefit_type_uc",
+      "value": "yes"
     }
   ]
 }

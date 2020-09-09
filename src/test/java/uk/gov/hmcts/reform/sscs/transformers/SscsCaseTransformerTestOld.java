@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.InputScannedDoc;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
+import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -110,18 +111,18 @@ public class SscsCaseTransformerTestOld {
     @Test
     @Parameters({"true", "false"})
     public void givenInvalidBenefitTypePairings_thenReturnAnError(boolean value) {
-        pairs.put(IS_BENEFIT_TYPE_ESA, value);
-        pairs.put(IS_BENEFIT_TYPE_PIP, value);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), value);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), value);
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
         assertFalse(result.getErrors().isEmpty());
-        assertEquals("is_benefit_type_esa and is_benefit_type_pip have contradicting values", result.getErrors().get(0));
+        assertEquals("is_benefit_type_pip and is_benefit_type_esa have contradicting values", result.getErrors().get(0));
     }
 
     @Test
     @Parameters({"true", "false"})
     public void givenBenefitTypeIsDefinedWithTrueFalse_thenCheckCorrectCodeIsReturned(boolean isPip) {
-        pairs.put(IS_BENEFIT_TYPE_PIP, isPip);
-        pairs.put(IS_BENEFIT_TYPE_ESA, !isPip);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), !isPip);
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
@@ -132,8 +133,8 @@ public class SscsCaseTransformerTestOld {
     @Test
     @Parameters({"Yes", "No"})
     public void givenBenefitTypeIsDefinedWithYesNo_thenCheckCorrectCodeIsReturned(String isPip) {
-        pairs.put(IS_BENEFIT_TYPE_PIP, isPip);
-        pairs.put(IS_BENEFIT_TYPE_ESA, isPip.equals("Yes") ? "No" : "Yes");
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), isPip.equals("Yes") ? "No" : "Yes");
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
@@ -1177,8 +1178,8 @@ public class SscsCaseTransformerTestOld {
     @Test
     public void givenAPipCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
         pairs.put("office", "1");
-        pairs.put(IS_BENEFIT_TYPE_PIP, true);
-        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
 
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
 
@@ -1191,8 +1192,8 @@ public class SscsCaseTransformerTestOld {
     @Test
     public void givenAPipCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
         pairs.put("office", "2");
-        pairs.put(IS_BENEFIT_TYPE_PIP, true);
-        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
 
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
 
@@ -1205,8 +1206,8 @@ public class SscsCaseTransformerTestOld {
     @Test
     public void givenAEsaCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
         pairs.put("office", "Balham DRT");
-        pairs.put(IS_BENEFIT_TYPE_PIP, false);
-        pairs.put(IS_BENEFIT_TYPE_ESA, true);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
 
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
 
@@ -1219,8 +1220,8 @@ public class SscsCaseTransformerTestOld {
     @Test
     public void givenAEsaCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
         pairs.put("office", "Chesterfield DRT");
-        pairs.put(IS_BENEFIT_TYPE_PIP, false);
-        pairs.put(IS_BENEFIT_TYPE_ESA, true);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
 
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
 
@@ -1234,8 +1235,8 @@ public class SscsCaseTransformerTestOld {
     @Parameters({"(AE)", "AE", "DWP PIP (AE)"})
     public void givenAPipAeCase_thenAcceptOfficeWithFuzzyMatching(String pipAe) {
         pairs.put("office", pipAe);
-        pairs.put(IS_BENEFIT_TYPE_PIP, true);
-        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
 
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
 

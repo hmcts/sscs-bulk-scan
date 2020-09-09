@@ -48,7 +48,6 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
 
     @Test
     public void create_valid_appeal_when_all_fields_entered_for_uc_case() throws IOException {
-        //FIXME: Update the is_benefit_type_uc once implemented for SSCS-8034
         String json = getJson("import/all_fields_entered_uc.json");
         json = replaceNino(json);
 

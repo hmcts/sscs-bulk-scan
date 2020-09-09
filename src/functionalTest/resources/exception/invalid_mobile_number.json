@@ -234,6 +234,10 @@
     {
       "name": "is_benefit_type_esa",
       "value": "yes"
+    },
+     {
+      "name": "is_benefit_type_uc",
+      "value": "no"
     }
   ]
 }

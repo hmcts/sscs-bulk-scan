@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,8 +50,29 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
+    /**
+     * Returns true if and only if there are entries in pairs map for *all* the specified values that are
+     * valid representations of booleans.
+     * Adds an error for the first value specified that exists in pairs map that isn't a valid representation
+     * of a boolean.
+     */
     public static boolean areBooleansValid(Map<String, Object> pairs, Set<String> errors, String... values) {
         return Stream.of(values).allMatch(value -> checkBooleanValue(pairs, errors, value));
+    }
+
+    /**
+     * Returns the subset of specified values for which there are entries in pairs map that are
+     * valid representations of booleans.
+     * Adds an error for the any value specified that exists in pairs map that isn't a valid representation
+     * of a boolean
+     *
+     */
+    public static List<String> extractValuesWhereBooleansValid(Map<String, Object> pairs, Set<String> errors, List<String> values) {
+        return values.stream().filter(value -> checkBooleanValue(pairs, errors, value)).collect(Collectors.toList());
+    }
+
+    public static boolean isExactlyOneBooleanTrue(Map<String, Object> pairs, Set<String> errors, String... values) {
+        return Stream.of(values).map(value -> extractBooleanValue(pairs, errors, value)).filter(Boolean::booleanValue).count() == 1;
     }
 
     public static boolean checkBooleanValue(Map<String, Object> pairs, Set<String> errors, String value) {
@@ -63,6 +86,19 @@ public final class SscsOcrDataUtil {
         }
         return false;
     }
+
+    public static boolean extractBooleanValue(Map<String, Object> pairs, Set<String> errors, String value) {
+        if (pairs.get(value) != null) {
+            Boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString());
+            if (booleanValue != null) {
+                return booleanValue.booleanValue();
+            } else {
+                errors.add(value + " has an invalid value. Should be Yes/No or True/False");
+            }
+        }
+        return false;
+    }
+
 
     public static boolean getBoolean(Map<String, Object> pairs, Set<String> errors, String value) {
         return checkBooleanValue(pairs, errors, value) && BooleanUtils.toBoolean(pairs.get(value).toString());

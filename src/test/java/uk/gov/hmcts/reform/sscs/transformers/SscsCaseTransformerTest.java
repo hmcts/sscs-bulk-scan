@@ -37,6 +37,7 @@ import org.mockito.Mock;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
+import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -109,18 +110,18 @@ public class SscsCaseTransformerTest {
     @Test
     @Parameters({"true", "false"})
     public void givenInvalidBenefitTypePairings_thenReturnAnError(boolean value) {
-        pairs.put(IS_BENEFIT_TYPE_ESA, value);
-        pairs.put(IS_BENEFIT_TYPE_PIP, value);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), value);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), value);
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
-        assertEquals("is_benefit_type_esa and is_benefit_type_pip have contradicting values", result.getErrors().get(0));
+        assertEquals("is_benefit_type_pip and is_benefit_type_esa have contradicting values", result.getErrors().get(0));
     }
 
     @Test
     @Parameters({"true", "false"})
     public void givenBenefitTypeIsDefinedWithTrueFalse_thenCheckCorrectCodeIsReturned(boolean isPip) {
-        pairs.put(IS_BENEFIT_TYPE_PIP, isPip);
-        pairs.put(IS_BENEFIT_TYPE_ESA, !isPip);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), !isPip);
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
@@ -131,8 +132,8 @@ public class SscsCaseTransformerTest {
     @Test
     @Parameters({"Yes", "No"})
     public void givenBenefitTypeIsDefinedWithYesNo_thenCheckCorrectCodeIsReturned(String isPip) {
-        pairs.put(IS_BENEFIT_TYPE_PIP, isPip);
-        pairs.put(IS_BENEFIT_TYPE_ESA, isPip.equals("Yes") ? "No" : "Yes");
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), isPip.equals("Yes") ? "No" : "Yes");
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
@@ -633,7 +634,6 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("disabledAccess", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
-
         assertTrue(result.getErrors().isEmpty());
     }
 
@@ -961,7 +961,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put(PERSON1_VALUE + NINO, APPELLANT_NINO);
         pairs.put(MRN_DATE, MRN_DATE_VALUE);
-        pairs.put(IS_BENEFIT_TYPE_PIP, YES_LITERAL);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), YES_LITERAL);
 
         Map<String, String> map = new HashMap<>();
         map.put("case.appeal.appellant.identity.nino", APPELLANT_NINO);
@@ -1227,8 +1227,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenAPipCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
         pairs.put("office", "1");
-        pairs.put(IS_BENEFIT_TYPE_PIP, true);
-        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1241,8 +1241,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenAPipCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
         pairs.put("office", "2");
-        pairs.put(IS_BENEFIT_TYPE_PIP, true);
-        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1255,8 +1255,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenAEsaCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
         pairs.put("office", "Balham DRT");
-        pairs.put(IS_BENEFIT_TYPE_PIP, false);
-        pairs.put(IS_BENEFIT_TYPE_ESA, true);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1269,8 +1269,8 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenAEsaCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
         pairs.put("office", "Chesterfield DRT");
-        pairs.put(IS_BENEFIT_TYPE_PIP, false);
-        pairs.put(IS_BENEFIT_TYPE_ESA, true);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1284,8 +1284,8 @@ public class SscsCaseTransformerTest {
     @Parameters({"(AE)", "AE", "DWP PIP (AE)"})
     public void givenAPipAeCase_thenAcceptOfficeWithFuzzyMatching(String pipAe) {
         pairs.put("office", pipAe);
-        pairs.put(IS_BENEFIT_TYPE_PIP, true);
-        pairs.put(IS_BENEFIT_TYPE_ESA, false);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1442,6 +1442,87 @@ public class SscsCaseTransformerTest {
         assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
         assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
         assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
+    }
+
+    @Test
+    @Parameters({"true", "Yes", "false", "No"})
+    public void givenHearingSubtypeDetailsAreProvided_WithoutHearingTypeTelephone_thenBuildAnAppealHearingSubtypeDetails(String hearingSubtypeFlag) {
+
+        pairs.put(HEARING_TELEPHONE_LITERAL, HEARING_TELEPHONE_NUMBER);
+        pairs.put(HEARING_TYPE_VIDEO_LITERAL, hearingSubtypeFlag);
+        pairs.put(HEARING_VIDEO_EMAIL_LITERAL, HEARING_VIDEO_EMAIL);
+        pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
+        String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
+        assertEquals(HEARING_TELEPHONE_NUMBER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
+        assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
+    }
+
+    @Test
+    @Parameters({"true", "Yes", "false", "No"})
+    public void givenHearingSubtypeDetailsAreProvided_WithoutHearingTypeTelephoneOrHearingTelephone_thenBuildAnAppealHearingSubtypeDetails(String hearingSubtypeFlag) {
+
+        pairs.put(HEARING_TYPE_VIDEO_LITERAL, hearingSubtypeFlag);
+        pairs.put(HEARING_VIDEO_EMAIL_LITERAL, HEARING_VIDEO_EMAIL);
+        pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
+        String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
+        assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
+    }
+
+    @Test
+    @Parameters({"true", "Yes", "false", "No"})
+    public void givenHearingSubtypeDetailsAreProvided_WithoutHearingTypeTelephoneOrVideoOrHearingTelephone_thenBuildAnAppealHearingSubtypeDetails(String hearingSubtypeFlag) {
+
+        pairs.put(HEARING_VIDEO_EMAIL_LITERAL, HEARING_VIDEO_EMAIL);
+        pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
+        String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+        assertNull(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
+        assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
+    }
+
+    @Test
+    @Parameters({"true", "Yes", "false", "No"})
+    public void givenHearingSubtypeDetailsAreProvided_WithOnlyHearingTypeFaceToFace_thenBuildAnAppealHearingSubtypeDetails(String hearingSubtypeFlag) {
+
+        pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
+        final String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
+        assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
+
+    }
+
+    @Test
+    @Parameters({"true", "Yes", "false", "No"})
+    public void givenHearingSubtypeDetailsAreProvided_WithNoPairs_thenBuildAnAppealHearingSubtypeDetails(String hearingSubtypeFlag) {
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
+        assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
+
     }
 
     @Test
