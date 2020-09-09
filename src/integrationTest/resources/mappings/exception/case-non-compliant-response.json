@@ -95,7 +95,8 @@
         },
         "supporterSubscription" : null,
         "representativeSubscription" : null,
-        "appointeeSubscription" : null
+        "appointeeSubscription" : null,
+        "jointPartySubscription": null
       },
       "region" : "BRADFORD",
       "regionalProcessingCenter" : {
