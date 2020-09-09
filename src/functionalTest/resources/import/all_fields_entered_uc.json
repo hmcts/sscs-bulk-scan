@@ -274,13 +274,6 @@
         },
         {
           "value": {
-            "key": "appeal_grounds",
-            "value": "see scanned SSCS1 form"
-          },
-          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
-        },
-        {
-          "value": {
             "key": "appeal_late_reason",
             "value": "see scanned SSCS1 form"
           },
@@ -387,14 +380,56 @@
         {
           "value": {
             "key": "is_benefit_type_esa",
-            "value": "yes"
+            "value": "no"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         },
         {
           "value": {
             "key": "is_benefit_type_uc",
-            "value": "no"
+            "value": "yes"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_type_telephone",
+            "value": "yes"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_telephone_number",
+            "value": "01234567890"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_type_video",
+            "value": "yes"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_video_email",
+            "value": "my@email.com"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "hearing_type_face_to_face",
+            "value": "false"
+          },
+          "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
+        },
+        {
+          "value": {
+            "key": "appeal_grounds_2",
+            "value": "My appeal gounds 2"
           },
           "id": "8d556f91-13a4-4df5-a934-e69f5cd7141a"
         }

@@ -55,6 +55,13 @@
             }
          }]
       },
+      "hearingSubtype": {
+        "wantsHearingTypeTelephone": "Yes",
+        "hearingTelephoneNumber": "01234567890",
+        "wantsHearingTypeVideo": "Yes",
+        "hearingVideoEmail": "my@email.com",
+        "wantsHearingTypeFaceToFace": "No"
+      },
       "appealReasons": null,
       "rep": {
         "hasRepresentative": "No",

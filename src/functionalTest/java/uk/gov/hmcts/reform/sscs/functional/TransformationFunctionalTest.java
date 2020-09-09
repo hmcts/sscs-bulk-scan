@@ -48,6 +48,31 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
             softly.assertAll();
         });
     }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void transform_appeal_created_case_when_all_fields_entered_uc() throws IOException {
+        String json = getJson("exception/all_fields_entered_uc.json");
+        Response response = transformExceptionRequest(json, OK.value());
+
+        JsonPath transformationResponse = response.getBody().jsonPath();
+
+        assertSoftly(softly -> {
+            softly.assertThat(transformationResponse.getList("warnings")).isEmpty();
+            softly.assertThat(transformationResponse.getMap("case_creation_details").get("case_type_id"))
+                .isEqualTo("Benefit");
+            softly.assertThat(transformationResponse.getMap("case_creation_details").get("event_id"))
+                .isEqualTo("validAppealCreated");
+
+            Map<String, Object> caseData = (Map<String, Object>) transformationResponse
+                .getMap("case_creation_details")
+                .get("case_data");
+
+            softly.assertThat(caseData.get("caseCreated")).isEqualTo("2019-08-02");
+
+            softly.assertAll();
+        });
+    }
 
     @SuppressWarnings("unchecked")
     @Test

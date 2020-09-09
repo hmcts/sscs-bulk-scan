@@ -38,6 +38,13 @@
           "code": "ESA",
           "description": "Employment and Support Allowance"
         },
+        "hearingSubtype": {
+          "wantsHearingTypeTelephone": "Yes",
+          "hearingTelephoneNumber": "01234567890",
+          "wantsHearingTypeVideo": "Yes",
+          "hearingVideoEmail": "my@email.com",
+          "wantsHearingTypeFaceToFace": "No"
+        },
         "hearingOptions": {
           "wantsToAttend": "Yes",
           "wantsSupport": "No",
@@ -92,7 +99,8 @@
         },
         "supporterSubscription": null,
         "representativeSubscription": null,
-        "appointeeSubscription": null
+        "appointeeSubscription": null,
+        "jointPartySubscription": null
       },
       "region": "BRADFORD",
       "regionalProcessingCenter": {

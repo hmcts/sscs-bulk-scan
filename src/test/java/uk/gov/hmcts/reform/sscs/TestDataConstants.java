@@ -62,4 +62,6 @@ public class TestDataConstants {
     public static final String BENEFIT_CODE = "002";
     public static final String ISSUE_CODE = "DD";
     public static final String CASE_CODE = "002DD";
+    public static final String HEARING_TELEPHONE_NUMBER = "01234567890";
+    public static final String HEARING_VIDEO_EMAIL = "my@email.com";
 }

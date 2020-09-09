@@ -47,6 +47,24 @@ public class SscsBulkScanFunctionalTest extends BaseFunctionalTest {
     }
 
     @Test
+    public void create_valid_appeal_when_all_fields_entered_for_uc_case() throws IOException {
+        String json = getJson("import/all_fields_entered_uc.json");
+        json = replaceNino(json);
+
+        json = json.replace("{DM_STORE}", documentManagementUrl);
+
+        Response response = exceptionRecordEndpointRequest(json, OK.value());
+
+        //Due to the async service bus hitting the evidence share service, we can't be sure what the state will be...
+        List<String> possibleStates = new ArrayList<>(Arrays.asList("validAppeal", "withDwp"));
+
+        SscsCaseDetails caseInCcd = findCaseInCcd(response);
+        log.info("Functional test(create_appeal_created_case_when_all_fields_entered), ccdId: {}, state: {}",
+            caseInCcd.getData().getCcdCaseId(), caseInCcd.getState());
+        assertTrue(possibleStates.contains(caseInCcd.getState()));
+    }
+
+    @Test
     public void create_incomplete_case_when_missing_mandatory_fields() throws IOException {
         String json = getJson("import/some_mandatory_fields_missing.json");
         json = replaceNino(json);

@@ -185,6 +185,14 @@ public class SscsCaseValidator implements CaseValidator {
         checkAppellantNino(appellant, personType);
         checkMobileNumber(appellantContact, personType);
 
+        checkHearingSubtypeDetails(appeal.getHearingSubtype());
+
+    }
+
+    private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {
+        if (hearingSubtype != null && hearingSubtype.getHearingTelephoneNumber() != null && !isMobileNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
+            errors.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_LITERAL, IS_INVALID));
+        }
     }
 
     private void checkAppointee(Appellant appellant, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {

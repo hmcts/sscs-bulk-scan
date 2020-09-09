@@ -32,6 +32,7 @@
           "code": "ESA",
           "description": "Employment and Support Allowance"
         },
+        "hearingSubtype": {},
         "hearingOptions": {
           "wantsToAttend": "Yes",
           "wantsSupport": "No",
@@ -65,7 +66,8 @@
         },
         "supporterSubscription": null,
         "representativeSubscription": null,
-        "appointeeSubscription": null
+        "appointeeSubscription": null,
+        "jointPartySubscription": null
       },
       "evidencePresent": "No",
       "bulkScanCaseReference": "1234567890",

@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.*;
 import org.apache.commons.codec.Charsets;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.*;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -35,6 +36,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
     }
 
     @Test
+    @Ignore // See https://tools.hmcts.net/jira/browse/SSCS-7930
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
         // Given
@@ -150,6 +152,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
     }
 
     @Test
+    @Ignore // See https://tools.hmcts.net/jira/browse/SSCS-7930
     public void should_create_incomplete_case_when_warnings_are_ignored() throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -184,6 +187,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
     }
 
     @Test
+    @Ignore // See https://tools.hmcts.net/jira/browse/SSCS-7930
     public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -606,7 +610,6 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
             VALUE,
             ImmutableMap.of(KEY, "hearing_options_exclude_dates", VALUE, "01/12/2030"))
         );
-
         return exceptionRecord(ocrList, docList);
     }
 

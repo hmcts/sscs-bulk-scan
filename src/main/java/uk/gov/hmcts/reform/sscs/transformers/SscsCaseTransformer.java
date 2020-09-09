@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
+import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
@@ -226,6 +227,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .mrnDetails(buildMrnDetails(pairs, benefitType))
                 .hearingType(hearingType)
                 .hearingOptions(buildHearingOptions(pairs, hearingType))
+                .hearingSubtype(buildHearingSubtype(pairs))
                 .signer(getField(pairs, "signature_name"))
                 .receivedVia("Paper")
                 .build();
@@ -238,7 +240,10 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private AppealReasons findAppealReasons(Map<String, Object> pairs) {
-        String appealReason = getField(pairs, APPEAL_GROUNDS);
+
+        String appealReason = getField(pairs, APPEAL_GROUNDS) != null
+            ? getField(pairs, APPEAL_GROUNDS) : getField(pairs, APPEAL_GROUNDS_2);
+
         if (appealReason != null) {
             List<AppealReason> reasons = Collections.singletonList(AppealReason.builder()
                 .value(AppealReasonDetails.builder()
@@ -257,13 +262,22 @@ public class SscsCaseTransformer implements CaseTransformer {
             code = fuzzyMatcherService.matchBenefitType(code);
         }
 
-        if (areBooleansValid(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP)) {
-            doValuesContradict(pairs, errors, IS_BENEFIT_TYPE_ESA, IS_BENEFIT_TYPE_PIP);
-        }
-        if (checkBooleanValue(pairs, errors, IS_BENEFIT_TYPE_PIP) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_PIP).toString())) {
-            code = Benefit.PIP.name();
-        } else if (checkBooleanValue(pairs, errors, IS_BENEFIT_TYPE_ESA) && BooleanUtils.toBoolean(pairs.get(IS_BENEFIT_TYPE_ESA).toString())) {
-            code = Benefit.ESA.name();
+        // Extract all the provided benefit type booleans, outputting errors for any that are invalid
+        List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.getAllIndicatorStrings());
+
+        // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
+        // for conflicting values.
+        if (!validProvidedBooleanValues.isEmpty()) {
+            // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
+            if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+                String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
+                Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
+                if (benefit.isPresent()) {
+                    code = benefit.get().name();
+                }
+            } else {
+                errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
+            }
         }
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
     }
@@ -393,6 +407,33 @@ public class SscsCaseTransformer implements CaseTransformer {
             return BooleanUtils.toBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
         }
         return null;
+    }
+
+    private HearingSubtype buildHearingSubtype(Map<String, Object> pairs) {
+        if (getField(pairs, HEARING_TYPE_TELEPHONE_LITERAL) != null
+            || getField(pairs, HEARING_TELEPHONE_LITERAL) != null
+            || getField(pairs, HEARING_TYPE_VIDEO_LITERAL) != null
+            || getField(pairs, HEARING_VIDEO_EMAIL_LITERAL) != null
+            || getField(pairs, HEARING_TYPE_FACE_TO_FACE_LITERAL) != null) {
+
+            String hearingTypeTelephone = checkBooleanValue(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)
+                ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)) : null;
+
+            String hearingTypeVideo = checkBooleanValue(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)
+                ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)) : null;
+
+            String hearingTypeFaceToFace = checkBooleanValue(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)
+                ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)) : null;
+
+            return HearingSubtype.builder()
+                .wantsHearingTypeTelephone(hearingTypeTelephone)
+                .hearingTelephoneNumber(getField(pairs, HEARING_TELEPHONE_LITERAL))
+                .wantsHearingTypeVideo(hearingTypeVideo)
+                .hearingVideoEmail(getField(pairs, HEARING_VIDEO_EMAIL_LITERAL))
+                .wantsHearingTypeFaceToFace(hearingTypeFaceToFace)
+                .build();
+        }
+        return HearingSubtype.builder().build();
     }
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs, String hearingType) {

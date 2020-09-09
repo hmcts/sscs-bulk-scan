@@ -8,8 +8,7 @@ public final class SscsConstants {
 
     public static final String AGREE_LESS_HEARING_NOTICE_LITERAL = "agree_less_hearing_notice";
     public static final String APPEAL_GROUNDS = "appeal_grounds";
-    public static final String IS_BENEFIT_TYPE_PIP = "is_benefit_type_pip";
-    public static final String IS_BENEFIT_TYPE_ESA = "is_benefit_type_esa";
+    public static final String APPEAL_GROUNDS_2 = "appeal_grounds_2";
     public static final String PERSON1_VALUE = "person1";
     public static final String PERSON2_VALUE = "person2";
     public static final String REPRESENTATIVE_VALUE = "representative";
@@ -51,4 +50,10 @@ public final class SscsConstants {
     public static final String IS_INVALID = "is invalid";
     public static final String IS_IN_FUTURE = "is in future";
     public static final String IS_IN_PAST = "is in past";
+    public static final String HEARING_TYPE_TELEPHONE_LITERAL = "hearing_type_telephone";
+    public static final String HEARING_TELEPHONE_LITERAL = "hearing_telephone_number";
+    public static final String HEARING_TYPE_VIDEO_LITERAL = "hearing_type_video";
+    public static final String HEARING_VIDEO_EMAIL_LITERAL = "hearing_video_email";
+    public static final String HEARING_TYPE_FACE_TO_FACE_LITERAL = "hearing_type_face_to_face";
+
 }

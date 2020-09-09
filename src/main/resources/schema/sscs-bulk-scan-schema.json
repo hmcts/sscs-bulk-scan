@@ -5,6 +5,7 @@
   "properties": {
     "is_benefit_type_pip":  {"type": "string"},
     "is_benefit_type_esa":  {"type": "string"},
+    "is_benefit_type_uc":  {"type": "string"},
     "contains_mrn": {"type": "string"},
     "mrn_date": {"type": "string"},
     "benefit_type_description": {"type": "string"},
@@ -61,7 +62,13 @@
     "signature_name": {"type": "string"},
     "signature_appeal_date": {"type": "string"},
     "office": {"type": "string"},
-    "tell_tribunal_about_dates": {"type": "string"}
+    "tell_tribunal_about_dates": {"type": "string"},
+    "hearing_type_telephone": {"type": "string"},
+    "hearing_telephone_number": {"type": "string"},
+    "hearing_type_video": {"type": "string"},
+    "hearing_video_email": {"type": "string"},
+    "hearing_type_face_to_face": {"type": "string"},
+    "appeal_grounds_2": {"type": "string"}
   },
   "additionalProperties": false
 }

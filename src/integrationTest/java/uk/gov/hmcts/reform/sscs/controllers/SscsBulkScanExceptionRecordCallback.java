@@ -335,6 +335,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
         ocrList.put("hearing_options_exclude_dates", "01/12/2030");
+        ocrList.put("hearing_type_telephone", "Yes");
+        ocrList.put("hearing_telephone_number", "01234567890");
+        ocrList.put("hearing_type_video", "Yes");
+        ocrList.put("hearing_video_email", "my@email.com");
+        ocrList.put("hearing_type_face_to_face", "No");
 
         return exceptionRecord(ocrList, docList);
     }
