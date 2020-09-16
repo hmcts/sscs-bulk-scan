@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -41,7 +40,6 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 public class CcdCallbackHandler {
 
     private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {}";
-    private static final String LOGSTR_VALIDATION_WARNING = "Warning found while validating exception record id {}";
 
     private final CaseTransformer caseTransformer;
 
@@ -94,7 +92,6 @@ public class CcdCallbackHandler {
         String exceptionRecordId = StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId()) ? exceptionRecord.getExceptionRecordId() : exceptionRecord.getId();
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
-        log.info("IsAutomatedProcess: {}", exceptionRecord.getIsAutomatedProcess());
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -103,7 +100,7 @@ public class CcdCallbackHandler {
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
         }
 
-        if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
+        if (exceptionRecord.isAutomatedProcess() && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
             log.info("Warning found while transforming exception record id {}", exceptionRecordId);
             throw new InvalidExceptionRecordException(caseTransformationResponse.getWarnings());
         }
@@ -115,9 +112,6 @@ public class CcdCallbackHandler {
         if (!ObjectUtils.isEmpty(caseValidationResponse.getErrors())) {
             log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             throw new InvalidExceptionRecordException(caseValidationResponse.getErrors());
-        } else if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !ObjectUtils.isEmpty(caseValidationResponse.getWarnings())) {
-            log.info(LOGSTR_VALIDATION_WARNING, exceptionRecordId);
-            throw new InvalidExceptionRecordException(caseValidationResponse.getWarnings());
         } else {
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
 

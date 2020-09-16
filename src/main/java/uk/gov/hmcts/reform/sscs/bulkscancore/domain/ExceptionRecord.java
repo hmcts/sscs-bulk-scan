@@ -21,7 +21,7 @@ public class ExceptionRecord {
     private final List<InputScannedDoc> scannedDocuments;
     private final List<OcrDataField> ocrDataFields;
     private final String envelopeId;
-    private final Boolean isAutomatedProcess;
+    private final boolean isAutomatedProcess;
     private final String exceptionRecordId;
     private final String exceptionRecordCaseTypeId;
 
@@ -38,7 +38,7 @@ public class ExceptionRecord {
         @JsonProperty("ocr_data_fields") List<OcrDataField> ocrDataFields,
         // Auto Case creation request fields
         @JsonProperty("envelope_id") String envelopeId,
-        @JsonProperty("is_automated_process") Boolean isAutomatedProcess,
+        @JsonProperty("is_automated_process") boolean isAutomatedProcess,
         @JsonProperty("exception_record_id") String exceptionRecordId,
         @JsonProperty("exception_record_case_type_id") String exceptionRecordCaseTypeId
     ) {
