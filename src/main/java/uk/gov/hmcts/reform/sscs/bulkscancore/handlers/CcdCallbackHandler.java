@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -86,7 +87,9 @@ public class CcdCallbackHandler {
     }
 
     public SuccessfulTransformationResponse handle(ExceptionRecord exceptionRecord) {
-        String exceptionRecordId = exceptionRecord.getId();
+        // New transformation request contains exceptionRecordId
+        // Old transformation request contains id field, which is the exception record id
+        String exceptionRecordId = StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId()) ? exceptionRecord.getExceptionRecordId() : exceptionRecord.getId();
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
 
@@ -95,6 +98,11 @@ public class CcdCallbackHandler {
         if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
             log.info("Errors found while transforming exception record id {}", exceptionRecordId);
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
+        }
+
+        if (exceptionRecord.isAutomatedProcess() && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
+            log.info("Warning found while transforming exception record id {}", exceptionRecordId);
+            throw new InvalidExceptionRecordException(caseTransformationResponse.getWarnings());
         }
 
         log.info("Exception record id {} transformed successfully. About to validate transformed case from exception");

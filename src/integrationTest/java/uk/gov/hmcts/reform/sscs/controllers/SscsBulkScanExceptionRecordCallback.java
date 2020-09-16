@@ -291,6 +291,9 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .id("1234567890")
             .openingDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
             .deliveryDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
+            .envelopeId("envelopeId")
+            .isAutomatedProcess(false)
+            .exceptionRecordId("1234567890")
             .build();
     }
 
