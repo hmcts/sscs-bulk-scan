@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -129,6 +128,23 @@ public class CcdCallbackHandlerTest {
         when(caseValidator.validateExceptionRecord(response, exceptionRecord, transformedCase, false))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
+                .build());
+
+        invokeCallbackHandler(exceptionRecord);
+    }
+
+    @Test(expected = InvalidExceptionRecordException.class)
+    public void should_return_exc_data_and_warning_in_callback_when_is_automated_process_true_and_transformation_success_and_validation_fails_with_warning() {
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().isAutomatedProcess(true).build();
+        ImmutableList<String> warningList = ImmutableList.of("office is missing");
+
+        CaseResponse response = CaseResponse.builder().warnings(warningList).transformedCase(transformedCase).build();
+
+        when(caseTransformer.transformExceptionRecord(exceptionRecord, false)).thenReturn(response);
+
+        when(caseValidator.validateExceptionRecord(response, exceptionRecord, transformedCase, false))
+            .thenReturn(CaseResponse.builder()
+                .warnings(warningList)
                 .build());
 
         invokeCallbackHandler(exceptionRecord);
