@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -100,7 +101,7 @@ public class CcdCallbackHandler {
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
         }
 
-        if (exceptionRecord.getIsAutomatedProcess() && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
+        if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
             log.info("Warning found while transforming exception record id {}", exceptionRecordId);
             throw new InvalidExceptionRecordException(caseTransformationResponse.getWarnings());
         }

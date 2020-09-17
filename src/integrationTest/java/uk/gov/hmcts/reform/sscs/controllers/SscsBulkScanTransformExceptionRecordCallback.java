@@ -1,7 +1,26 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.google.common.io.Resources.getResource;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Strings.concat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification.NEW_APPLICATION;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import java.io.IOException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import org.apache.commons.codec.Charsets;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,26 +35,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.InputScannedDoc;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
-
-import java.io.IOException;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.google.common.io.Resources.getResource;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.util.Strings.concat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification.NEW_APPLICATION;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
-import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
 
 public class SscsBulkScanTransformExceptionRecordCallback extends BaseTest {
 
