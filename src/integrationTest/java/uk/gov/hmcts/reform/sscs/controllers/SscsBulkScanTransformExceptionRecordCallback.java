@@ -1,26 +1,7 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.google.common.io.Resources.getResource;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.util.Strings.concat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification.NEW_APPLICATION;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
-import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import java.io.IOException;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
 import org.apache.commons.codec.Charsets;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,13 +17,33 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 
-public class SscsBulkScanExceptionRecordCallback extends BaseTest {
+import java.io.IOException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.google.common.io.Resources.getResource;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Strings.concat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification.NEW_APPLICATION;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
+
+public class SscsBulkScanTransformExceptionRecordCallback extends BaseTest {
 
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Before
     public void setup() {
-        baseUrl = "http://localhost:" + randomServerPort + "/transform-exception-record/";
+        baseUrl = "http://localhost:" + randomServerPort + "/transform-scanned-data/";
     }
 
     @Test
@@ -178,12 +179,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
 
         // When
-        ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl, request, SuccessfulTransformationResponse.class);
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, ErrorResponse.class);
 
         // Then
-        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getWarnings())
+        assertThat(result.getStatusCodeValue()).isEqualTo(422);
+        assertThat(result.getBody().errors)
             .contains("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as tell_tribunal_about_dates is true. Is this correct?");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
@@ -288,12 +289,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .formType("SSCS1")
             .journeyClassification(NEW_APPLICATION)
             .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
-            .id("1234567890")
+            .id(null)
             .openingDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
             .deliveryDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
             .envelopeId("envelopeId")
-            .isAutomatedProcess(false)
-            .exceptionRecordId(null)
+            .isAutomatedProcess(true)
+            .exceptionRecordId("1234567890")
             .build();
     }
 
