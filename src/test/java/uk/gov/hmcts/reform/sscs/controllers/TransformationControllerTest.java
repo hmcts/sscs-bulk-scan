@@ -53,6 +53,7 @@ public class TransformationControllerTest {
         Mockito.reset(authService);
     }
 
+    //FIXME: update after bulk scan auto case creation is switch on
     @ParameterizedTest
     @ValueSource(strings = {"/transform-exception-record", "/transform-scanned-data"})
     public void should_return_case_data_if_transformation_succeeded(String url) throws Exception {
@@ -86,6 +87,7 @@ public class TransformationControllerTest {
             .andExpect(jsonPath("$.warnings[1]").value("warning-2"));
     }
 
+    //FIXME: update after bulk scan auto case creation is switch on
     @ParameterizedTest
     @ValueSource(strings = {"/transform-exception-record", "/transform-scanned-data"})
     public void should_return_422_with_errors_if_transformation_failed(String url) throws Exception {
@@ -104,6 +106,7 @@ public class TransformationControllerTest {
             .andExpect(jsonPath("$.errors[1]").value("error-2"));
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @ParameterizedTest
     @MethodSource("exceptionsAndStatuses")
     public void should_return_proper_status_codes_for_auth_exceptions_when_transforming_scanned_data(RuntimeException exc, HttpStatus status) throws Exception {

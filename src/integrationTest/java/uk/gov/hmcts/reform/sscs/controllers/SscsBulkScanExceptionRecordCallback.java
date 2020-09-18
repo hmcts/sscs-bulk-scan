@@ -52,6 +52,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         baseUrl = "http://localhost:" + randomServerPort;
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
@@ -71,6 +72,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verifyResultData(result, "mappings/exception/valid-appeal-response.json");
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_transform_incomplete_case_when_data_missing() throws Exception {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -87,6 +89,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
@@ -106,6 +109,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verifyResultData(result, "mappings/exception/case-non-compliant-response.json");
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_return_error_list_populated_when_exception_record_transformation_fails() {
         // Given
@@ -127,6 +131,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_return_error_list_populated_when_key_value_pair_validation_fails() {
         // Given
@@ -150,6 +155,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benefit_code_case_exists() throws Exception {
         // Given
@@ -174,6 +180,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_return_warnings_when_tell_tribunal_about_dates_is_true_and_no_excluded_dates_provided() {
         // Given
@@ -290,6 +297,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    //FIXME: update after bulk scan auto case creation is switch on
     private Object[] endPoints() {
         return new Object[]{
             new Object[]{"http://localhost:" + randomServerPort + TRANSFORM_EXCEPTION_RECORD, false},
@@ -345,6 +353,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return exceptionRecord;
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @SuppressWarnings("unchecked")
     private ExceptionRecord exceptionCaseData(Map<String, Object> caseData) {
         Map<String, Object> scannedData = (HashMap<String, Object>) caseData.get("scanOCRData");

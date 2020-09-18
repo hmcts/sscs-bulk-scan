@@ -26,6 +26,7 @@ public class TransformationController {
         this.handler = handler;
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
     @PostMapping("/transform-exception-record")
     public SuccessfulTransformationResponse transform(
         @RequestHeader(name = "ServiceAuthorization", required = false) String serviceAuthHeader,
