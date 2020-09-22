@@ -29,3 +29,24 @@ module "sscs-bulk-scan-vault" {
   common_tags             = var.common_tags
   managed_identity_object_ids = ["${data.azurerm_user_assigned_identity.sscs-identity.principal_id}"]
 }
+
+resource "azurerm_application_insights" "appinsights" {
+  name                = "${var.product}-${var.env}"
+  location            = var.location_app
+  resource_group_name = azurerm_resource_group.rg.name
+  application_type    = var.appinsights_application_type
+}
+
+resource "azurerm_key_vault_secret" "app_insights_key" {
+  name         = "AppInsightsInstrumentationKey"
+  value        = azurerm_application_insights.appinsights.instrumentation_key
+  key_vault_id = module.sscs-bulk-scan-vault.key_vault_id
+}
+
+output "appInsightsInstrumentationKey" {
+  value = azurerm_application_insights.appinsights.instrumentation_key
+}
+
+
+
+
