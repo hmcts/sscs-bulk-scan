@@ -15,6 +15,7 @@ data "azurerm_user_assigned_identity" "sscs-identity" {
 
 locals {
   vaultName = "sscs-bulk-scan-${var.env}"
+  sscsRg   = "sscs-${var.env}"
 }
 
 module "sscs-bulk-scan-vault" {
@@ -39,7 +40,7 @@ resource "azurerm_application_insights" "appinsights" {
 
 data "azurerm_key_vault" "sscs_key_vault" {
   name                = "sscs-${var.env}"
-  resource_group_name = azurerm_resource_group.rg.name
+  resource_group_name = local.sscsRg
 }
 
 resource "azurerm_key_vault_secret" "app_insights_key" {
