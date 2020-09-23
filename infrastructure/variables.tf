@@ -46,3 +46,8 @@ variable "appinsights_instrumentation_key" {
 variable "managed_identity_object_id" {
   default = ""
 }
+
+variable "appinsights_application_type" {
+  default     = "web"
+  description = "Type of Application Insights (Web/Other)"
+}
