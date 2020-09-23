@@ -37,10 +37,15 @@ resource "azurerm_application_insights" "appinsights" {
   application_type    = var.appinsights_application_type
 }
 
+data "azurerm_key_vault" "sscs_key_vault" {
+  name                = "sscs-${var.env}"
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
 resource "azurerm_key_vault_secret" "app_insights_key" {
   name         = "AppInsightsInstrumentationKey"
   value        = azurerm_application_insights.appinsights.instrumentation_key
-  key_vault_id = module.sscs-vault.key_vault_id
+  key_vault_id = data.azurerm_key_vault.sscs_key_vault.id
 }
 
 output "appInsightsInstrumentationKey" {
