@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 public class CcdCallbackHandler {
 
     private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {}";
+    private static final String LOGSTR_VALIDATION_WARNING = "Warning found while validating exception record id {}";
 
     private final CaseTransformer caseTransformer;
 
@@ -93,6 +94,7 @@ public class CcdCallbackHandler {
         String exceptionRecordId = StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId()) ? exceptionRecord.getExceptionRecordId() : exceptionRecord.getId();
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
+        log.info("IsAutomatedProcess: {}", exceptionRecord.getIsAutomatedProcess());
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -113,6 +115,9 @@ public class CcdCallbackHandler {
         if (!ObjectUtils.isEmpty(caseValidationResponse.getErrors())) {
             log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             throw new InvalidExceptionRecordException(caseValidationResponse.getErrors());
+        } else if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !ObjectUtils.isEmpty(caseValidationResponse.getWarnings())) {
+            log.info(LOGSTR_VALIDATION_WARNING, exceptionRecordId);
+            throw new InvalidExceptionRecordException(caseValidationResponse.getWarnings());
         } else {
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
 

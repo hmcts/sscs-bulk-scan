@@ -182,6 +182,31 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(2);
     }
 
+    @Test(expected = InvalidExceptionRecordException.class)
+    public void givenAWarningInValidationServiceWhenIsAutomatedProcessIsTrue_thenShowWarnings() {
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().isAutomatedProcess(true).build();
+
+        List<String> warnings = new ArrayList<>();
+
+        when(caseTransformer.transformExceptionRecord(exceptionRecord, false))
+            .thenReturn(CaseResponse.builder()
+                .transformedCase(transformedCase)
+                .warnings(warnings)
+                .build());
+
+        List<String> warnings2 = new ArrayList<>();
+        warnings2.add("Second warning");
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings2).transformedCase(transformedCase).build();
+
+        when(caseValidator.validateExceptionRecord(any(), eq(exceptionRecord), eq(transformedCase), eq(false)))
+            .thenReturn(caseValidationResponse);
+
+        SuccessfulTransformationResponse ccdCallbackResponse = invokeCallbackHandler(exceptionRecord);
+        // should not be called
+        assertThat(true).isFalse();
+    }
+
     @Test
     public void should_return_no_warnings_or_errors_or_data_when_validation_endpoint_is_successful_for_pip_case() {
 

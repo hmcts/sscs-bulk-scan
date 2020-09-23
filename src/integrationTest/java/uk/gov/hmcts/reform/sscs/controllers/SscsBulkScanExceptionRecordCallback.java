@@ -260,7 +260,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     @Test
-    public void auto_scan_should_transform_incomplete_case_when_data_missing() throws Exception {
+    public void auto_scan_should_not_transform_incomplete_case_when_data_missing() throws Exception {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
@@ -268,10 +268,21 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             httpHeaders()
         );
 
-        ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, ErrorResponse.class);
 
-        verifyResultData(result, "mappings/exception/auto-case-incomplete-response.json");
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(422);
+        assertThat(result.getBody().errors)
+            .contains("person1_last_name is empty",
+                "person1_address_line1 is empty",
+                "person1_address_line2 is empty",
+                "person1_address_line3 is empty",
+                "person1_postcode is empty",
+                "person1_nino is empty",
+                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
 
     }
 
