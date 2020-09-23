@@ -230,15 +230,8 @@ public class SscsCaseValidator implements CaseValidator {
         }
 
         if (!doesIssuingOfficeExist(appeal)) {
-            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
 
-        } else if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
-
-            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
-
-            if (!officeMapping.isPresent()) {
-                warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
-            }
         }
     }
 

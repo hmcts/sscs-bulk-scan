@@ -109,7 +109,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
                 "Appellant date of birth is in future",
                 "Hearing options exclude dates is in past",
                 "Mrn date is empty",
-                "DWP issuing office is empty",
+                "DWP issuing office is invalid",
                 "Benefit type description is empty",
                 "Hearing type is invalid");
 
