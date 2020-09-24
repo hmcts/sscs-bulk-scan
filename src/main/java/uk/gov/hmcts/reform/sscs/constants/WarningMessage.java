@@ -46,7 +46,8 @@ public enum WarningMessage {
     APPOINTEE_DOB(DOB, "Appointee date of birth"),
     HEARING_TYPE("is_hearing_type_oral and/or is_hearing_type_paper", "Hearing type"),
     REPRESENTATIVE_NAME_OR_ORGANISATION("representative_company, representative_first_name and representative_last_name", "Representative organisation, Representative first name and Representative last name"),
-    HEARING_TELEPHONE_NUMBER(HEARING_TELEPHONE_LITERAL, "Hearing telephone number");
+    HEARING_TELEPHONE_NUMBER(HEARING_TELEPHONE_LITERAL, "Hearing telephone number"),
+    HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE("hearing_type_telephone, hearing_type_video and hearing_type_face_to_face", "Hearing option telephone, video and face to face");
 
     private String exceptionRecordMessage;
     private String validationRecordMessage;

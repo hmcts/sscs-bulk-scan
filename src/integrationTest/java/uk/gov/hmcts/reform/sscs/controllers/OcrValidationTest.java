@@ -109,7 +109,7 @@ public class OcrValidationTest  {
                 .content(content))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("WARNINGS"))
-            .andExpect(jsonPath("$.warnings", hasSize(1)))
+            .andExpect(jsonPath("$.warnings", hasSize(2)))
             .andExpect(jsonPath("$.errors", hasSize(0)));
     }
 
@@ -127,7 +127,7 @@ public class OcrValidationTest  {
                 .content(content))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("WARNINGS"))
-            .andExpect(jsonPath("$.warnings", hasSize(1)))
+            .andExpect(jsonPath("$.warnings", hasSize(2)))
             .andExpect(jsonPath("$.errors", hasSize(0)));
     }
 

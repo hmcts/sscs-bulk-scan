@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 
+@Ignore
 public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
 
     @Before
