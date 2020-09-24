@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
-import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
