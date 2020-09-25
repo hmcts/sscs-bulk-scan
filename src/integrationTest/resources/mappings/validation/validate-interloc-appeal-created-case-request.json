@@ -37,11 +37,6 @@
           "wantsSupport": "Yes",
           "wantsToAttend": "Yes"
         },
-        "hearingSubtype": {
-          "wantsHearingTypeTelephone": "No",
-          "wantsHearingTypeVideo": "Yes",
-          "wantsHearingTypeFaceToFace": "No"
-        },
         "mrnDetails": {
           "mrnDate": "2018-12-09",
           "dwpIssuingOffice": "Balham DRT"
