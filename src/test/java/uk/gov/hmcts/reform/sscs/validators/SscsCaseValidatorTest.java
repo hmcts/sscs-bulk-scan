@@ -154,6 +154,10 @@ public class SscsCaseValidatorTest {
             .hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
 
+        ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL,"");
+        ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL,"");
+        ocrCaseData.put(HEARING_TYPE_FACE_TO_FACE_LITERAL,"");
+
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 
         assertThat(response.getWarnings())
@@ -187,8 +191,7 @@ public class SscsCaseValidatorTest {
             .containsOnly(
                 "person1_title is empty",
                 "person1_first_name is empty",
-                "person1_last_name is empty",
-                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
+                "person1_last_name is empty");
     }
 
     @Test
