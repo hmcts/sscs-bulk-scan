@@ -264,7 +264,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            autoExceptionCaseData(caseDataWithMissingAppellantDetails()),
+            autoExceptionCaseData(caseDataWithMissingAppellantAndHearingSubTypeDetails()),
             httpHeaders()
         );
 
@@ -353,6 +353,25 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("person1_first_name", "John");
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
+
+        return exceptionRecord(ocrList, null);
+    }
+
+    private Map<String, Object> caseDataWithMissingAppellantAndHearingSubTypeDetails() {
+        Map<String, Object> ocrList = new HashMap<>();
+
+        ocrList.put("mrn_date", "09/12/2018");
+        ocrList.put("office", "Balham DRT");
+        ocrList.put("contains_mrn", true);
+        ocrList.put("benefit_type_description", "ESA");
+        ocrList.put("person1_title", "Mr");
+        ocrList.put("person1_first_name", "John");
+        ocrList.put("is_hearing_type_oral", true);
+        ocrList.put("is_hearing_type_paper", false);
+        ocrList.put("hearing_type_telephone", "");
+        ocrList.put("hearing_type_video", "");
+        ocrList.put("hearing_type_face_to_face", "");
+
 
         return exceptionRecord(ocrList, null);
     }
