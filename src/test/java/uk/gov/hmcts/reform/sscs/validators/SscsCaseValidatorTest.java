@@ -129,7 +129,8 @@ public class SscsCaseValidatorTest {
                 .identity(Identity.builder().nino("BB000000B").build()).build())
                 .benefitType(BenefitType.builder().code(PIP.name()).build())
                 .mrnDetails(defaultMrnDetails)
-                .hearingType(HEARING_TYPE_ORAL).build());
+                .hearingType(HEARING_TYPE_ORAL)
+                .hearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").build()).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
@@ -152,15 +153,10 @@ public class SscsCaseValidatorTest {
             .hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
 
-        ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL,"");
-        ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL,"");
-        ocrCaseData.put(HEARING_TYPE_FACE_TO_FACE_LITERAL,"");
-
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 
         assertThat(response.getWarnings())
-            .containsOnly("person1_title is empty",
-                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
+            .containsOnly("person1_title is empty");
     }
 
     @Test
@@ -975,7 +971,7 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppealWithAnInvalidHearingPhoneNumber_thenAddWarning() {
-        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("01222").build();
+        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber("01222").build();
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
 
@@ -1002,10 +998,23 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppealWithAnEmptyHearingSubTypeForSscsCase_thenAddWarning() {
+        ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL, "false");
+        ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL, "false");
+        ocrCaseData.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, "false");
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
         assertEquals(1, response.getWarnings().size());
-        assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated", response.getWarnings().get(0));
+        assertEquals("hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppealWithAnHearingSubTypeFaceToFaceForSscsCase_thenNoWarning() {
+        ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL, "false");
+        ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL, "false");
+        ocrCaseData.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, "true");
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), buildAppellant(false), false);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
+        assertEquals(0, response.getWarnings().size());
     }
 
     @Test
