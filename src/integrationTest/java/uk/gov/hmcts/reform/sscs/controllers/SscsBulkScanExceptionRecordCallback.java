@@ -24,9 +24,6 @@ import java.util.*;
 import org.apache.commons.codec.Charsets;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -39,20 +36,15 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
-    public static final String TRANSFORM_EXCEPTION_RECORD = "/transform-exception-record/";
-    public static final String TRANSFORM_SCANNED_DATA = "/transform-scanned-data/";
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private String newBaseUrl;
 
     @Before
     public void setup() {
-        baseUrl = "http://localhost:" + randomServerPort;
+        baseUrl = "http://localhost:" + randomServerPort + "/transform-exception-record/";
     }
 
-    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
@@ -65,14 +57,13 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+            this.restTemplate.postForEntity(baseUrl, request, SuccessfulTransformationResponse.class);
 
         SuccessfulTransformationResponse callbackResponse = result.getBody();
 
         verifyResultData(result, "mappings/exception/valid-appeal-response.json");
     }
 
-    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_transform_incomplete_case_when_data_missing() throws Exception {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -83,13 +74,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
 
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+            this.restTemplate.postForEntity(baseUrl, request, SuccessfulTransformationResponse.class);
 
         verifyResultData(result, "mappings/exception/case-incomplete-response.json");
 
     }
 
-    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
@@ -104,12 +94,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         // When
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+            this.restTemplate.postForEntity(baseUrl, request, SuccessfulTransformationResponse.class);
 
         verifyResultData(result, "mappings/exception/case-non-compliant-response.json");
     }
 
-    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_return_error_list_populated_when_exception_record_transformation_fails() {
         // Given
@@ -121,7 +110,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
 
         // When
-        ResponseEntity<ErrorResponse> result = this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+        ResponseEntity<ErrorResponse> result = this.restTemplate.postForEntity(baseUrl, request, ErrorResponse.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(422);
@@ -131,7 +120,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
-    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_return_error_list_populated_when_key_value_pair_validation_fails() {
         // Given
@@ -144,7 +132,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         // When
         ResponseEntity<ErrorResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+            this.restTemplate.postForEntity(baseUrl, request, ErrorResponse.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(422);
@@ -155,7 +143,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
 
-    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benefit_code_case_exists() throws Exception {
         // Given
@@ -171,7 +158,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         // When
         ResponseEntity<ErrorResponse> result =
-                this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+                this.restTemplate.postForEntity(baseUrl, request, ErrorResponse.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(422);
@@ -180,7 +167,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
-    //FIXME: delete after bulk scan auto case creation is switch on
     @Test
     public void should_return_warnings_when_tell_tribunal_about_dates_is_true_and_no_excluded_dates_provided() {
         // Given
@@ -193,7 +179,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         // When
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+            this.restTemplate.postForEntity(baseUrl, request, SuccessfulTransformationResponse.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
@@ -203,36 +189,32 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
-    @ParameterizedTest
-    @MethodSource("endPoints")
-    public void should_return_status_code_401_when_service_auth_token_is_missing(String url, boolean isAuto) {
+    @Test
+    public void should_return_status_code_401_when_service_auth_token_is_missing() {
         HttpHeaders headers = new HttpHeaders();
         headers.set(AUTHORIZATION, USER_AUTH_TOKEN);
         headers.set(USER_ID_HEADER, USER_ID);
 
-        ExceptionRecord exceptionRecord = (isAuto) ? autoExceptionCaseData(caseData()) : exceptionCaseData(caseData());
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionRecord, headers);
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseData()), headers);
 
         // When
         ResponseEntity<Void> result =
-            this.restTemplate.postForEntity(url, request, Void.class);
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(401);
     }
 
-    @ParameterizedTest
-    @MethodSource("endPoints")
-    public void should_return_status_code_403_when_service_auth_token_is_missing(String url, boolean isAuto) {
+    @Test
+    public void should_return_status_code_403_when_service_auth_token_is_missing() {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("forbidden_service");
 
-        ExceptionRecord exceptionRecord = (isAuto) ? autoExceptionCaseData(caseData()) : exceptionCaseData(caseData());
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionRecord, httpHeaders());
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseData()), httpHeaders());
 
         // When
         ResponseEntity<Void> result =
-            this.restTemplate.postForEntity(url, request, Void.class);
+            this.restTemplate.postForEntity(baseUrl, request, Void.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(403);
@@ -383,11 +365,16 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return exceptionRecord;
     }
 
-    //FIXME: delete after bulk scan auto case creation is switch on
     @SuppressWarnings("unchecked")
     private ExceptionRecord exceptionCaseData(Map<String, Object> caseData) {
+
         Map<String, Object> scannedData = (HashMap<String, Object>) caseData.get("scanOCRData");
-        List<OcrDataField> scanOcrData = getOcrDataFields(scannedData);
+        List<OcrDataField> scanOcrData = buildScannedValidationOcrData(scannedData.entrySet().stream().map(f -> {
+            HashMap<String, Object> valueMap = new HashMap<>();
+            valueMap.put("name", f.getKey());
+            valueMap.put("value", f.getValue());
+            return valueMap;
+        }).toArray(HashMap[]::new));
 
         return ExceptionRecord.builder()
             .ocrDataFields(scanOcrData)
@@ -399,42 +386,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .id("1234567890")
             .openingDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
             .deliveryDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
-            .envelopeId("envelopeId")
-            .isAutomatedProcess(false)
-            .exceptionRecordId(null)
             .build();
-    }
-
-    @SuppressWarnings("unchecked")
-    private ExceptionRecord autoExceptionCaseData(Map<String, Object> caseData) {
-        Map<String, Object> scannedData = (HashMap<String, Object>) caseData.get("scanOCRData");
-        List<OcrDataField> scanOcrData = getOcrDataFields(scannedData);
-
-        return ExceptionRecord.builder()
-            .ocrDataFields(scanOcrData)
-            .poBox("SSCSPO")
-            .jurisdiction("SSCS")
-            .formType("SSCS1")
-            .journeyClassification(NEW_APPLICATION)
-            .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
-            .id(null)
-            .openingDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
-            .deliveryDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
-            .envelopeId("envelopeId")
-            .isAutomatedProcess(true)
-            .exceptionRecordId("1234567891011")
-            .build();
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<OcrDataField> getOcrDataFields(Map<String, Object> scannedData) {
-        List<OcrDataField> ocrData = buildScannedValidationOcrData(scannedData.entrySet().stream().map(f -> {
-            HashMap<String, Object> valueMap = new HashMap<>();
-            valueMap.put("name", f.getKey());
-            valueMap.put("value", f.getValue());
-            return valueMap;
-        }).toArray(HashMap[]::new));
-        return ocrData;
     }
 
     private Map<String, Object> caseData() {
