@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -365,20 +366,24 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Address buildPersonAddress(Map<String, Object> pairs, String personType) {
-        if (findBooleanExists(getField(pairs, personType + "_address_line4"))) {
+        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE4))) {
             return Address.builder()
-                .line1(getField(pairs, personType + "_address_line1"))
-                .line2(getField(pairs, personType + "_address_line2"))
-                .town(getField(pairs, personType + "_address_line3"))
-                .county(getField(pairs, personType + "_address_line4"))
-                .postcode(getField(pairs, personType + "_postcode"))
+                .line1(getField(pairs, personType + ADDRESS_LINE1))
+                .line2(getField(pairs, personType + ADDRESS_LINE2))
+                .town(getField(pairs, personType + ADDRESS_LINE3))
+                .county(getField(pairs, personType + ADDRESS_LINE4))
+                .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
                 .build();
         }
+        boolean line3IsBlank = false;
+        if (!ObjectUtils.isEmpty(getField(pairs, personType + ADDRESS_LINE2)) && ObjectUtils.isEmpty(getField(pairs, personType + ADDRESS_LINE3))) {
+            line3IsBlank = true;
+        }
         return Address.builder()
-            .line1(getField(pairs, personType + "_address_line1"))
-            .town(getField(pairs, personType + "_address_line2"))
-            .county(getField(pairs, personType + "_address_line3"))
-            .postcode(getField(pairs, personType + "_postcode"))
+            .line1(getField(pairs, personType + ADDRESS_LINE1))
+            .town(getField(pairs, personType + ADDRESS_LINE2))
+            .county(line3IsBlank ? "." : getField(pairs, personType + ADDRESS_LINE3))
+            .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
             .build();
     }
 

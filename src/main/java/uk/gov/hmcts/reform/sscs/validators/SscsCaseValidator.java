@@ -41,6 +41,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     @SuppressWarnings("squid:S5843")
     private static final String POSTCODE_REGEX = "^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$";
+    public static final String LOCAL_ADDRESS_LINE_3_COUNTY = "_ADDRESS_LINE3_COUNTY";
     List<String> warnings;
     List<String> errors;
 
@@ -261,7 +262,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkPersonAddressAndDob(Address address, Identity identity, String personType, Map<String, Object> ocrCaseData, Map<String, Object> caseData, Appellant appellant) {
 
-        boolean isAddressLine4Present = findBooleanExists(getField(ocrCaseData, personType + "_address_line4"));
+        boolean isAddressLine4Present = findBooleanExists(getField(ocrCaseData, personType + ADDRESS_LINE4));
 
         if (!doesAddressLine1Exist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, IS_EMPTY));
@@ -269,10 +270,9 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesAddressTownExist(address)) {
             String addressLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
-
         }
         if (!doesAddressCountyExist(address)) {
-            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTY";
+            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE4 : LOCAL_ADDRESS_LINE_3_COUNTY;
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
         }
         if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(getPerson1OrPerson2(appellant))) {

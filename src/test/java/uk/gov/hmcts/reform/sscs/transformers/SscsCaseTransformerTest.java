@@ -190,6 +190,103 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void givenAddressLine3IsBlankAndAddressLine4IsNotPresent_thenAddressLine3PopulatedWithDot(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .town("town")
+            .county(".")
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.remove(person + "_address_line4");
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", expectedAddress.getTown());
+            pairs.put(person + "_address_line3", "");
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void givenAddressLine3IsNullAndAddressLine4IsNotPresent_thenAddressLine3PopulatedWithDot(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .town("town")
+            .county(".")
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.remove(person + "_address_line4");
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", expectedAddress.getTown());
+            pairs.put(person + "_address_line3", null);
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void givenAddressLine2And3AreNullAndAddressLine4IsNotPresent_thenAddressLine3NotPopulatedWithDot(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .town(null)
+            .county(null)
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.remove(person + "_address_line4");
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", null);
+            pairs.put(person + "_address_line3", null);
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void givenAddressLine3IsBlankAndAddressLine4IsPresent_thenAddressLine3NotPopulatedWithDot(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .line2("line2 address")
+            .town("")
+            .county("county")
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", expectedAddress.getLine2());
+            pairs.put(person + "_address_line3", "");
+            pairs.put(person + "_address_line4", expectedAddress.getCounty());
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
     @Parameters({"Yes", "No"})
     public void willGenerateSubscriptionsWithEmailAndPhoneAndSubscribeToEmail(String subscribeSms) {
 
