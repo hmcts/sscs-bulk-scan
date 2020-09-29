@@ -424,6 +424,8 @@ public class SscsCaseTransformer implements CaseTransformer {
             String hearingTypeVideo = checkBooleanValue(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)) : null;
 
+            String hearingVideoEmail = findHearingVideoEmail(pairs);
+
             String hearingTypeFaceToFace = checkBooleanValue(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)) : null;
 
@@ -431,7 +433,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .wantsHearingTypeTelephone(hearingTypeTelephone)
                 .hearingTelephoneNumber(hearingTelephoneNumber)
                 .wantsHearingTypeVideo(hearingTypeVideo)
-                .hearingVideoEmail(getField(pairs, HEARING_VIDEO_EMAIL_LITERAL))
+                .hearingVideoEmail(hearingVideoEmail)
                 .wantsHearingTypeFaceToFace(hearingTypeFaceToFace)
                 .build();
         }
@@ -445,6 +447,15 @@ public class SscsCaseTransformer implements CaseTransformer {
             return getField(pairs, PERSON1_VALUE + MOBILE);
         } else if (getField(pairs, PERSON1_VALUE + PHONE) != null) {
             return getField(pairs, PERSON1_VALUE + PHONE);
+        }
+        return null;
+    }
+
+    private String findHearingVideoEmail(Map<String, Object> pairs) {
+        if (getField(pairs, HEARING_VIDEO_EMAIL_LITERAL) != null) {
+            return getField(pairs, HEARING_VIDEO_EMAIL_LITERAL);
+        } else if (getField(pairs, PERSON1_VALUE + EMAIL) != null) {
+            return getField(pairs, PERSON1_VALUE + EMAIL);
         }
         return null;
     }

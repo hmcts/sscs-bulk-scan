@@ -210,8 +210,6 @@ public class SscsCaseValidator implements CaseValidator {
 
                 warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_VIDEO_LITERAL, EMAIL_SELECTED_NOT_PROVIDED));
             }
-
-
         }
     }
 

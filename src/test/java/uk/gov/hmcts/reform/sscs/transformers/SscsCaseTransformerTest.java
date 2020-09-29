@@ -1573,6 +1573,17 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingVideoEmailButWithPerson1Email_thenPopulateHearingVideoEmailWithPerson1Email() {
+
+        pairs.put(HEARING_TYPE_VIDEO_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + EMAIL, HEARING_VIDEO_EMAIL);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
+    }
+
+    @Test
     public void givenAppealGrounds2Provided_thenBuildAnAppealWithAppealReasons() {
 
         pairs.put(APPEAL_GROUNDS, null);
