@@ -51,5 +51,4 @@ public class TransformationController {
 
         return handler.handle(exceptionRecord);
     }
-
 }
