@@ -329,6 +329,9 @@ public class SscsCaseTransformer implements CaseTransformer {
     private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
         String dwpIssuingOffice = getField(pairs, "office");
 
+        if (benefitType != null && Benefit.UC.name().equalsIgnoreCase(benefitType.getCode())) {
+            dwpIssuingOffice = "Universal Credit";
+        }
         if (dwpIssuingOffice != null) {
 
             if (benefitType != null) {

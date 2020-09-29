@@ -49,6 +49,8 @@ import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 @RunWith(JUnitParamsRunner.class)
 public class SscsCaseTransformerTest {
 
+    private static final String UNIVERSAL_CREDIT = "Universal Credit";
+
     @Mock
     SscsJsonExtractor sscsJsonExtractor;
 
@@ -309,6 +311,34 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("Sheffield DRT", result.getTransformedCase().get("dwpRegionalCentre"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithUcOffice() {
+        given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
+
+        pairs.put("is_benefit_type_uc", "true");
+        pairs.put("office", "Balham DRT");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(UNIVERSAL_CREDIT, result.getTransformedCase().get("dwpRegionalCentre"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenKeyValuePairsWithUcBenefitTypeAndNoOfficePopulated_thenBuildAnAppealWithUcOffice() {
+        given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
+
+        pairs.put("is_benefit_type_uc", "true");
+        pairs.put("office", "");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(UNIVERSAL_CREDIT, result.getTransformedCase().get("dwpRegionalCentre"));
 
         assertTrue(result.getErrors().isEmpty());
     }
