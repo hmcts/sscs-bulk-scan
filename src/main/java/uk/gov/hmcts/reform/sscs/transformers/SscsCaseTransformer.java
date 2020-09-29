@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -376,7 +375,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .build();
         }
         boolean line3IsBlank = false;
-        if (!ObjectUtils.isEmpty(getField(pairs, personType + ADDRESS_LINE2)) && ObjectUtils.isEmpty(getField(pairs, personType + ADDRESS_LINE3))) {
+        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE2)) && !findBooleanExists(getField(pairs, personType + ADDRESS_LINE3))) {
             line3IsBlank = true;
         }
         return Address.builder()

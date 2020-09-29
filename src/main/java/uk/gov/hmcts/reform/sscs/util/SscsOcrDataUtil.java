@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 public final class SscsOcrDataUtil {
 
@@ -31,7 +32,7 @@ public final class SscsOcrDataUtil {
 
     public static boolean findBooleanExists(String... values) {
         for (String v : values) {
-            if (v != null) {
+            if (!ObjectUtils.isEmpty(v)) {
                 return true;
             }
         }
