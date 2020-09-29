@@ -117,8 +117,7 @@ public class SscsCaseValidatorTest {
                 "person1_nino is empty",
                 "mrn_date is empty",
                 "office is empty",
-                "benefit_type_description is empty",
-                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
+                "benefit_type_description is empty");
     }
 
     @Test
@@ -130,8 +129,7 @@ public class SscsCaseValidatorTest {
                 .identity(Identity.builder().nino("BB000000B").build()).build())
                 .benefitType(BenefitType.builder().code(PIP.name()).build())
                 .mrnDetails(defaultMrnDetails)
-                .hearingType(HEARING_TYPE_ORAL)
-                .hearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").build()).build());
+                .hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
@@ -977,7 +975,7 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppealWithAnInvalidHearingPhoneNumber_thenAddWarning() {
-        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber("01222").build();
+        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("01222").build();
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
 
