@@ -42,6 +42,10 @@ public final class SscsOcrDataUtil {
         return pairs.containsKey(field) && pairs.get(field) != null ? pairs.get(field).toString() : null;
     }
 
+    public static boolean isKeyExists(Map<String, Object> pairs, String field) {
+        return pairs.containsKey(field);
+    }
+
     public static boolean doValuesContradict(Map<String, Object> pairs, Set<String> errors, String value1, String value2) {
         if (pairs.get(value1).equals(pairs.get(value2))) {
             errors.add(value1 + " and " + value2 + " have contradicting values");
