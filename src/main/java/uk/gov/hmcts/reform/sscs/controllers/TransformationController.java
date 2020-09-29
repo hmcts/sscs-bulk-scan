@@ -52,16 +52,4 @@ public class TransformationController {
         return handler.handle(exceptionRecord);
     }
 
-    @PostMapping("/transform-scanned-data")
-    public SuccessfulTransformationResponse transformScannedData(
-        @RequestHeader(name = "ServiceAuthorization", required = false) String serviceAuthHeader,
-        @Valid @RequestBody ExceptionRecord exceptionRecord
-    ) {
-        String serviceName = authService.authenticate(serviceAuthHeader);
-        LOGGER.info("Request received to transform from service {}", serviceName);
-
-        authService.assertIsAllowedToHandleCallback(serviceName);
-
-        return handler.handle(exceptionRecord);
-    }
 }
