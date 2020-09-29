@@ -967,7 +967,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
 
-        assertEquals("hearing_telephone_number is invalid", response.getWarnings().get(0));
+        assertEquals("Telephone hearing selected but the number used is invalid. Please check either the hearing_telephone_number, person1_mobile or person1_phone fields", response.getWarnings().get(0));
         assertEquals(0, response.getErrors().size());
     }
 
@@ -977,7 +977,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validateValidationRecord(pairs);
 
-        assertEquals("Hearing telephone number is invalid", response.getWarnings().get(0));
+        assertEquals("Telephone hearing selected but the number used is invalid. Please check either the mobile, telephone or hearing telephone number fields", response.getWarnings().get(0));
         assertEquals(0, response.getErrors().size());
     }
 

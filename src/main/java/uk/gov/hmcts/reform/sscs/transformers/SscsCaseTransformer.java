@@ -419,6 +419,8 @@ public class SscsCaseTransformer implements CaseTransformer {
             String hearingTypeTelephone = checkBooleanValue(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)) : null;
 
+            String hearingTelephoneNumber = findHearingTelephoneNumber(pairs);
+
             String hearingTypeVideo = checkBooleanValue(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)) : null;
 
@@ -427,13 +429,24 @@ public class SscsCaseTransformer implements CaseTransformer {
 
             return HearingSubtype.builder()
                 .wantsHearingTypeTelephone(hearingTypeTelephone)
-                .hearingTelephoneNumber(getField(pairs, HEARING_TELEPHONE_LITERAL))
+                .hearingTelephoneNumber(hearingTelephoneNumber)
                 .wantsHearingTypeVideo(hearingTypeVideo)
                 .hearingVideoEmail(getField(pairs, HEARING_VIDEO_EMAIL_LITERAL))
                 .wantsHearingTypeFaceToFace(hearingTypeFaceToFace)
                 .build();
         }
         return HearingSubtype.builder().build();
+    }
+
+    private String findHearingTelephoneNumber(Map<String, Object> pairs) {
+        if (getField(pairs, HEARING_TELEPHONE_LITERAL) != null) {
+            return getField(pairs, HEARING_TELEPHONE_LITERAL);
+        } else if (getField(pairs, PERSON1_VALUE + MOBILE) != null) {
+            return getField(pairs, PERSON1_VALUE + MOBILE);
+        } else if (getField(pairs, PERSON1_VALUE + PHONE) != null) {
+            return getField(pairs, PERSON1_VALUE + PHONE);
+        }
+        return null;
     }
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs, String hearingType) {

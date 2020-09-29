@@ -52,8 +52,11 @@ public final class SscsConstants {
     public static final String IS_IN_PAST = "is in past";
     public static final String HEARING_TYPE_TELEPHONE_LITERAL = "hearing_type_telephone";
     public static final String HEARING_TELEPHONE_LITERAL = "hearing_telephone_number";
+    public static final String HEARING_TELEPHONE_NUMBER_MULTIPLE_LITERAL = "hearing_telephone_number_multiple";
     public static final String HEARING_TYPE_VIDEO_LITERAL = "hearing_type_video";
     public static final String HEARING_VIDEO_EMAIL_LITERAL = "hearing_video_email";
     public static final String HEARING_TYPE_FACE_TO_FACE_LITERAL = "hearing_type_face_to_face";
+    public static final String PHONE_SELECTED_NOT_PROVIDED = "selected, but no number has been provided";
+    public static final String EMAIL_SELECTED_NOT_PROVIDED = "selected, but no email has been provided";
 
 }

@@ -5,8 +5,7 @@ import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCall
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.VALIDATION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.findBooleanExists;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -197,8 +196,22 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {
-        if (hearingSubtype != null && hearingSubtype.getHearingTelephoneNumber() != null && !isUkNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
-            warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_LITERAL, IS_INVALID));
+        if (hearingSubtype != null) {
+            if (YES_LITERAL.equals(hearingSubtype.getWantsHearingTypeTelephone()) && hearingSubtype.getHearingTelephoneNumber() == null) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_TELEPHONE_LITERAL, PHONE_SELECTED_NOT_PROVIDED));
+
+            } else if (hearingSubtype.getHearingTelephoneNumber() != null && !isUkNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_NUMBER_MULTIPLE_LITERAL, null));
+            }
+
+            if (YES_LITERAL.equals(hearingSubtype.getWantsHearingTypeVideo()) && hearingSubtype.getHearingVideoEmail() == null) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_VIDEO_LITERAL, EMAIL_SELECTED_NOT_PROVIDED));
+            }
+
+
         }
     }
 
@@ -211,7 +224,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
-        if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes")) {
+        if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals(YES_LITERAL)) {
             final Contact repsContact = appeal.getRep().getContact();
             checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData, appeal.getAppellant());
 
