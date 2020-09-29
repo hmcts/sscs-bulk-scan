@@ -951,6 +951,26 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppealWithValidHearingMobilePhoneNumber_thenDoNotAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("07900123456").build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals(0, response.getErrors().size());
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnAppealWithValidHearingLandlinePhoneNumber_thenDoNotAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("01277323440").build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals(0, response.getErrors().size());
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
     public void givenAnAppealWithAnInvalidHearingPhoneNumber_thenAddWarning() {
         HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("01222").build();
 
