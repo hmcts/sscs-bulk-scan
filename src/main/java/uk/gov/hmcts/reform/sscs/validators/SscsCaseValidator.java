@@ -42,9 +42,10 @@ public class SscsCaseValidator implements CaseValidator {
 
     @SuppressWarnings("squid:S5843")
     private static final String UK_NUMBER_REGEX =
-        "^(?:(?:\\(?(?:0(?:0|11)\\)?[\\s-]?\\(?|\\+)44\\)?[\\s-]?(?:\\(?0\\)?[\\s-]?)?)|(?:\\(?0))(?:(?:\\d{5}\\)?"
-            + "[\\s-]?\\d{4,5})|(?:\\d{4}\\)?[\\s-]?(?:\\d{5}|\\d{3}[\\s-]?\\d{3}))|(?:\\d{3}\\)?[\\s-]?\\d{3}[\\s-]?"
-            + "\\d{3,4})|(?:\\d{2}\\)?[\\s-]?\\d{4}[\\s-]?\\d{4}))(?:[\\s-]?(?:x|ext\\.?|\\#)\\d{3,4})?$";
+        "^\\(?(?:(?:0(?:0|11)\\)?[\\s-]?\\(?|\\+)44\\)?[\\s-]?\\(?(?:0\\)?[\\s-]?\\(?)?|0)(?:\\d{2}\\)?[\\s-]?\\d{4}"
+            + "[\\s-]?\\d{4}|\\d{3}\\)?[\\s-]?\\d{3}[\\s-]?\\d{3,4}|\\d{4}\\)?[\\s-]?(?:\\d{5}|\\d{3}[\\s-]?\\d{3})|"
+            + "\\d{5}\\)?[\\s-]?\\d{4,5}|8(?:00[\\s-]?11[\\s-]?11|45[\\s-]?46[\\s-]?4\\d))(?:(?:[\\s-]?(?:x|ext\\.?\\s?|"
+            + "\\#)\\d+)?)$";
 
     @SuppressWarnings("squid:S5843")
     private static final String POSTCODE_REGEX = "^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$";
@@ -197,7 +198,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {
         if (hearingSubtype != null && hearingSubtype.getHearingTelephoneNumber() != null && !isUkNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
-            errors.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_LITERAL, IS_INVALID));
+            warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_LITERAL, IS_INVALID));
         }
     }
 
@@ -484,12 +485,6 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkMobileNumber(Contact contact, String personType) {
         if (contact != null && contact.getMobile() != null && !isMobileNumberValid(contact.getMobile())) {
-            errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + MOBILE, IS_INVALID));
-        }
-    }
-
-    private void checkUkNumber(String field, String personType) {
-        if (field != null && !isUkNumberValid(field)) {
             errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, null) + MOBILE, IS_INVALID));
         }
     }

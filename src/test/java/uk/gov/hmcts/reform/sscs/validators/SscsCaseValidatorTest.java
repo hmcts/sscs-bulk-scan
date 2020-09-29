@@ -951,18 +951,9 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealWithValidHearingMobilePhoneNumber_thenDoNotAddWarning() {
-        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("07900123456").build();
-
-        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
-
-        assertEquals(0, response.getErrors().size());
-        assertEquals(0, response.getWarnings().size());
-    }
-
-    @Test
-    public void givenAnAppealWithValidHearingLandlinePhoneNumber_thenDoNotAddWarning() {
-        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("01277323440").build();
+    @Parameters({"07900123456", "01277323440", "01277323440 ext 123"})
+    public void givenAnAppealWithValidHearingPhoneNumber_thenDoNotAddWarning(String number) {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber(number).build();
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
 
@@ -976,8 +967,8 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
 
-        assertEquals("hearing_telephone_number is invalid", response.getErrors().get(0));
-        assertEquals(0, response.getWarnings().size());
+        assertEquals("hearing_telephone_number is invalid", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
@@ -986,8 +977,8 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validateValidationRecord(pairs);
 
-        assertEquals("Hearing telephone number is invalid", response.getErrors().get(0));
-        assertEquals(0, response.getWarnings().size());
+        assertEquals("Hearing telephone number is invalid", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
     }
 
     private Object buildDocument(String filename) {
