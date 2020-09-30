@@ -135,8 +135,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
             .containsOnly(
                 "Appointee title is empty",
                 "Appointee first name is empty",
-                "Appointee last name is empty",
-                "Hearing option telephone, video and face to face are empty. At least one must be populated");
+                "Appointee last name is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -162,8 +161,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
                 "Appointee last name is empty",
                 "Appellant title is empty",
                 "Appellant first name is empty",
-                "Appellant last name is empty",
-                "Hearing option telephone, video and face to face are empty. At least one must be populated");
+                "Appellant last name is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
