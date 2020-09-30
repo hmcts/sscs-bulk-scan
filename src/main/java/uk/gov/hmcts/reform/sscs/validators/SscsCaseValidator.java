@@ -153,6 +153,8 @@ public class SscsCaseValidator implements CaseValidator {
 
         isHearingTypeValid(appeal);
 
+        checkHearingSubTypeIfHearingIsOral(appeal, ocrCaseData);
+
         if (caseData.get("sscsDocument") != null) {
             @SuppressWarnings("unchecked")
             List<SscsDocument> lists = ((List<SscsDocument>) caseData.get("sscsDocument"));
@@ -484,6 +486,25 @@ public class SscsCaseValidator implements CaseValidator {
         if (hearingType == null || (!hearingType.equals(HEARING_TYPE_ORAL) && !hearingType.equals(HEARING_TYPE_PAPER))) {
             warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_DESCRIPTION, IS_INVALID));
         }
+    }
+
+    private void checkHearingSubTypeIfHearingIsOral(Appeal appeal, Map<String, Object> ocrCaseData) {
+        String hearingType = appeal.getHearingType();
+        boolean isHearingTypeTelephoneExists = isKeyExists(ocrCaseData, HEARING_TYPE_TELEPHONE_LITERAL) || ocrCaseData.isEmpty();
+        boolean isHearingTypeVideoExists = isKeyExists(ocrCaseData, HEARING_TYPE_VIDEO_LITERAL) || ocrCaseData.isEmpty();
+        boolean isHearingTypeFaceToFaceExists = isKeyExists(ocrCaseData, HEARING_TYPE_FACE_TO_FACE_LITERAL) || ocrCaseData.isEmpty();
+        if (isHearingTypeTelephoneExists && isHearingTypeVideoExists && isHearingTypeFaceToFaceExists && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) && !isValidHearingSubType(appeal)) {
+            warnings.add(getMessageByCallbackType(callbackType, "", HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE_DESCRIPTION, ARE_EMPTY));
+        }
+    }
+
+    private boolean isValidHearingSubType(Appeal appeal) {
+        boolean isValid = true;
+        HearingSubtype hearingSubType = appeal.getHearingSubtype();
+        if (hearingSubType == null || !(hearingSubType.isWantsHearingTypeTelephone() || hearingSubType.isWantsHearingTypeVideo() || hearingSubType.isWantsHearingTypeFaceToFace())) {
+            isValid = false;
+        }
+        return isValid;
     }
 
     private void checkExcludedDates(Appeal appeal) {
