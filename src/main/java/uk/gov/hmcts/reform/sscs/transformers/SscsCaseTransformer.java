@@ -76,8 +76,14 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     @Override
     public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
-
-        String caseId = exceptionRecord.getId() != null ? exceptionRecord.getId() : "N/A";
+        // New transformation request contains exceptionRecordId
+        // Old transformation request contains id field, which is the exception record id
+        String caseId = "N/A";
+        if (StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId())) {
+            caseId = exceptionRecord.getExceptionRecordId();
+        } else if (StringUtils.isNotEmpty(exceptionRecord.getId())) {
+            caseId = exceptionRecord.getId();
+        }
         log.info("Validating exception record against schema caseId {}", caseId);
 
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
@@ -323,6 +329,9 @@ public class SscsCaseTransformer implements CaseTransformer {
     private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
         String dwpIssuingOffice = getField(pairs, "office");
 
+        if (benefitType != null && Benefit.UC.name().equalsIgnoreCase(benefitType.getCode())) {
+            dwpIssuingOffice = "Universal Credit";
+        }
         if (dwpIssuingOffice != null) {
 
             if (benefitType != null) {

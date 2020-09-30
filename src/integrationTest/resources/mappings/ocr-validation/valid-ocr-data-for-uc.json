@@ -46,11 +46,11 @@
     },
     {
       "name": "office",
-      "value": "3"
+      "value": ""
     },
     {
       "name": "benefit_type_description",
-      "value": "PIP"
+      "value": "UC"
     },
     {
       "name": "is_hearing_type_oral",

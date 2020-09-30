@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -134,6 +133,23 @@ public class CcdCallbackHandlerTest {
         invokeCallbackHandler(exceptionRecord);
     }
 
+    @Test(expected = InvalidExceptionRecordException.class)
+    public void should_return_exc_data_and_warning_in_callback_when_is_automated_process_true_and_transformation_success_and_validation_fails_with_warning() {
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().isAutomatedProcess(true).build();
+        ImmutableList<String> warningList = ImmutableList.of("office is missing");
+
+        CaseResponse response = CaseResponse.builder().warnings(warningList).transformedCase(transformedCase).build();
+
+        when(caseTransformer.transformExceptionRecord(exceptionRecord, false)).thenReturn(response);
+
+        when(caseValidator.validateExceptionRecord(response, exceptionRecord, transformedCase, false))
+            .thenReturn(CaseResponse.builder()
+                .warnings(warningList)
+                .build());
+
+        invokeCallbackHandler(exceptionRecord);
+    }
+
     @Test
     public void givenAWarningInTransformationServiceAndAnotherWarningInValidationService_thenShowBothWarnings() {
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().build();
@@ -164,6 +180,31 @@ public class CcdCallbackHandlerTest {
         assertThat(warningCaptor.getAllValues().get(0).getWarnings().get(0)).isEqualTo("First warning");
 
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(2);
+    }
+
+    @Test(expected = InvalidExceptionRecordException.class)
+    public void givenAWarningInValidationServiceWhenIsAutomatedProcessIsTrue_thenShowWarnings() {
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().isAutomatedProcess(true).build();
+
+        List<String> warnings = new ArrayList<>();
+
+        when(caseTransformer.transformExceptionRecord(exceptionRecord, false))
+            .thenReturn(CaseResponse.builder()
+                .transformedCase(transformedCase)
+                .warnings(warnings)
+                .build());
+
+        List<String> warnings2 = new ArrayList<>();
+        warnings2.add("Second warning");
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings2).transformedCase(transformedCase).build();
+
+        when(caseValidator.validateExceptionRecord(any(), eq(exceptionRecord), eq(transformedCase), eq(false)))
+            .thenReturn(caseValidationResponse);
+
+        SuccessfulTransformationResponse ccdCallbackResponse = invokeCallbackHandler(exceptionRecord);
+        // should not be called
+        assertThat(true).isFalse();
     }
 
     @Test
