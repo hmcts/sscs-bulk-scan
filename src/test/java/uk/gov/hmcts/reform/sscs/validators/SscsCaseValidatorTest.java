@@ -8,7 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -138,29 +139,6 @@ public class SscsCaseValidatorTest {
             .containsOnly("person1_title is empty",
                 "person1_first_name is empty",
                 "person1_last_name is empty");
-    }
-
-    @Test
-    public void givenAnAppellantWithHearingTypeOralAndNoHearingSubType_thenAddWarnings() {
-        Map<String, Object> pairs = new HashMap<>();
-
-        pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(Name.builder().firstName("Harry").lastName("Kane").build())
-            .address(Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode(VALID_POSTCODE).build())
-            .identity(Identity.builder().nino("BB000000B").build()).build())
-            .benefitType(BenefitType.builder().code(PIP.name()).build())
-            .mrnDetails(defaultMrnDetails)
-            .hearingType(HEARING_TYPE_ORAL).build());
-        pairs.put("bulkScanCaseReference", 123);
-
-        ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL,"");
-        ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL,"");
-        ocrCaseData.put(HEARING_TYPE_FACE_TO_FACE_LITERAL,"");
-
-        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
-
-        assertThat(response.getWarnings())
-            .containsOnly("person1_title is empty",
-                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
     }
 
     @Test
@@ -996,7 +974,7 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppealWithAnInvalidHearingPhoneNumberForSscsCase_thenAddWarning() {
-        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber("01222").build(), buildAppellant(false), false);
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().hearingTelephoneNumber("01222").build(), buildAppellant(false), false);
 
         CaseResponse response = validator.validateValidationRecord(pairs);
 

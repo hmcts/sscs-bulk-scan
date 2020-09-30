@@ -76,14 +76,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     @Override
     public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
-        // New transformation request contains exceptionRecordId
-        // Old transformation request contains id field, which is the exception record id
-        String caseId = "N/A";
-        if (StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId())) {
-            caseId = exceptionRecord.getExceptionRecordId();
-        } else if (StringUtils.isNotEmpty(exceptionRecord.getId())) {
-            caseId = exceptionRecord.getId();
-        }
+
+        String caseId = exceptionRecord.getId() != null ? exceptionRecord.getId() : "N/A";
         log.info("Validating exception record against schema caseId {}", caseId);
 
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());

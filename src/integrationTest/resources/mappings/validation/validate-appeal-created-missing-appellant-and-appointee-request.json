@@ -44,11 +44,6 @@
           "code": "ESA"
         },
         "hearingType": "oral",
-        "hearingSubtype": {
-          "wantsHearingTypeTelephone": "No",
-          "wantsHearingTypeVideo": "No",
-          "wantsHearingTypeFaceToFace": "No"
-        },
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
