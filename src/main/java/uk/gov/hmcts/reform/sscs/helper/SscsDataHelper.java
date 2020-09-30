@@ -55,6 +55,14 @@ public class SscsDataHelper {
                 appealData.put("issueCode", issueCode);
                 appealData.put("caseCode", generateCaseCode(benefitCode, issueCode));
 
+                if ((appeal.getMrnDetails() == null || appeal.getMrnDetails().getDwpIssuingOffice() == null) && dwpAddressLookupService.getDefaultDwpMappingByOffice(appeal.getBenefitType().getCode()).isPresent()) {
+                    String defaultDwpIssuingOffice = dwpAddressLookupService.getDefaultDwpMappingByOffice(appeal.getBenefitType().getCode()).get().getMapping().getCcd();
+                    if (appeal.getMrnDetails() == null) {
+                        appeal.setMrnDetails(MrnDetails.builder().dwpIssuingOffice(defaultDwpIssuingOffice).build());
+                    } else {
+                        appeal.getMrnDetails().setDwpIssuingOffice(defaultDwpIssuingOffice);
+                    }
+                }
                 if (appeal.getMrnDetails() != null && appeal.getMrnDetails().getDwpIssuingOffice() != null) {
                     String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
                         appeal.getBenefitType().getCode(),

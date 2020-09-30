@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.model.dwp.Mapping;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
@@ -124,5 +125,37 @@ public class SscsDataHelperTest {
         String result = caseDataHelper.getCreatedInGapsFromField(Appeal.builder().mrnDetails(MrnDetails.builder().dwpIssuingOffice("My PIP Office 4").build()).build());
 
         assertNull(result);
+    }
+
+    @Test
+    public void givenNoMrnDetails_thenPopulateDefaultIssuingOfficeAndRegionalCenter() {
+        Map<String, Object> appealData = new HashMap<>();
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).build();
+        when(dwpAddressLookupService.getDefaultDwpMappingByOffice("PIP")).thenReturn(Optional.of(OfficeMapping.builder().isDefault(true).mapping(Mapping.builder().ccd("DWP PIP (1)").build()).build()));
+        when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("PIP","DWP PIP (1)")).thenReturn("DWP PIP (1)");
+        caseDataHelper.addSscsDataToMap(appealData, appeal, null, null);
+        assertEquals("DWP PIP (1)", appeal.getMrnDetails().getDwpIssuingOffice());
+        assertEquals("DWP PIP (1)", appealData.get("dwpRegionalCentre"));
+    }
+
+    @Test
+    public void givenMrnDetailsWithNoDwpIssuingOffice_thenPopulateDefaultIssuingOfficeAndRegionalCenter() {
+        Map<String, Object> appealData = new HashMap<>();
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().build()).build();
+        when(dwpAddressLookupService.getDefaultDwpMappingByOffice("PIP")).thenReturn(Optional.of(OfficeMapping.builder().isDefault(true).mapping(Mapping.builder().ccd("DWP PIP (1)").build()).build()));
+        when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("PIP","DWP PIP (1)")).thenReturn("DWP PIP (1)");
+        caseDataHelper.addSscsDataToMap(appealData, appeal, null, null);
+        assertEquals("DWP PIP (1)", appeal.getMrnDetails().getDwpIssuingOffice());
+        assertEquals("DWP PIP (1)", appealData.get("dwpRegionalCentre"));
+    }
+
+    @Test
+    public void givenMrnDetailsWithDwpIssuingOffice_thenPopulateRegionalCenter() {
+        Map<String, Object> appealData = new HashMap<>();
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().dwpIssuingOffice("DWP PIP (3)").build()).build();
+        when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("PIP","DWP PIP (3)")).thenReturn("DWP PIP (3)");
+        caseDataHelper.addSscsDataToMap(appealData, appeal, null, null);
+        assertEquals("DWP PIP (3)", appeal.getMrnDetails().getDwpIssuingOffice());
+        assertEquals("DWP PIP (3)", appealData.get("dwpRegionalCentre"));
     }
 }
