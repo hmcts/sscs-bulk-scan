@@ -8,8 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1027,14 +1026,6 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingType(HEARING_TYPE_PAPER, buildAppellant(false), false);
         CaseResponse response = validator.validateValidationRecord(pairs);
         assertEquals(0, response.getWarnings().size());
-    }
-
-    @Test
-    public void givenAnAppealWithAnEmptyHearingSubTypeForSscsCase_thenAddWarning() {
-        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
-        CaseResponse response = validator.validateValidationRecord(pairs);
-        assertEquals(1, response.getWarnings().size());
-        assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated", response.getWarnings().get(0));
     }
 
     @Test
