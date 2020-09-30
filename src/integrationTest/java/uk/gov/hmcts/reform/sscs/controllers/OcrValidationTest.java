@@ -62,6 +62,23 @@ public class OcrValidationTest  {
     }
 
     @Test
+    public void should_return_200_when_ocr_form_for_uc_validation_request_data_is_valid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/valid-ocr-data-for-uc.json");
+
+        mvc.perform(
+            post("/forms/SSCS1/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
     public void should_return_200_when_ocr_form_with_hearing_sub_type_validation_request_data_is_valid() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
