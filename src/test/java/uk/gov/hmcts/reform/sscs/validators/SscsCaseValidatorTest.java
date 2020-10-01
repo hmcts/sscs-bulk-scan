@@ -8,8 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -179,7 +178,8 @@ public class SscsCaseValidatorTest {
             .identity(Identity.builder().nino("BB000000B").build()).build())
             .benefitType(BenefitType.builder().code(PIP.name()).build())
             .mrnDetails(defaultMrnDetails)
-            .hearingType(HEARING_TYPE_ORAL).build());
+            .hearingType(HEARING_TYPE_ORAL)
+            .hearingSubtype(HearingSubtype.builder().build()).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
@@ -967,7 +967,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
 
-        assertEquals("hearing_telephone_number is invalid", response.getWarnings().get(0));
+        assertEquals("Telephone hearing selected but the number used is invalid. Please check either the hearing_telephone_number or person1_phone fields", response.getWarnings().get(0));
         assertEquals(0, response.getErrors().size());
     }
 
@@ -977,8 +977,69 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validateValidationRecord(pairs);
 
-        assertEquals("Hearing telephone number is invalid", response.getWarnings().get(0));
+        assertEquals("Telephone hearing selected but the number used is invalid. Please check either the telephone or hearing telephone number fields", response.getWarnings().get(0));
         assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeTelephoneSelectedButNoTelephoneEntered_thenAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals("hearing_telephone_number has not been provided but data indicates hearing telephone is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeTelephoneSelectedButNoTelephoneEnteredForSscsCase_thenAddWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build(), buildAppellant(false), false);
+
+        CaseResponse response = validator.validateValidationRecord(pairs);
+
+        assertEquals("Hearing telephone number has not been provided but data indicates hearing telephone is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeVideoSelectedButNoVideoEmailEntered_thenAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals("hearing_video_email has not been provided but data indicates hearing video is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeVideoSelectedButNoVideoEmailEnteredForSscsCase_thenAddWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build(), buildAppellant(false), false);
+
+        CaseResponse response = validator.validateValidationRecord(pairs);
+
+        assertEquals("Hearing video email address has not been provided but data indicates hearing video is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAnHearingTypePaperAndEmptyHearingSubTypeForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingType(HEARING_TYPE_PAPER, buildAppellant(false), false);
+        CaseResponse response = validator.validateValidationRecord(pairs);
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAnHearingSubTypeVideoForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail("m@m.com").build(), buildAppellant(false), false);
+        CaseResponse response = validator.validateValidationRecord(pairs);
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAnHearingSubTypeFaceForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), buildAppellant(false), false);
+        CaseResponse response = validator.validateValidationRecord(pairs);
+        assertEquals(0, response.getWarnings().size());
     }
 
     private Object buildDocument(String filename) {
