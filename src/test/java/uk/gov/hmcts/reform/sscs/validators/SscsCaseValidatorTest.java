@@ -117,8 +117,7 @@ public class SscsCaseValidatorTest {
                 "person1_nino is empty",
                 "mrn_date is empty",
                 "office is empty",
-                "benefit_type_description is empty",
-                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
+                "benefit_type_description is empty");
     }
 
     @Test
@@ -130,8 +129,7 @@ public class SscsCaseValidatorTest {
                 .identity(Identity.builder().nino("BB000000B").build()).build())
                 .benefitType(BenefitType.builder().code(PIP.name()).build())
                 .mrnDetails(defaultMrnDetails)
-                .hearingType(HEARING_TYPE_ORAL)
-                .hearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").build()).build());
+                .hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
@@ -140,25 +138,6 @@ public class SscsCaseValidatorTest {
             .containsOnly("person1_title is empty",
                 "person1_first_name is empty",
                 "person1_last_name is empty");
-    }
-
-    @Test
-    public void givenAnAppellantWithHearingTypeOralAndNoHearingSubType_thenAddWarnings() {
-        Map<String, Object> pairs = new HashMap<>();
-
-        pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(Name.builder().firstName("Harry").lastName("Kane").build())
-            .address(Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode(VALID_POSTCODE).build())
-            .identity(Identity.builder().nino("BB000000B").build()).build())
-            .benefitType(BenefitType.builder().code(PIP.name()).build())
-            .mrnDetails(defaultMrnDetails)
-            .hearingType(HEARING_TYPE_ORAL).build());
-        pairs.put("bulkScanCaseReference", 123);
-
-        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
-
-        assertThat(response.getWarnings())
-            .containsOnly("person1_title is empty",
-                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
     }
 
     @Test
@@ -187,8 +166,7 @@ public class SscsCaseValidatorTest {
             .containsOnly(
                 "person1_title is empty",
                 "person1_first_name is empty",
-                "person1_last_name is empty",
-                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
+                "person1_last_name is empty");
     }
 
     @Test
@@ -201,7 +179,7 @@ public class SscsCaseValidatorTest {
             .benefitType(BenefitType.builder().code(PIP.name()).build())
             .mrnDetails(defaultMrnDetails)
             .hearingType(HEARING_TYPE_ORAL)
-            .hearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").build()).build());
+            .hearingSubtype(HearingSubtype.builder().build()).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
@@ -978,23 +956,74 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealWithAnInvalidHearingPhoneNumber_thenAddWarning() {
-        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber("01222").build();
+    @Parameters({"07900123456", "01277323440", "01277323440 ext 123"})
+    public void givenAnAppealWithValidHearingPhoneNumber_thenDoNotAddWarning(String number) {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber(number).build();
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
 
-        assertEquals("hearing_telephone_number is invalid", response.getErrors().get(0));
+        assertEquals(0, response.getErrors().size());
         assertEquals(0, response.getWarnings().size());
     }
 
     @Test
+    public void givenAnAppealWithAnInvalidHearingPhoneNumber_thenAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("01222").build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals("Telephone hearing selected but the number used is invalid. Please check either the hearing_telephone_number or person1_phone fields", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
     public void givenAnAppealWithAnInvalidHearingPhoneNumberForSscsCase_thenAddWarning() {
-        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber("01222").build(), buildAppellant(false), false);
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().hearingTelephoneNumber("01222").build(), buildAppellant(false), false);
 
         CaseResponse response = validator.validateValidationRecord(pairs);
 
-        assertEquals("Hearing telephone number is invalid", response.getErrors().get(0));
-        assertEquals(0, response.getWarnings().size());
+        assertEquals("Telephone hearing selected but the number used is invalid. Please check either the telephone or hearing telephone number fields", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeTelephoneSelectedButNoTelephoneEntered_thenAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals("hearing_telephone_number has not been provided but data indicates hearing telephone is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeTelephoneSelectedButNoTelephoneEnteredForSscsCase_thenAddWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build(), buildAppellant(false), false);
+
+        CaseResponse response = validator.validateValidationRecord(pairs);
+
+        assertEquals("Hearing telephone number has not been provided but data indicates hearing telephone is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeVideoSelectedButNoVideoEmailEntered_thenAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals("hearing_video_email has not been provided but data indicates hearing video is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeVideoSelectedButNoVideoEmailEnteredForSscsCase_thenAddWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build(), buildAppellant(false), false);
+
+        CaseResponse response = validator.validateValidationRecord(pairs);
+
+        assertEquals("Hearing video email address has not been provided but data indicates hearing video is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
@@ -1005,23 +1034,15 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealWithAnEmptyHearingSubTypeForSscsCase_thenAddWarning() {
-        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
-        CaseResponse response = validator.validateValidationRecord(pairs);
-        assertEquals(1, response.getWarnings().size());
-        assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated", response.getWarnings().get(0));
-    }
-
-    @Test
     public void givenAnAppealWithAnHearingSubTypeVideoForSscsCase_thenNoWarning() {
-        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").build(), buildAppellant(false), false);
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail("m@m.com").build(), buildAppellant(false), false);
         CaseResponse response = validator.validateValidationRecord(pairs);
         assertEquals(0, response.getWarnings().size());
     }
 
     @Test
     public void givenAnAppealWithAnHearingSubTypeFaceForSscsCase_thenNoWarning() {
-        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").build(), buildAppellant(false), false);
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), buildAppellant(false), false);
         CaseResponse response = validator.validateValidationRecord(pairs);
         assertEquals(0, response.getWarnings().size());
     }
@@ -1037,19 +1058,19 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeVideo("Yes").build());
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrn(MrnDetails mrn, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_PAPER, null);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeVideo("Yes").build());
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithRepresentative(Appellant appellant, Representative representative, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, representative, null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeVideo("Yes").build());
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, representative, null, exceptionCaseType, HEARING_TYPE_ORAL, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithExcludedDate(String excludedDate, Appellant appellant, Boolean exceptionCaseType) {

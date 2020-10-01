@@ -41,6 +41,13 @@ public class SscsCaseValidator implements CaseValidator {
             + "\\d{3,4})?)?$";
 
     @SuppressWarnings("squid:S5843")
+    private static final String UK_NUMBER_REGEX =
+        "^\\(?(?:(?:0(?:0|11)\\)?[\\s-]?\\(?|\\+)44\\)?[\\s-]?\\(?(?:0\\)?[\\s-]?\\(?)?|0)(?:\\d{2}\\)?[\\s-]?\\d{4}"
+            + "[\\s-]?\\d{4}|\\d{3}\\)?[\\s-]?\\d{3}[\\s-]?\\d{3,4}|\\d{4}\\)?[\\s-]?(?:\\d{5}|\\d{3}[\\s-]?\\d{3})|"
+            + "\\d{5}\\)?[\\s-]?\\d{4,5}|8(?:00[\\s-]?11[\\s-]?11|45[\\s-]?46[\\s-]?4\\d))(?:(?:[\\s-]?(?:x|ext\\.?\\s?|"
+            + "\\#)\\d+)?)$";
+
+    @SuppressWarnings("squid:S5843")
     private static final String POSTCODE_REGEX = "^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$";
     List<String> warnings;
     List<String> errors;
@@ -147,8 +154,6 @@ public class SscsCaseValidator implements CaseValidator {
 
         isHearingTypeValid(appeal);
 
-        checkHearingSubTypeIfHearingIsOral(appeal);
-
         if (caseData.get("sscsDocument") != null) {
             @SuppressWarnings("unchecked")
             List<SscsDocument> lists = ((List<SscsDocument>) caseData.get("sscsDocument"));
@@ -192,8 +197,20 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {
-        if (hearingSubtype != null && hearingSubtype.getHearingTelephoneNumber() != null && !isMobileNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
-            errors.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_LITERAL, IS_INVALID));
+        if (hearingSubtype != null) {
+            if (YES_LITERAL.equals(hearingSubtype.getWantsHearingTypeTelephone()) && hearingSubtype.getHearingTelephoneNumber() == null) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_TELEPHONE_LITERAL, PHONE_SELECTED_NOT_PROVIDED));
+
+            } else if (hearingSubtype.getHearingTelephoneNumber() != null && !isUkNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_NUMBER_MULTIPLE_LITERAL, null));
+            }
+
+            if (YES_LITERAL.equals(hearingSubtype.getWantsHearingTypeVideo()) && hearingSubtype.getHearingVideoEmail() == null) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_VIDEO_LITERAL, EMAIL_SELECTED_NOT_PROVIDED));
+            }
         }
     }
 
@@ -206,7 +223,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
-        if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes")) {
+        if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals(YES_LITERAL)) {
             final Contact repsContact = appeal.getRep().getContact();
             checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData, appeal.getAppellant());
 
@@ -473,22 +490,6 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkHearingSubTypeIfHearingIsOral(Appeal appeal) {
-        String hearingType = appeal.getHearingType();
-        if (hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) && !isValidHearingSubType(appeal)) {
-            warnings.add(getMessageByCallbackType(callbackType, "", HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE_DESCRIPTION, ARE_EMPTY));
-        }
-    }
-
-    private boolean isValidHearingSubType(Appeal appeal) {
-        boolean isValid = true;
-        HearingSubtype hearingSubType = appeal.getHearingSubtype();
-        if (hearingSubType == null || !(hearingSubType.isWantsHearingTypeTelephone() || hearingSubType.isWantsHearingTypeVideo() || hearingSubType.isWantsHearingTypeFaceToFace())) {
-            isValid = false;
-        }
-        return isValid;
-    }
-
     private void checkExcludedDates(Appeal appeal) {
         if (appeal.getHearingOptions() != null && appeal.getHearingOptions().getExcludeDates() != null) {
             for (ExcludeDate excludeDate : appeal.getHearingOptions().getExcludeDates()) {
@@ -506,6 +507,13 @@ public class SscsCaseValidator implements CaseValidator {
     private boolean isMobileNumberValid(String number) {
         if (number != null) {
             return number.matches(PHONE_REGEX);
+        }
+        return true;
+    }
+
+    private boolean isUkNumberValid(String number) {
+        if (number != null) {
+            return number.matches(UK_NUMBER_REGEX);
         }
         return true;
     }
