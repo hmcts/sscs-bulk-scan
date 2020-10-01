@@ -257,9 +257,7 @@ public class SscsCaseValidator implements CaseValidator {
             if (!officeMapping.isPresent()) {
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
-        }
-
-        else if (!doesIssuingOfficeExist(appeal)) {
+        } else if (!doesIssuingOfficeExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
         }
     }
