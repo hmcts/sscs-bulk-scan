@@ -1649,7 +1649,6 @@ public class SscsCaseTransformerTest {
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
-
     }
 
     @Test
@@ -1664,6 +1663,51 @@ public class SscsCaseTransformerTest {
         assertEquals(HEARING_TYPE_TELEPHONE_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(0));
         assertEquals(HEARING_TYPE_FACE_TO_FACE_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(1));
         assertEquals(HEARING_TYPE_VIDEO_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(2));
+    }
+
+    @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingTelephoneNumberButWithPerson1Mobile_thenPopulateHearingTelephoneNumberWithPerson1Mobile() {
+
+        pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + MOBILE, HEARING_TELEPHONE_NUMBER);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_TELEPHONE_NUMBER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+    }
+
+    @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingTelephoneNumberButWithPerson1Phone_thenPopulateHearingTelephoneNumberWithPerson1Phone() {
+
+        pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + PHONE, HEARING_TELEPHONE_NUMBER);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_TELEPHONE_NUMBER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+    }
+
+    @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingTelephoneNumberButWithPerson1PhoneAndPerson1Mobile_thenPopulateHearingTelephoneNumberWithPerson1Mobile() {
+
+        pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + MOBILE, HEARING_TELEPHONE_NUMBER);
+        pairs.put(PERSON1_VALUE + PHONE, "07999888777");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_TELEPHONE_NUMBER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+    }
+
+    @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingVideoEmailButWithPerson1Email_thenPopulateHearingVideoEmailWithPerson1Email() {
+
+        pairs.put(HEARING_TYPE_VIDEO_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + EMAIL, HEARING_VIDEO_EMAIL);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
     }
 
     @Test

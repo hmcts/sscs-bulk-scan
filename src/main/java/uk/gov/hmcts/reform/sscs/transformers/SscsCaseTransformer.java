@@ -432,21 +432,45 @@ public class SscsCaseTransformer implements CaseTransformer {
             String hearingTypeTelephone = checkBooleanValue(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)) : null;
 
+            String hearingTelephoneNumber = findHearingTelephoneNumber(pairs);
+
             String hearingTypeVideo = checkBooleanValue(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)) : null;
+
+            String hearingVideoEmail = findHearingVideoEmail(pairs);
 
             String hearingTypeFaceToFace = checkBooleanValue(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)) : null;
 
             return HearingSubtype.builder()
                 .wantsHearingTypeTelephone(hearingTypeTelephone)
-                .hearingTelephoneNumber(getField(pairs, HEARING_TELEPHONE_LITERAL))
+                .hearingTelephoneNumber(hearingTelephoneNumber)
                 .wantsHearingTypeVideo(hearingTypeVideo)
-                .hearingVideoEmail(getField(pairs, HEARING_VIDEO_EMAIL_LITERAL))
+                .hearingVideoEmail(hearingVideoEmail)
                 .wantsHearingTypeFaceToFace(hearingTypeFaceToFace)
                 .build();
         }
         return HearingSubtype.builder().build();
+    }
+
+    private String findHearingTelephoneNumber(Map<String, Object> pairs) {
+        if (getField(pairs, HEARING_TELEPHONE_LITERAL) != null) {
+            return getField(pairs, HEARING_TELEPHONE_LITERAL);
+        } else if (getField(pairs, PERSON1_VALUE + MOBILE) != null) {
+            return getField(pairs, PERSON1_VALUE + MOBILE);
+        } else if (getField(pairs, PERSON1_VALUE + PHONE) != null) {
+            return getField(pairs, PERSON1_VALUE + PHONE);
+        }
+        return null;
+    }
+
+    private String findHearingVideoEmail(Map<String, Object> pairs) {
+        if (getField(pairs, HEARING_VIDEO_EMAIL_LITERAL) != null) {
+            return getField(pairs, HEARING_VIDEO_EMAIL_LITERAL);
+        } else if (getField(pairs, PERSON1_VALUE + EMAIL) != null) {
+            return getField(pairs, PERSON1_VALUE + EMAIL);
+        }
+        return null;
     }
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs, String hearingType) {
