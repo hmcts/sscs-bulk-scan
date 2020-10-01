@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
@@ -138,7 +139,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType);
         checkRepresentative(appeal, ocrCaseData, caseData);
-        checkMrnDetails(appeal);
+        checkMrnDetails(appeal, ocrCaseData);
 
         checkExcludedDates(appeal);
 
@@ -223,16 +224,26 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkMrnDetails(Appeal appeal) {
+    private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData) {
+        String dwpIssuingOffice = getField(ocrCaseData, "office");
+
         if (!doesMrnDateExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
         } else {
             checkDateValidDate(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "", true);
         }
 
-        if (!doesIssuingOfficeExist(appeal)) {
-            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
+        if (dwpIssuingOffice != null && appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
 
+            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), dwpIssuingOffice);
+
+            if (!officeMapping.isPresent()) {
+                warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
+            }
+        }
+
+        else if (!doesIssuingOfficeExist(appeal)) {
+            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
         }
     }
 

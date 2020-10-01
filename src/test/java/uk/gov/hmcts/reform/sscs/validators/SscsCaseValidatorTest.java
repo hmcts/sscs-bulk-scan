@@ -116,7 +116,7 @@ public class SscsCaseValidatorTest {
                 "person1_postcode is empty",
                 "person1_nino is empty",
                 "mrn_date is empty",
-                "office is invalid",
+                "office is empty",
                 "benefit_type_description is empty",
                 "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
     }
@@ -452,10 +452,22 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnMrnDoesNotContainADwpIssuingOfficeOrOfficeIsInvalid_thenAddAWarning() {
+    public void givenAnMrnDoesNotContainADwpIssuingOffice_thenAddAWarning() {
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true), false);
+
+        assertEquals("office is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnMrnDoesNotContainAValidDwpIssuingOffice_thenAddAWarning() {
+        Map<String, Object> ocrCaseDataInvalidOffice = new HashMap<>();
+        ocrCaseDataInvalidOffice.put("office", "Bla");
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataInvalidOffice);
+
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true), false);
 
         assertEquals("office is invalid", response.getWarnings().get(0));
+        assertEquals(1, response.getWarnings().size());
     }
 
     @Test
