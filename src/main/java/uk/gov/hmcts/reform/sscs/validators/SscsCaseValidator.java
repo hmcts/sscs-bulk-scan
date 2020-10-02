@@ -258,15 +258,13 @@ public class SscsCaseValidator implements CaseValidator {
             if (!officeMapping.isPresent()) {
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
-        }
-
-        else if (dwpIssuingOffice == null) {
+        } else if (dwpIssuingOffice == null) {
             warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
         }
     }
 
     private String getDwpIssuingOffice(Appeal appeal, Map<String, Object> ocrCaseData) {
-        if(!doesIssuingOfficeExist(appeal)) {
+        if (!doesIssuingOfficeExist(appeal)) {
             return getField(ocrCaseData, "office");
         } else {
             return appeal.getMrnDetails().getDwpIssuingOffice();
