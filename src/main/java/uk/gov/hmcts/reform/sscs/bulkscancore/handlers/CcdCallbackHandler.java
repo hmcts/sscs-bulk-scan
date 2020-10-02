@@ -191,7 +191,8 @@ public class CcdCallbackHandler {
         sscsDataHelper.addSscsDataToMap(appealData,
             callback.getCaseDetails().getCaseData().getAppeal(),
             callback.getCaseDetails().getCaseData().getSscsDocument(),
-            callback.getCaseDetails().getCaseData().getSubscriptions());
+            callback.getCaseDetails().getCaseData().getSubscriptions(),
+            callback.getCaseDetails().getCaseData().getFormType());
 
         CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData);
 

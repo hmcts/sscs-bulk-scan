@@ -102,7 +102,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token);
+        String formType = exceptionRecord.getFormType();
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -144,19 +145,19 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         ScannedData scannedData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, null);
 
         return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
     }
 
-    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token) {
+    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token, String formType) {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
         Map<String, Object> transformed = new HashMap<>();
 
-        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions);
+        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType));
 
         transformed.put("bulkScanCaseReference", caseId);
 

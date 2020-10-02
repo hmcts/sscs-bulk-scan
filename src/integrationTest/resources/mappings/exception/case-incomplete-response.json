@@ -77,7 +77,8 @@
       "createdInGapsFrom": "validAppeal",
       "dwpRegionalCentre": "Sheffield DRT",
       "issueCode": "DD",
-      "linkedCasesBoolean": "No"
+      "linkedCasesBoolean": "No",
+      "formType": "sscs1"
     },
     "case_type_id": "Benefit",
     "event_id": "incompleteApplicationReceived"

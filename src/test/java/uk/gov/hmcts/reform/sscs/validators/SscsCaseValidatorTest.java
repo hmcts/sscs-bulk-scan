@@ -89,7 +89,7 @@ public class SscsCaseValidatorTest {
 
         given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
 
-        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).build();
+        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PE.getId()).build();
 
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(scannedData);
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
@@ -151,6 +151,7 @@ public class SscsCaseValidatorTest {
             .mrnDetails(defaultMrnDetails)
             .hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
+        pairs.put("formType", FormType.SSCS1PEU);
 
         ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL,"");
         ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL,"");
@@ -1052,11 +1053,26 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealWithAnEmptyHearingSubTypeForSscsCase_thenAddWarning() {
+    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypeIsSscs1peuForSscsCase_thenAddWarning() {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        pairs.put("formType", FormType.SSCS1PEU);
         CaseResponse response = validator.validateValidationRecord(pairs);
         assertEquals(1, response.getWarnings().size());
         assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated", response.getWarnings().get(0));
+    }
+
+    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypIsSscs1eForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        pairs.put("formType", FormType.SSCS1);
+        CaseResponse response = validator.validateValidationRecord(pairs);
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypIsNulleForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        pairs.put("formType", null);
+        CaseResponse response = validator.validateValidationRecord(pairs);
+        assertEquals(0, response.getWarnings().size());
     }
 
     @Test
@@ -1117,6 +1133,7 @@ public class SscsCaseValidatorTest {
         List<ExcludeDate> excludedDates = new ArrayList<>();
         excludedDates.add(ExcludeDate.builder().value(DateRange.builder().start(excludeDates).build()).build());
 
+        dataMap.put("formType", FormType.SSCS1PE);
         dataMap.put("appeal", Appeal.builder()
             .mrnDetails(MrnDetails.builder().mrnDate(mrn.getMrnDate()).dwpIssuingOffice(mrn.getDwpIssuingOffice()).build())
             .benefitType(BenefitType.builder().code(benefitCode).build())

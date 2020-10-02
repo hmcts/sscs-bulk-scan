@@ -14,10 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
@@ -40,11 +37,12 @@ public class SscsDataHelper {
         this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
-    public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions) {
+    public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions, FormType formType) {
         appealData.put("appeal", appeal);
         appealData.put("sscsDocument", sscsDocuments);
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
         appealData.put("subscriptions", subscriptions);
+        appealData.put("formType", formType);
 
         if (appeal != null) {
             if (appeal.getBenefitType() != null) {

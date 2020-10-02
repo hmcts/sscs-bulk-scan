@@ -153,7 +153,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         isHearingTypeValid(appeal);
 
-        checkHearingSubTypeIfHearingIsOral(appeal, ocrCaseData);
+        checkHearingSubTypeIfHearingIsOral(appeal, caseData);
 
         if (caseData.get("sscsDocument") != null) {
             @SuppressWarnings("unchecked")
@@ -488,12 +488,11 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkHearingSubTypeIfHearingIsOral(Appeal appeal, Map<String, Object> ocrCaseData) {
+    private void checkHearingSubTypeIfHearingIsOral(Appeal appeal, Map<String, Object> caseData) {
         String hearingType = appeal.getHearingType();
-        boolean isHearingTypeTelephoneExists = isKeyExists(ocrCaseData, HEARING_TYPE_TELEPHONE_LITERAL) || ocrCaseData.isEmpty();
-        boolean isHearingTypeVideoExists = isKeyExists(ocrCaseData, HEARING_TYPE_VIDEO_LITERAL) || ocrCaseData.isEmpty();
-        boolean isHearingTypeFaceToFaceExists = isKeyExists(ocrCaseData, HEARING_TYPE_FACE_TO_FACE_LITERAL) || ocrCaseData.isEmpty();
-        if (isHearingTypeTelephoneExists && isHearingTypeVideoExists && isHearingTypeFaceToFaceExists && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) && !isValidHearingSubType(appeal)) {
+        FormType formType = (FormType) caseData.get("formType");
+
+        if (FormType.SSCS1PEU.equals(formType) && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) && !isValidHearingSubType(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE_DESCRIPTION, ARE_EMPTY));
         }
     }

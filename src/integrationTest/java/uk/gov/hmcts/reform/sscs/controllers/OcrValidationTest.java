@@ -130,7 +130,24 @@ public class OcrValidationTest  {
     }
 
     @Test
-    public void should_return_200_when_ocr_form_with_hearing_sub_type_validation_request_data_are_empty() throws Throwable {
+    public void should_return_200_when_ocr_form_with_form_type_sscs1peu_and_hearing_sub_type_validation_request_data_are_empty() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/invalid-ocr-data-with-hearing-sub-type.json");
+
+        mvc.perform(
+            post("/forms/SSCS1PEU/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("WARNINGS"))
+            .andExpect(jsonPath("$.warnings", hasSize(1)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
+    public void should_return_200_when_ocr_form_with_form_type_sscs1_and_hearing_sub_type_validation_request_data_are_empty() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         String content = readResource("mappings/ocr-validation/invalid-ocr-data-with-hearing-sub-type.json");
@@ -141,8 +158,8 @@ public class OcrValidationTest  {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(content))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("WARNINGS"))
-            .andExpect(jsonPath("$.warnings", hasSize(1)))
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
             .andExpect(jsonPath("$.errors", hasSize(0)));
     }
 

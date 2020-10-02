@@ -414,7 +414,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .ocrDataFields(scanOcrData)
             .poBox("SSCSPO")
             .jurisdiction("SSCS")
-            .formType("SSCS1")
+            .formType("SSCS1PEU")
             .journeyClassification(NEW_APPLICATION)
             .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
             .id(null)
