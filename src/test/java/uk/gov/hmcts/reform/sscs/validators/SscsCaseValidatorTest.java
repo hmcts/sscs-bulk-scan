@@ -430,10 +430,31 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnMrnDoesNotContainADwpIssuingOfficeAndOcrDataIsEmpty_thenAddAWarning() {
+        Map<String, Object> ocrCaseDataInvalidOffice = new HashMap<>();
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataInvalidOffice);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true), false);
+
+        assertEquals("office is empty", response.getWarnings().get(0));
+        assertEquals(1, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnMrnDoesNotContainAValidDwpIssuingOfficeAndOcrDataIsEmpty_thenAddAWarning() {
+        Map<String, Object> ocrCaseDataInvalidOffice = new HashMap<>();
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataInvalidOffice);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Bla").build(), buildAppellant(false), true), false);
+
+        assertEquals("office is invalid", response.getWarnings().get(0));
+        assertEquals(1, response.getWarnings().size());
+    }
+
+    @Test
     public void givenAnMrnDoesNotContainADwpIssuingOffice_thenAddAWarning() {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true), false);
 
         assertEquals("office is empty", response.getWarnings().get(0));
+        assertEquals(1, response.getWarnings().size());
     }
 
     @Test
@@ -951,7 +972,7 @@ public class SscsCaseValidatorTest {
     public void givenAnAppealWithAnErrorAndCombineWarningsTrue_thenMoveErrorsToWarnings() {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithMobileNumber("07776156"), true), true);
 
-        assertEquals("person1_mobile is invalid", response.getWarnings().get(0));
+        assertEquals("person1_mobile is invalid", response.getWarnings().get(1));
         assertEquals(0, response.getErrors().size());
     }
 

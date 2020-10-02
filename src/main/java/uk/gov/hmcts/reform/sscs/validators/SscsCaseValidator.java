@@ -242,7 +242,8 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData) {
-        String dwpIssuingOffice = getField(ocrCaseData, "office");
+
+        String dwpIssuingOffice = getDwpIssuingOffice(appeal, ocrCaseData);
 
         if (!doesMrnDateExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
@@ -257,8 +258,18 @@ public class SscsCaseValidator implements CaseValidator {
             if (!officeMapping.isPresent()) {
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
-        } else if (!doesIssuingOfficeExist(appeal)) {
+        }
+
+        else if (dwpIssuingOffice == null) {
             warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
+        }
+    }
+
+    private String getDwpIssuingOffice(Appeal appeal, Map<String, Object> ocrCaseData) {
+        if(!doesIssuingOfficeExist(appeal)) {
+            return getField(ocrCaseData, "office");
+        } else {
+            return appeal.getMrnDetails().getDwpIssuingOffice();
         }
     }
 
