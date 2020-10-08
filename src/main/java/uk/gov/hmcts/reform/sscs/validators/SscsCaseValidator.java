@@ -145,7 +145,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType);
         checkRepresentative(appeal, ocrCaseData, caseData);
-        checkMrnDetails(appeal);
+        checkMrnDetails(appeal, ocrCaseData);
 
         checkExcludedDates(appeal);
 
@@ -242,23 +242,35 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkMrnDetails(Appeal appeal) {
+    private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData) {
+
+        String dwpIssuingOffice = getDwpIssuingOffice(appeal, ocrCaseData);
+
         if (!doesMrnDateExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
         } else {
             checkDateValidDate(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "", true);
         }
 
-        if (!doesIssuingOfficeExist(appeal)) {
-            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
+        if (dwpIssuingOffice != null && appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
 
-        } else if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
-
-            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
+            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), dwpIssuingOffice);
 
             if (!officeMapping.isPresent()) {
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
+        } else if (dwpIssuingOffice == null) {
+            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
+        }
+    }
+
+    private String getDwpIssuingOffice(Appeal appeal, Map<String, Object> ocrCaseData) {
+        if (!ocrCaseData.isEmpty()) {
+            return getField(ocrCaseData, "office");
+        } else if (doesIssuingOfficeExist(appeal)) {
+            return appeal.getMrnDetails().getDwpIssuingOffice();
+        } else {
+            return null;
         }
     }
 
