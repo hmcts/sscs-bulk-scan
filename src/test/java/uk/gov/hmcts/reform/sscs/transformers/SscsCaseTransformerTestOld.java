@@ -1306,7 +1306,7 @@ public class SscsCaseTransformerTestOld {
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
 
         assertEquals(1, result.getWarnings().size());
-        assertEquals("Excluded dates have been provided which must be recorded on CCD", result.getWarnings().get(0));
+        assertEquals(HEARING_EXCLUDE_DATES_MISSING, result.getWarnings().get(0));
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
 
@@ -1322,7 +1322,7 @@ public class SscsCaseTransformerTestOld {
         CaseResponse result = transformer.transformExceptionRecordToCaseOld(caseDetails, token);
 
         assertEquals(1, result.getWarnings().size());
-        assertEquals("Excluded dates have been provided which must be recorded on CCD", result.getWarnings().get(0));
+        assertEquals(HEARING_EXCLUDE_DATES_MISSING, result.getWarnings().get(0));
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
 
