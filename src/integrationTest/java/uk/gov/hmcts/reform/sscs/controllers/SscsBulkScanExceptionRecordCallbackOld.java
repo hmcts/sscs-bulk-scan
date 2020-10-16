@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_EXCLUDE_DATES_MISSING;
 import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
 
 import com.google.common.collect.ImmutableMap;
@@ -328,7 +329,7 @@ public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getWarnings())
-            .contains("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as tell_tribunal_about_dates is true. Is this correct?");
+            .contains(HEARING_EXCLUDE_DATES_MISSING);
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }

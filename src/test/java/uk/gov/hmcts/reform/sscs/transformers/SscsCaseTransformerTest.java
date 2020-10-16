@@ -1355,7 +1355,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(1, result.getWarnings().size());
-        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+        assertEquals(HEARING_EXCLUDE_DATES_MISSING, result.getWarnings().get(0));
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
 
@@ -1371,7 +1371,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(1, result.getWarnings().size());
-        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+        assertEquals(HEARING_EXCLUDE_DATES_MISSING, result.getWarnings().get(0));
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
 
