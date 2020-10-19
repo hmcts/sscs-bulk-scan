@@ -15,7 +15,6 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESC
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
 
 import java.util.*;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
