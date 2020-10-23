@@ -581,7 +581,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, TELL_TRIBUNAL_ABOUT_DATES)) : null;
 
             if (("Yes").equals(tellTribunalAboutDates)) {
-                warnings.add("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?");
+                warnings.add(HEARING_EXCLUDE_DATES_MISSING);
             }
             return null;
         }
