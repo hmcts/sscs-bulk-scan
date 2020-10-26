@@ -46,11 +46,11 @@
     },
     {
       "name": "office",
-      "value": "3"
+      "value": "1"
     },
     {
       "name": "benefit_type_description",
-      "value": "PIP"
+      "value": "UC"
     },
     {
       "name": "is_hearing_type_oral",
@@ -63,10 +63,6 @@
     {
       "name": "mrn_date",
       "value": "23/4/2020"
-    },
-    {
-      "name": "hearing_type_video",
-      "value": "true"
     }
   ]
 }

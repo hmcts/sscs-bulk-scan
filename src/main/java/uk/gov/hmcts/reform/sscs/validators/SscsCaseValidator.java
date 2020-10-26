@@ -5,8 +5,7 @@ import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCall
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.VALIDATION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.findBooleanExists;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -153,6 +152,8 @@ public class SscsCaseValidator implements CaseValidator {
         isBenefitTypeValid(appeal);
 
         isHearingTypeValid(appeal);
+
+        checkHearingSubTypeIfHearingIsOral(appeal, caseData);
 
         if (caseData.get("sscsDocument") != null) {
             @SuppressWarnings("unchecked")
@@ -497,6 +498,25 @@ public class SscsCaseValidator implements CaseValidator {
         if (hearingType == null || (!hearingType.equals(HEARING_TYPE_ORAL) && !hearingType.equals(HEARING_TYPE_PAPER))) {
             warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_DESCRIPTION, IS_INVALID));
         }
+    }
+
+    private void checkHearingSubTypeIfHearingIsOral(Appeal appeal, Map<String, Object> caseData) {
+        String hearingType = appeal.getHearingType();
+        log.info("Bulk-scan entry set --------------" + caseData.entrySet().toString());
+        FormType formType = (FormType) caseData.get("formType");
+        log.info("Bulk-scan form type: {}", formType != null ? formType.toString() : null);
+        if (FormType.SSCS1PEU.equals(formType) && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) && !isValidHearingSubType(appeal)) {
+            warnings.add(getMessageByCallbackType(callbackType, "", HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE_DESCRIPTION, ARE_EMPTY));
+        }
+    }
+
+    private boolean isValidHearingSubType(Appeal appeal) {
+        boolean isValid = true;
+        HearingSubtype hearingSubType = appeal.getHearingSubtype();
+        if (hearingSubType == null || !(hearingSubType.isWantsHearingTypeTelephone() || hearingSubType.isWantsHearingTypeVideo() || hearingSubType.isWantsHearingTypeFaceToFace())) {
+            isValid = false;
+        }
+        return isValid;
     }
 
     private void checkExcludedDates(Appeal appeal) {

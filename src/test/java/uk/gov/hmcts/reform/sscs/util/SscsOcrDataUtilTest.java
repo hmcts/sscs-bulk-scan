@@ -97,6 +97,24 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
+    public void givenKeyIsNull_theReturnFalse() {
+        pairs.put("test_check_null", null);
+        assertFalse(findBooleanExists(getField(pairs,"test_check_null")));
+    }
+
+    @Test
+    public void givenKeyIsBlank_theReturnFalse() {
+        pairs.put("test_check_blank", "");
+        assertFalse(findBooleanExists(getField(pairs,"test_check_blank")));
+    }
+
+    @Test
+    public void givenKeyIsExists_theReturnTrue() {
+        pairs.put("test_check", "test");
+        assertTrue(findBooleanExists(getField(pairs,"test_check")));
+    }
+
+    @Test
     public void givenAMap_thenFindField() {
         pairs.put("person1_title", APPELLANT_TITLE);
 

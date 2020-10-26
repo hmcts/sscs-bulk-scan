@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 public final class SscsOcrDataUtil {
 
@@ -31,7 +32,7 @@ public final class SscsOcrDataUtil {
 
     public static boolean findBooleanExists(String... values) {
         for (String v : values) {
-            if (v != null) {
+            if (!ObjectUtils.isEmpty(v)) {
                 return true;
             }
         }
@@ -40,6 +41,10 @@ public final class SscsOcrDataUtil {
 
     public static String getField(Map<String, Object> pairs, String field) {
         return pairs.containsKey(field) && pairs.get(field) != null ? pairs.get(field).toString() : null;
+    }
+
+    public static boolean isKeyExists(Map<String, Object> pairs, String field) {
+        return pairs.containsKey(field);
     }
 
     public static boolean doValuesContradict(Map<String, Object> pairs, Set<String> errors, String value1, String value2) {

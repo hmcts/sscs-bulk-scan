@@ -21,11 +21,7 @@
             "dob": "1904-03-10",
             "nino": "AB 22 55 66 B"
           },
-          "name": {
-            "firstName": "User",
-            "lastName": "Test",
-            "title": "Mr"
-          },
+          "name": {},
           "appointee": {
             "address": {
               "line1": "45 The Road",
@@ -48,6 +44,11 @@
           "code": "ESA"
         },
         "hearingType": "oral",
+        "hearingSubtype": {
+          "wantsHearingTypeTelephone": "No",
+          "wantsHearingTypeVideo": "No",
+          "wantsHearingTypeFaceToFace": "No"
+        },
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
@@ -61,7 +62,7 @@
         "signer": null
       },
       "caseReference": "SC022/14/12423",
-      "formType": "sscs1"
+      "formType": "sscs1peu"
     },
     "case_type_id": "Benefit",
     "created_date": [

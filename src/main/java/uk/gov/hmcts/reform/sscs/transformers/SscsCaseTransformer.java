@@ -76,8 +76,14 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     @Override
     public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
-
-        String caseId = exceptionRecord.getId() != null ? exceptionRecord.getId() : "N/A";
+        // New transformation request contains exceptionRecordId
+        // Old transformation request contains id field, which is the exception record id
+        String caseId = "N/A";
+        if (StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId())) {
+            caseId = exceptionRecord.getExceptionRecordId();
+        } else if (StringUtils.isNotEmpty(exceptionRecord.getId())) {
+            caseId = exceptionRecord.getId();
+        }
         log.info("Validating exception record against schema caseId {}", caseId);
 
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
@@ -96,7 +102,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token);
+        String formType = exceptionRecord.getFormType();
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -138,19 +145,19 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         ScannedData scannedData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, null);
 
         return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
     }
 
-    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token) {
+    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token, String formType) {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
         Map<String, Object> transformed = new HashMap<>();
 
-        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions);
+        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType));
 
         transformed.put("bulkScanCaseReference", caseId);
 
@@ -323,6 +330,9 @@ public class SscsCaseTransformer implements CaseTransformer {
     private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
         String dwpIssuingOffice = getField(pairs, "office");
 
+        if (benefitType != null && Benefit.UC.name().equalsIgnoreCase(benefitType.getCode())) {
+            dwpIssuingOffice = "Universal Credit";
+        }
         if (dwpIssuingOffice != null) {
 
             if (benefitType != null) {
@@ -356,20 +366,24 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Address buildPersonAddress(Map<String, Object> pairs, String personType) {
-        if (findBooleanExists(getField(pairs, personType + "_address_line4"))) {
+        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE4))) {
             return Address.builder()
-                .line1(getField(pairs, personType + "_address_line1"))
-                .line2(getField(pairs, personType + "_address_line2"))
-                .town(getField(pairs, personType + "_address_line3"))
-                .county(getField(pairs, personType + "_address_line4"))
-                .postcode(getField(pairs, personType + "_postcode"))
+                .line1(getField(pairs, personType + ADDRESS_LINE1))
+                .line2(getField(pairs, personType + ADDRESS_LINE2))
+                .town(getField(pairs, personType + ADDRESS_LINE3))
+                .county(getField(pairs, personType + ADDRESS_LINE4))
+                .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
                 .build();
         }
+        boolean line3IsBlank = false;
+        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE2)) && !findBooleanExists(getField(pairs, personType + ADDRESS_LINE3))) {
+            line3IsBlank = true;
+        }
         return Address.builder()
-            .line1(getField(pairs, personType + "_address_line1"))
-            .town(getField(pairs, personType + "_address_line2"))
-            .county(getField(pairs, personType + "_address_line3"))
-            .postcode(getField(pairs, personType + "_postcode"))
+            .line1(getField(pairs, personType + ADDRESS_LINE1))
+            .town(getField(pairs, personType + ADDRESS_LINE2))
+            .county(line3IsBlank ? "." : getField(pairs, personType + ADDRESS_LINE3))
+            .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
             .build();
     }
 

@@ -16,6 +16,7 @@ import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL
 
 import java.util.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -31,6 +32,7 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 //FIXME: Remove after bulk scan migration
+@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class SscsCaseValidatorTestOld {
 
