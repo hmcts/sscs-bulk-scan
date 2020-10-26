@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import org.apache.commons.codec.Charsets;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.InputScannedDoc;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
+import uk.gov.hmcts.reform.sscs.ccd.service.SscsQueryBuilder;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 
 public class SscsBulkScanExceptionRecordCallback extends BaseTest {
@@ -346,16 +348,17 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     private void findCaseByForCaseworkerReturnCaseDetails(String eventUrl, String mrnDate) throws Exception {
-        String queryUrl = getParamsUrl(mrnDate);
+        SearchSourceBuilder query = SscsQueryBuilder.findCcdCaseByNinoAndBenefitTypeAndMrnDateQuery("BB000000B", "ESA", mrnDate);
 
-        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
+        ccdServer.stubFor(post(concat(eventUrl)).atPriority(1)
                 .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
                 .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
                 .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+                .withRequestBody(containing(query.toString()))
                 .willReturn(aResponse()
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .withStatus(200)
-                        .withBody(loadJson("mappings/existing-case-details-200-response.json"))));
+                    .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                    .withStatus(200)
+                    .withBody(loadJson("mappings/existing-case-details-200-response.json"))));
     }
 
     private static String loadJson(String fileName) throws IOException {

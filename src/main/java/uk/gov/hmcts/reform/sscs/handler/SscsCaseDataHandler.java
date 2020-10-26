@@ -3,16 +3,12 @@ package uk.gov.hmcts.reform.sscs.handler;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 import feign.FeignException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.ccd.CaseDataHelper;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
@@ -20,6 +16,8 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CaseDataHandler;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
 import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseDetails;
+import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -32,11 +30,14 @@ public class SscsCaseDataHandler implements CaseDataHandler {
     private static final String INTERLOC_REFERRAL_REASON = "interlocReferralReason";
     private final SscsDataHelper sscsDataHelper;
     private final CaseDataHelper caseDataHelper;
+    private final CcdService ccdService;
 
     public SscsCaseDataHandler(SscsDataHelper sscsDataHelper,
-                               CaseDataHelper caseDataHelper) {
+                               CaseDataHelper caseDataHelper,
+                               CcdService ccdService) {
         this.sscsDataHelper = sscsDataHelper;
         this.caseDataHelper = caseDataHelper;
+        this.ccdService = ccdService;
     }
 
     public CallbackResponse handle(ExceptionCaseData exceptionCaseData,
@@ -76,20 +77,16 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                 isCaseAlreadyExists = true;
             } else if (!StringUtils.isEmpty(nino) && !StringUtils.isEmpty(benefitType)
                 && !StringUtils.isEmpty(mrnDate)) {
-                Map<String, String> searchCriteria = new HashMap<>();
-                searchCriteria.put("case.appeal.appellant.identity.nino", nino);
-                searchCriteria.put("case.appeal.benefitType.code", benefitType);
-                searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
-                List<CaseDetails> caseDetails = caseDataHelper.findCaseBy(
-                    searchCriteria, token.getIdamOauth2Token(), token.getServiceAuthorization(), token.getUserId());
+                SscsCaseDetails caseDetails = ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(
+                    nino, benefitType, mrnDate, token);
 
-                if (!CollectionUtils.isEmpty(caseDetails)) {
+                if (null != caseDetails) {
                     log.info("Duplicate case found for Nino {} , benefit type {} and mrnDate {}. "
                             + "No need to continue with post create case processing.",
                         nino, benefitType, mrnDate);
                     isCaseAlreadyExists = true;
-                    caseReference = String.valueOf(caseDetails.get(0).getId());
+                    caseReference = String.valueOf(caseDetails.getId());
                 }
             }
 

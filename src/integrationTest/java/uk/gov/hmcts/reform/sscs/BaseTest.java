@@ -9,8 +9,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import java.util.HashMap;
-import java.util.Map;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.joda.time.DateTimeUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -26,6 +25,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.SocketUtils;
 import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
+import uk.gov.hmcts.reform.sscs.ccd.service.SscsQueryBuilder;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
@@ -76,52 +76,31 @@ public abstract class BaseTest {
     }
 
     protected void findCaseByForCaseworker(String eventUrl, String mrnDate) {
-        String queryUrl = getParamsUrl(mrnDate);
+        SearchSourceBuilder query = SscsQueryBuilder.findCcdCaseByNinoAndBenefitTypeAndMrnDateQuery("BB000000B", "ESA", mrnDate);
 
-        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
+        ccdServer.stubFor(post(concat(eventUrl)).atPriority(1)
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(SERVICE_AUTH_TOKEN))
             .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+            .withRequestBody(containing(query.toString()))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .withStatus(200)
-                .withBody("[]")));
+                .withBody("{\"total\":0,\"cases\":[]}")));
     }
 
     protected void checkForLinkedCases(String eventUrl) {
-        String queryUrl = getParamsMatchCaseUrl();
+        SearchSourceBuilder query = SscsQueryBuilder.findCaseBySingleField("case.appeal.appellant.identity.nino", "BB000000B");
 
-        ccdServer.stubFor(get(concat(eventUrl + queryUrl)).atPriority(1)
+        ccdServer.stubFor(post(concat(eventUrl)).atPriority(1)
             .withHeader(AUTHORIZATION, equalTo(idamTokens.getIdamOauth2Token()))
             .withHeader(SERVICE_AUTHORIZATION_HEADER_KEY, equalTo(idamTokens.getServiceAuthorization()))
             .withHeader(CONTENT_TYPE, equalTo(APPLICATION_JSON_VALUE))
+            .withRequestBody(containing(query.toString()))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .withStatus(200)
-                .withBody("[]")));
+                .withBody("{\"total\":0,\"cases\":[]}")));
     }
 
-    protected String getParamsUrl(String mrnDate) {
-        Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.appeal.appellant.identity.nino", "BB000000B");
-        searchCriteria.put("case.appeal.benefitType.code", "ESA");
-        searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
-
-        return searchCriteria.entrySet().stream()
-            .map(p -> p.getKey() + "=" + p.getValue())
-            .reduce((p1, p2) -> p1 + "&" + p2)
-            .map(s -> "?" + s)
-            .orElse("");
-    }
-
-    private String getParamsMatchCaseUrl() {
-        Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.appeal.appellant.identity.nino", "BB000000B");
-
-        return searchCriteria.entrySet().stream()
-            .map(p -> p.getKey() + "=" + p.getValue())
-            .reduce((p1, p2) -> p1 + "&" + p2)
-            .map(s -> "?" + s)
-            .orElse("");
-    }
 }

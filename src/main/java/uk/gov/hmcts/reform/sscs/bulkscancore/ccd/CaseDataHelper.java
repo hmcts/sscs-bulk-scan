@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.ccd;
 
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -51,10 +50,6 @@ public class CaseDataHelper {
         coreCaseDataApi.submitEventForCaseWorker(
             userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, String.valueOf(caseId),true, caseDataContent
         );
-    }
-
-    public List<CaseDetails> findCaseBy(Map<String, String> searchCriteria, String userAuthToken, String serviceAuthToken, String userId) {
-        return coreCaseDataApi.searchForCaseworker(userAuthToken, serviceAuthToken, userId, jurisdiction, caseType, searchCriteria);
     }
 
     //FIXME: Delete after bulk scan migration
