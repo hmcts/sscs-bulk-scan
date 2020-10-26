@@ -304,7 +304,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().warnings)
-            .contains("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as tell_tribunal_about_dates is true. Is this correct?");
+            .contains("Excluded dates have been provided which must be recorded on CCD");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
