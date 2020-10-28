@@ -90,7 +90,7 @@ public abstract class BaseTest {
     }
 
     protected void checkForLinkedCases(String eventUrl) {
-        SearchSourceBuilder query = SscsQueryBuilder.findCaseBySingleField("case.appeal.appellant.identity.nino", "BB000000B");
+        SearchSourceBuilder query = SscsQueryBuilder.findCaseBySingleField("data.appeal.appellant.identity.nino", "BB000000B");
 
         ccdServer.stubFor(post(concat(eventUrl)).atPriority(1)
             .withHeader(AUTHORIZATION, equalTo(idamTokens.getIdamOauth2Token()))

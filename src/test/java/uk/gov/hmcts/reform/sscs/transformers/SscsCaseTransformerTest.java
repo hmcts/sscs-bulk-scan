@@ -944,7 +944,7 @@ public class SscsCaseTransformerTest {
         List<SscsCaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(SscsCaseDetails.builder().id(123L).build());
 
-        given(ccdService.findCaseBy(eq("case.appeal.appellant.identity.nino"), eq("JT0123456B"), any())).willReturn(caseDetails);
+        given(ccdService.findCaseBy(eq("data.appeal.appellant.identity.nino"), eq("JT0123456B"), any())).willReturn(caseDetails);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 

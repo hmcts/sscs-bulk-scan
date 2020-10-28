@@ -637,7 +637,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<SscsCaseDetails> matchedByNinoCases = new ArrayList<>();
 
         if (!StringUtils.isEmpty(nino)) {
-            matchedByNinoCases = ccdService.findCaseBy("case.appeal.appellant.identity.nino", nino, token);
+            matchedByNinoCases = ccdService.findCaseBy("data.appeal.appellant.identity.nino", nino, token);
         }
 
         sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
