@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedRecord;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsQueryBuilder;
 
+@Ignore
 public class SscsBulkScanExceptionRecordCallbackOld extends BaseTest {
 
     @Before

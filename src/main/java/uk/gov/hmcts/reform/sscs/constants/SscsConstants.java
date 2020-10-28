@@ -57,6 +57,7 @@ public final class SscsConstants {
     public static final String HEARING_TYPE_VIDEO_LITERAL = "hearing_type_video";
     public static final String HEARING_VIDEO_EMAIL_LITERAL = "hearing_video_email";
     public static final String HEARING_TYPE_FACE_TO_FACE_LITERAL = "hearing_type_face_to_face";
+    public static final String HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE_DESCRIPTION = "hearing_sub_type_telephone_or_video_face_to_face";
     public static final String PHONE_SELECTED_NOT_PROVIDED = "has not been provided but data indicates hearing telephone is required";
     public static final String EMAIL_SELECTED_NOT_PROVIDED = "has not been provided but data indicates hearing video is required";
     public static final String HEARING_EXCLUDE_DATES_MISSING = "Excluded dates have been provided which must be recorded on CCD";
