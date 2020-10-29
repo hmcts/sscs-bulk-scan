@@ -265,10 +265,10 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private String getDwpIssuingOffice(Appeal appeal, Map<String, Object> ocrCaseData) {
-        if (!ocrCaseData.isEmpty()) {
-            return getField(ocrCaseData, "office");
-        } else if (doesIssuingOfficeExist(appeal)) {
+        if (doesIssuingOfficeExist(appeal)) {
             return appeal.getMrnDetails().getDwpIssuingOffice();
+        } else if (!ocrCaseData.isEmpty()) {
+            return getField(ocrCaseData, "office");
         } else {
             return null;
         }
