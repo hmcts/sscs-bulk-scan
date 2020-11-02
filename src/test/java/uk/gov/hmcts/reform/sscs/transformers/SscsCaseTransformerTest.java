@@ -2,8 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -1069,13 +1068,11 @@ public class SscsCaseTransformerTest {
     public void givenACaseIsLinked_thenSetLinkedCaseToYesAndPopulateAssociatedCases() {
         pairs.put("person1_nino", "JT0123456B");
 
-        Map<String, String> map = new HashMap<>();
-        map.put("case.appeal.appellant.identity.nino", "JT0123456B");
-
         List<SscsCaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(SscsCaseDetails.builder().id(123L).build());
 
-        given(ccdService.findCaseBy(eq(map), any())).willReturn(caseDetails);
+        given(ccdService.findCaseBy(eq("data.appeal.appellant.identity.nino"), eq("JT0123456B"), any())).willReturn(caseDetails);
+
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("Yes", result.getTransformedCase().get("linkedCasesBoolean"));
@@ -1090,15 +1087,9 @@ public class SscsCaseTransformerTest {
         pairs.put(MRN_DATE, MRN_DATE_VALUE);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), YES_LITERAL);
 
-        Map<String, String> map = new HashMap<>();
-        map.put("case.appeal.appellant.identity.nino", APPELLANT_NINO);
-        map.put("case.appeal.benefitType.code", "PIP");
-        map.put("case.appeal.mrnDetails.mrnDate", "2048-11-01");
+        SscsCaseDetails caseDetails = SscsCaseDetails.builder().id(123L).build();
 
-        List<SscsCaseDetails> caseDetails = new ArrayList<>();
-        caseDetails.add(SscsCaseDetails.builder().id(123L).build());
-
-        given(ccdService.findCaseBy(eq(map), any())).willReturn(caseDetails);
+        given(ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(eq(APPELLANT_NINO), eq("PIP"), eq("2048-11-01"), any())).willReturn(caseDetails);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, combineWarnings);
 

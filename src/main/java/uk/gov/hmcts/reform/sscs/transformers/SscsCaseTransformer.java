@@ -14,7 +14,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -652,9 +651,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<SscsCaseDetails> matchedByNinoCases = new ArrayList<>();
 
         if (!StringUtils.isEmpty(nino)) {
-            Map<String, String> linkCasesCriteria = new HashMap<>();
-            linkCasesCriteria.put("case.appeal.appellant.identity.nino", nino);
-            matchedByNinoCases = ccdService.findCaseBy(linkCasesCriteria, token);
+            matchedByNinoCases = ccdService.findCaseBy("data.appeal.appellant.identity.nino", nino, token);
         }
 
         sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
@@ -706,9 +703,9 @@ public class SscsCaseTransformer implements CaseTransformer {
             searchCriteria.put("case.appeal.benefitType.code", benefitType);
             searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
-            List<SscsCaseDetails> duplicateCases = ccdService.findCaseBy(searchCriteria, token);
+            SscsCaseDetails duplicateCase = ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(nino, benefitType, mrnDate, token);
 
-            if (!CollectionUtils.isEmpty(duplicateCases)) {
+            if (duplicateCase != null) {
                 log.info("Duplicate case already exists for exception record id {}", caseId);
                 errors.add("Duplicate case already exists - please reject this exception record");
             }

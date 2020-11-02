@@ -45,7 +45,7 @@ public class TestConstants {
         "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases/1539878003972756";
 
     public static final String FIND_CASE_EVENT_URL =
-            "/caseworkers/1234/jurisdictions/SSCS/case-types/Benefit/cases";
+        "/searchCases?ctid=Benefit";
 
     public static final String USER_ID_HEADER = "user-id";
 
