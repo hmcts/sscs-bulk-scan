@@ -304,6 +304,16 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantDoesNotContainValidAddressLine1_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine1("[my house");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line1 has invalid characters at the beginning", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAnAppellantDoesNotContainATownAndContainALine2_thenAddAWarning() {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setLine2("101 Street");
@@ -312,6 +322,17 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_address_line3 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesNotContainAValidTownAndContainALine2_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine2("101 Street");
+        appellant.getAddress().setTown("@invalid");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line3 has invalid characters at the beginning", response.getWarnings().get(0));
     }
 
     @Test
@@ -328,6 +349,19 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantDoesNotContainAValidTownAndALine2_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        ocrCaseData.remove("person1_address_line4");
+        ocrCaseData.remove("person2_address_line4");
+        appellant.getAddress().setLine2(null);
+        appellant.getAddress().setTown("@invalid");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line2 has invalid characters at the beginning", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAnAppellantDoesNotContainACountyAndContainALine2_thenAddAWarning() {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setLine2("101 Street");
@@ -336,6 +370,17 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_address_line4 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesNotContainAValidCountyAndContainALine2_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine2("101 Street");
+        appellant.getAddress().setCounty("(Bad County");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line4 has invalid characters at the beginning", response.getWarnings().get(0));
     }
 
     @Test
@@ -349,6 +394,32 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_address_line3 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesNotContainAValidCountyAndALine2_thenAddAWarning() {
+        ocrCaseData.remove("person1_address_line4");
+        ocrCaseData.remove("person2_address_line4");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine2(null);
+        appellant.getAddress().setCounty("£bad County");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line3 has invalid characters at the beginning", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantContainsAPlaceholderCountyAndALine2_thenNoAWarning() {
+        ocrCaseData.remove("person1_address_line4");
+        ocrCaseData.remove("person2_address_line4");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine2(null);
+        appellant.getAddress().setCounty(".");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals(0, response.getWarnings().size());
     }
 
     @Test
