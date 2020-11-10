@@ -8,7 +8,7 @@ plugins {
   id 'org.springframework.boot' version '2.3.5.RELEASE'
   id 'uk.gov.hmcts.java' version '0.12.1'
   id 'org.owasp.dependencycheck' version '6.0.3'
-  id 'com.github.ben-manes.versions' version '0.34.0'
+  id 'com.github.ben-manes.versions' version '0.36.0'
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -213,7 +213,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.1.2'
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '4.0.4-RC-SSCS-8348'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '4.0.7'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.2'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.2'
