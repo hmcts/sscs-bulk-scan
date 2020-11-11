@@ -49,6 +49,7 @@ public final class SscsConstants {
     public static final String IS_EMPTY = "is empty";
     public static final String ARE_EMPTY = "are empty. At least one must be populated";
     public static final String IS_INVALID = "is invalid";
+    public static final String HAS_INVALID_ADDRESS  = "has invalid characters at the beginning";
     public static final String IS_IN_FUTURE = "is in future";
     public static final String IS_IN_PAST = "is in past";
     public static final String HEARING_TYPE_TELEPHONE_LITERAL = "hearing_type_telephone";

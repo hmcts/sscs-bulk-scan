@@ -48,6 +48,13 @@ public class SscsCaseValidator implements CaseValidator {
 
     @SuppressWarnings("squid:S5843")
     private static final String POSTCODE_REGEX = "^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$";
+
+    @SuppressWarnings("squid:S5843")
+    private static final String ADDRESS_REGEX = "^[a-zA-ZÀ-ž0-9]{1}[a-zA-ZÀ-ž0-9 \\r\\n\\.“”\",’\\?\\!\\[\\]\\(\\)/£:\\\\_+\\-%&;]{1,}$";
+
+    @SuppressWarnings("squid:S5843")
+    private static final String COUNTY_REGEX = "^\\.$|^[a-zA-ZÀ-ž0-9]{1}[a-zA-ZÀ-ž0-9 \\r\\n\\.“”\",’\\?\\!\\[\\]\\(\\)/£:\\\\_+\\-%&;]{1,}$";
+
     List<String> warnings;
     List<String> errors;
 
@@ -181,19 +188,27 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData, String personType) {
         Appellant appellant = appeal.getAppellant();
 
-        checkAppointee(appellant, ocrCaseData, caseData);
+        if (appellant == null) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + FIRST_NAME, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + LAST_NAME, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE3, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE4, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_EMPTY));
+        } else {
 
-        Name appellantName = appellant != null ? appellant.getName() : null;
-        Address appellantAddress = appellant != null ? appellant.getAddress() : null;
-        Identity appellantIdentity = appellant != null ? appellant.getIdentity() : null;
-        final Contact appellantContact = appellant != null ? appellant.getContact() : null;
+            checkAppointee(appellant, ocrCaseData, caseData);
 
-        checkPersonName(appellantName, personType, appellant);
-        checkPersonAddressAndDob(appellantAddress, appellantIdentity, personType, ocrCaseData, caseData, appellant);
-        checkAppellantNino(appellant, personType);
-        checkMobileNumber(appellantContact, personType);
+            checkPersonName(appellant.getName(), personType, appellant);
+            checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData, appellant);
+            checkAppellantNino(appellant, personType);
+            checkMobileNumber(appellant.getContact(), personType);
 
-        checkHearingSubtypeDetails(appeal.getHearingSubtype());
+            checkHearingSubtypeDetails(appeal.getHearingSubtype());
+
+        }
 
     }
 
@@ -296,16 +311,26 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (!doesAddressLine1Exist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, IS_EMPTY));
+        } else if (!address.getLine1().matches(ADDRESS_REGEX)) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, HAS_INVALID_ADDRESS));
         }
-        if (!doesAddressTownExist(address)) {
-            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
 
+        String townLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
+        if (!doesAddressTownExist(address)) {
+
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + townLine, IS_EMPTY));
+        } else if (!address.getTown().matches(ADDRESS_REGEX)) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + townLine, HAS_INVALID_ADDRESS));
         }
+
+        String countyLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTY";
         if (!doesAddressCountyExist(address)) {
-            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTY";
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + countyLine, IS_EMPTY));
+        } else if (!address.getCounty().matches(COUNTY_REGEX)) {
+            System.out.println("County failed");
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + countyLine, HAS_INVALID_ADDRESS));
         }
+
         if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(getPerson1OrPerson2(appellant))) {
             RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
 
