@@ -87,7 +87,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         ScannedData ocrCaseData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
 
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData);
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -104,7 +104,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         ScannedData ocrCaseData = sscsJsonExtractor.extractJson(exceptionRecord);
 
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData);
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false);
 
         if (combineWarnings) {
             warnings = combineWarnings();
@@ -129,14 +129,14 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     @Override
-    public CaseResponse validateValidationRecord(Map<String, Object> caseData) {
+    public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation) {
         warnings = new ArrayList<>();
         errors = new ArrayList<>();
         callbackType = VALIDATION_CALLBACK;
 
         Map<String, Object> ocrCaseData = new HashMap<>();
 
-        validateAppeal(ocrCaseData, caseData);
+        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -145,14 +145,14 @@ public class SscsCaseValidator implements CaseValidator {
             .build();
     }
 
-    private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
+    private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData, boolean ignoreMrnValidation) {
 
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
 
         checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType);
         checkRepresentative(appeal, ocrCaseData, caseData);
-        checkMrnDetails(appeal, ocrCaseData);
+        checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation);
 
         checkExcludedDates(appeal);
 
@@ -257,13 +257,14 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData) {
+    private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData, boolean ignoreMrnValidation) {
 
         String dwpIssuingOffice = getDwpIssuingOffice(appeal, ocrCaseData);
 
-        if (!doesMrnDateExist(appeal)) {
+        // if Appeal to Proceed direction type for direction Issue event and mrn date is blank then ignore mrn date validation
+        if (!ignoreMrnValidation && !doesMrnDateExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
-        } else {
+        } else if (!ignoreMrnValidation) {
             checkDateValidDate(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "", true);
         }
 

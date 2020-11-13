@@ -882,7 +882,7 @@ public class SscsCaseValidatorTestOld {
 
         pairs.put("sscsDocument", buildDocument("myfile.pdf"));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, false);
 
         assertEquals(0, response.getErrors().size());
     }
@@ -893,7 +893,7 @@ public class SscsCaseValidatorTestOld {
 
         pairs.put("sscsDocument", buildDocument(null));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, false);
 
         assertEquals("There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf", response.getErrors().get(0));
     }
@@ -904,7 +904,7 @@ public class SscsCaseValidatorTestOld {
 
         pairs.put("sscsDocument", buildDocument("Waiver"));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, false);
 
         assertEquals("There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf", response.getErrors().get(0));
     }
@@ -915,7 +915,7 @@ public class SscsCaseValidatorTestOld {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setPostcode(null);
 
-        CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false));
+        CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false), false);
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
         verifyZeroInteractions(regionalProcessingCenterService);
