@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
