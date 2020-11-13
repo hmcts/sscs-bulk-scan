@@ -304,7 +304,45 @@ public class CcdCallbackHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validateValidationRecord(any(), eq(true))).thenReturn(caseValidationResponse);
 
-        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandlerForDirectionIssueEvent(caseDetails.getCaseData());
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DECISION_ISSUED);
+
+        assertThat(ccdCallbackResponse.getData()).isNotNull();
+        assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
+        assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
+        assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
+        assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
+        assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+    }
+
+    @Test
+    public void should_return_warnings_or_error_on_data_when_direction_issued_welsh_and_mrn_date_is_empty_for_esa_case() {
+
+        DynamicList appealToProccedDynamicList = new DynamicList(new DynamicListItem("appealToProceed", "appealToProceed"), new ArrayList<>());
+        Appeal appeal = Appeal.builder()
+            .appellant(Appellant.builder()
+                .name(Name.builder().firstName("Fred").lastName("Ward").build())
+                .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
+                .build())
+            .mrnDetails(MrnDetails.builder().mrnDate("").dwpIssuingOffice("Balham DRT").build())
+            .benefitType(BenefitType.builder().code("ESA").build())
+            .build();
+
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        caseDetails.getCaseData().setDirectionTypeDl(appealToProccedDynamicList);
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
+        when(caseValidator.validateValidationRecord(any(), eq(true))).thenReturn(caseValidationResponse);
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DECISION_ISSUED_WELSH);
 
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
@@ -410,18 +448,14 @@ public class CcdCallbackHandlerTest {
     }
 
     private PreSubmitCallbackResponse<SscsCaseData> invokeValidationCallbackHandler(SscsCaseData caseDetails) {
-        uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<SscsCaseData> c = new uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<>(123L, "sscs",
-            State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
-
-        return ccdCallbackHandler.handleValidationAndUpdate(
-            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false), idamTokens);
+        return invokeValidationCallbackHandler(caseDetails, EventType.VALID_APPEAL);
     }
 
-    private PreSubmitCallbackResponse<SscsCaseData> invokeValidationCallbackHandlerForDirectionIssueEvent(SscsCaseData caseDetails) {
+    private PreSubmitCallbackResponse<SscsCaseData> invokeValidationCallbackHandler(SscsCaseData caseDetails, EventType eventType) {
         uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<SscsCaseData> c = new uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<>(123L, "sscs",
             State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
 
         return ccdCallbackHandler.handleValidationAndUpdate(
-            new Callback<>(c, Optional.empty(), EventType.DECISION_ISSUED, false), idamTokens);
+            new Callback<>(c, Optional.empty(), eventType, false), idamTokens);
     }
 }
