@@ -304,7 +304,7 @@ public class CcdCallbackHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validateValidationRecord(any(), eq(true))).thenReturn(caseValidationResponse);
 
-        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DECISION_ISSUED);
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DIRECTION_ISSUED);
 
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
@@ -342,7 +342,7 @@ public class CcdCallbackHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validateValidationRecord(any(), eq(true))).thenReturn(caseValidationResponse);
 
-        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DECISION_ISSUED_WELSH);
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DIRECTION_ISSUED_WELSH);
 
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
