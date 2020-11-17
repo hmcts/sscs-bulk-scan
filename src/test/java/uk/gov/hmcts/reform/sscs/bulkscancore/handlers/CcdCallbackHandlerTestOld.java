@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -229,7 +228,7 @@ public class CcdCallbackHandlerTestOld {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validateValidationRecord(any())).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -265,7 +264,7 @@ public class CcdCallbackHandlerTestOld {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validateValidationRecord(any())).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -290,7 +289,7 @@ public class CcdCallbackHandlerTestOld {
             .caseId("1234")
             .build();
 
-        when(caseValidator.validateValidationRecord(any()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
@@ -312,7 +311,7 @@ public class CcdCallbackHandlerTestOld {
             .caseId("1234")
             .build();
 
-        when(caseValidator.validateValidationRecord(any()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
             .thenReturn(CaseResponse.builder()
                 .warnings(ImmutableList.of("Postcode is invalid"))
                 .build());

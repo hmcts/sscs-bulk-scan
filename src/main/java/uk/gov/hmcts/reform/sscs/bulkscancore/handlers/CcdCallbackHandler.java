@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DirectionType;
 import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
@@ -187,14 +188,19 @@ public class CcdCallbackHandler {
         setUnsavedFieldsOnCallback(callback);
 
         Map<String, Object> appealData = new HashMap<>();
-
         sscsDataHelper.addSscsDataToMap(appealData,
             callback.getCaseDetails().getCaseData().getAppeal(),
             callback.getCaseDetails().getCaseData().getSscsDocument(),
             callback.getCaseDetails().getCaseData().getSubscriptions(),
             callback.getCaseDetails().getCaseData().getFormType());
 
-        CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData);
+        boolean ignoreMrnValidation = false;
+        if (callback.getEvent() != null && (EventType.DIRECTION_ISSUED.equals(callback.getEvent())
+            || EventType.DIRECTION_ISSUED_WELSH.equals(callback.getEvent()))
+            && callback.getCaseDetails().getCaseData().getDirectionTypeDl() != null) {
+            ignoreMrnValidation = StringUtils.equals(DirectionType.APPEAL_TO_PROCEED.toString(), callback.getCaseDetails().getCaseData().getDirectionTypeDl().getValue().getCode());
+        }
+        CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData, ignoreMrnValidation);
 
         PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
 

@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -227,7 +228,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validateValidationRecord(any())).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -263,12 +264,125 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validateValidationRecord(any())).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
+        assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
+        assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
+        assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
+        assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+    }
+
+    @Test
+    public void should_return_warnings_or_error_on_data_when_direction_issued_and_mrn_date_is_empty_for_esa_case() {
+
+        DynamicList appealToProccedDynamicList = new DynamicList(new DynamicListItem("appealToProceed", "appealToProceed"), new ArrayList<>());
+        Appeal appeal = Appeal.builder()
+            .appellant(Appellant.builder()
+                .name(Name.builder().firstName("Fred").lastName("Ward").build())
+                .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
+                .build())
+            .mrnDetails(MrnDetails.builder().mrnDate("").dwpIssuingOffice("Balham DRT").build())
+            .benefitType(BenefitType.builder().code("ESA").build())
+            .build();
+
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        caseDetails.getCaseData().setDirectionTypeDl(appealToProccedDynamicList);
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
+        when(caseValidator.validateValidationRecord(any(), eq(true))).thenReturn(caseValidationResponse);
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DIRECTION_ISSUED);
+
+        assertThat(ccdCallbackResponse.getData()).isNotNull();
+        assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
+        assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
+        assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
+        assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
+        assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+    }
+
+    @Test
+    public void should_return_warnings_or_error_on_data_when_direction_issued_welsh_and_mrn_date_is_empty_for_esa_case() {
+
+        DynamicList appealToProccedDynamicList = new DynamicList(new DynamicListItem("appealToProceed", "appealToProceed"), new ArrayList<>());
+        Appeal appeal = Appeal.builder()
+            .appellant(Appellant.builder()
+                .name(Name.builder().firstName("Fred").lastName("Ward").build())
+                .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
+                .build())
+            .mrnDetails(MrnDetails.builder().mrnDate("").dwpIssuingOffice("Balham DRT").build())
+            .benefitType(BenefitType.builder().code("ESA").build())
+            .build();
+
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        caseDetails.getCaseData().setDirectionTypeDl(appealToProccedDynamicList);
+        CaseResponse caseValidationResponse = CaseResponse.builder().build();
+        when(caseValidator.validateValidationRecord(any(), eq(true))).thenReturn(caseValidationResponse);
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DIRECTION_ISSUED_WELSH);
+
+        assertThat(ccdCallbackResponse.getData()).isNotNull();
+        assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
+        assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
+        assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
+        assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
+        assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+    }
+
+    @Test
+    public void should_return_warnings_on_data_when_other_event_and_mrn_date_is_empty_for_esa_case() {
+
+        Appeal appeal = Appeal.builder()
+            .appellant(Appellant.builder()
+                .name(Name.builder().firstName("Fred").lastName("Ward").build())
+                .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
+                .build())
+            .mrnDetails(MrnDetails.builder().mrnDate("").dwpIssuingOffice("Balham DRT").build())
+            .benefitType(BenefitType.builder().code("ESA").build())
+            .build();
+
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .state("ScannedRecordReceived")
+            .caseId("1234")
+            .build();
+
+        CaseResponse caseValidationResponse = CaseResponse.builder().warnings(Lists.list("Mrn date is empty")).build();
+        when(caseValidator.validateValidationRecord(any(), eq(false))).thenReturn(caseValidationResponse);
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
+
+        assertThat(ccdCallbackResponse.getData()).isNotNull();
+        assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(1);
+        assertThat(ccdCallbackResponse.getErrors().contains("Mrn date is empty"));
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
@@ -288,7 +402,7 @@ public class CcdCallbackHandlerTest {
             .caseId("1234")
             .build();
 
-        when(caseValidator.validateValidationRecord(any()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
@@ -310,7 +424,7 @@ public class CcdCallbackHandlerTest {
             .caseId("1234")
             .build();
 
-        when(caseValidator.validateValidationRecord(any()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
             .thenReturn(CaseResponse.builder()
                 .warnings(ImmutableList.of("Postcode is invalid"))
                 .build());
@@ -334,10 +448,14 @@ public class CcdCallbackHandlerTest {
     }
 
     private PreSubmitCallbackResponse<SscsCaseData> invokeValidationCallbackHandler(SscsCaseData caseDetails) {
+        return invokeValidationCallbackHandler(caseDetails, EventType.VALID_APPEAL);
+    }
+
+    private PreSubmitCallbackResponse<SscsCaseData> invokeValidationCallbackHandler(SscsCaseData caseDetails, EventType eventType) {
         uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<SscsCaseData> c = new uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<>(123L, "sscs",
             State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
 
         return ccdCallbackHandler.handleValidationAndUpdate(
-            new Callback<>(c, Optional.empty(), EventType.VALID_APPEAL, false), idamTokens);
+            new Callback<>(c, Optional.empty(), eventType, false), idamTokens);
     }
 }
