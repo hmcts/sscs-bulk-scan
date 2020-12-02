@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 public interface CaseValidator {
     CaseResponse validateExceptionRecordOld(AboutToStartOrSubmitCallbackResponse transformErrorResponse, CaseDetails caseDetails, Map<String, Object> caseData);
 
-    CaseResponse validateValidationRecord(Map<String, Object> caseData);
+    CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation);
 
     CaseResponse validateExceptionRecord(CaseResponse transformResponse, ExceptionRecord exceptionRecord, Map<String, Object> caseData, boolean combineWarnings);
 }

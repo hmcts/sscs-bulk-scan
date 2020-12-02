@@ -2,8 +2,7 @@ package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -48,6 +47,8 @@ import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
 public class SscsCaseTransformerTest {
+
+    private static final String UNIVERSAL_CREDIT = "Universal Credit";
 
     @Mock
     SscsJsonExtractor sscsJsonExtractor;
@@ -100,7 +101,7 @@ public class SscsCaseTransformerTest {
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
 
-        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).build();
+        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1PEU.getId()).build();
         given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
@@ -179,6 +180,103 @@ public class SscsCaseTransformerTest {
             pairs.put(person + "_postcode", expectedAddress.getPostcode());
         }
 
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void givenAddressLine3IsBlankAndAddressLine4IsNotPresent_thenAddressLine3PopulatedWithDot(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .town("town")
+            .county(".")
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.remove(person + "_address_line4");
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", expectedAddress.getTown());
+            pairs.put(person + "_address_line3", "");
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void givenAddressLine3IsNullAndAddressLine4IsNotPresent_thenAddressLine3PopulatedWithDot(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .town("town")
+            .county(".")
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.remove(person + "_address_line4");
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", expectedAddress.getTown());
+            pairs.put(person + "_address_line3", null);
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void givenAddressLine2And3AreNullAndAddressLine4IsNotPresent_thenAddressLine3NotPopulatedWithDot(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .town(null)
+            .county(null)
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.remove(person + "_address_line4");
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", null);
+            pairs.put(person + "_address_line3", null);
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
+            personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
+        assertEquals(expectedAddress, actual);
+    }
+
+    @Test
+    @Parameters({"person1", "person2", "representative"})
+    public void givenAddressLine3IsBlankAndAddressLine4IsPresent_thenAddressLine3NotPopulatedWithDot(String personType) {
+        Address expectedAddress = Address.builder()
+            .line1("10 my street")
+            .line2("line2 address")
+            .town("")
+            .county("county")
+            .postcode(APPELLANT_POSTCODE)
+            .build();
+        for (String person : Arrays.asList("person1", personType)) {
+            pairs.put(person + "_address_line1", expectedAddress.getLine1());
+            pairs.put(person + "_address_line2", expectedAddress.getLine2());
+            pairs.put(person + "_address_line3", "");
+            pairs.put(person + "_address_line4", expectedAddress.getCounty());
+            pairs.put(person + "_postcode", expectedAddress.getPostcode());
+        }
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
@@ -309,6 +407,34 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("Sheffield DRT", result.getTransformedCase().get("dwpRegionalCentre"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithUcOffice() {
+        given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
+
+        pairs.put("is_benefit_type_uc", "true");
+        pairs.put("office", "Balham DRT");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(UNIVERSAL_CREDIT, result.getTransformedCase().get("dwpRegionalCentre"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenKeyValuePairsWithUcBenefitTypeAndNoOfficePopulated_thenBuildAnAppealWithUcOffice() {
+        given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
+
+        pairs.put("is_benefit_type_uc", "true");
+        pairs.put("office", "");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(UNIVERSAL_CREDIT, result.getTransformedCase().get("dwpRegionalCentre"));
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -942,13 +1068,11 @@ public class SscsCaseTransformerTest {
     public void givenACaseIsLinked_thenSetLinkedCaseToYesAndPopulateAssociatedCases() {
         pairs.put("person1_nino", "JT0123456B");
 
-        Map<String, String> map = new HashMap<>();
-        map.put("case.appeal.appellant.identity.nino", "JT0123456B");
-
         List<SscsCaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(SscsCaseDetails.builder().id(123L).build());
 
-        given(ccdService.findCaseBy(eq(map), any())).willReturn(caseDetails);
+        given(ccdService.findCaseBy(eq("data.appeal.appellant.identity.nino"), eq("JT0123456B"), any())).willReturn(caseDetails);
+
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("Yes", result.getTransformedCase().get("linkedCasesBoolean"));
@@ -963,15 +1087,9 @@ public class SscsCaseTransformerTest {
         pairs.put(MRN_DATE, MRN_DATE_VALUE);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), YES_LITERAL);
 
-        Map<String, String> map = new HashMap<>();
-        map.put("case.appeal.appellant.identity.nino", APPELLANT_NINO);
-        map.put("case.appeal.benefitType.code", "PIP");
-        map.put("case.appeal.mrnDetails.mrnDate", "2048-11-01");
+        SscsCaseDetails caseDetails = SscsCaseDetails.builder().id(123L).build();
 
-        List<SscsCaseDetails> caseDetails = new ArrayList<>();
-        caseDetails.add(SscsCaseDetails.builder().id(123L).build());
-
-        given(ccdService.findCaseBy(eq(map), any())).willReturn(caseDetails);
+        given(ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(eq(APPELLANT_NINO), eq("PIP"), eq("2048-11-01"), any())).willReturn(caseDetails);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, combineWarnings);
 
@@ -1355,7 +1473,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(1, result.getWarnings().size());
-        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+        assertEquals(HEARING_EXCLUDE_DATES_MISSING, result.getWarnings().get(0));
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
 
@@ -1371,7 +1489,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(1, result.getWarnings().size());
-        assertEquals("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?", result.getWarnings().get(0));
+        assertEquals(HEARING_EXCLUDE_DATES_MISSING, result.getWarnings().get(0));
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
 
@@ -1522,7 +1640,6 @@ public class SscsCaseTransformerTest {
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
-
     }
 
     @Test
@@ -1537,6 +1654,51 @@ public class SscsCaseTransformerTest {
         assertEquals(HEARING_TYPE_TELEPHONE_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(0));
         assertEquals(HEARING_TYPE_FACE_TO_FACE_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(1));
         assertEquals(HEARING_TYPE_VIDEO_LITERAL + " has an invalid value. Should be Yes/No or True/False", result.getErrors().get(2));
+    }
+
+    @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingTelephoneNumberButWithPerson1Mobile_thenPopulateHearingTelephoneNumberWithPerson1Mobile() {
+
+        pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + MOBILE, HEARING_TELEPHONE_NUMBER);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_TELEPHONE_NUMBER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+    }
+
+    @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingTelephoneNumberButWithPerson1Phone_thenPopulateHearingTelephoneNumberWithPerson1Phone() {
+
+        pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + PHONE, HEARING_TELEPHONE_NUMBER);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_TELEPHONE_NUMBER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+    }
+
+    @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingTelephoneNumberButWithPerson1PhoneAndPerson1Mobile_thenPopulateHearingTelephoneNumberWithPerson1Mobile() {
+
+        pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + MOBILE, HEARING_TELEPHONE_NUMBER);
+        pairs.put(PERSON1_VALUE + PHONE, "07999888777");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_TELEPHONE_NUMBER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
+    }
+
+    @Test
+    public void givenHearingSubtypeDetailsAreProvidedWithNoHearingVideoEmailButWithPerson1Email_thenPopulateHearingVideoEmailWithPerson1Email() {
+
+        pairs.put(HEARING_TYPE_VIDEO_LITERAL, "Yes");
+        pairs.put(PERSON1_VALUE + EMAIL, HEARING_VIDEO_EMAIL);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
     }
 
     @Test

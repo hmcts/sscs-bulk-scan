@@ -19,29 +19,41 @@
           },
           "identity": {
             "dob": "1904-03-10",
-            "nino": "BB000000B"
+            "nino": "AB 22 55 66 B"
           },
-          "name": {
-            "firstName": "User",
-            "lastName": "Test",
-            "title": "Mr"
+          "name": {},
+          "appointee": {
+            "address": {
+              "line1": "45 The Road",
+              "town": "Brentwood",
+              "county": "Essex",
+              "postcode": "CF48 2HY"
+            },
+            "contact": {
+              "email": "mail@email.com",
+              "phone": "01234567890"
+            },
+            "identity": {
+              "dob": "1904-03-10",
+              "nino": "AB 22 55 66 B"
+            },
+            "name": {}
           }
         },
         "benefitType": {
           "code": "ESA"
         },
         "hearingType": "oral",
+        "hearingSubtype": {
+          "wantsHearingTypeTelephone": "No",
+          "wantsHearingTypeVideo": "No",
+          "wantsHearingTypeFaceToFace": "No"
+        },
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
           "wantsSupport": "Yes",
           "wantsToAttend": "Yes"
-        },
-        "hearingSubtype": {
-          "wantsHearingTypeTelephone": "No",
-          "wantsHearingTypeVideo": "Yes",
-          "hearingVideoEmail": "my@email.com",
-          "wantsHearingTypeFaceToFace": "No"
         },
         "mrnDetails": {
           "mrnDate": "2018-12-09",
@@ -49,7 +61,8 @@
         },
         "signer": null
       },
-      "caseReference": "SC022/14/12423"
+      "caseReference": "SC022/14/12423",
+      "formType": "sscs1peu"
     },
     "case_type_id": "Benefit",
     "created_date": [
@@ -61,8 +74,8 @@
       48,
       23000000
     ],
-    "state": "interlocutoryReviewState",
+    "state": "incompleteApplication",
     "id": "1234567"
   },
-  "event_id": "interlocValidAppeal"
+  "event_id": "validAppeal"
 }

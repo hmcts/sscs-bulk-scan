@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.sscs.controllers;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -10,8 +12,6 @@ import static uk.gov.hmcts.reform.sscs.helper.TestConstants.SERVICE_AUTH_TOKEN;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -62,6 +62,57 @@ public class OcrValidationTest  {
     }
 
     @Test
+    public void should_return_200_when_ocr_form_for_uc_validation_request_data_is_valid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/valid-ocr-data-for-uc.json");
+
+        mvc.perform(
+            post("/forms/SSCS1/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
+    public void should_return_200_when_ocr_form_with_address_line3_blank_validation_request_data_is_valid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/valid-ocr-data-address-line3.json");
+
+        mvc.perform(
+            post("/forms/SSCS1/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
+    public void should_return_200_when_ocr_form_with_hearing_sub_type_validation_request_data_is_valid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/valid-ocr-data-with-hearing-sub-type.json");
+
+        mvc.perform(
+            post("/forms/SSCS1/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
     public void should_return_200_with_status_warnings_when_ocr_form_validation_request_data_is_incomplete() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -75,6 +126,40 @@ public class OcrValidationTest  {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("WARNINGS"))
             .andExpect(jsonPath("$.warnings", hasSize(7)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
+    public void should_return_200_when_ocr_form_with_form_type_sscs1peu_and_hearing_sub_type_validation_request_data_are_empty() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/invalid-ocr-data-with-hearing-sub-type.json");
+
+        mvc.perform(
+            post("/forms/SSCS1PEU/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("WARNINGS"))
+            .andExpect(jsonPath("$.warnings", hasSize(1)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
+    public void should_return_200_when_ocr_form_with_form_type_sscs1_and_hearing_sub_type_validation_request_data_are_empty() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/invalid-ocr-data-with-hearing-sub-type.json");
+
+        mvc.perform(
+            post("/forms/SSCS1/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
             .andExpect(jsonPath("$.errors", hasSize(0)));
     }
 
@@ -135,10 +220,9 @@ public class OcrValidationTest  {
     public void should_return_200_with_status_warnings_when_ocr_form_validation_request_has_duplicate_case_warnings() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        List<SscsCaseDetails> caseDetails = new ArrayList<>();
-        caseDetails.add(SscsCaseDetails.builder().id(1L).build());
+        SscsCaseDetails caseDetails = SscsCaseDetails.builder().id(1L).build();
 
-        when(ccdService.findCaseBy(any(), any())).thenReturn(caseDetails);
+        given(ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(anyString(), anyString(), anyString(), any())).willReturn(caseDetails);
         String content = readResource("mappings/ocr-validation/valid-ocr-data.json");
 
         mvc.perform(

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -13,11 +14,9 @@ import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -33,6 +32,7 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 //FIXME: Remove after bulk scan migration
+@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class SscsCaseValidatorTestOld {
 
@@ -81,6 +81,7 @@ public class SscsCaseValidatorTestOld {
         ocrCaseData.put("person1_address_line4", "county");
         ocrCaseData.put("person2_address_line4", "county");
         ocrCaseData.put("representative_address_line4", "county");
+        ocrCaseData.put("office", "2");
 
         given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
         given(sscsJsonExtractor.extractJsonOld(anyMap())).willReturn(scannedData);
@@ -90,7 +91,11 @@ public class SscsCaseValidatorTestOld {
 
     @Test
     public void givenAnAppellantIsEmpty_thenAddAWarning() {
-
+        Map<String, Object> ocrCaseDataEmptyOffice = new HashMap<>();
+        ocrCaseDataEmptyOffice.put("person1_address_line4", "county");
+        ocrCaseDataEmptyOffice.put("person2_address_line4", "county");
+        ocrCaseDataEmptyOffice.put("representative_address_line4", "county");
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataEmptyOffice);
         Map<String, Object> pairs = new HashMap<>();
         pairs.put("appeal", Appeal.builder().hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
@@ -422,6 +427,7 @@ public class SscsCaseValidatorTestOld {
 
     @Test
     public void givenAnMrnDoesNotContainADwpIssuingOffice_thenAddAWarning() {
+        given(scannedData.getOcrCaseData()).willReturn(emptyMap());
         CaseResponse response = validator.validateExceptionRecordOld(transformErrorResponse, caseDetails, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true));
 
         assertEquals("office is empty", response.getWarnings().get(0));
@@ -429,13 +435,18 @@ public class SscsCaseValidatorTestOld {
 
     @Test
     public void givenAnMrnDoesNotContainAValidDwpIssuingOffice_thenAddAWarning() {
-        CaseResponse response = validator.validateExceptionRecordOld(transformErrorResponse, caseDetails, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Bla").build(), buildAppellant(false), true));
+        Map<String, Object> ocrCaseDataInvalidOffice = new HashMap<>();
+        ocrCaseDataInvalidOffice.put("office", "Bla");
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataInvalidOffice);
+
+        CaseResponse response = validator.validateExceptionRecordOld(transformErrorResponse, caseDetails, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true));
 
         assertEquals("office is invalid", response.getWarnings().get(0));
     }
 
     @Test
     public void givenAnMrnDoesContainValidUpperCaseDwpIssuingOffice_thenNoWarning() {
+        given(scannedData.getOcrCaseData()).willReturn(emptyMap());
         CaseResponse response = validator.validateExceptionRecordOld(transformErrorResponse, caseDetails, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("BALHAM DRT").build(), buildAppellant(false), true));
 
         assertTrue(response.getWarnings().isEmpty());
@@ -443,6 +454,7 @@ public class SscsCaseValidatorTestOld {
 
     @Test
     public void givenAnMrnDoesContainValidCapitaliseDwpIssuingOffice_thenNoWarning() {
+        given(scannedData.getOcrCaseData()).willReturn(emptyMap());
         CaseResponse response = validator.validateExceptionRecordOld(transformErrorResponse, caseDetails, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Balham DRT").build(), buildAppellant(false), true));
 
         assertTrue(response.getWarnings().isEmpty());
@@ -870,7 +882,7 @@ public class SscsCaseValidatorTestOld {
 
         pairs.put("sscsDocument", buildDocument("myfile.pdf"));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, false);
 
         assertEquals(0, response.getErrors().size());
     }
@@ -881,7 +893,7 @@ public class SscsCaseValidatorTestOld {
 
         pairs.put("sscsDocument", buildDocument(null));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, false);
 
         assertEquals("There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf", response.getErrors().get(0));
     }
@@ -892,7 +904,7 @@ public class SscsCaseValidatorTestOld {
 
         pairs.put("sscsDocument", buildDocument("Waiver"));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, false);
 
         assertEquals("There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf", response.getErrors().get(0));
     }
@@ -903,7 +915,7 @@ public class SscsCaseValidatorTestOld {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setPostcode(null);
 
-        CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false));
+        CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false), false);
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
         verifyZeroInteractions(regionalProcessingCenterService);

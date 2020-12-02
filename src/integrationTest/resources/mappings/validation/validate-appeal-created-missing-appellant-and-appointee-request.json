@@ -44,6 +44,11 @@
           "code": "ESA"
         },
         "hearingType": "oral",
+        "hearingSubtype": {
+          "wantsHearingTypeTelephone": "No",
+          "wantsHearingTypeVideo": "No",
+          "wantsHearingTypeFaceToFace": "No"
+        },
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
@@ -56,7 +61,8 @@
         },
         "signer": null
       },
-      "caseReference": "SC022/14/12423"
+      "caseReference": "SC022/14/12423",
+      "formType": null
     },
     "case_type_id": "Benefit",
     "created_date": [

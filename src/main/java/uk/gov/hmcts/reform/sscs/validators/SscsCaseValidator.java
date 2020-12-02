@@ -5,8 +5,7 @@ import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCall
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.VALIDATION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.findBooleanExists;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +40,21 @@ public class SscsCaseValidator implements CaseValidator {
             + "\\d{3,4})?)?$";
 
     @SuppressWarnings("squid:S5843")
+    private static final String UK_NUMBER_REGEX =
+        "^\\(?(?:(?:0(?:0|11)\\)?[\\s-]?\\(?|\\+)44\\)?[\\s-]?\\(?(?:0\\)?[\\s-]?\\(?)?|0)(?:\\d{2}\\)?[\\s-]?\\d{4}"
+            + "[\\s-]?\\d{4}|\\d{3}\\)?[\\s-]?\\d{3}[\\s-]?\\d{3,4}|\\d{4}\\)?[\\s-]?(?:\\d{5}|\\d{3}[\\s-]?\\d{3})|"
+            + "\\d{5}\\)?[\\s-]?\\d{4,5}|8(?:00[\\s-]?11[\\s-]?11|45[\\s-]?46[\\s-]?4\\d))(?:(?:[\\s-]?(?:x|ext\\.?\\s?|"
+            + "\\#)\\d+)?)$";
+
+    @SuppressWarnings("squid:S5843")
     private static final String POSTCODE_REGEX = "^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$";
+
+    @SuppressWarnings("squid:S5843")
+    private static final String ADDRESS_REGEX = "^[a-zA-ZÀ-ž0-9]{1}[a-zA-ZÀ-ž0-9 \\r\\n\\.“”\",’\\?\\!\\[\\]\\(\\)/£:\\\\_+\\-%&;]{1,}$";
+
+    @SuppressWarnings("squid:S5843")
+    private static final String COUNTY_REGEX = "^\\.$|^[a-zA-ZÀ-ž0-9]{1}[a-zA-ZÀ-ž0-9 \\r\\n\\.“”\",’\\?\\!\\[\\]\\(\\)/£:\\\\_+\\-%&;]{1,}$";
+
     List<String> warnings;
     List<String> errors;
 
@@ -74,7 +87,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         ScannedData ocrCaseData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
 
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData);
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -91,7 +104,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         ScannedData ocrCaseData = sscsJsonExtractor.extractJson(exceptionRecord);
 
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData);
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false);
 
         if (combineWarnings) {
             warnings = combineWarnings();
@@ -116,14 +129,14 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     @Override
-    public CaseResponse validateValidationRecord(Map<String, Object> caseData) {
+    public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation) {
         warnings = new ArrayList<>();
         errors = new ArrayList<>();
         callbackType = VALIDATION_CALLBACK;
 
         Map<String, Object> ocrCaseData = new HashMap<>();
 
-        validateAppeal(ocrCaseData, caseData);
+        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -132,20 +145,22 @@ public class SscsCaseValidator implements CaseValidator {
             .build();
     }
 
-    private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
+    private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData, boolean ignoreMrnValidation) {
 
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
 
         checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType);
         checkRepresentative(appeal, ocrCaseData, caseData);
-        checkMrnDetails(appeal);
+        checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation);
 
         checkExcludedDates(appeal);
 
         isBenefitTypeValid(appeal);
 
         isHearingTypeValid(appeal);
+
+        checkHearingSubTypeIfHearingIsOral(appeal, caseData);
 
         if (caseData.get("sscsDocument") != null) {
             @SuppressWarnings("unchecked")
@@ -173,25 +188,45 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData, String personType) {
         Appellant appellant = appeal.getAppellant();
 
-        checkAppointee(appellant, ocrCaseData, caseData);
+        if (appellant == null) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + FIRST_NAME, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + LAST_NAME, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE3, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE4, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_EMPTY));
+        } else {
 
-        Name appellantName = appellant != null ? appellant.getName() : null;
-        Address appellantAddress = appellant != null ? appellant.getAddress() : null;
-        Identity appellantIdentity = appellant != null ? appellant.getIdentity() : null;
-        final Contact appellantContact = appellant != null ? appellant.getContact() : null;
+            checkAppointee(appellant, ocrCaseData, caseData);
 
-        checkPersonName(appellantName, personType, appellant);
-        checkPersonAddressAndDob(appellantAddress, appellantIdentity, personType, ocrCaseData, caseData, appellant);
-        checkAppellantNino(appellant, personType);
-        checkMobileNumber(appellantContact, personType);
+            checkPersonName(appellant.getName(), personType, appellant);
+            checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData, appellant);
+            checkAppellantNino(appellant, personType);
+            checkMobileNumber(appellant.getContact(), personType);
 
-        checkHearingSubtypeDetails(appeal.getHearingSubtype());
+            checkHearingSubtypeDetails(appeal.getHearingSubtype());
+
+        }
 
     }
 
     private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {
-        if (hearingSubtype != null && hearingSubtype.getHearingTelephoneNumber() != null && !isMobileNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
-            errors.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_LITERAL, IS_INVALID));
+        if (hearingSubtype != null) {
+            if (YES_LITERAL.equals(hearingSubtype.getWantsHearingTypeTelephone()) && hearingSubtype.getHearingTelephoneNumber() == null) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_TELEPHONE_LITERAL, PHONE_SELECTED_NOT_PROVIDED));
+
+            } else if (hearingSubtype.getHearingTelephoneNumber() != null && !isUkNumberValid(hearingSubtype.getHearingTelephoneNumber())) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_NUMBER_MULTIPLE_LITERAL, null));
+            }
+
+            if (YES_LITERAL.equals(hearingSubtype.getWantsHearingTypeVideo()) && hearingSubtype.getHearingVideoEmail() == null) {
+
+                warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_VIDEO_LITERAL, EMAIL_SELECTED_NOT_PROVIDED));
+            }
         }
     }
 
@@ -204,7 +239,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
-        if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals("Yes")) {
+        if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals(YES_LITERAL)) {
             final Contact repsContact = appeal.getRep().getContact();
             checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData, appeal.getAppellant());
 
@@ -222,23 +257,36 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkMrnDetails(Appeal appeal) {
-        if (!doesMrnDateExist(appeal)) {
+    private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData, boolean ignoreMrnValidation) {
+
+        String dwpIssuingOffice = getDwpIssuingOffice(appeal, ocrCaseData);
+
+        // if Appeal to Proceed direction type for direction Issue event and mrn date is blank then ignore mrn date validation
+        if (!ignoreMrnValidation && !doesMrnDateExist(appeal)) {
             warnings.add(getMessageByCallbackType(callbackType, "", MRN_DATE, IS_EMPTY));
-        } else {
+        } else if (!ignoreMrnValidation) {
             checkDateValidDate(appeal.getMrnDetails().getMrnDate(), MRN_DATE, "", true);
         }
 
-        if (!doesIssuingOfficeExist(appeal)) {
-            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
+        if (dwpIssuingOffice != null && appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
 
-        } else if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
-
-            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
+            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), dwpIssuingOffice);
 
             if (!officeMapping.isPresent()) {
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
+        } else if (dwpIssuingOffice == null) {
+            warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
+        }
+    }
+
+    private String getDwpIssuingOffice(Appeal appeal, Map<String, Object> ocrCaseData) {
+        if (Boolean.TRUE.equals(doesIssuingOfficeExist(appeal))) {
+            return appeal.getMrnDetails().getDwpIssuingOffice();
+        } else if (!ocrCaseData.isEmpty()) {
+            return getField(ocrCaseData, "office");
+        } else {
+            return null;
         }
     }
 
@@ -264,16 +312,26 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (!doesAddressLine1Exist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, IS_EMPTY));
+        } else if (!address.getLine1().matches(ADDRESS_REGEX)) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_LINE1, HAS_INVALID_ADDRESS));
         }
-        if (!doesAddressTownExist(address)) {
-            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
 
+        String townLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
+        if (!doesAddressTownExist(address)) {
+
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + townLine, IS_EMPTY));
+        } else if (!address.getTown().matches(ADDRESS_REGEX)) {
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + townLine, HAS_INVALID_ADDRESS));
         }
+
+        String countyLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTY";
         if (!doesAddressCountyExist(address)) {
-            String addressLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTY";
-            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + addressLine, IS_EMPTY));
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + countyLine, IS_EMPTY));
+        } else if (!address.getCounty().matches(COUNTY_REGEX)) {
+            System.out.println("County failed");
+            warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + countyLine, HAS_INVALID_ADDRESS));
         }
+
         if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(getPerson1OrPerson2(appellant))) {
             RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
 
@@ -468,6 +526,25 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
+    private void checkHearingSubTypeIfHearingIsOral(Appeal appeal, Map<String, Object> caseData) {
+        String hearingType = appeal.getHearingType();
+        log.info("Bulk-scan entry set --------------" + caseData.entrySet().toString());
+        FormType formType = (FormType) caseData.get("formType");
+        log.info("Bulk-scan form type: {}", formType != null ? formType.toString() : null);
+        if (FormType.SSCS1PEU.equals(formType) && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) && !isValidHearingSubType(appeal)) {
+            warnings.add(getMessageByCallbackType(callbackType, "", HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE_DESCRIPTION, ARE_EMPTY));
+        }
+    }
+
+    private boolean isValidHearingSubType(Appeal appeal) {
+        boolean isValid = true;
+        HearingSubtype hearingSubType = appeal.getHearingSubtype();
+        if (hearingSubType == null || !(hearingSubType.isWantsHearingTypeTelephone() || hearingSubType.isWantsHearingTypeVideo() || hearingSubType.isWantsHearingTypeFaceToFace())) {
+            isValid = false;
+        }
+        return isValid;
+    }
+
     private void checkExcludedDates(Appeal appeal) {
         if (appeal.getHearingOptions() != null && appeal.getHearingOptions().getExcludeDates() != null) {
             for (ExcludeDate excludeDate : appeal.getHearingOptions().getExcludeDates()) {
@@ -485,6 +562,13 @@ public class SscsCaseValidator implements CaseValidator {
     private boolean isMobileNumberValid(String number) {
         if (number != null) {
             return number.matches(PHONE_REGEX);
+        }
+        return true;
+    }
+
+    private boolean isUkNumberValid(String number) {
+        if (number != null) {
+            return number.matches(UK_NUMBER_REGEX);
         }
         return true;
     }

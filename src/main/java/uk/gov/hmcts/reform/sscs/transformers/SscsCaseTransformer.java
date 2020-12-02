@@ -14,7 +14,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -76,8 +75,14 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     @Override
     public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
-
-        String caseId = exceptionRecord.getId() != null ? exceptionRecord.getId() : "N/A";
+        // New transformation request contains exceptionRecordId
+        // Old transformation request contains id field, which is the exception record id
+        String caseId = "N/A";
+        if (StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId())) {
+            caseId = exceptionRecord.getExceptionRecordId();
+        } else if (StringUtils.isNotEmpty(exceptionRecord.getId())) {
+            caseId = exceptionRecord.getId();
+        }
         log.info("Validating exception record against schema caseId {}", caseId);
 
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
@@ -96,7 +101,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token);
+        String formType = exceptionRecord.getFormType();
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -138,19 +144,19 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         ScannedData scannedData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, null);
 
         return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
     }
 
-    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token) {
+    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token, String formType) {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
         Map<String, Object> transformed = new HashMap<>();
 
-        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions);
+        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType));
 
         transformed.put("bulkScanCaseReference", caseId);
 
@@ -323,6 +329,9 @@ public class SscsCaseTransformer implements CaseTransformer {
     private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
         String dwpIssuingOffice = getField(pairs, "office");
 
+        if (benefitType != null && Benefit.UC.name().equalsIgnoreCase(benefitType.getCode())) {
+            dwpIssuingOffice = "Universal Credit";
+        }
         if (dwpIssuingOffice != null) {
 
             if (benefitType != null) {
@@ -356,20 +365,24 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Address buildPersonAddress(Map<String, Object> pairs, String personType) {
-        if (findBooleanExists(getField(pairs, personType + "_address_line4"))) {
+        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE4))) {
             return Address.builder()
-                .line1(getField(pairs, personType + "_address_line1"))
-                .line2(getField(pairs, personType + "_address_line2"))
-                .town(getField(pairs, personType + "_address_line3"))
-                .county(getField(pairs, personType + "_address_line4"))
-                .postcode(getField(pairs, personType + "_postcode"))
+                .line1(getField(pairs, personType + ADDRESS_LINE1))
+                .line2(getField(pairs, personType + ADDRESS_LINE2))
+                .town(getField(pairs, personType + ADDRESS_LINE3))
+                .county(getField(pairs, personType + ADDRESS_LINE4))
+                .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
                 .build();
         }
+        boolean line3IsBlank = false;
+        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE2)) && !findBooleanExists(getField(pairs, personType + ADDRESS_LINE3))) {
+            line3IsBlank = true;
+        }
         return Address.builder()
-            .line1(getField(pairs, personType + "_address_line1"))
-            .town(getField(pairs, personType + "_address_line2"))
-            .county(getField(pairs, personType + "_address_line3"))
-            .postcode(getField(pairs, personType + "_postcode"))
+            .line1(getField(pairs, personType + ADDRESS_LINE1))
+            .town(getField(pairs, personType + ADDRESS_LINE2))
+            .county(line3IsBlank ? "." : getField(pairs, personType + ADDRESS_LINE3))
+            .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
             .build();
     }
 
@@ -419,21 +432,45 @@ public class SscsCaseTransformer implements CaseTransformer {
             String hearingTypeTelephone = checkBooleanValue(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_TELEPHONE_LITERAL)) : null;
 
+            String hearingTelephoneNumber = findHearingTelephoneNumber(pairs);
+
             String hearingTypeVideo = checkBooleanValue(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_VIDEO_LITERAL)) : null;
+
+            String hearingVideoEmail = findHearingVideoEmail(pairs);
 
             String hearingTypeFaceToFace = checkBooleanValue(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, HEARING_TYPE_FACE_TO_FACE_LITERAL)) : null;
 
             return HearingSubtype.builder()
                 .wantsHearingTypeTelephone(hearingTypeTelephone)
-                .hearingTelephoneNumber(getField(pairs, HEARING_TELEPHONE_LITERAL))
+                .hearingTelephoneNumber(hearingTelephoneNumber)
                 .wantsHearingTypeVideo(hearingTypeVideo)
-                .hearingVideoEmail(getField(pairs, HEARING_VIDEO_EMAIL_LITERAL))
+                .hearingVideoEmail(hearingVideoEmail)
                 .wantsHearingTypeFaceToFace(hearingTypeFaceToFace)
                 .build();
         }
         return HearingSubtype.builder().build();
+    }
+
+    private String findHearingTelephoneNumber(Map<String, Object> pairs) {
+        if (getField(pairs, HEARING_TELEPHONE_LITERAL) != null) {
+            return getField(pairs, HEARING_TELEPHONE_LITERAL);
+        } else if (getField(pairs, PERSON1_VALUE + MOBILE) != null) {
+            return getField(pairs, PERSON1_VALUE + MOBILE);
+        } else if (getField(pairs, PERSON1_VALUE + PHONE) != null) {
+            return getField(pairs, PERSON1_VALUE + PHONE);
+        }
+        return null;
+    }
+
+    private String findHearingVideoEmail(Map<String, Object> pairs) {
+        if (getField(pairs, HEARING_VIDEO_EMAIL_LITERAL) != null) {
+            return getField(pairs, HEARING_VIDEO_EMAIL_LITERAL);
+        } else if (getField(pairs, PERSON1_VALUE + EMAIL) != null) {
+            return getField(pairs, PERSON1_VALUE + EMAIL);
+        }
+        return null;
     }
 
     private HearingOptions buildHearingOptions(Map<String, Object> pairs, String hearingType) {
@@ -543,7 +580,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, TELL_TRIBUNAL_ABOUT_DATES)) : null;
 
             if (("Yes").equals(tellTribunalAboutDates)) {
-                warnings.add("No excluded dates provided but data indicates that there are dates customer cannot attend hearing as " + TELL_TRIBUNAL_ABOUT_DATES + " is true. Is this correct?");
+                warnings.add(HEARING_EXCLUDE_DATES_MISSING);
             }
             return null;
         }
@@ -614,9 +651,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<SscsCaseDetails> matchedByNinoCases = new ArrayList<>();
 
         if (!StringUtils.isEmpty(nino)) {
-            Map<String, String> linkCasesCriteria = new HashMap<>();
-            linkCasesCriteria.put("case.appeal.appellant.identity.nino", nino);
-            matchedByNinoCases = ccdService.findCaseBy(linkCasesCriteria, token);
+            matchedByNinoCases = ccdService.findCaseBy("data.appeal.appellant.identity.nino", nino, token);
         }
 
         sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
@@ -668,9 +703,9 @@ public class SscsCaseTransformer implements CaseTransformer {
             searchCriteria.put("case.appeal.benefitType.code", benefitType);
             searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
-            List<SscsCaseDetails> duplicateCases = ccdService.findCaseBy(searchCriteria, token);
+            SscsCaseDetails duplicateCase = ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(nino, benefitType, mrnDate, token);
 
-            if (!CollectionUtils.isEmpty(duplicateCases)) {
+            if (duplicateCase != null) {
                 log.info("Duplicate case already exists for exception record id {}", caseId);
                 errors.add("Duplicate case already exists - please reject this exception record");
             }

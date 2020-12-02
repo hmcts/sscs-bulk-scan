@@ -61,12 +61,20 @@
       "value": "false"
     },
     {
-      "name": "mrn_date",
-      "value": "23/4/2020"
+      "name": "hearing_type_telephone",
+      "value": ""
     },
     {
       "name": "hearing_type_video",
       "value": "true"
+    },
+    {
+      "name": "hearing_type_face_to_face",
+      "value": ""
+    },
+    {
+      "name": "mrn_date",
+      "value": "23/4/2020"
     }
   ]
 }

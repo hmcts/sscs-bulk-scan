@@ -12,7 +12,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +25,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.HandlerResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.exceptions.CaseDataHelperException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -41,6 +41,8 @@ public class SscsCaseDataHandlerTest {
     @Mock
     private SscsDataHelper sscsDataHelper;
     @Mock
+    private CcdService ccdService;
+    @Mock
     CaseDetails caseDetails;
     @Mock
     private CaseDataHelper caseDataHelper;
@@ -54,7 +56,7 @@ public class SscsCaseDataHandlerTest {
     @Before
     public void setup() {
         initMocks(this);
-        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper);
+        sscsCaseDataHandler = new SscsCaseDataHandler(sscsDataHelper, caseDataHelper, ccdService);
         when(exceptionCaseData.getCaseDetails()).thenReturn(caseDetails);
         when(caseDetails.getCaseData()).thenReturn(new HashMap<>());
         localDate = LocalDate.now();
@@ -72,7 +74,7 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings).transformedCase(transformedCase).build();
 
-        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
+        given(ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate("", "", "", token)).willReturn(SscsCaseDetails.builder().build());
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
@@ -107,7 +109,7 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(warnings).transformedCase(transformedCase).build();
 
-        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
+        given(ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate("", "", "", token)).willReturn(SscsCaseDetails.builder().build());
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "incompleteApplicationReceived")).willReturn(1L);
@@ -139,9 +141,7 @@ public class SscsCaseDataHandlerTest {
 
     @Test
     public void givenACaseWithExistingNinoMrnDateAndBenefitCode_thenDoNotCreateCaseWithIncompleteApplicationEvent() {
-        uk.gov.hmcts.reform.ccd.client.model.CaseDetails sscsCaseDetails = mock(uk.gov.hmcts.reform.ccd.client.model.CaseDetails.class);
-        List<uk.gov.hmcts.reform.ccd.client.model.CaseDetails> caseDetails = new ArrayList<>();
-        caseDetails.add(sscsCaseDetails);
+        SscsCaseDetails sscsCaseDetails = mock(SscsCaseDetails.class);
         String nino = "testnino";
         String benifitCode = "002";
         LocalDate mrnDate = LocalDate.of(2019, 8, 2);
@@ -153,13 +153,13 @@ public class SscsCaseDataHandlerTest {
         transformedCase.put("appeal", appeal);
         transformedCase.put("benefitCode", benifitCode);
 
-        given(caseDataHelper.findCaseBy(getSearchCriteria(nino, benifitCode, mrnDate.toString()), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(caseDetails);
+        given(ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(nino, benifitCode, mrnDate.toString(), token)).willReturn(sscsCaseDetails);
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(new ArrayList<>()).transformedCase(transformedCase).build();
 
         sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false, token, null);
 
-        verify(caseDataHelper).findCaseBy(getSearchCriteria(nino, benifitCode, mrnDate.toString()), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID);
+        verify(ccdService).findCcdCaseByNinoAndBenefitTypeAndMrnDate(nino, benifitCode, mrnDate.toString(), token);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class SscsCaseDataHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().transformedCase(transformedCase).build();
 
-        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
+        given(ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate("", "", "", token)).willReturn(SscsCaseDetails.builder().build());
 
         given(caseDataHelper.createCase(transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID,
             "nonCompliant"))
@@ -346,7 +346,7 @@ public class SscsCaseDataHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder()
             .warnings(warnings).transformedCase(transformedCase).build();
 
-        given(caseDataHelper.findCaseBy(getSearchCriteria(), TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID)).willReturn(Lists.emptyList());
+        given(ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate("", "", "", token)).willReturn(SscsCaseDetails.builder().build());
 
         given(caseDataHelper.createCase(
             transformedCase, TEST_USER_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_USER_ID, "nonCompliant"))
@@ -388,27 +388,5 @@ public class SscsCaseDataHandlerTest {
 
         sscsCaseDataHandler.handle(exceptionCaseData, caseValidationResponse, false,
             token, null);
-    }
-
-    private Map<String, String> getSearchCriteria() {
-        Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.appeal.appellant.identity.nino", "");
-        searchCriteria.put("case.appeal.benefitType.code", "");
-        searchCriteria.put("case.appeal.mrnDetails.mrnDate", "");
-        return searchCriteria;
-    }
-
-    private Map<String, String> getSearchCriteria(String nino, String benefitCode, String mrnDate) {
-        Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.appeal.appellant.identity.nino", nino);
-        searchCriteria.put("case.appeal.benefitType.code", benefitCode);
-        searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
-        return searchCriteria;
-    }
-
-    private Map<String, String> getMatchSearchCriteria(String nino) {
-        Map<String, String> searchCriteria = new HashMap<>();
-        searchCriteria.put("case.appeal.appellant.identity.nino", nino);
-        return searchCriteria;
     }
 }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -8,13 +9,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_TYPE_ORAL;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.converters.Nullable;
@@ -87,10 +84,11 @@ public class SscsCaseValidatorTest {
         ocrCaseData.put("person1_address_line4", "county");
         ocrCaseData.put("person2_address_line4", "county");
         ocrCaseData.put("representative_address_line4", "county");
+        ocrCaseData.put("office", "2");
 
         given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
 
-        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).build();
+        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PE.getId()).build();
 
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(scannedData);
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
@@ -99,7 +97,11 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppellantIsEmpty_thenAddAWarning() {
-
+        Map<String, Object> ocrCaseDataEmptyOffice = new HashMap<>();
+        ocrCaseDataEmptyOffice.put("person1_address_line4", "county");
+        ocrCaseDataEmptyOffice.put("person2_address_line4", "county");
+        ocrCaseDataEmptyOffice.put("representative_address_line4", "county");
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataEmptyOffice);
         Map<String, Object> pairs = new HashMap<>();
         pairs.put("appeal", Appeal.builder().hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
@@ -142,6 +144,30 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantWithHearingTypeOralAndNoHearingSubType_thenAddWarnings() {
+        Map<String, Object> pairs = new HashMap<>();
+
+        pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(Name.builder().firstName("Harry").lastName("Kane").build())
+            .address(Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode(VALID_POSTCODE).build())
+            .identity(Identity.builder().nino("BB000000B").build()).build())
+            .benefitType(BenefitType.builder().code(PIP.name()).build())
+            .mrnDetails(defaultMrnDetails)
+            .hearingType(HEARING_TYPE_ORAL).build());
+        pairs.put("bulkScanCaseReference", 123);
+        pairs.put("formType", FormType.SSCS1PEU);
+
+        ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL,"");
+        ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL,"");
+        ocrCaseData.put(HEARING_TYPE_FACE_TO_FACE_LITERAL,"");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
+
+        assertThat(response.getWarnings())
+            .containsOnly("person1_title is empty",
+                "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated");
+    }
+
+    @Test
     public void givenAnAppellantWithNoNameAndEmptyAppointeeDetails_thenAddWarnings() {
         Map<String, Object> pairs = new HashMap<>();
 
@@ -179,7 +205,8 @@ public class SscsCaseValidatorTest {
             .identity(Identity.builder().nino("BB000000B").build()).build())
             .benefitType(BenefitType.builder().code(PIP.name()).build())
             .mrnDetails(defaultMrnDetails)
-            .hearingType(HEARING_TYPE_ORAL).build());
+            .hearingType(HEARING_TYPE_ORAL)
+            .hearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build()).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
@@ -277,6 +304,16 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantDoesNotContainValidAddressLine1_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine1("[my house");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line1 has invalid characters at the beginning", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAnAppellantDoesNotContainATownAndContainALine2_thenAddAWarning() {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setLine2("101 Street");
@@ -285,6 +322,17 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_address_line3 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesNotContainAValidTownAndContainALine2_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine2("101 Street");
+        appellant.getAddress().setTown("@invalid");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line3 has invalid characters at the beginning", response.getWarnings().get(0));
     }
 
     @Test
@@ -301,6 +349,19 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantDoesNotContainAValidTownAndALine2_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        ocrCaseData.remove("person1_address_line4");
+        ocrCaseData.remove("person2_address_line4");
+        appellant.getAddress().setLine2(null);
+        appellant.getAddress().setTown("@invalid");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line2 has invalid characters at the beginning", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAnAppellantDoesNotContainACountyAndContainALine2_thenAddAWarning() {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setLine2("101 Street");
@@ -309,6 +370,17 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_address_line4 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesNotContainAValidCountyAndContainALine2_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine2("101 Street");
+        appellant.getAddress().setCounty("(Bad County");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line4 has invalid characters at the beginning", response.getWarnings().get(0));
     }
 
     @Test
@@ -322,6 +394,32 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
 
         assertEquals("person1_address_line3 is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantDoesNotContainAValidCountyAndALine2_thenAddAWarning() {
+        ocrCaseData.remove("person1_address_line4");
+        ocrCaseData.remove("person2_address_line4");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine2(null);
+        appellant.getAddress().setCounty("£bad County");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals("person1_address_line3 has invalid characters at the beginning", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppellantContainsAPlaceholderCountyAndALine2_thenNoAWarning() {
+        ocrCaseData.remove("person1_address_line4");
+        ocrCaseData.remove("person2_address_line4");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setLine2(null);
+        appellant.getAddress().setCounty(".");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true), false);
+
+        assertEquals(0, response.getWarnings().size());
     }
 
     @Test
@@ -430,21 +528,49 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnMrnDoesNotContainADwpIssuingOffice_thenAddAWarning() {
+    public void givenAnMrnDoesNotContainADwpIssuingOfficeAndOcrDataIsEmpty_thenAddAWarning() {
+        Map<String, Object> ocrCaseDataInvalidOffice = new HashMap<>();
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataInvalidOffice);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true), false);
 
         assertEquals("office is empty", response.getWarnings().get(0));
+        assertEquals(1, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnMrnDoesNotContainAValidDwpIssuingOfficeAndOcrDataIsEmpty_thenAddAWarning() {
+        Map<String, Object> ocrCaseDataInvalidOffice = new HashMap<>();
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataInvalidOffice);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Bla").build(), buildAppellant(false), true), false);
+
+        assertEquals("office is invalid", response.getWarnings().get(0));
+        assertEquals(1, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnMrnDoesNotContainADwpIssuingOffice_thenAddAWarning() {
+        given(scannedData.getOcrCaseData()).willReturn(emptyMap());
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true), false);
+
+        assertEquals("office is empty", response.getWarnings().get(0));
+        assertEquals(1, response.getWarnings().size());
     }
 
     @Test
     public void givenAnMrnDoesNotContainAValidDwpIssuingOffice_thenAddAWarning() {
-        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Bla").build(), buildAppellant(false), true), false);
+        Map<String, Object> ocrCaseDataInvalidOffice = new HashMap<>();
+        ocrCaseDataInvalidOffice.put("office", "Bla");
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataInvalidOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice(null).build(), buildAppellant(false), true), false);
 
         assertEquals("office is invalid", response.getWarnings().get(0));
+        assertEquals(1, response.getWarnings().size());
     }
 
     @Test
     public void givenAnMrnDoesContainValidUpperCaseDwpIssuingOffice_thenNoWarning() {
+        given(scannedData.getOcrCaseData()).willReturn(emptyMap());
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("BALHAM DRT").build(), buildAppellant(false), true), false);
 
         assertTrue(response.getWarnings().isEmpty());
@@ -452,6 +578,7 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnMrnDoesContainValidCapitaliseDwpIssuingOffice_thenNoWarning() {
+        given(scannedData.getOcrCaseData()).willReturn(emptyMap());
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithMrn(MrnDetails.builder().mrnDate("2019-01-01").dwpIssuingOffice("Balham DRT").build(), buildAppellant(false), true), false);
 
         assertTrue(response.getWarnings().isEmpty());
@@ -903,7 +1030,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("sscsDocument", buildDocument("myfile.pdf"));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
 
         assertEquals(0, response.getErrors().size());
     }
@@ -914,7 +1041,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("sscsDocument", buildDocument(null));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
 
         assertEquals("There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf", response.getErrors().get(0));
     }
@@ -925,7 +1052,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("sscsDocument", buildDocument("Waiver"));
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
 
         assertEquals("There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf", response.getErrors().get(0));
     }
@@ -936,10 +1063,31 @@ public class SscsCaseValidatorTest {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setPostcode(null);
 
-        CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false));
+        CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false), false);
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
         verifyNoInteractions(regionalProcessingCenterService);
+    }
+
+    @Test
+    public void givenAValidationCallbackEventIsAppealToProceedAndMrnDateIsEmpty_thenNoWarningOrErrorMessage() {
+
+        Map<String, Object> pairs = buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("Sheffield DRT").build(), buildAppellant(false), false);
+
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAValidationCallbackEventIsOtherAndMrnDateIsEmpty_thenNoWarningOrErrorMessage() {
+
+        Map<String, Object> pairs = buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("Sheffield DRT").build(), buildAppellant(false), false);
+
+        CaseResponse response = validator.validateValidationRecord(pairs, false);
+
+        assertEquals("Mrn date is empty", response.getWarnings().get(0));
     }
 
     @Test
@@ -951,22 +1099,117 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    @Parameters({"07900123456", "01277323440", "01277323440 ext 123"})
+    public void givenAnAppealWithValidHearingPhoneNumber_thenDoNotAddWarning(String number) {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber(number).build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals(0, response.getErrors().size());
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
     public void givenAnAppealWithAnInvalidHearingPhoneNumber_thenAddWarning() {
         HearingSubtype hearingSubtype = HearingSubtype.builder().hearingTelephoneNumber("01222").build();
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
 
-        assertEquals("hearing_telephone_number is invalid", response.getErrors().get(0));
-        assertEquals(0, response.getWarnings().size());
+        assertEquals("Telephone hearing selected but the number used is invalid. Please check either the hearing_telephone_number or person1_phone fields", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
     public void givenAnAppealWithAnInvalidHearingPhoneNumberForSscsCase_thenAddWarning() {
-        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().hearingTelephoneNumber("01222").build(), buildAppellant(false), false);
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber("01222").build(), buildAppellant(false), false);
 
-        CaseResponse response = validator.validateValidationRecord(pairs);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
 
-        assertEquals("Hearing telephone number is invalid", response.getErrors().get(0));
+        assertEquals("Telephone hearing selected but the number used is invalid. Please check either the telephone or hearing telephone number fields", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeTelephoneSelectedButNoTelephoneEntered_thenAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals("hearing_telephone_number has not been provided but data indicates hearing telephone is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeTelephoneSelectedButNoTelephoneEnteredForSscsCase_thenAddWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build(), buildAppellant(false), false);
+
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+
+        assertEquals("Hearing telephone number has not been provided but data indicates hearing telephone is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeVideoSelectedButNoVideoEmailEntered_thenAddWarning() {
+        HearingSubtype hearingSubtype = HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build();
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true), false);
+
+        assertEquals("hearing_video_email has not been provided but data indicates hearing video is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAHearingTypeVideoSelectedButNoVideoEmailEnteredForSscsCase_thenAddWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build(), buildAppellant(false), false);
+
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+
+        assertEquals("Hearing video email address has not been provided but data indicates hearing video is required", response.getWarnings().get(0));
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAnHearingTypePaperAndEmptyHearingSubTypeForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingType(HEARING_TYPE_PAPER, buildAppellant(false), false);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypeIsSscs1peuForSscsCase_thenAddWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        pairs.put("formType", FormType.SSCS1PEU);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        assertEquals(1, response.getWarnings().size());
+        assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated", response.getWarnings().get(0));
+    }
+
+    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypIsSscs1eForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        pairs.put("formType", FormType.SSCS1);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypIsNulleForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        pairs.put("formType", null);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAnHearingSubTypeVideoForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail("m@m.com").build(), buildAppellant(false), false);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnAppealWithAnHearingSubTypeFaceForSscsCase_thenNoWarning() {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), buildAppellant(false), false);
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
         assertEquals(0, response.getWarnings().size());
     }
 
@@ -981,19 +1224,19 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, null);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build());
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrn(MrnDetails mrn, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, null);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_PAPER, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, null);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build());
     }
 
     private Map<String, Object> buildMinimumAppealDataWithRepresentative(Appellant appellant, Representative representative, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, representative, null, exceptionCaseType, HEARING_TYPE_ORAL, null);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, representative, null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build());
     }
 
     private Map<String, Object> buildMinimumAppealDataWithExcludedDate(String excludedDate, Appellant appellant, Boolean exceptionCaseType) {
@@ -1014,6 +1257,7 @@ public class SscsCaseValidatorTest {
         List<ExcludeDate> excludedDates = new ArrayList<>();
         excludedDates.add(ExcludeDate.builder().value(DateRange.builder().start(excludeDates).build()).build());
 
+        dataMap.put("formType", FormType.SSCS1PE);
         dataMap.put("appeal", Appeal.builder()
             .mrnDetails(MrnDetails.builder().mrnDate(mrn.getMrnDate()).dwpIssuingOffice(mrn.getDwpIssuingOffice()).build())
             .benefitType(BenefitType.builder().code(benefitCode).build())

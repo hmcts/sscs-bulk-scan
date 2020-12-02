@@ -65,6 +65,8 @@ validation:
 
 feature:
   debug_json: ${DEBUG_JSON:false}
+  universal-credit:
+    enabled: ${UC_ENABLED:false}
 
 postcode-validator:
   url: ${POSTCODE_VALIDATOR_URL:https://api.postcodes.io/postcodes/{postcode}/validate}
@@ -72,7 +74,7 @@ postcode-validator:
   test-postcodes: ${POSTCODE_VALIDATOR_TEST_POSTCODES:TS1 1ST, TS2 2ST, TS3 3ST}
 
 readyToList:
-  offices: ${READY_TO_LIST_OFFICES:3}
+  offices: ${READY_TO_LIST_OFFICES:3,Universal Credit}
 
 ---
 spring:

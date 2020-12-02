@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
-import uk.gov.hmcts.reform.sscs.domain.FormType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 import uk.gov.hmcts.reform.sscs.domain.validation.OcrDataValidationRequest;
 import uk.gov.hmcts.reform.sscs.domain.validation.OcrValidationResponse;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
@@ -75,7 +75,7 @@ public class OcrValidationController {
 
         authService.assertIsAllowedToHandleCallback(serviceName);
 
-        CaseResponse result = handler.handleValidation(ExceptionRecord.builder().ocrDataFields(ocrDataValidationRequest.getOcrDataFields()).build());
+        CaseResponse result = handler.handleValidation(ExceptionRecord.builder().ocrDataFields(ocrDataValidationRequest.getOcrDataFields()).formType(formType).build());
 
         return ok().body(new OcrValidationResponse(result.getWarnings(), result.getErrors(), result.getStatus()));
     }

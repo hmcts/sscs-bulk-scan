@@ -70,7 +70,7 @@
         "jointPartySubscription": null
       },
       "evidencePresent": "No",
-      "bulkScanCaseReference": "1234567890",
+      "bulkScanCaseReference": "1234567891011",
       "benefitCode": "051",
       "caseCode": "051DD",
       "caseCreated": "2018-01-11",
@@ -78,7 +78,7 @@
       "dwpRegionalCentre": "Sheffield DRT",
       "issueCode": "DD",
       "linkedCasesBoolean": "No",
-      "formType": "sscs1"
+      "formType": "sscs1peu"
     },
     "case_type_id": "Benefit",
     "event_id": "incompleteApplicationReceived"
@@ -89,6 +89,7 @@
       "person1_address_line2 is empty",
       "person1_address_line3 is empty",
       "person1_postcode is empty",
-      "person1_nino is empty"
+      "person1_nino is empty",
+      "hearing_type_telephone, hearing_type_video and hearing_type_face_to_face are empty. At least one must be populated"
   ]
 }

@@ -117,7 +117,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_error_when_appointee_details_are_only_partially_entered() throws IOException {
+    public void should_return_error_when_appointee_details_are_only_partially_entered_and_missing_hearing_sub_type_for_form_type_null() throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -141,7 +141,59 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_error_when_appellant_and_appointee_details_are_only_partially_entered() throws IOException {
+    public void should_return_error_when_appointee_details_are_only_partially_entered_and_missing_hearing_sub_type_for_auto_scan_form() throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson = loadJson("mappings/validation/auto-validate-appeal-created-missing-appointee-request.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly(
+                "Appointee title is empty",
+                "Appointee first name is empty",
+                "Appointee last name is empty",
+                "Hearing option telephone, video and face to face are empty. At least one must be populated");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_error_when_appellant_and_appointee_details_are_only_partially_entered_for_auto_scan_form_type() throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson = loadJson("mappings/validation/auto-validate-appeal-created-missing-appellant-and-appointee-request.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("Appointee title is empty",
+                "Appointee first name is empty",
+                "Appointee last name is empty",
+                "Appellant title is empty",
+                "Appellant first name is empty",
+                "Appellant last name is empty",
+                "Hearing option telephone, video and face to face are empty. At least one must be populated");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_error_when_appellant_and_appointee_details_are_only_partially_entered_for_form_type_null() throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 

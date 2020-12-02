@@ -9,9 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -24,6 +26,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DirectionType;
 import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
@@ -39,6 +42,7 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 public class CcdCallbackHandler {
 
     private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {}";
+    private static final String LOGSTR_VALIDATION_WARNING = "Warning found while validating exception record id {}";
 
     private final CaseTransformer caseTransformer;
 
@@ -86,15 +90,23 @@ public class CcdCallbackHandler {
     }
 
     public SuccessfulTransformationResponse handle(ExceptionRecord exceptionRecord) {
-        String exceptionRecordId = exceptionRecord.getId();
+        // New transformation request contains exceptionRecordId
+        // Old transformation request contains id field, which is the exception record id
+        String exceptionRecordId = StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId()) ? exceptionRecord.getExceptionRecordId() : exceptionRecord.getId();
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
+        log.info("IsAutomatedProcess: {}", exceptionRecord.getIsAutomatedProcess());
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, false);
 
         if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
             log.info("Errors found while transforming exception record id {}", exceptionRecordId);
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
+        }
+
+        if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
+            log.info("Warning found while transforming exception record id {}", exceptionRecordId);
+            throw new InvalidExceptionRecordException(caseTransformationResponse.getWarnings());
         }
 
         log.info("Exception record id {} transformed successfully. About to validate transformed case from exception");
@@ -104,6 +116,9 @@ public class CcdCallbackHandler {
         if (!ObjectUtils.isEmpty(caseValidationResponse.getErrors())) {
             log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
             throw new InvalidExceptionRecordException(caseValidationResponse.getErrors());
+        } else if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !ObjectUtils.isEmpty(caseValidationResponse.getWarnings())) {
+            log.info(LOGSTR_VALIDATION_WARNING, exceptionRecordId);
+            throw new InvalidExceptionRecordException(caseValidationResponse.getWarnings());
         } else {
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
 
@@ -173,13 +188,19 @@ public class CcdCallbackHandler {
         setUnsavedFieldsOnCallback(callback);
 
         Map<String, Object> appealData = new HashMap<>();
-
         sscsDataHelper.addSscsDataToMap(appealData,
             callback.getCaseDetails().getCaseData().getAppeal(),
             callback.getCaseDetails().getCaseData().getSscsDocument(),
-            callback.getCaseDetails().getCaseData().getSubscriptions());
+            callback.getCaseDetails().getCaseData().getSubscriptions(),
+            callback.getCaseDetails().getCaseData().getFormType());
 
-        CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData);
+        boolean ignoreMrnValidation = false;
+        if (callback.getEvent() != null && (EventType.DIRECTION_ISSUED.equals(callback.getEvent())
+            || EventType.DIRECTION_ISSUED_WELSH.equals(callback.getEvent()))
+            && callback.getCaseDetails().getCaseData().getDirectionTypeDl() != null) {
+            ignoreMrnValidation = StringUtils.equals(DirectionType.APPEAL_TO_PROCEED.toString(), callback.getCaseDetails().getCaseData().getDirectionTypeDl().getValue().getCode());
+        }
+        CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData, ignoreMrnValidation);
 
         PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
 
