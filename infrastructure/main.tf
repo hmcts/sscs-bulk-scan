@@ -43,18 +43,18 @@ data "azurerm_key_vault" "sscs_key_vault" {
   resource_group_name = local.sscsRg
 }
 
-data "azurerm_key_vault_secret" "app_insights_key" {
-  name         = "AppInsightsInstrumentationKey"
-  value        = azurerm_application_insights.appinsights.instrumentation_key
-  key_vault_id = data.azurerm_key_vault.sscs_key_vault.id
-}
-
 output "appInsightsInstrumentationKey" {
   value = azurerm_application_insights.appinsights.instrumentation_key
 }
 
 data "azurerm_key_vault_secret" "AppInsightsInstrumentationKey" {
   name      = "AppInsightsInstrumentationKey"
+  vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
+}
+
+resource "azurerm_key_vault_secret" "AppInsightsInstrumentationKey" {
+  name      = "AppInsightsInstrumentationKey"
+  value     = "${data.azurerm_key_vault_secret.AppInsightsInstrumentationKey.value}"
   vault_uri = "${module.sscs-bulk-scan-vault.key_vault_uri}"
 }
 
