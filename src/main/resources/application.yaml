@@ -65,8 +65,6 @@ validation:
 
 feature:
   debug_json: ${DEBUG_JSON:false}
-  universal-credit:
-    enabled: ${UC_ENABLED:false}
 
 postcode-validator:
   url: ${POSTCODE_VALIDATOR_URL:https://api.postcodes.io/postcodes/{postcode}/validate}
