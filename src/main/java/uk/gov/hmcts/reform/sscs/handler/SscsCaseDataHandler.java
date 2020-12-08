@@ -97,7 +97,9 @@ public class SscsCaseDataHandler implements CaseDataHandler {
                     Long caseId = caseDataHelper.createCase(sscsCaseData,
                         token.getIdamOauth2Token(), token.getServiceAuthorization(), token.getUserId(), eventId);
 
-                    log.info("Case created with caseId {} from exception record id {}", caseId, exceptionRecordId);
+                    log.info("Case created with caseId {} from exception record id {}, setting isSaveAndReturn to No", caseId, exceptionRecordId);
+
+
 
                     caseReference = String.valueOf(caseId);
                 }
