@@ -46,12 +46,13 @@ data "azurerm_key_vault" "sscs_key_vault" {
 resource "azurerm_key_vault_secret" "app_insights_key" {
   name         = "AppInsightsInstrumentationKey"
   value        = azurerm_application_insights.appinsights.instrumentation_key
-  key_vault_id = data.azurerm_key_vault.sscs_key_vault.id
+  key_vault_id = module.sscs-bulk-scan-vault.key_vault_id
 }
 
 output "appInsightsInstrumentationKey" {
   value = azurerm_application_insights.appinsights.instrumentation_key
 }
+
 
 
 
