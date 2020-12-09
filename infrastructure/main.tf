@@ -43,13 +43,6 @@ data "azurerm_key_vault" "sscs_key_vault" {
   resource_group_name = local.sscsRg
 }
 
-data "azurerm_application_insights" "sscsappinsights" {
-  name                = "sscs-${var.env}"
-  location            = var.location_app
-  resource_group_name = local.sscsRg
-  application_type    = var.appinsights_application_type
-}
-
 resource "azurerm_key_vault_secret" "app_insights_key" {
   name         = "AppInsightsInstrumentationKey"
   value        = azurerm_application_insights.appinsights.instrumentation_key
