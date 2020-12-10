@@ -36,11 +36,6 @@ data "azurerm_application_insights" "sscsappinsights" {
   resource_group_name = local.sscsRg
 }
 
-data "azurerm_application_insights" "sscsappinsights" {
-  name                = "sscs-${var.env}"
-  resource_group_name = local.sscsRg
-}
-
 resource "azurerm_key_vault_secret" "app_insights_key" {
   name         = "AppInsightsInstrumentationKey"
   value        = data.azurerm_application_insights.sscsappinsights.instrumentation_key
