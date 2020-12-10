@@ -31,18 +31,6 @@ module "sscs-bulk-scan-vault" {
   managed_identity_object_ids = ["${data.azurerm_user_assigned_identity.sscs-identity.principal_id}"]
 }
 
-resource "azurerm_application_insights" "appinsights" {
-  name                = "${var.product}-${var.env}"
-  location            = var.location_app
-  resource_group_name = azurerm_resource_group.rg.name
-  application_type    = var.appinsights_application_type
-}
-
-data "azurerm_key_vault" "sscs_key_vault" {
-  name                = "sscs-${var.env}"
-  resource_group_name = local.sscsRg
-}
-
 data "azurerm_application_insights" "sscsappinsights" {
   name                = "sscs-${var.env}"
   resource_group_name = local.sscsRg
