@@ -145,7 +145,6 @@ public class SscsCaseTransformer implements CaseTransformer {
         ScannedData scannedData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
 
         Map<String, Object> transformed = transformData(caseId, scannedData, token, null);
-        transformed.put("isSaveAndReturn", "No");
 
 
         return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
@@ -167,6 +166,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, scannedData.getOpeningDate());
 
         transformed = checkForMatches(transformed, token);
+        transformed.put("isSaveAndReturn", "No");
 
         return transformed;
     }
