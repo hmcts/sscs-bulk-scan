@@ -180,8 +180,9 @@ configurations.all {
       if (details.requested.group in ['com.fasterxml.jackson.core', 'com.fasterxml.jackson.module', 'com.fasterxml.jackson.datatype']) {
         details.useVersion '2.11.0'
       }
+      // CVE-2020-17521
       if (details.requested.group == 'org.codehaus.groovy') {
-        details.useVersion "3.0.2"
+        details.useVersion "3.0.7"
         details.because "needed by rest-assured>=4.3"
       }
     }
@@ -267,6 +268,7 @@ dependencyManagement {
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
     }
+
   }
 }
 
