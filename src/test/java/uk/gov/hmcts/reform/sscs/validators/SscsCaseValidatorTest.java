@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
@@ -47,6 +48,9 @@ public class SscsCaseValidatorTest {
 
     @Mock
     private PostcodeValidator postcodeValidator;
+
+    @Mock
+    private AirLookupService airLookupService;
 
     DwpAddressLookupService dwpAddressLookupService;
 
@@ -73,7 +77,7 @@ public class SscsCaseValidatorTest {
         dwpAddressLookupService = new DwpAddressLookupService();
         scannedData = mock(ScannedData.class);
         caseDetails = mock(CaseDetails.class);
-        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, postcodeValidator, sscsJsonExtractor);
+        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, postcodeValidator, sscsJsonExtractor, airLookupService);
         transformResponse = CaseResponse.builder().build();
 
         defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2018-12-09").build();

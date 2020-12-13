@@ -251,7 +251,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate("09/04/2020")),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDateAndAppointee("09/04/2020")),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -486,6 +486,62 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("hearing_type_video", "Yes");
         ocrList.put("hearing_video_email", "my@email.com");
         ocrList.put("hearing_type_face_to_face", "No");
+
+        return exceptionRecord(ocrList, docList);
+    }
+
+    private Map<String, Object> caseDataWithMrnDateAndAppointee(String mrnDate){
+        Map<String, Object> ocrList = new HashMap<>();
+
+        List<InputScannedDoc> docList = new ArrayList<>();
+
+        LocalDateTime dateTime = LocalDateTime.parse("2018-10-10 12:00:00", formatter);
+
+        docList.add(InputScannedDoc.builder().scannedDate(dateTime)
+            .controlNumber("11111")
+            .url(DocumentLink.builder()
+                .documentUrl("http://www.bbc.com")
+                .documentBinaryUrl("http://www.bbc.com/binary")
+                .documentFilename("myfile.jpg").build())
+            .type("other")
+            .subtype("my subtype")
+            .fileName("11111.pdf")
+            .build());
+
+        ocrList.put("mrn_date", mrnDate);
+        ocrList.put("office", "Balham DRT");
+        ocrList.put("contains_mrn", true);
+        ocrList.put("benefit_type_description", "ESA");
+        ocrList.put("person1_title", "Mr");
+        ocrList.put("person1_first_name", "John");
+        ocrList.put("person1_last_name", "Smith");
+        ocrList.put("person1_address_line1", "2 Drake Close");
+        ocrList.put("person1_address_line2", "Hutton");
+        ocrList.put("person1_address_line3", "Brentwood");
+        ocrList.put("person1_address_line4", "Essex");
+        ocrList.put("person1_postcode", "CM13 1AQ");
+        ocrList.put("person1_phone", "01234567899");
+        ocrList.put("person1_mobile", "07411222222");
+        ocrList.put("person1_dob", "11/11/1976");
+        ocrList.put("person1_nino", "BB000000B");
+        ocrList.put("is_hearing_type_oral", true);
+        ocrList.put("is_hearing_type_paper", false);
+        ocrList.put("hearing_options_exclude_dates", "01/12/2030");
+        ocrList.put("hearing_type_telephone", "Yes");
+        ocrList.put("hearing_telephone_number", "01234567890");
+        ocrList.put("hearing_type_video", "Yes");
+        ocrList.put("hearing_video_email", "my@email.com");
+        ocrList.put("hearing_type_face_to_face", "No");
+        ocrList.put("person2_title", "Mr");
+        ocrList.put("person2_first_name", "Tyrion");
+        ocrList.put("person2_last_name", "Lannister");
+        ocrList.put("person2_address_line1", "2 Casterly Rock");
+        ocrList.put("person2_address_line2", "Benedictine");
+        ocrList.put("person2_address_line3", "Coventry");
+        ocrList.put("person2_address_line4", "Warwickshire");
+        ocrList.put("person2_postcode", "CV3 6GU");
+        ocrList.put("person2_dob", "11/11/1976");
+        ocrList.put("person2_nino", "BB000000B");
 
         return exceptionRecord(ocrList, docList);
     }

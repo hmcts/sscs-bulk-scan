@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
@@ -62,6 +63,7 @@ public class SscsCaseValidator implements CaseValidator {
     private final DwpAddressLookupService dwpAddressLookupService;
     private final PostcodeValidator postcodeValidator;
     private final SscsJsonExtractor sscsJsonExtractor;
+    private final AirLookupService airLookupService;
 
     @Value("#{'${validation.titles}'.split(',')}")
     private List<String> titles;
@@ -69,11 +71,13 @@ public class SscsCaseValidator implements CaseValidator {
     public SscsCaseValidator(RegionalProcessingCenterService regionalProcessingCenterService,
                              DwpAddressLookupService dwpAddressLookupService,
                              PostcodeValidator postcodeValidator,
-                             SscsJsonExtractor sscsJsonExtractor) {
+                             SscsJsonExtractor sscsJsonExtractor,
+                             AirLookupService airLookupService) {
         this.regionalProcessingCenterService = regionalProcessingCenterService;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.postcodeValidator = postcodeValidator;
         this.sscsJsonExtractor = sscsJsonExtractor;
+        this.airLookupService = airLookupService;
     }
 
     @Override
@@ -167,6 +171,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData, String personType) {
         Appellant appellant = appeal.getAppellant();
+        BenefitType benefitType = appeal.getBenefitType();
 
         if (appellant == null) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE, IS_EMPTY));
@@ -179,10 +184,10 @@ public class SscsCaseValidator implements CaseValidator {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + NINO, IS_EMPTY));
         } else {
 
-            checkAppointee(appellant, ocrCaseData, caseData);
+            checkAppointee(appellant, ocrCaseData, caseData, benefitType);
 
             checkPersonName(appellant.getName(), personType, appellant);
-            checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData, appellant);
+            checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData, appellant, benefitType);
             checkAppellantNino(appellant, personType);
             checkMobileNumber(appellant.getContact(), personType);
 
@@ -210,10 +215,10 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkAppointee(Appellant appellant, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
+    private void checkAppointee(Appellant appellant, Map<String, Object> ocrCaseData, Map<String, Object> caseData, BenefitType benefitType) {
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
             checkPersonName(appellant.getAppointee().getName(), PERSON1_VALUE, appellant);
-            checkPersonAddressAndDob(appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(), PERSON1_VALUE, ocrCaseData, caseData, appellant);
+            checkPersonAddressAndDob(appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(), PERSON1_VALUE, ocrCaseData, caseData, appellant, benefitType);
             checkMobileNumber(appellant.getAppointee().getContact(), PERSON1_VALUE);
         }
     }
@@ -221,7 +226,7 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
         if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals(YES_LITERAL)) {
             final Contact repsContact = appeal.getRep().getContact();
-            checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData, appeal.getAppellant());
+            checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData, appeal.getAppellant(), appeal.getBenefitType());
 
             Name name = appeal.getRep().getName();
 
@@ -286,7 +291,7 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkPersonAddressAndDob(Address address, Identity identity, String personType, Map<String, Object> ocrCaseData, Map<String, Object> caseData, Appellant appellant) {
+    private void checkPersonAddressAndDob(Address address, Identity identity, String personType, Map<String, Object> ocrCaseData, Map<String, Object> caseData, Appellant appellant, BenefitType benefitType) {
 
         boolean isAddressLine4Present = findBooleanExists(getField(ocrCaseData, personType + "_address_line4"));
 
@@ -308,18 +313,23 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesAddressCountyExist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + countyLine, IS_EMPTY));
         } else if (!address.getCounty().matches(COUNTY_REGEX)) {
-            System.out.println("County failed");
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + countyLine, HAS_INVALID_ADDRESS));
         }
 
-        if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(getPerson1OrPerson2(appellant))) {
-            RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
+        if (isAddressPostcodeValid(address, personType, appellant) && address != null) {
+            if (personType.equals(getPerson1OrPerson2(appellant))) {
+                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
 
-            if (rpc != null) {
-                caseData.put("region", rpc.getName());
-                caseData.put("regionalProcessingCenter", rpc);
-            } else {
-                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a postcode that maps to a regional processing center"));
+                if (rpc != null) {
+                    caseData.put("region", rpc.getName());
+                    caseData.put("regionalProcessingCenter", rpc);
+                } else {
+                    warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a postcode that maps to a regional processing center"));
+                }
+            }
+
+            if (PERSON1_VALUE.equals(personType)) {
+                caseData.put("processingVenue", airLookupService.lookupAirVenueNameByPostCode(address.getPostcode(), benefitType));
             }
         }
         if (identity != null) {
