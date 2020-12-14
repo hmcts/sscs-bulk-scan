@@ -22,6 +22,8 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import org.apache.commons.codec.Charsets;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Before;
@@ -64,7 +66,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate("09/04/2020")),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate("09/04/2020", this::addAppellant)),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -72,7 +74,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         SuccessfulTransformationResponse callbackResponse = result.getBody();
 
-        verifyResultData(result, "mappings/exception/valid-appeal-response.json");
+        verifyResultData(result, "mappings/exception/valid-appeal-response.json", this::getAppellantTya);
     }
 
     //FIXME: delete after bulk scan auto case creation is switch on
@@ -88,7 +90,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ResponseEntity<SuccessfulTransformationResponse> result =
             this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
 
-        verifyResultData(result, "mappings/exception/case-incomplete-response.json");
+        verifyResultData(result, "mappings/exception/case-incomplete-response.json", this::getAppellantTya);
 
     }
 
@@ -101,7 +103,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            exceptionCaseData(caseDataWithMrnDate("01/01/2017")),
+            exceptionCaseData(caseDataWithMrnDate("01/01/2017", this::addAppellant)),
             httpHeaders()
         );
 
@@ -109,7 +111,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ResponseEntity<SuccessfulTransformationResponse> result =
             this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
 
-        verifyResultData(result, "mappings/exception/case-non-compliant-response.json");
+        verifyResultData(result, "mappings/exception/case-non-compliant-response.json", this::getAppellantTya);
     }
 
     //FIXME: delete after bulk scan auto case creation is switch on
@@ -166,7 +168,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-                exceptionCaseData(caseDataWithMrnDate("01/01/2017")),
+                exceptionCaseData(caseDataWithMrnDate("01/01/2017",this::addAppellant)),
                 httpHeaders()
         );
 
@@ -251,7 +253,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDateAndAppointee("09/04/2020")),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate("09/04/2020", this::addAppellant)),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -259,7 +261,26 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         SuccessfulTransformationResponse callbackResponse = result.getBody();
 
-        verifyResultData(result, "mappings/exception/auto-valid-appeal-response.json");
+        verifyResultData(result, "mappings/exception/auto-valid-appeal-response.json", this::getAppellantTya);
+    }
+
+    @Test
+    public void auto_scan_with_appointee_should_handle_callback_and_return_caseid_and_state_case_created()
+        throws Exception {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2020-04-09");
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate("09/04/2020", this::addAppellantAndAppointee)),
+            httpHeaders());
+
+        ResponseEntity<SuccessfulTransformationResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
+
+        SuccessfulTransformationResponse callbackResponse = result.getBody();
+
+        verifyResultData(result, "mappings/exception/auto-valid-appeal-with-appointee-response.json", this::getAppointeeTya);
     }
 
     @Test
@@ -441,11 +462,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     private Map<String, Object> caseData() {
-        return caseDataWithMrnDate("09/12/2018");
+        return caseDataWithMrnDate("09/12/2018", this::addAppellant);
     }
 
-    private Map<String, Object> caseDataWithMrnDate(String mrnDate) {
+    private Map<String, Object> caseDataWithMrnDate(String mrnDate, Consumer<Map<String, Object>> addPersonDetails) {
         Map<String, Object> ocrList = new HashMap<>();
+        addPersonDetails.accept(ocrList);
 
         List<InputScannedDoc> docList = new ArrayList<>();
 
@@ -466,18 +488,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("office", "Balham DRT");
         ocrList.put("contains_mrn", true);
         ocrList.put("benefit_type_description", "ESA");
-        ocrList.put("person1_title", "Mr");
-        ocrList.put("person1_first_name", "John");
-        ocrList.put("person1_last_name", "Smith");
-        ocrList.put("person1_address_line1", "2 Drake Close");
-        ocrList.put("person1_address_line2", "Hutton");
-        ocrList.put("person1_address_line3", "Brentwood");
-        ocrList.put("person1_address_line4", "Essex");
-        ocrList.put("person1_postcode", "CM13 1AQ");
-        ocrList.put("person1_phone", "01234567899");
-        ocrList.put("person1_mobile", "07411222222");
-        ocrList.put("person1_dob", "11/11/1976");
-        ocrList.put("person1_nino", "BB000000B");
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
         ocrList.put("hearing_options_exclude_dates", "01/12/2030");
@@ -490,28 +500,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return exceptionRecord(ocrList, docList);
     }
 
-    private Map<String, Object> caseDataWithMrnDateAndAppointee(String mrnDate){
-        Map<String, Object> ocrList = new HashMap<>();
-
-        List<InputScannedDoc> docList = new ArrayList<>();
-
-        LocalDateTime dateTime = LocalDateTime.parse("2018-10-10 12:00:00", formatter);
-
-        docList.add(InputScannedDoc.builder().scannedDate(dateTime)
-            .controlNumber("11111")
-            .url(DocumentLink.builder()
-                .documentUrl("http://www.bbc.com")
-                .documentBinaryUrl("http://www.bbc.com/binary")
-                .documentFilename("myfile.jpg").build())
-            .type("other")
-            .subtype("my subtype")
-            .fileName("11111.pdf")
-            .build());
-
-        ocrList.put("mrn_date", mrnDate);
-        ocrList.put("office", "Balham DRT");
-        ocrList.put("contains_mrn", true);
-        ocrList.put("benefit_type_description", "ESA");
+    private void addAppellant(Map<String, Object> ocrList) {
         ocrList.put("person1_title", "Mr");
         ocrList.put("person1_first_name", "John");
         ocrList.put("person1_last_name", "Smith");
@@ -524,26 +513,31 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("person1_mobile", "07411222222");
         ocrList.put("person1_dob", "11/11/1976");
         ocrList.put("person1_nino", "BB000000B");
-        ocrList.put("is_hearing_type_oral", true);
-        ocrList.put("is_hearing_type_paper", false);
-        ocrList.put("hearing_options_exclude_dates", "01/12/2030");
-        ocrList.put("hearing_type_telephone", "Yes");
-        ocrList.put("hearing_telephone_number", "01234567890");
-        ocrList.put("hearing_type_video", "Yes");
-        ocrList.put("hearing_video_email", "my@email.com");
-        ocrList.put("hearing_type_face_to_face", "No");
+    }
+
+    private void addAppellantAndAppointee(Map<String, Object> ocrList) {
+        ocrList.put("person1_title", "Mr");
+        ocrList.put("person1_first_name", "Tyrion");
+        ocrList.put("person1_last_name", "Lannister");
+        ocrList.put("person1_address_line1", "2 Casterly Rock");
+        ocrList.put("person1_address_line2", "Benedictine");
+        ocrList.put("person1_address_line3", "Coventry");
+        ocrList.put("person1_address_line4", "Warwickshire");
+        ocrList.put("person1_postcode", "CV3 6GU");
+        ocrList.put("person1_phone", "01234567899");
+        ocrList.put("person1_mobile", "07411222222");
+        ocrList.put("person1_dob", "11/11/1976");
+        ocrList.put("person1_nino", "BB000000B");
         ocrList.put("person2_title", "Mr");
-        ocrList.put("person2_first_name", "Tyrion");
-        ocrList.put("person2_last_name", "Lannister");
-        ocrList.put("person2_address_line1", "2 Casterly Rock");
-        ocrList.put("person2_address_line2", "Benedictine");
-        ocrList.put("person2_address_line3", "Coventry");
-        ocrList.put("person2_address_line4", "Warwickshire");
-        ocrList.put("person2_postcode", "CV3 6GU");
+        ocrList.put("person2_first_name", "John");
+        ocrList.put("person2_last_name", "Smith");
+        ocrList.put("person2_address_line1", "2 Drake Close");
+        ocrList.put("person2_address_line2", "Hutton");
+        ocrList.put("person2_address_line3", "Brentwood");
+        ocrList.put("person2_address_line4", "Essex");
+        ocrList.put("person2_postcode", "CM13 1AQ");
         ocrList.put("person2_dob", "11/11/1976");
         ocrList.put("person2_nino", "BB000000B");
-
-        return exceptionRecord(ocrList, docList);
     }
 
     private void findCaseByForCaseworkerReturnCaseDetails(String eventUrl, String mrnDate) throws Exception {
@@ -565,14 +559,15 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return Resources.toString(url, Charsets.toCharset("UTF-8"));
     }
 
-    private void verifyResultData(ResponseEntity<SuccessfulTransformationResponse> result, String expectedDataFileLocation) throws Exception {
+    private void verifyResultData(ResponseEntity<SuccessfulTransformationResponse> result, String expectedDataFileLocation, Function<SuccessfulTransformationResponse, String> getTya) throws Exception {
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
 
         SuccessfulTransformationResponse callbackResponse = result.getBody();
 
         String expected = loadJson(expectedDataFileLocation);
+        String tya = getTya.apply(callbackResponse);
 
-        expected = expected.replace("TYA_RANDOM_NUMBER", ((HashMap) ((HashMap) callbackResponse.getCaseCreationDetails().getCaseData().get("subscriptions")).get("appellantSubscription")).get("tya").toString());
+        expected = expected.replace("TYA_RANDOM_NUMBER", tya);
 
         ObjectMapper obj = new ObjectMapper();
         String jsonStr = obj.writeValueAsString(callbackResponse);
@@ -580,6 +575,14 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         JSONAssert.assertEquals(expected, jsonStr, NON_EXTENSIBLE);
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    private String getAppellantTya(SuccessfulTransformationResponse callbackResponse) {
+        return ((HashMap) ((HashMap) callbackResponse.getCaseCreationDetails().getCaseData().get("subscriptions")).get("appellantSubscription")).get("tya").toString();
+    }
+
+    private String getAppointeeTya(SuccessfulTransformationResponse callbackResponse) {
+        return ((HashMap) ((HashMap) callbackResponse.getCaseCreationDetails().getCaseData().get("subscriptions")).get("appointeeSubscription")).get("tya").toString();
     }
 
     private static <K, V> Map.Entry<K, V> entry(K key, V value) {

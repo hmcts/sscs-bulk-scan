@@ -329,7 +329,9 @@ public class SscsCaseValidator implements CaseValidator {
             }
 
             if (PERSON1_VALUE.equals(personType)) {
-                caseData.put("processingVenue", airLookupService.lookupAirVenueNameByPostCode(address.getPostcode(), benefitType));
+                String venue = airLookupService.lookupAirVenueNameByPostCode(address.getPostcode(), benefitType);
+                log.info("{} - setting venue name to {}", caseData.get("bulkScanCaseReference"), venue);
+                caseData.put("processingVenue", venue);
             }
         }
         if (identity != null) {
