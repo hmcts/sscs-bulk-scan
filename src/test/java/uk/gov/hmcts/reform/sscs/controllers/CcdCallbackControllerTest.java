@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.sscs.controllers;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -15,6 +14,7 @@ import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,11 +22,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionCaseData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler;
-import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
+import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.domain.State;
 import uk.gov.hmcts.reform.sscs.exceptions.ForbiddenException;
 import uk.gov.hmcts.reform.sscs.exceptions.UnauthorizedException;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -43,47 +43,32 @@ public class CcdCallbackControllerTest {
     @MockBean
     private AuthService authService;
 
-    private SampleCaseDataCreator caseDataCreator = new SampleCaseDataCreator();
-
     @Test
-    public void should_successfully_handle_callback_and_return_exception_record_response() throws Exception {
-        given(ccdCallbackHandler.handleOld(
-            any(ExceptionCaseData.class),
+    public void should_successfully_handle_callback_and_return_validate_response() throws Exception {
+
+        given(ccdCallbackHandler.handleValidationAndUpdate(
+            ArgumentMatchers.any(),
             eq(IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
-        ).willReturn(AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseDataCreator.exceptionCaseData())
-            .build()
-        );
+        ).willReturn(new PreSubmitCallbackResponse<>(SscsCaseData.builder().state(State.WITH_DWP).build()));
 
         given(authService.authenticate("test-header"))
             .willReturn("some-service");
 
         doNothing().when(authService).assertIsAllowedToHandleCallback("some-service");
 
-        mockMvc.perform(post("/exception-record")
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/validate-record")
+            .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("serviceauthorization", TEST_SERVICE_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
-            .content(exceptionRecord("exceptionrecord.json")))
-            .andExpect(jsonPath("$['data'].journeyClassification", is("New Application")))
-            .andExpect(jsonPath("$['data'].poBoxJurisdiction", is("SSCS")))
-            .andExpect(jsonPath("$['data'].poBox", is("SSCSPO")))
-            .andExpect(jsonPath("$['data'].openingDate", is("2018-01-11")))
-
-            .andExpect(jsonPath("$['data'].scannedDocuments[0].value.key", is("firstName")))
-            .andExpect(jsonPath("$['data'].scannedDocuments[0].value.value", is("John")))
-            .andExpect(jsonPath("$['data'].scannedDocuments[0].id", is("d55a7f14-92c3-4134-af78-f2aa2b201841")))
-
-            .andExpect(jsonPath("$['data'].scannedDocuments[1].value.key", is("lastName")))
-            .andExpect(jsonPath("$['data'].scannedDocuments[1].value.value", is("Smith")))
-            .andExpect(jsonPath("$['data'].scannedDocuments[1].id", is("d55a7f14-92c3-4134-af78-f2aa2b201841")));
+            .content(exceptionRecord("validation/validate-appeal-created-case-request.json")))
+            .andExpect(jsonPath("$['data'].state", is("withDwp")));
     }
 
     @Test
     public void should_throw_exception_when_handler_fails() throws Exception {
-        given(ccdCallbackHandler.handleOld(
-            any(ExceptionCaseData.class),
+        given(ccdCallbackHandler.handleValidationAndUpdate(
+            ArgumentMatchers.any(),
             eq(IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build()))
         ).willThrow(RuntimeException.class);
 
@@ -92,12 +77,12 @@ public class CcdCallbackControllerTest {
 
         doNothing().when(authService).assertIsAllowedToHandleCallback("some-service");
 
-        MvcResult result =  mockMvc.perform(post("/exception-record")
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+        MvcResult result =  mockMvc.perform(post("/validate-record")
+            .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("serviceauthorization", TEST_SERVICE_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
-            .content(exceptionRecord("exceptionrecord.json")))
+            .content(exceptionRecord("validation/validate-appeal-created-case-request.json")))
             .andReturn();
 
         String content = result.getResponse().getContentAsString();
@@ -112,11 +97,11 @@ public class CcdCallbackControllerTest {
             .given(authService).authenticate(null);
 
         // when
-        mockMvc.perform(post("/exception-record")
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/validate-record")
+            .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
-            .content(exceptionRecord("exceptionrecord.json")))
+            .content(exceptionRecord("validation/validate-appeal-created-case-request.json")))
             .andExpect(status().isUnauthorized());
     }
 
@@ -127,12 +112,12 @@ public class CcdCallbackControllerTest {
             .given(authService).authenticate(null);
 
         // when
-        mockMvc.perform(post("/exception-record")
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/validate-record")
+            .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("Authorization", TEST_USER_AUTH_TOKEN)
             .header("user-id", TEST_USER_ID)
-            .content(exceptionRecord("exceptionrecord.json")))
+            .content(exceptionRecord("validation/validate-appeal-created-case-request.json")))
             .andExpect(status().isForbidden());
     }
 }

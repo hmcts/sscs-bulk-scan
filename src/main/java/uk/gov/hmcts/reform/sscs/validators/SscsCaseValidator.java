@@ -15,8 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
@@ -76,24 +74,6 @@ public class SscsCaseValidator implements CaseValidator {
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.postcodeValidator = postcodeValidator;
         this.sscsJsonExtractor = sscsJsonExtractor;
-    }
-
-    //FIXME: Remove after bulk scan migration
-    @Override
-    public CaseResponse validateExceptionRecordOld(AboutToStartOrSubmitCallbackResponse transformErrorResponse, CaseDetails caseDetails, Map<String, Object> caseData) {
-        warnings = transformErrorResponse != null && transformErrorResponse.getWarnings() != null ? transformErrorResponse.getWarnings() : new ArrayList<>();
-        errors = new ArrayList<>();
-        callbackType = EXCEPTION_CALLBACK;
-
-        ScannedData ocrCaseData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
-
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false);
-
-        return CaseResponse.builder()
-            .errors(errors)
-            .warnings(warnings)
-            .transformedCase(caseData)
-            .build();
     }
 
     @Override

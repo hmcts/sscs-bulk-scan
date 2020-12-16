@@ -1,0 +1,196 @@
+{
+  "case_creation_details": {
+    "case_type_id": "Benefit",
+    "event_id": "validAppealCreated",
+    "case_data": {
+      "evidencePresent": "Yes",
+      "caseCode": "001DD",
+      "subscriptions": {
+        "appellantSubscription": null,
+        "supporterSubscription": null,
+        "representativeSubscription": {
+          "wantSmsNotifications": "No",
+          "tya": "TYA_RANDOM_NUMBER_REP",
+          "email": null,
+          "mobile": null,
+          "subscribeEmail": "No",
+          "subscribeSms": "No",
+          "reason": null,
+          "lastLoggedIntoMya": null
+        },
+        "appointeeSubscription": {
+          "wantSmsNotifications": "No",
+          "tya": "TYA_RANDOM_NUMBER_APPOINTEE",
+          "email": null,
+          "mobile": "07832882849",
+          "subscribeEmail": "No",
+          "subscribeSms": "No",
+          "reason": null,
+          "lastLoggedIntoMya": null
+        },
+        "jointPartySubscription": null
+      },
+      "formType": "sscs1",
+      "dwpRegionalCentre": "Universal Credit",
+      "bulkScanCaseReference": "id",
+      "appeal": {
+        "mrnDetails": {
+          "dwpIssuingOffice": "Universal Credit",
+          "mrnDate": "2020-04-09",
+          "mrnLateReason": "see scanned SSCS1 form",
+          "mrnMissingReason": null
+        },
+        "appellant": {
+          "name": {
+            "title": "Mrs",
+            "firstName": "Sarah",
+            "lastName": "Smith"
+          },
+          "address": {
+            "line1": "109 Drake Close",
+            "line2": "Hutton",
+            "town": "Brentwood",
+            "county": "Essex",
+            "postcode": "SE166RS"
+          },
+          "contact": {
+            "email": null,
+            "phone": null,
+            "mobile": null
+          },
+          "identity": {
+            "dob": "1979-12-09",
+            "nino": "BB000000B"
+          },
+          "isAppointee": "Yes",
+          "appointee": {
+            "name": {
+              "title": "Dr",
+              "firstName": "Frederick",
+              "lastName": "Falafel"
+            },
+            "address": {
+              "line1": "1 New Street",
+              "line2": "Smallville",
+              "town": "Newbury",
+              "county": "Berkshire",
+              "postcode": "CF48 2HY"
+            },
+            "contact": {
+              "email": null,
+              "phone": "01895733303",
+              "mobile": "07832882849"
+            },
+            "identity": {
+              "dob": "1976-11-11",
+              "nino": "BB000000B"
+            }
+          },
+          "isAddressSameAsAppointee": null
+        },
+        "benefitType": {
+          "code": "UC",
+          "description": "Universal Credit"
+        },
+        "hearingOptions": {
+          "wantsToAttend": "No",
+          "wantsSupport": "Yes",
+          "languageInterpreter": "Yes",
+          "languages": "Spanish",
+          "arrangements": [
+            "hearingLoop"
+          ],
+          "scheduleHearing": "No",
+          "excludeDates": [
+            {
+              "value": {
+                "start": "2030-11-01",
+                "end": null
+              }
+            },
+            {
+              "value": {
+                "start": "2030-12-01",
+                "end": null
+              }
+            }
+          ],
+          "agreeLessNotice": "Yes",
+          "other": "Wheelchair access"
+        },
+        "appealReasons": {
+          "reasons": [
+            {
+              "value": {
+                "reason": null,
+                "description": "see scanned SSCS1 form"
+              }
+            }
+          ]
+        },
+        "rep": {
+          "hasRepresentative": "Yes",
+          "organisation": "ABC Advisory Services",
+          "name": {
+            "title": "Mr",
+            "firstName": "Peter",
+            "lastName": "Hyland"
+          },
+          "address": {
+            "line1": "63 Grove Hill Road",
+            "line2": "The Square",
+            "town": "Redhill",
+            "county": "Surrey",
+            "postcode": "RH1 5BT"
+          },
+          "contact": {
+            "email": null,
+            "phone": "02072323231",
+            "mobile": null
+          }
+        },
+        "signer": "Sarah Smith",
+        "hearingType": "paper",
+        "hearingSubtype": {
+
+        },
+        "receivedVia": "Paper"
+      },
+      "benefitCode": "001",
+      "sscsDocument": [
+        {
+          "value": {
+            "documentType": "appellantEvidence",
+            "documentFileName": "987654321-123456789.pdf",
+            "documentDateAdded": "2019-08-01",
+            "documentLink": {
+              "document_url": "url",
+              "document_binary_url": "binary-url",
+              "document_filename": "987654321-123456789.pdf"
+            }
+          }
+        }
+      ],
+      "linkedCasesBoolean": "No",
+      "caseCreated": "2019-08-02",
+      "regionalProcessingCenter": {
+        "faxNumber": "0870 739 4229",
+        "address4": "9 The Pavement, Grove Road",
+        "phoneNumber": "0300 123 1142",
+        "name": "SUTTON",
+        "address1": "HM Courts & Tribunals Service",
+        "address2": "Social Security & Child Support Appeals",
+        "address3": "Copthall House",
+        "postcode": "SM1 1DA",
+        "city": "SUTTON",
+        "email": "Sutton_SYA_Respons@justice.gov.uk"
+      },
+      "createdInGapsFrom": "readyToList",
+      "region": "SUTTON",
+      "issueCode": "DD"
+    }
+  },
+  "warnings": [
+
+  ]
+}

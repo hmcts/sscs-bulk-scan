@@ -1,13 +1,11 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.buildOld;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
@@ -23,24 +21,6 @@ public class SscsKeyValuePairValidator {
     private final String schemaResourceLocation = "/schema/sscs-bulk-scan-schema.json";
 
     private Schema schema = null;
-
-    //FIXME: Remove after bulk scan migration
-    public CaseResponse validateOld(Map<String, Object> keyValuePairs, String property) {
-        tryLoadSchema(schemaResourceLocation);
-
-        List<String> errors = null;
-
-        try {
-            Map<String, Object> builtMap = property.equals("ocr_data_fields") ? null : buildOld(keyValuePairs, property);
-            schema.validate(new JSONObject(builtMap));
-        } catch (ValidationException ex) {
-            errors = new ArrayList<>();
-            for (String message : ex.getAllMessages()) {
-                errors.add(message);
-            }
-        }
-        return CaseResponse.builder().errors(errors).build();
-    }
 
     public CaseResponse validate(List<OcrDataField> ocrDataValidationRequest) {
         tryLoadSchema(schemaResourceLocation);

@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.sscs.json;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTestOld.*;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -106,5 +106,10 @@ public class SscsJsonExtractorTest {
         ScannedData result = sscsJsonExtractor.extractJson(ExceptionRecord.builder().openingDate(null).build());
 
         assertEquals(DateTime.now().toLocalDate().toString(), result.getOpeningDate());
+    }
+
+    @SafeVarargs
+    public static final ExceptionRecord buildExceptionRecordFromOcrData(Map<String, Object>... valueMap) {
+        return ExceptionRecord.builder().ocrDataFields(buildScannedValidationOcrData(valueMap)).build();
     }
 }

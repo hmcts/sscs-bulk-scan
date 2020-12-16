@@ -1,15 +1,12 @@
 package uk.gov.hmcts.reform.sscs.functional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static org.junit.Assert.assertEquals;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import java.io.IOException;
-import java.util.Map;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.slf4j.Slf4j;
@@ -24,110 +21,46 @@ import org.springframework.test.context.TestPropertySource;
 @Slf4j
 public class TransformationFunctionalTest extends BaseFunctionalTest {
 
-    @SuppressWarnings("unchecked")
     @Test
     public void transform_appeal_created_case_when_all_fields_entered() throws IOException {
-        String json = getJson("exception/all_fields_entered.json");
-        Response response = transformExceptionRequest(json, OK.value());
+        String expectedJson = getJson("exception/output/expected_all_fields_entered.json");
 
-        JsonPath transformationResponse = response.getBody().jsonPath();
+        String jsonRequest = getJson("exception/all_fields_entered.json");
 
-        assertSoftly(softly -> {
-            softly.assertThat(transformationResponse.getList("warnings")).isEmpty();
-            softly.assertThat(transformationResponse.getMap("case_creation_details").get("case_type_id"))
-                .isEqualTo("Benefit");
-            softly.assertThat(transformationResponse.getMap("case_creation_details").get("event_id"))
-                .isEqualTo("validAppealCreated");
-
-            Map<String, Object> caseData = (Map<String, Object>) transformationResponse
-                .getMap("case_creation_details")
-                .get("case_data");
-
-            softly.assertThat(caseData.get("caseCreated")).isEqualTo("2019-08-02");
-
-            softly.assertAll();
-        });
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
-    
-    @SuppressWarnings("unchecked")
+
     @Test
     public void transform_appeal_created_case_when_all_fields_entered_uc() throws IOException {
-        String json = getJson("exception/all_fields_entered_uc.json");
-        Response response = transformExceptionRequest(json, OK.value());
+        String expectedJson = getJson("exception/output/expected_all_fields_entered_uc.json");
 
-        JsonPath transformationResponse = response.getBody().jsonPath();
+        String jsonRequest = getJson("exception/all_fields_entered_uc.json");
 
-        assertSoftly(softly -> {
-            softly.assertThat(transformationResponse.getList("warnings")).isEmpty();
-            softly.assertThat(transformationResponse.getMap("case_creation_details").get("case_type_id"))
-                .isEqualTo("Benefit");
-            softly.assertThat(transformationResponse.getMap("case_creation_details").get("event_id"))
-                .isEqualTo("validAppealCreated");
-
-            Map<String, Object> caseData = (Map<String, Object>) transformationResponse
-                .getMap("case_creation_details")
-                .get("case_data");
-
-            softly.assertThat(caseData.get("caseCreated")).isEqualTo("2019-08-02");
-
-            softly.assertAll();
-        });
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void transform_incomplete_case_when_missing_mandatory_fields() throws IOException {
-        String json = getJson("exception/some_mandatory_fields_missing.json");
-        Response response = transformExceptionRequest(json, OK.value());
+        String expectedJson = getJson("exception/output/expected_some_mandatory_fields_missing.json");
 
-        JsonPath transformationResponse = response.getBody().jsonPath();
+        String jsonRequest = getJson("exception/some_mandatory_fields_missing.json");
 
-        assertSoftly(softly -> {
-            softly.assertThat(transformationResponse.getList("warnings")).isNotEmpty();
-            softly.assertThat(transformationResponse.getMap("case_creation_details").get("case_type_id"))
-                .isEqualTo("Benefit");
-            softly.assertThat(transformationResponse.getMap("case_creation_details").get("event_id"))
-                .isEqualTo("incompleteApplicationReceived");
-
-            Map<String, Object> caseData = (Map<String, Object>) transformationResponse
-                .getMap("case_creation_details")
-                .get("case_data");
-
-            softly.assertThat(caseData.get("caseCreated")).isEqualTo("2019-08-02");
-
-            softly.assertAll();
-        });
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    @Parameters({"see scanned SSCS1 form,over13months", ",over13MonthsAndGroundsMissing"})
+    @Parameters({"see scanned SSCS1 form,mrn_date_greater_than_13_months.json", ",mrn_date_greater_than_13_months_grounds_missing.json"})
     public void transform_interlocutory_review_case_when_mrn_date_greater_than_13_months(String appealGrounds,
-                                                                                      String expected) throws IOException {
-        String json = getJson("exception/mrn_date_greater_than_13_months.json");
-        json = json.replace("APPEAL_GROUNDS", appealGrounds);
+                                                                                         String path) throws IOException {
+        String expectedJson = getJson("exception/output/expected_" + path);
 
-        Response response = transformExceptionRequest(json, OK.value());
+        String jsonRequest = getJson("exception/mrn_date_greater_than_13_months.json");
+        jsonRequest = jsonRequest.replace("APPEAL_GROUNDS", appealGrounds);
 
-        JsonPath transformationResponse = response.getBody().jsonPath();
-
-        assertSoftly(softly -> {
-            softly.assertThat(transformationResponse.getList("warnings")).isEmpty();
-            softly.assertThat(transformationResponse.getMap("case_creation_details").get("case_type_id"))
-                .isEqualTo("Benefit");
-            softly.assertThat(transformationResponse.getMap("case_creation_details").get("event_id"))
-                .isEqualTo("nonCompliant");
-
-            Map<String, Object> caseData = (Map<String, Object>) transformationResponse
-                .getMap("case_creation_details")
-                .get("case_data");
-
-            softly.assertThat(caseData.get("caseCreated")).isEqualTo("2019-08-02");
-            assertEquals(expected, caseData.get("interlocReferralReason"));
-
-            softly.assertAll();
-        });
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
+
+
 
     @Test
     public void should_not_transform_exception_record_when_schema_validation_fails_and_respond_with_422() throws IOException {

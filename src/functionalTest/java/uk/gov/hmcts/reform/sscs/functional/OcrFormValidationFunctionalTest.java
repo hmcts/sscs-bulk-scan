@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 public class OcrFormValidationFunctionalTest extends BaseFunctionalTest {
 
     @Test
-    @Parameters({"SSCS1", "SSCS1PE"})
+    @Parameters({"SSCS1", "SSCS1PE", "SSCS1PEU"})
     public void should_validate_ocr_data_and_return_success(String formType) throws IOException {
         String json = getJson("validation/valid-ocr-form-data.json");
         json = replaceNino(json);
