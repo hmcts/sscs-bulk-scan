@@ -27,7 +27,7 @@
           },
           "identity": {
             "dob": "1976-11-11",
-            "nino": "{PERSON1_NINO}"
+            "nino": "{PERSON1_NINO_INVALID}"
           },
           "isAddressSameAsAppointee": null,
           "isAppointee": "No",

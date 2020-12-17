@@ -15,10 +15,7 @@ import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -173,9 +170,22 @@ public class BaseFunctionalTest {
         return simulateCcdCallbackNoUserIdOrAuthorization(json,"/transform-exception-record", statusCode);
     }
 
-    protected String replaceNino(String json) {
-        json = json.replace("{PERSON1_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "A");
-        json = json.replace("{PERSON2_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "B");
+    protected String generateRandomNino() {
+        String firstChar = generateRandomCharacterFromRange("ABCEHJKLMNOPRSTWXYZ");
+        String secondChar = generateRandomCharacterFromRange("ABCEHJLMPRSWXY");
+        String lastChar = generateRandomCharacterFromRange("ABCD");;
+
+        return firstChar + secondChar + RandomStringUtils.random(6, false, true) + lastChar;
+    }
+
+    private String generateRandomCharacterFromRange(String range) {
+        Random r = new Random();
+        return String.valueOf(range.charAt(r.nextInt(range.length())));
+    }
+
+    protected String replaceNino(String json, String person1Nino, String person2Nino) {
+        json = json.replace("{PERSON1_NINO}", person1Nino);
+        json = json.replace("{PERSON2_NINO}", person2Nino);
         return json;
     }
 

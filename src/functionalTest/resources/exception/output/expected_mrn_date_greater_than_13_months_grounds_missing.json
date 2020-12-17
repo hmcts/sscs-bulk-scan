@@ -26,7 +26,7 @@
             },
             "identity": {
               "dob": "1976-11-11",
-              "nino": "BB000000B"
+              "nino": "{PERSON1_NINO}"
             },
             "name": {
               "firstName": "Frederick",
@@ -41,7 +41,7 @@
           },
           "identity": {
             "dob": "1979-12-09",
-            "nino": "BB000000B"
+            "nino": "{PERSON2_NINO}"
           },
           "isAddressSameAsAppointee": null,
           "isAppointee": "Yes",

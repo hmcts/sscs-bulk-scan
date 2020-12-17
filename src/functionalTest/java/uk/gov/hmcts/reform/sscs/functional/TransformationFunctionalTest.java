@@ -25,7 +25,13 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
     public void transform_appeal_created_case_when_all_fields_entered() throws IOException {
         String expectedJson = getJson("exception/output/expected_all_fields_entered.json");
 
+        String person1Nino = generateRandomNino();
+        String person2Nino = generateRandomNino();
+
+        expectedJson = replaceNino(expectedJson, person1Nino, person2Nino);
+
         String jsonRequest = getJson("exception/all_fields_entered.json");
+        jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
 
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
@@ -34,11 +40,18 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
     public void transform_appeal_created_case_when_all_fields_entered_uc() throws IOException {
         String expectedJson = getJson("exception/output/expected_all_fields_entered_uc.json");
 
+        String person1Nino = generateRandomNino();
+        String person2Nino = generateRandomNino();
+
+        expectedJson = replaceNino(expectedJson, person1Nino, person2Nino);
+
         String jsonRequest = getJson("exception/all_fields_entered_uc.json");
+        jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
 
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
 
+    //FIXME nino
     @Test
     public void transform_incomplete_case_when_missing_mandatory_fields() throws IOException {
         String expectedJson = getJson("exception/output/expected_some_mandatory_fields_missing.json");
@@ -54,13 +67,16 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
                                                                                          String path) throws IOException {
         String expectedJson = getJson("exception/output/expected_" + path);
 
+        String person1Nino = generateRandomNino();
+        String person2Nino = generateRandomNino();
+        expectedJson = replaceNino(expectedJson, person1Nino, person2Nino);
+
         String jsonRequest = getJson("exception/mrn_date_greater_than_13_months.json");
         jsonRequest = jsonRequest.replace("APPEAL_GROUNDS", appealGrounds);
+        jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
 
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
-
-
 
     @Test
     public void should_not_transform_exception_record_when_schema_validation_fails_and_respond_with_422() throws IOException {

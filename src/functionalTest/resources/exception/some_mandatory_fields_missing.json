@@ -77,7 +77,7 @@
     },
     {
       "name": "person1_nino",
-      "value": "{PERSON1_NINO}"
+      "value": "{PERSON1_NINO_INVALID}"
     },
     {
       "name": "representative_address_line3",
