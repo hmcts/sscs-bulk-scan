@@ -215,7 +215,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.1.2'
 
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '4.1.25'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '4.1.26'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.2'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.2'
