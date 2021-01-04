@@ -73,4 +73,5 @@ public class OcrDataBuilderTest {
 
         return scannedOcrDataList;
     }
+
 }

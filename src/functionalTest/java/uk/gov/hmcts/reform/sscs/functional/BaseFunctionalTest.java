@@ -1,8 +1,12 @@
 package uk.gov.hmcts.reform.sscs.functional;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
 import io.restassured.RestAssured;
@@ -11,8 +15,7 @@ import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -78,6 +81,24 @@ public class BaseFunctionalTest {
         return response;
     }
 
+    protected Response simulateCcdCallbackNoUserIdOrAuthorization(String json, JsonPath expectedJson, String urlPath, int expectedStatusCode) {
+        final String callbackUrl = testUrl + urlPath;
+
+        RestAssured.useRelaxedHTTPSValidation();
+        Response response = RestAssured
+            .given()
+            .header("ServiceAuthorization", "" + idamTokens.getServiceAuthorization())
+            .contentType("application/json")
+            .then()
+            .body(json, equalTo(expectedJson.getMap("")))
+            .when()
+            .post(callbackUrl);
+
+        assertEquals(expectedStatusCode, response.getStatusCode());
+
+        return response;
+    }
+
     protected Response simulateCcdCallback(String json, String urlPath, int expectedStatusCode) {
         final String callbackUrl = testUrl + urlPath;
 
@@ -89,6 +110,26 @@ public class BaseFunctionalTest {
             .header("user-id", idamTokens.getUserId())
             .contentType("application/json")
             .body(json)
+            .when()
+            .post(callbackUrl);
+
+        assertEquals(expectedStatusCode, response.getStatusCode());
+
+        return response;
+    }
+
+    protected Response simulateCcdCallback(String json, JsonPath expectedJson, String urlPath, int expectedStatusCode) {
+        final String callbackUrl = testUrl + urlPath;
+
+        RestAssured.useRelaxedHTTPSValidation();
+        Response response = RestAssured
+            .given()
+            .header("ServiceAuthorization", "" + idamTokens.getServiceAuthorization())
+            .header(AUTHORIZATION, idamTokens.getIdamOauth2Token())
+            .header("user-id", idamTokens.getUserId())
+            .contentType("application/json")
+            .then()
+            .body("", equalTo(expectedJson.getMap("")))
             .when()
             .post(callbackUrl);
 
@@ -117,10 +158,6 @@ public class BaseFunctionalTest {
         return FileUtils.readFileToString(new File(file), StandardCharsets.UTF_8.name());
     }
 
-    protected Response exceptionRecordEndpointRequest(String json, int statusCode) {
-        return simulateCcdCallback(json, "/exception-record", statusCode);
-    }
-
     protected Response validateRecordEndpointRequest(String json, int statusCode) {
         return simulateCcdCallback(json, "/validate-record", statusCode);
     }
@@ -130,12 +167,59 @@ public class BaseFunctionalTest {
     }
 
     protected Response transformExceptionRequest(String json, int statusCode) {
-        return simulateCcdCallbackNoUserIdOrAuthorization(json, "/transform-exception-record", statusCode);
+        return simulateCcdCallbackNoUserIdOrAuthorization(json,"/transform-exception-record", statusCode);
     }
 
-    protected String replaceNino(String json) {
-        json = json.replace("{PERSON1_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "A");
-        json = json.replace("{PERSON2_NINO}", "BB" + RandomStringUtils.random(6, false, true) + "B");
+    protected String generateRandomNino() {
+        String firstChar = generateRandomCharacterFromRange("ABCEHJKLMNOPRSTWXYZ");
+        String secondChar = generateRandomCharacterFromRange("ABCEHJLMPRSWXY");
+        String lastChar = generateRandomCharacterFromRange("ABCD");;
+
+        return firstChar + secondChar + RandomStringUtils.random(6, false, true) + lastChar;
+    }
+
+    private String generateRandomCharacterFromRange(String range) {
+        Random r = new Random();
+        return String.valueOf(range.charAt(r.nextInt(range.length())));
+    }
+
+    protected String replaceNino(String json, String person1Nino, String person2Nino) {
+        json = json.replace("{PERSON1_NINO}", person1Nino);
+        json = json.replace("{PERSON2_NINO}", person2Nino);
         return json;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void verifyResponseIsExpected(String expectedJson, Response response) throws JsonProcessingException {
+        JsonPath transformationResponse = response.getBody().jsonPath();
+
+        Map<String, Object> caseData = ((Map<String, Object>) transformationResponse
+            .getMap("case_creation_details")
+            .get("case_data"));
+
+        LinkedHashMap subscriptions = ((LinkedHashMap) caseData.get("subscriptions"));
+
+        expectedJson = replaceTyaInSubscription(expectedJson, "appellantSubscription", "TYA_RANDOM_NUMBER_APPELLANT", subscriptions);
+        expectedJson = replaceTyaInSubscription(expectedJson, "appointeeSubscription", "TYA_RANDOM_NUMBER_APPOINTEE", subscriptions);
+        expectedJson = replaceTyaInSubscription(expectedJson, "representativeSubscription", "TYA_RANDOM_NUMBER_REP", subscriptions);
+        expectedJson = replaceTyaInSubscription(expectedJson, "jointPartySubscription", "TYA_RANDOM_NUMBER_JOINT_PARTY", subscriptions);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        JsonNode expectedJsonNode = mapper.readTree(expectedJson);
+        JsonNode actualJsonNode = mapper.readTree(response.getBody().prettyPrint());
+
+        assertEquals(expectedJsonNode, actualJsonNode);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String replaceTyaInSubscription(String expectedJson, String subscriptionType, String replaceKey, LinkedHashMap subscriptions) {
+
+        LinkedHashMap subscriptionFromType = (LinkedHashMap) subscriptions.get(subscriptionType);
+
+        if (subscriptionFromType != null) {
+            expectedJson = expectedJson.replace(replaceKey, (String) subscriptionFromType.get("tya"));
+        }
+        return expectedJson;
     }
 }

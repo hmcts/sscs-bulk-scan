@@ -19,7 +19,7 @@
           },
           "identity": {
             "dob": "1904-03-10",
-            "nino": "AB 22 55 66 B"
+            "nino": "BB000000B"
           },
           "name": {
             "firstName": "User",
@@ -30,11 +30,19 @@
         "benefitType": {
           "code": "ESA"
         },
+        "hearingType": "oral",
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
           "wantsSupport": "Yes",
           "wantsToAttend": "Yes"
+        },
+        "hearingSubtype": {
+          "wantsHearingTypeTelephone": "Yes",
+          "hearingTelephoneNumber": "01234555996",
+          "wantsHearingTypeVideo": "Yes",
+          "hearingVideoEmail": "my@email.com",
+          "wantsHearingTypeFaceToFace": "No"
         },
         "mrnDetails": {
           "mrnDate": "2018-12-09",
@@ -42,7 +50,8 @@
         },
         "signer": null
       },
-      "caseReference": "SC022/14/12423"
+      "caseReference": "SC022/14/12423",
+      "ccdCaseId": "1234567"
     },
     "case_type_id": "Benefit",
     "created_date": [
@@ -55,7 +64,7 @@
       23000000
     ],
     "state": "incompleteApplication",
-    "id": "CASE_ID_TO_BE_REPLACED"
+    "id": "1234567"
   },
   "event_id": "validAppeal"
 }

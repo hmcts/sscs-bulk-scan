@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
@@ -122,31 +121,6 @@ public class SscsCaseTransformer implements CaseTransformer {
         errors.clear();
 
         return mergedWarnings;
-    }
-
-    @Override
-    public CaseResponse transformExceptionRecordToCaseOld(CaseDetails caseDetails, IdamTokens token) {
-        String caseId = caseDetails.getCaseId();
-
-        log.info("Transforming exception record {}", caseId);
-
-        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validateOld(caseDetails.getCaseData(), "scanOCRData");
-
-        if (keyValuePairValidatorResponse.getErrors() != null) {
-            log.info("Errors found while validating key value pairs while transforming exception record {}", caseId);
-            return keyValuePairValidatorResponse;
-        }
-
-        log.info("Key value pairs validated while transforming exception record {}", caseId);
-
-        errors = new HashSet<>();
-        warnings = new HashSet<>();
-
-        ScannedData scannedData = sscsJsonExtractor.extractJsonOld(caseDetails.getCaseData());
-
-        Map<String, Object> transformed = transformData(caseId, scannedData, token, null);
-
-        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings)).build();
     }
 
     private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token, String formType) {

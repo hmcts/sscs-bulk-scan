@@ -85,7 +85,7 @@
     },
     {
       "name": "person1_nino",
-      "value": "BB000000B"
+      "value": "{PERSON1_NINO}"
     },
     {
       "name": "person2_title",
@@ -125,7 +125,7 @@
     },
     {
       "name": "person2_nino",
-      "value": "BB000000B"
+      "value": "{PERSON2_NINO}"
     },
     {
       "name": "representative_company",

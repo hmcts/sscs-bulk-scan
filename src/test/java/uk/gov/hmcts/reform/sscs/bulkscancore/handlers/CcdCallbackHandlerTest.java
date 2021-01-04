@@ -20,7 +20,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -28,7 +27,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
-import uk.gov.hmcts.reform.sscs.common.SampleCaseDataCreator;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
@@ -42,16 +40,11 @@ public class CcdCallbackHandlerTest {
 
     private CcdCallbackHandler ccdCallbackHandler;
 
-    private SampleCaseDataCreator caseDataCreator = new SampleCaseDataCreator();
-
     @Mock
     private CaseTransformer caseTransformer;
 
     @Mock
     private CaseValidator caseValidator;
-
-    @Mock
-    private CaseDataHandler caseDataHandler;
 
     @Mock
     private DwpAddressLookupService dwpAddressLookupService;
@@ -70,11 +63,10 @@ public class CcdCallbackHandlerTest {
     @Before
     public void setUp() {
         sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), new ArrayList<>(), dwpAddressLookupService);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, caseDataHandler, sscsDataHelper,
-            dwpAddressLookupService);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService);
+
         idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
-        ReflectionTestUtils.setField(ccdCallbackHandler, "debugJson", false);
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("PIP", "3"))
             .willReturn("Springburn");
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("ESA", "Balham DRT"))
