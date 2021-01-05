@@ -15,13 +15,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
-import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @RunWith(SpringRunner.class)
 public class SscsDataHelperTest {
@@ -30,6 +29,12 @@ public class SscsDataHelperTest {
 
     @Mock
     private DwpAddressLookupService dwpAddressLookupService;
+
+    @Mock
+    private AirLookupService airLookupService;
+
+    @Mock
+    private PostcodeValidator postcodeValidator;
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -41,7 +46,7 @@ public class SscsDataHelperTest {
         offices.add("3");
         offices.add("Balham DRT");
 
-        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), offices, dwpAddressLookupService);
+        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), offices, dwpAddressLookupService, airLookupService, postcodeValidator);
     }
 
     @Test
@@ -124,5 +129,26 @@ public class SscsDataHelperTest {
         String result = caseDataHelper.getCreatedInGapsFromField(Appeal.builder().mrnDetails(MrnDetails.builder().dwpIssuingOffice("My PIP Office 4").build()).build());
 
         assertNull(result);
+    }
+
+    @Test
+    public void givenAppellantAddressExist_thenReturnProcessingVenue() {
+        when(postcodeValidator.isValid("CR2 8YY")).thenReturn(true);
+        when(postcodeValidator.isValidPostcodeFormat("CR2 8YY")).thenReturn(true);
+        when(airLookupService.lookupAirVenueNameByPostCode("CR2 8YY", BenefitType.builder().code("PIP").build())).thenReturn("Cardiff");
+        String result = caseDataHelper.findProcessingVenue(Appellant.builder().address(Address.builder().postcode("CR2 8YY").build()).build(), BenefitType.builder().code("PIP").build());
+        assertEquals("Cardiff", result);
+    }
+
+    @Test
+    public void givenAppellantAndAppointeeAddressExist_thenReturnProcessingVenue() {
+        when(postcodeValidator.isValid("CR2 8YY")).thenReturn(true);
+        when(postcodeValidator.isValidPostcodeFormat("CR2 8YY")).thenReturn(true);
+        when(airLookupService.lookupAirVenueNameByPostCode("CR2 8YY", BenefitType.builder().code("PIP").build())).thenReturn("Cardiff");
+        String result = caseDataHelper.findProcessingVenue(Appellant.builder()
+            .address(Address.builder().postcode("TS3 6NM").build())
+            .appointee(Appointee.builder().address(Address.builder().postcode("CR2 8YY").build()).build())
+            .build(), BenefitType.builder().code("PIP").build());
+        assertEquals("Cardiff", result);
     }
 }

@@ -33,7 +33,9 @@ import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationRe
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
+import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @RunWith(SpringRunner.class)
 public class CcdCallbackHandlerTest {
@@ -49,6 +51,12 @@ public class CcdCallbackHandlerTest {
     @Mock
     private DwpAddressLookupService dwpAddressLookupService;
 
+    @Mock
+    private AirLookupService airLookupService;
+
+    @Mock
+    private PostcodeValidator postcodeValidator;
+
     private SscsDataHelper sscsDataHelper;
 
     @Captor
@@ -62,7 +70,7 @@ public class CcdCallbackHandlerTest {
 
     @Before
     public void setUp() {
-        sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), new ArrayList<>(), dwpAddressLookupService);
+        sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), new ArrayList<>(), dwpAddressLookupService, airLookupService, postcodeValidator);
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService);
 
         idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
@@ -71,6 +79,10 @@ public class CcdCallbackHandlerTest {
             .willReturn("Springburn");
         given(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice("ESA", "Balham DRT"))
             .willReturn("Balham");
+
+        given(airLookupService.lookupAirVenueNameByPostCode(anyString(), any(BenefitType.class))).willReturn("Cardiff");
+        given(postcodeValidator.isValid(anyString())).willReturn(true);
+        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
         LocalDate localDate = LocalDate.now();
 
@@ -207,6 +219,7 @@ public class CcdCallbackHandlerTest {
             .appellant(Appellant.builder()
                 .name(Name.builder().firstName("Fred").lastName("Ward").build())
                 .identity(Identity.builder().nino("JT123456N").dob("12/08/1990").build())
+                .address(Address.builder().postcode("CV35 2TD").build())
                 .build())
             .mrnDetails(MrnDetails.builder().dwpIssuingOffice("3").build())
             .benefitType(BenefitType.builder().code("PIP").build())
@@ -234,6 +247,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Springburn");
+        assertThat(ccdCallbackResponse.getData().getProcessingVenue()).isEqualTo("Cardiff");
     }
 
     @Test
