@@ -63,9 +63,6 @@ schema.location: /schema/sscs-bulk-scan-schema.json
 validation:
   titles: Cllr,Count,DC,Dr,DS,Insp,Lady,Lord,Miss,Mr & Mrs,Mr,Mrs,Ms,PC,Rev,S/M,Sgt
 
-feature:
-  debug_json: ${DEBUG_JSON:false}
-
 postcode-validator:
   url: ${POSTCODE_VALIDATOR_URL:https://api.postcodes.io/postcodes/{postcode}/validate}
   enabled: ${POSTCODE_VALIDATOR_ENABLED:true}

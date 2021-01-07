@@ -25,13 +25,13 @@ public class GetSmokeCase {
     private IdamService idamService;
 
     @Test
-    public void givenASmokeCase_retrieveFromCcd() throws IOException {
+    public void givenASmokeCase_thenValidate() throws IOException {
         RestAssured.baseURI = appUrl;
         RestAssured.useRelaxedHTTPSValidation();
 
         IdamTokens idamTokens = idamService.getIdamTokens();
 
-        List<String> errors = RestAssured
+        List<String> warnings = RestAssured
             .given()
             .contentType("application/json")
             .header("Authorization", idamTokens.getIdamOauth2Token())
@@ -39,12 +39,12 @@ public class GetSmokeCase {
             .header("user-id", idamTokens.getUserId())
             .body(exceptionRecord("smokeRecord.json"))
             .when()
-            .post("/exception-record/")
+            .post("/forms/SSCS1/validate-ocr")
             .then()
             .statusCode(HttpStatus.OK.value())
             .and()
-            .extract().path("errors");
+            .extract().path("warnings");
 
-        assertEquals("mrn_date is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", errors.get(0));
+        assertEquals("mrn_date is an invalid date field. Needs to be a valid date and in the format dd/mm/yyyy", warnings.get(0));
     }
 }

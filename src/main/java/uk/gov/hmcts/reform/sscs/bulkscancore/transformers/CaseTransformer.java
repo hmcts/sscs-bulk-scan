@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.transformers;
 
 import java.util.Map;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseDetails;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -12,8 +11,6 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
  */
 public interface CaseTransformer {
     CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings);
-
-    CaseResponse transformExceptionRecordToCaseOld(CaseDetails caseDetails, IdamTokens token);
 
     Map<String, Object> checkForMatches(Map<String, Object> sscsCaseData, IdamTokens token);
 

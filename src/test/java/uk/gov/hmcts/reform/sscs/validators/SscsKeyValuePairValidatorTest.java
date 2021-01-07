@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.sscs.validators;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTestOld.buildScannedValidationOcrData;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
 
 import java.util.HashMap;
 import java.util.List;

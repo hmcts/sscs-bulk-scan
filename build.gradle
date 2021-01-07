@@ -6,8 +6,8 @@ plugins {
   id 'info.solidsoft.pitest' version '1.5.2'
   id 'io.spring.dependency-management' version '1.0.10.RELEASE'
   id 'org.springframework.boot' version '2.3.5.RELEASE'
-  id 'uk.gov.hmcts.java' version '0.12.2'
-  id 'org.owasp.dependencycheck' version '6.0.3'
+  id 'uk.gov.hmcts.java' version '0.12.3'
+  id 'org.owasp.dependencycheck' version '6.0.4'
   id 'com.github.ben-manes.versions' version '0.36.0'
 }
 
@@ -180,8 +180,9 @@ configurations.all {
       if (details.requested.group in ['com.fasterxml.jackson.core', 'com.fasterxml.jackson.module', 'com.fasterxml.jackson.datatype']) {
         details.useVersion '2.11.0'
       }
+      // CVE-2020-17521
       if (details.requested.group == 'org.codehaus.groovy') {
-        details.useVersion "3.0.2"
+        details.useVersion "3.0.7"
         details.because "needed by rest-assured>=4.3"
       }
     }
@@ -204,7 +205,7 @@ dependencies {
   compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
   compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.12.0'
   compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.10.0'
+  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.10.1'
 
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
@@ -214,7 +215,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.1.2'
 
-  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '4.1.15'
+  compile group: 'uk.gov.hmcts.reform', name: 'sscs-common', version: '4.1.28'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.2'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.2'
@@ -267,6 +268,7 @@ dependencyManagement {
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
     }
+
   }
 }
 
