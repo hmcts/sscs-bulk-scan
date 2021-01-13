@@ -125,7 +125,7 @@ public class SscsDataHelper {
     }
 
     public String findProcessingVenue(Appellant appellant, BenefitType benefitType) {
-        if (appellant != null) {
+        if (appellant != null && benefitType != null && StringUtils.isNotEmpty(benefitType.getCode())) {
             Appointee appointee = appellant.getAppointee();
             String postcode = null;
             if (appointee != null && appointee.getAddress() != null && isValidPostcode(appointee.getAddress().getPostcode())) {
@@ -135,8 +135,7 @@ public class SscsDataHelper {
             }
 
             if (StringUtils.isNotEmpty(postcode)) {
-                String venue = airLookupService.lookupAirVenueNameByPostCode(postcode, benefitType);
-                return venue;
+                return airLookupService.lookupAirVenueNameByPostCode(postcode, benefitType);
             }
         }
         return null;
