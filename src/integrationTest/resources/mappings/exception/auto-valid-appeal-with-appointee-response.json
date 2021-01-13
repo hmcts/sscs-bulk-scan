@@ -149,7 +149,7 @@
         "email": "SSCS_Bradford@justice.gov.uk"
       },
       "processingVenue": "Coventry (CMCB)",
-      "createdInGapsFrom": "validAppeal",
+      "createdInGapsFrom": "readyToList",
       "issueCode": "DD"
     }
   },
