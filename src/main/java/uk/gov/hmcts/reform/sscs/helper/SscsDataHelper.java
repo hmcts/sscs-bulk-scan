@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -25,15 +24,12 @@ public class SscsDataHelper {
 
     private final CaseEvent caseEvent;
 
-    private final List<String> offices;
 
     private final DwpAddressLookupService dwpAddressLookupService;
 
     public SscsDataHelper(CaseEvent caseEvent,
-                          @Value("#{'${readyToList.offices}'.split(',')}") List<String> offices,
                           DwpAddressLookupService dwpAddressLookupService) {
         this.caseEvent = caseEvent;
-        this.offices = offices;
         this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
@@ -97,7 +93,7 @@ public class SscsDataHelper {
                 && null != appeal.getBenefitType()) {
             Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
 
-            return officeMapping.isPresent() && offices.contains(officeMapping.get().getCode()) ? READY_TO_LIST.getId() : VALID_APPEAL.getId();
+            return officeMapping.isPresent() ? READY_TO_LIST.getId() : VALID_APPEAL.getId();
         }
         return null;
     }
