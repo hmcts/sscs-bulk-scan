@@ -41,8 +41,10 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
+import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -66,6 +68,12 @@ public class SscsCaseTransformerTest {
 
     @Mock
     FuzzyMatcherService fuzzyMatcherService;
+
+    @Mock
+    private AirLookupService airLookupService;
+
+    @Mock
+    private PostcodeValidator postcodeValidator;
 
     SscsDataHelper sscsDataHelper;
 
@@ -95,7 +103,7 @@ public class SscsCaseTransformerTest {
 
         token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
-        sscsDataHelper = new SscsDataHelper(null, offices, dwpAddressLookupService);
+        sscsDataHelper = new SscsDataHelper(null, offices, dwpAddressLookupService, airLookupService, postcodeValidator);
         transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
@@ -104,6 +112,8 @@ public class SscsCaseTransformerTest {
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1PEU.getId()).build();
         given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+        given(postcodeValidator.isValid(anyString())).willReturn(true);
+        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
     }
@@ -1709,6 +1719,45 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertEquals("My appeal grounds", ((Appeal) result.getTransformedCase().get("appeal")).getAppealReasons().getReasons().get(0).getValue().getDescription());
+    }
+
+    @Test
+    public void setProcessingVenue_withGivingPriorityToAppointeeOverAppellant() {
+        given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
+
+        pairs.put("benefit_type_description", BENEFIT_TYPE);
+        for (String person : Arrays.asList("person1", "person2")) {
+            pairs.put(person + "_address_line1", "10 my street");
+            pairs.put(person + "_address_line2", "line2 address");
+            pairs.put(person + "_address_line3", "London");
+            pairs.put(person + "_address_line4", "county");
+        }
+        pairs.put("person1_postcode", APPOINTEE_POSTCODE);
+        pairs.put("person2_postcode", APPELLANT_POSTCODE);
+
+        when(airLookupService.lookupAirVenueNameByPostCode(eq(APPOINTEE_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
+    }
+
+    @Test
+    public void setProcessingVenue_fromAppellantAddress() {
+        given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
+
+        pairs.put("benefit_type_description", BENEFIT_TYPE);
+        pairs.put("person1_address_line1", "10 my street");
+        pairs.put("person1_address_line2", "line2 address");
+        pairs.put("person1_address_line3", "London");
+        pairs.put("person1_address_line4", "county");
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+
+        when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
     }
 
     private Appeal buildTestAppealData() {

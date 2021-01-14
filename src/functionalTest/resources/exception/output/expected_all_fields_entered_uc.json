@@ -6,7 +6,16 @@
       "evidencePresent": "Yes",
       "caseCode": "001DD",
       "subscriptions": {
-        "appellantSubscription": null,
+        "appellantSubscription": {
+          "wantSmsNotifications": "No",
+          "tya": "TYA_RANDOM_NUMBER_APPELLANT",
+          "email": null,
+          "mobile": "07832882849",
+          "subscribeEmail": "No",
+          "subscribeSms": "No",
+          "reason": null,
+          "lastLoggedIntoMya": null
+        },
         "supporterSubscription": null,
         "representativeSubscription": {
           "wantSmsNotifications": "No",
@@ -18,16 +27,7 @@
           "reason": null,
           "lastLoggedIntoMya": null
         },
-        "appointeeSubscription": {
-          "wantSmsNotifications": "No",
-          "tya": "TYA_RANDOM_NUMBER_APPOINTEE",
-          "email": null,
-          "mobile": "07832882849",
-          "subscribeEmail": "No",
-          "subscribeSms": "No",
-          "reason": null,
-          "lastLoggedIntoMya": null
-        },
+        "appointeeSubscription": null,
         "jointPartySubscription": null
       },
       "formType": "sscs1",
@@ -42,50 +42,28 @@
         },
         "appellant": {
           "name": {
-            "title": "Mrs",
-            "firstName": "Sarah",
-            "lastName": "Smith"
+            "title": "Dr",
+            "firstName": "Frederick",
+            "lastName": "Falafel"
           },
           "address": {
-            "line1": "109 Drake Close",
-            "line2": "Hutton",
-            "town": "Brentwood",
-            "county": "Essex",
-            "postcode": "SE166RS"
+            "line1": "1 New Street",
+            "line2": "Smallville",
+            "town": "Newbury",
+            "county": "Berkshire",
+            "postcode": "CF48 2HY"
           },
           "contact": {
             "email": null,
-            "phone": null,
-            "mobile": null
+            "phone": "01895733303",
+            "mobile": "07832882849"
           },
           "identity": {
-            "dob": "1979-12-09",
-            "nino": "{PERSON2_NINO}"
+            "dob": "1976-11-11",
+            "nino": "{PERSON1_NINO}"
           },
-          "isAppointee": "Yes",
-          "appointee": {
-            "name": {
-              "title": "Dr",
-              "firstName": "Frederick",
-              "lastName": "Falafel"
-            },
-            "address": {
-              "line1": "1 New Street",
-              "line2": "Smallville",
-              "town": "Newbury",
-              "county": "Berkshire",
-              "postcode": "CF48 2HY"
-            },
-            "contact": {
-              "email": null,
-              "phone": "01895733303",
-              "mobile": "07832882849"
-            },
-            "identity": {
-              "dob": "1976-11-11",
-              "nino": "{PERSON1_NINO}"
-            }
-          },
+          "isAppointee": "No",
+          "appointee": null,
           "isAddressSameAsAppointee": null
         },
         "benefitType": {
@@ -151,9 +129,7 @@
         },
         "signer": "Sarah Smith",
         "hearingType": "paper",
-        "hearingSubtype": {
-
-        },
+        "hearingSubtype": {},
         "receivedVia": "Paper"
       },
       "benefitCode": "001",
@@ -171,26 +147,25 @@
           }
         }
       ],
+      "processingVenue": "Cardiff",
       "linkedCasesBoolean": "No",
       "caseCreated": "2019-08-02",
       "regionalProcessingCenter": {
-        "faxNumber": "0870 739 4229",
-        "address4": "9 The Pavement, Grove Road",
+        "faxNumber": "0870 739 4438",
+        "address4": "Newport Road",
         "phoneNumber": "0300 123 1142",
-        "name": "SUTTON",
+        "name": "CARDIFF",
         "address1": "HM Courts & Tribunals Service",
         "address2": "Social Security & Child Support Appeals",
-        "address3": "Copthall House",
-        "postcode": "SM1 1DA",
-        "city": "SUTTON",
-        "email": "Sutton_SYA_Respons@justice.gov.uk"
+        "address3": "Eastgate House",
+        "postcode": "CF24 0AB",
+        "city": "CARDIFF",
+        "email": "Cardiff_SYA_Respon@justice.gov.uk"
       },
       "createdInGapsFrom": "readyToList",
-      "region": "SUTTON",
+      "region": "CARDIFF",
       "issueCode": "DD"
     }
   },
-  "warnings": [
-
-  ]
+  "warnings": []
 }

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -18,7 +19,9 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @Component
 public class SscsDataHelper {
@@ -29,12 +32,21 @@ public class SscsDataHelper {
 
     private final DwpAddressLookupService dwpAddressLookupService;
 
+    private final AirLookupService airLookupService;
+
+    private final PostcodeValidator postcodeValidator;
+
+
     public SscsDataHelper(CaseEvent caseEvent,
                           @Value("#{'${readyToList.offices}'.split(',')}") List<String> offices,
-                          DwpAddressLookupService dwpAddressLookupService) {
+                          DwpAddressLookupService dwpAddressLookupService,
+                          AirLookupService airLookupService,
+                          PostcodeValidator postcodeValidator) {
         this.caseEvent = caseEvent;
         this.offices = offices;
         this.dwpAddressLookupService = dwpAddressLookupService;
+        this.airLookupService = airLookupService;
+        this.postcodeValidator = postcodeValidator;
     }
 
     public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions, FormType formType) {
@@ -110,6 +122,27 @@ public class SscsDataHelper {
             return WARNINGS;
         }
         return SUCCESS;
+    }
+
+    public String findProcessingVenue(Appellant appellant, BenefitType benefitType) {
+        if (appellant != null && benefitType != null && StringUtils.isNotEmpty(benefitType.getCode())) {
+            Appointee appointee = appellant.getAppointee();
+            String postcode = null;
+            if (appointee != null && appointee.getAddress() != null && isValidPostcode(appointee.getAddress().getPostcode())) {
+                postcode = appointee.getAddress().getPostcode();
+            } else if (appellant.getAddress() != null && isValidPostcode(appellant.getAddress().getPostcode())) {
+                postcode = appellant.getAddress().getPostcode();
+            }
+
+            if (StringUtils.isNotEmpty(postcode)) {
+                return airLookupService.lookupAirVenueNameByPostCode(postcode, benefitType);
+            }
+        }
+        return null;
+    }
+
+    private boolean isValidPostcode(String postcode) {
+        return postcodeValidator.isValidPostcodeFormat(postcode) && postcodeValidator.isValid(postcode);
     }
 
 }

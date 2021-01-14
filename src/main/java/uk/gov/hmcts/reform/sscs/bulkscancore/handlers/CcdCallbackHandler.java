@@ -188,6 +188,11 @@ public class CcdCallbackHandler {
 
                     callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
                 }
+
+                String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
+                if (StringUtils.isNotEmpty(processingVenue)) {
+                    callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
+                }
             }
         }
     }
