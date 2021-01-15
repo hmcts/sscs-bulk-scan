@@ -93,6 +93,7 @@ public class SscsCaseValidatorTest {
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(scannedData);
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
         given(postcodeValidator.isValid(anyString())).willReturn(true);
+        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
     }
 
     @Test
@@ -778,6 +779,7 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenAnAppealContainsAnInvalidPostcode_thenAddAnError() {
+        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(false);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithPostcode("Bla Bla"), true), false);
 
         assertEquals("person1_postcode is not a valid postcode", response.getErrors().get(0));
