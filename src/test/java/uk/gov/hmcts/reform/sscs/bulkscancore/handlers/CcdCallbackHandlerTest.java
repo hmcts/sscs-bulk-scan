@@ -70,7 +70,7 @@ public class CcdCallbackHandlerTest {
 
     @Before
     public void setUp() {
-        sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), new ArrayList<>(), dwpAddressLookupService, airLookupService, postcodeValidator);
+        sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator);
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService);
 
         idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
@@ -241,7 +241,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
-        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("002");
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
@@ -278,7 +278,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
-        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
@@ -316,7 +316,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
-        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
@@ -354,7 +354,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
-        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
@@ -391,7 +391,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getErrors().contains("Mrn date is empty"));
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
-        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("validAppeal");
+        assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");

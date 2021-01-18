@@ -68,9 +68,6 @@ postcode-validator:
   enabled: ${POSTCODE_VALIDATOR_ENABLED:true}
   test-postcodes: ${POSTCODE_VALIDATOR_TEST_POSTCODES:TS1 1ST, TS2 2ST, TS3 3ST}
 
-readyToList:
-  offices: ${READY_TO_LIST_OFFICES:1,2,3,4,5,6,7,8,9,AE,Balham DRT,Birkenhead LM DRT,Chesterfield DRT,Coatbridge Benefit Centre,Inverness DRT,Lowestoft DRT,Milton Keynes DRT,Norwich DRT,Sheffield DRT,Springburn DRT,Watford DRT,Wellingborough DRT,Worthing DRT,Universal Credit}
-
 ---
 spring:
   profiles: dev

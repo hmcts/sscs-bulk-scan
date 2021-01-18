@@ -2,23 +2,19 @@ package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
 import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
-import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
@@ -28,8 +24,6 @@ public class SscsDataHelper {
 
     private final CaseEvent caseEvent;
 
-    private final List<String> offices;
-
     private final DwpAddressLookupService dwpAddressLookupService;
 
     private final AirLookupService airLookupService;
@@ -38,12 +32,10 @@ public class SscsDataHelper {
 
 
     public SscsDataHelper(CaseEvent caseEvent,
-                          @Value("#{'${readyToList.offices}'.split(',')}") List<String> offices,
                           DwpAddressLookupService dwpAddressLookupService,
                           AirLookupService airLookupService,
                           PostcodeValidator postcodeValidator) {
         this.caseEvent = caseEvent;
-        this.offices = offices;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.airLookupService = airLookupService;
         this.postcodeValidator = postcodeValidator;
@@ -73,7 +65,7 @@ public class SscsDataHelper {
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
             }
-            appealData.put("createdInGapsFrom", getCreatedInGapsFromField(appeal));
+            appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
         }
     }
 
@@ -99,19 +91,6 @@ public class SscsDataHelper {
 
     public String hasEvidence(List<SscsDocument> sscsDocuments) {
         return (null == sscsDocuments || sscsDocuments.isEmpty()) ? "No" : "Yes";
-    }
-
-    public String getCreatedInGapsFromField(Appeal appeal) {
-
-        if (null != appeal
-                && null != appeal.getMrnDetails()
-                && null != appeal.getMrnDetails().getDwpIssuingOffice()
-                && null != appeal.getBenefitType()) {
-            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
-
-            return officeMapping.isPresent() && offices.contains(officeMapping.get().getCode()) ? READY_TO_LIST.getId() : VALID_APPEAL.getId();
-        }
-        return null;
     }
 
     public static ValidationStatus getValidationStatus(List<String> errors, List<String> warnings) {

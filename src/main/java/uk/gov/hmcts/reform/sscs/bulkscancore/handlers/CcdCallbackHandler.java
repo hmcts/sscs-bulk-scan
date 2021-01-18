@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import java.util.ArrayList;
@@ -167,7 +168,7 @@ public class CcdCallbackHandler {
 
     private void setUnsavedFieldsOnCallback(Callback<SscsCaseData> callback) {
         Appeal appeal = callback.getCaseDetails().getCaseData().getAppeal();
-        callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(sscsDataHelper.getCreatedInGapsFromField(appeal));
+        callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(READY_TO_LIST.getId());
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
         if (appeal != null) {
