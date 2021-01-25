@@ -68,9 +68,6 @@ postcode-validator:
   enabled: ${POSTCODE_VALIDATOR_ENABLED:true}
   test-postcodes: ${POSTCODE_VALIDATOR_TEST_POSTCODES:TS1 1ST, TS2 2ST, TS3 3ST}
 
-readyToList:
-  offices: ${READY_TO_LIST_OFFICES:3,Universal Credit}
-
 ---
 spring:
   profiles: dev

@@ -51,7 +51,8 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         assertThat(callbackResponse.getErrors()).isEmpty();
         assertThat(callbackResponse.getWarnings()).isEmpty();
 
-        assertEquals("validAppeal", callbackResponse.getData().get("createdInGapsFrom"));
+        assertEquals("readyToList", callbackResponse.getData().get("createdInGapsFrom"));
+        assertEquals("Cardiff", callbackResponse.getData().get("processingVenue"));
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }

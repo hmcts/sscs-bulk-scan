@@ -136,6 +136,13 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         transformed.put("caseCreated", scannedData.getOpeningDate());
 
+        String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
+
+        if (StringUtils.isNotEmpty(processingVenue)) {
+            log.info("{} - setting venue name to {}", caseId, processingVenue);
+            transformed.put("processingVenue", processingVenue);
+        }
+
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, scannedData.getOpeningDate());
 
         transformed = checkForMatches(transformed, token);

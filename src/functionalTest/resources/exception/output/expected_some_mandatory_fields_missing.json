@@ -101,7 +101,7 @@
       "bulkScanCaseReference": "id",
       "caseCode": "051DD",
       "caseCreated": "2019-08-02",
-      "createdInGapsFrom": null,
+      "createdInGapsFrom": "readyToList",
       "evidencePresent": "Yes",
       "formType": "sscs1",
       "issueCode": "DD",
@@ -119,6 +119,7 @@
         "phoneNumber": "0300 123 1142",
         "postcode": "CF24 0AB"
       },
+      "processingVenue": "Cardiff",
       "sscsDocument": [
         {
           "value": {

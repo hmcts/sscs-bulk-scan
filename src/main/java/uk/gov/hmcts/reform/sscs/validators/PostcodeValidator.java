@@ -19,6 +19,8 @@ import org.springframework.web.client.RestTemplate;
 @Component
 @Slf4j
 public class PostcodeValidator {
+    @SuppressWarnings("squid:S5843")
+    private static final String POSTCODE_REGEX = "^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$";
     private static final String POSTCODE_RESULT = "true";
     private final String url;
     private final boolean enabled;
@@ -38,6 +40,10 @@ public class PostcodeValidator {
             .map(StringUtils::stripToNull)
             .filter(StringUtils::isNotBlank)
             .collect(toList());
+    }
+
+    public boolean isValidPostcodeFormat(String postcode) {
+        return postcode != null && postcode.matches(POSTCODE_REGEX);
     }
 
     public boolean isValid(String postcode) {

@@ -45,9 +45,6 @@ public class SscsCaseValidator implements CaseValidator {
             + "\\#)\\d+)?)$";
 
     @SuppressWarnings("squid:S5843")
-    private static final String POSTCODE_REGEX = "^((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])|([Gg][Ii][Rr]))))\\s?([0-9][A-Za-z]{2})|(0[Aa]{2}))$";
-
-    @SuppressWarnings("squid:S5843")
     private static final String ADDRESS_REGEX = "^[a-zA-ZÀ-ž0-9]{1}[a-zA-ZÀ-ž0-9 \\r\\n\\.“”\",’\\?\\!\\[\\]\\(\\)/£:\\\\_+\\-%&;]{1,}$";
 
     @SuppressWarnings("squid:S5843")
@@ -308,18 +305,19 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesAddressCountyExist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + countyLine, IS_EMPTY));
         } else if (!address.getCounty().matches(COUNTY_REGEX)) {
-            System.out.println("County failed");
             warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + countyLine, HAS_INVALID_ADDRESS));
         }
 
-        if (isAddressPostcodeValid(address, personType, appellant) && address != null && personType.equals(getPerson1OrPerson2(appellant))) {
-            RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
+        if (isAddressPostcodeValid(address, personType, appellant) && address != null) {
+            if (personType.equals(getPerson1OrPerson2(appellant))) {
+                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
 
-            if (rpc != null) {
-                caseData.put("region", rpc.getName());
-                caseData.put("regionalProcessingCenter", rpc);
-            } else {
-                warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a postcode that maps to a regional processing center"));
+                if (rpc != null) {
+                    caseData.put("region", rpc.getName());
+                    caseData.put("regionalProcessingCenter", rpc);
+                } else {
+                    warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a postcode that maps to a regional processing center"));
+                }
             }
         }
         if (identity != null) {
@@ -379,7 +377,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
         if (address != null && address.getPostcode() != null) {
-            if (address.getPostcode().matches(POSTCODE_REGEX) && postcodeValidator.isValid(address.getPostcode())) {
+            if (postcodeValidator.isValidPostcodeFormat(address.getPostcode()) && postcodeValidator.isValid(address.getPostcode())) {
                 return true;
             } else {
                 errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));

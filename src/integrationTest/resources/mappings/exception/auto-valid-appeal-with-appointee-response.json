@@ -1,6 +1,29 @@
 {
   "case_creation_details": {
+    "case_type_id": "Benefit",
+    "event_id": "validAppealCreated",
     "case_data": {
+      "evidencePresent": "Yes",
+      "caseCode": "051DD",
+      "subscriptions": {
+        "appellantSubscription": null,
+        "supporterSubscription": null,
+        "representativeSubscription": null,
+        "appointeeSubscription": {
+          "wantSmsNotifications": "No",
+          "tya": "TYA_RANDOM_NUMBER",
+          "email": null,
+          "mobile": "07411222222",
+          "subscribeEmail": "No",
+          "subscribeSms": "No",
+          "reason": null,
+          "lastLoggedIntoMya": null
+        },
+        "jointPartySubscription": null
+      },
+      "formType": "sscs1peu",
+      "dwpRegionalCentre": "Sheffield DRT",
+      "bulkScanCaseReference": "1234567891011",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Sheffield DRT",
@@ -23,27 +46,42 @@
           },
           "contact": {
             "email": null,
-            "phone": "01234567899",
-            "mobile": "07411222222"
+            "phone": null,
+            "mobile": null
           },
           "identity": {
             "dob": "1976-11-11",
             "nino": "BB000000B"
           },
-          "appointee": null,
-          "isAppointee": "No",
+          "isAppointee": "Yes",
+          "appointee": {
+            "name": {
+              "title": "Mr",
+              "firstName": "Tyrion",
+              "lastName": "Lannister"
+            },
+            "address": {
+              "line1": "2 Casterly Rock",
+              "line2": "Benedictine",
+              "town": "Coventry",
+              "county": "Warwickshire",
+              "postcode": "CV3 6GU"
+            },
+            "contact": {
+              "email": null,
+              "phone": "01234567899",
+              "mobile": "07411222222"
+            },
+            "identity": {
+              "dob": "1976-11-11",
+              "nino": "BB000000B"
+            }
+          },
           "isAddressSameAsAppointee": null
         },
         "benefitType": {
           "code": "ESA",
           "description": "Employment and Support Allowance"
-        },
-        "hearingSubtype": {
-          "wantsHearingTypeTelephone": "Yes",
-          "hearingTelephoneNumber": "01234567890",
-          "wantsHearingTypeVideo": "Yes",
-          "hearingVideoEmail": "my@email.com",
-          "wantsHearingTypeFaceToFace": "No"
         },
         "hearingOptions": {
           "wantsToAttend": "Yes",
@@ -70,8 +108,16 @@
         },
         "signer": null,
         "hearingType": "oral",
+        "hearingSubtype": {
+          "wantsHearingTypeTelephone": "Yes",
+          "hearingTelephoneNumber": "01234567890",
+          "wantsHearingTypeVideo": "Yes",
+          "hearingVideoEmail": "my@email.com",
+          "wantsHearingTypeFaceToFace": "No"
+        },
         "receivedVia": "Paper"
       },
+      "benefitCode": "051",
       "sscsDocument": [
         {
           "value": {
@@ -86,49 +132,26 @@
           }
         }
       ],
-      "subscriptions": {
-        "appellantSubscription": {
-          "wantSmsNotifications": "No",
-          "email": null,
-          "mobile": "07411222222",
-          "subscribeEmail": "No",
-          "subscribeSms": "No",
-          "reason": null,
-          "lastLoggedIntoMya": null,
-          "tya": "TYA_RANDOM_NUMBER"
-        },
-        "supporterSubscription": null,
-        "representativeSubscription": null,
-        "appointeeSubscription": null,
-        "jointPartySubscription": null
-      },
+
+      "linkedCasesBoolean": "No",
+      "caseCreated": "2018-01-11",
       "region": "BRADFORD",
       "regionalProcessingCenter": {
+        "faxNumber": "0126 434 7983",
+        "address4": "Rushton Avenue",
+        "phoneNumber": "0300 123 1142",
         "name": "BRADFORD",
         "address1": "HM Courts & Tribunals Service",
         "address2": "Social Security & Child Support Appeals",
         "address3": "Phoenix House",
-        "address4": "Rushton Avenue",
-        "city": "BRADFORD",
         "postcode": "BD3 7BH",
-        "phoneNumber": "0300 123 1142",
-        "faxNumber": "0126 434 7983",
+        "city": "BRADFORD",
         "email": "SSCS_Bradford@justice.gov.uk"
       },
-      "processingVenue": "Basildon Combined Court",
-      "evidencePresent": "Yes",
-      "bulkScanCaseReference": "1234567890",
-      "benefitCode": "051",
-      "caseCode": "051DD",
-      "caseCreated": "2018-01-11",
+      "processingVenue": "Coventry (CMCB)",
       "createdInGapsFrom": "readyToList",
-      "dwpRegionalCentre": "Sheffield DRT",
-      "issueCode": "DD",
-      "linkedCasesBoolean": "No",
-      "formType": "sscs1"
-    },
-    "case_type_id": "Benefit",
-    "event_id": "validAppealCreated"
+      "issueCode": "DD"
+    }
   },
   "warnings": []
 }

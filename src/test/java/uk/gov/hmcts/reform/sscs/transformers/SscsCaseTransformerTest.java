@@ -10,7 +10,6 @@ import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.State.VALID_APPEAL;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
@@ -41,8 +40,10 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
+import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -67,6 +68,12 @@ public class SscsCaseTransformerTest {
     @Mock
     FuzzyMatcherService fuzzyMatcherService;
 
+    @Mock
+    private AirLookupService airLookupService;
+
+    @Mock
+    private PostcodeValidator postcodeValidator;
+
     SscsDataHelper sscsDataHelper;
 
     @InjectMocks
@@ -76,8 +83,6 @@ public class SscsCaseTransformerTest {
 
     Map<String, Object> pairs = new HashMap<>();
 
-    private List<String> offices;
-
     ExceptionRecord exceptionRecord;
 
     IdamTokens token;
@@ -86,16 +91,11 @@ public class SscsCaseTransformerTest {
     public void setup() {
         initMocks(this);
 
-        offices = new ArrayList<>();
-        offices.add("1");
-        offices.add("Watford DRT");
-        offices.add("Sheffield DRT");
-
         dwpAddressLookupService = new DwpAddressLookupService();
 
         token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
-        sscsDataHelper = new SscsDataHelper(null, offices, dwpAddressLookupService);
+        sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator);
         transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
@@ -104,6 +104,8 @@ public class SscsCaseTransformerTest {
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1PEU.getId()).build();
         given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+        given(postcodeValidator.isValid(anyString())).willReturn(true);
+        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
     }
@@ -1343,21 +1345,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenAPipCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
-        pairs.put("office", "1");
-        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
-        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
-
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-
-        String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
-        assertEquals(READY_TO_LIST.getId(), createdInGapsFrom);
-
-        assertTrue(result.getErrors().isEmpty());
-    }
-
-    @Test
-    public void givenAPipCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
+    public void givenAPipCase_thenSetCreatedInGapsFromFieldToReadyToList() {
         pairs.put("office", "2");
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
         pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
@@ -1365,27 +1353,13 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
-        assertEquals(VALID_APPEAL.getId(), createdInGapsFrom);
-
-        assertTrue(result.getErrors().isEmpty());
-    }
-
-    @Test
-    public void givenAEsaCaseWithReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
-        pairs.put("office", "Balham DRT");
-        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
-
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-
-        String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
         assertEquals(READY_TO_LIST.getId(), createdInGapsFrom);
 
         assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
-    public void givenAEsaCaseWithValidAppealOffice_thenSetCreatedInGapsFromFieldToValidAppeal() {
+    public void givenAEsaCase_thenSetCreatedInGapsFromFieldToReadyToList() {
         pairs.put("office", "Chesterfield DRT");
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
@@ -1393,7 +1367,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
-        assertEquals(VALID_APPEAL.getId(), createdInGapsFrom);
+        assertEquals(READY_TO_LIST.getId(), createdInGapsFrom);
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1414,11 +1388,11 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenACaseWithNoReadyToListOffice_thenSetCreatedInGapsFromFieldToNull() {
+    public void givenACaseWithNoReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         String createdInGapsFrom = ((String) result.getTransformedCase().get("createdInGapsFrom"));
-        assertNull(createdInGapsFrom);
+        assertEquals(READY_TO_LIST.getId(), createdInGapsFrom);
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1709,6 +1683,45 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertEquals("My appeal grounds", ((Appeal) result.getTransformedCase().get("appeal")).getAppealReasons().getReasons().get(0).getValue().getDescription());
+    }
+
+    @Test
+    public void setProcessingVenue_withGivingPriorityToAppointeeOverAppellant() {
+        given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
+
+        pairs.put("benefit_type_description", BENEFIT_TYPE);
+        for (String person : Arrays.asList("person1", "person2")) {
+            pairs.put(person + "_address_line1", "10 my street");
+            pairs.put(person + "_address_line2", "line2 address");
+            pairs.put(person + "_address_line3", "London");
+            pairs.put(person + "_address_line4", "county");
+        }
+        pairs.put("person1_postcode", APPOINTEE_POSTCODE);
+        pairs.put("person2_postcode", APPELLANT_POSTCODE);
+
+        when(airLookupService.lookupAirVenueNameByPostCode(eq(APPOINTEE_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
+    }
+
+    @Test
+    public void setProcessingVenue_fromAppellantAddress() {
+        given(fuzzyMatcherService.matchBenefitType(BENEFIT_TYPE)).willReturn(BENEFIT_TYPE);
+
+        pairs.put("benefit_type_description", BENEFIT_TYPE);
+        pairs.put("person1_address_line1", "10 my street");
+        pairs.put("person1_address_line2", "line2 address");
+        pairs.put("person1_address_line3", "London");
+        pairs.put("person1_address_line4", "county");
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+
+        when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
     }
 
     private Appeal buildTestAppealData() {
