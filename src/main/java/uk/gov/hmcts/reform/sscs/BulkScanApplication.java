@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.sscs.ccd.deserialisation.SscsCaseCallbackDeserializer
 )
 @EnableFeignClients(basePackages =
     {
-        "uk.gov.hmcts.reform.idam.client",
         "uk.gov.hmcts.reform.idam"
     })
 @EnableScheduling
