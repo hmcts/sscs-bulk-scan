@@ -269,6 +269,11 @@ dependencyManagement {
       entry 'tomcat-embed-websocket'
     }
 
+    //to remove CVE-2020-8908
+    dependencySet(group: 'com.google.guava', version: '30.1-jre') {
+      entry 'guava'
+    }
+
     imports {
       mavenBom "org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR9"
     }
