@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.sscs.ccd.deserialisation.SscsCaseCallbackDeserializer
 )
 @EnableFeignClients(basePackages =
     {
-        "uk.gov.hmcts.reform.idam.client"
+        "uk.gov.hmcts.reform.idam"
     })
 @EnableScheduling
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, its not a utility class
