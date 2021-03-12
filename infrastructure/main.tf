@@ -19,7 +19,7 @@ locals {
 }
 
 module "sscs-bulk-scan-vault" {
-  source                  = "git@github.com:hmcts/cnp-module-key-vault?ref=azurermv2"
+  source                  = "git@github.com:hmcts/cnp-module-key-vault?ref=master"
   name                    = local.vaultName
   product                 = var.product
   env                     = var.env
