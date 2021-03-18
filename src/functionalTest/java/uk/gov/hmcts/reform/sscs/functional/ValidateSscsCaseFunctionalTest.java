@@ -9,6 +9,7 @@ import io.restassured.response.Response;
 import java.io.IOException;
 import junitparams.JUnitParamsRunner;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,7 @@ public class ValidateSscsCaseFunctionalTest extends BaseFunctionalTest {
         assertEquals("AB225566B", caseDetails.getData().getAppeal().getAppellant().getIdentity().getNino());
     }
 
+    @Ignore
     @Test
     public void validate_and_update_incomplete_case_to_appeal_created_case() throws IOException {
         String json = getJson("validationsscs/validate_sscs_case_request.json");

@@ -9,6 +9,7 @@ import java.io.IOException;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 @Slf4j
 public class OcrFormValidationFunctionalTest extends BaseFunctionalTest {
 
+    @Ignore
     @Test
     @Parameters({"SSCS1", "SSCS1PE", "SSCS1PEU"})
     public void should_validate_ocr_data_and_return_success(String formType) throws IOException {
