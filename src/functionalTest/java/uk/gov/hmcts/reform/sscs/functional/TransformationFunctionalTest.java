@@ -100,6 +100,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
         assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
     }
 
+    @Ignore
     @Test
     public void should_not_transform_exception_record_when_validation_error_and_respond_with_422() throws IOException {
         String json = getJson("exception/invalid_mobile_number.json");
