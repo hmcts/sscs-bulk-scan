@@ -10,7 +10,6 @@ import java.io.IOException;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +21,6 @@ import org.springframework.test.context.TestPropertySource;
 @Slf4j
 public class TransformationFunctionalTest extends BaseFunctionalTest {
 
-    @Ignore
     @Test
     public void transform_appeal_created_case_when_all_fields_entered() throws IOException {
         String expectedJson = getJson("exception/output/expected_all_fields_entered.json");
@@ -38,7 +36,6 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
 
-    @Ignore
     @Test
     public void transform_appeal_created_case_when_all_fields_entered_uc() throws IOException {
         String expectedJson = getJson("exception/output/expected_all_fields_entered_uc.json");
@@ -55,7 +52,6 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
     }
 
     //FIXME nino
-    @Ignore
     @Test
     public void transform_incomplete_case_when_missing_mandatory_fields() throws IOException {
         String expectedJson = getJson("exception/output/expected_some_mandatory_fields_missing.json");
@@ -65,7 +61,6 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
 
-    @Ignore
     @Test
     @Parameters({"see scanned SSCS1 form,mrn_date_greater_than_13_months.json", ",mrn_date_greater_than_13_months_grounds_missing.json"})
     public void transform_interlocutory_review_case_when_mrn_date_greater_than_13_months(String appealGrounds,
@@ -100,7 +95,6 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
         assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
     }
 
-    @Ignore
     @Test
     public void should_not_transform_exception_record_when_validation_error_and_respond_with_422() throws IOException {
         String json = getJson("exception/invalid_mobile_number.json");
