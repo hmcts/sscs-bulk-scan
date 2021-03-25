@@ -913,6 +913,25 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenANullRepresentative_thenAddAnError() {
+        Representative representative = null;
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true), false);
+
+        assertEquals(1, response.getErrors().size());
+        assertEquals("The \"Has representative\" field is not selected, please select an option to proceed", response.getErrors().get(0));
+    }
+
+    @Test
+    public void givenARepresentativeWithHasRepresentativeFieldNotSet_thenAddAnError() {
+        Representative representative = buildRepresentative();
+        representative.setHasRepresentative(null);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true), false);
+
+        assertEquals(1, response.getErrors().size());
+        assertEquals("The \"Has representative\" field is not selected, please select an option to proceed", response.getErrors().get(0));
+    }
+
+    @Test
     public void givenAnAppointeeDoesNotContainATitle_thenAddAWarning() {
         Appellant appellant = buildAppellant(true);
         appellant.getAppointee().getName().setTitle(null);
@@ -1226,15 +1245,15 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealData(Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build());
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build());
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrn(MrnDetails mrn, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_PAPER, null);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_PAPER, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build());
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant, buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build());
     }
 
     private Map<String, Object> buildMinimumAppealDataWithRepresentative(Appellant appellant, Representative representative, Boolean exceptionCaseType) {
@@ -1242,15 +1261,19 @@ public class SscsCaseValidatorTest {
     }
 
     private Map<String, Object> buildMinimumAppealDataWithExcludedDate(String excludedDate, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, excludedDate, exceptionCaseType, HEARING_TYPE_ORAL, null);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, buildMinimumRep(), excludedDate, exceptionCaseType, HEARING_TYPE_ORAL, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithHearingType(String hearingType, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, null, exceptionCaseType, hearingType, null);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, buildMinimumRep(), null, exceptionCaseType, hearingType, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithHearingSubtype(HearingSubtype hearingSubtype, Appellant appellant, Boolean exceptionCaseType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, null, null, exceptionCaseType, HEARING_TYPE_ORAL, hearingSubtype);
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL, hearingSubtype);
+    }
+
+    private Representative buildMinimumRep() {
+        return Representative.builder().hasRepresentative(NO_LITERAL).build();
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(MrnDetails mrn, String benefitCode, Appellant appellant, Representative representative, String excludeDates,

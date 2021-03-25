@@ -16,6 +16,9 @@
             "nino": "AB 22 55 66 B"
           }
         },
+        "rep": {
+          "hasRepresentative": "No"
+        },
         "benefitType": {
           "code": null
         },

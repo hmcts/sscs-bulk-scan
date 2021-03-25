@@ -12,16 +12,30 @@ import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.apache.commons.codec.Charsets;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.BaseTest;
 
+@RunWith(JUnitParamsRunner.class)
 public class SscsBulkScanValidateRecordCallback extends BaseTest {
+
+    @ClassRule
+    public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
+
+    @Rule
+    public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
     @Before
     public void setup() {
@@ -239,6 +253,29 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
                 "Representative address town is empty",
                 "Representative address county is empty",
                 "Representative postcode is empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    @Parameters({"rep", "hasRepresentative"})
+    public void should_return_error_when_representative_details_are_not_entered(String fieldToRename) throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-representative-request.json")
+            .replaceAll(fieldToRename, "fieldMoved");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("The \"Has representative\" field is not selected, please select an option to proceed");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }

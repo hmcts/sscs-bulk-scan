@@ -44,6 +44,9 @@
             "name": {}
           }
         },
+        "rep": {
+          "hasRepresentative": "No"
+        },
         "benefitType": {
           "code": "ESA"
         },

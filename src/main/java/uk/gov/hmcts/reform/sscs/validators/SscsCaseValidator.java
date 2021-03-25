@@ -216,7 +216,10 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
-        if (appeal.getRep() != null && appeal.getRep().getHasRepresentative().equals(YES_LITERAL)) {
+        if (appeal.getRep() == null || StringUtils.isBlank(appeal.getRep().getHasRepresentative())) {
+            errors.add("The \"Has representative\" field is not selected, please select an option to proceed");
+        }
+        if (appeal.getRep() != null && StringUtils.equals(appeal.getRep().getHasRepresentative(), YES_LITERAL)) {
             final Contact repsContact = appeal.getRep().getContact();
             checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData, appeal.getAppellant());
 
