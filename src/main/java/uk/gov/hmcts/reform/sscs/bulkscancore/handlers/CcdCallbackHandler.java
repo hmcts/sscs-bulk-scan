@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
+import uk.gov.hmcts.reform.sscs.exception.BenefitMappingException;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -172,7 +173,7 @@ public class CcdCallbackHandler {
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
         if (appeal != null) {
-            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null) {
+            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode() != null) {
                 String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
                 String issueCode = generateIssueCode();
 
