@@ -928,7 +928,7 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithRepresentative(buildAppellant(false), representative, true), false);
 
         assertEquals(1, response.getErrors().size());
-        assertEquals("The \"Has representative\" field is not selected, please select an option to proceed", response.getErrors().get(0));
+        assertEquals(HAS_REPRESENTATIVE_FIELD_MISSING, response.getErrors().get(0));
     }
 
     @Test
