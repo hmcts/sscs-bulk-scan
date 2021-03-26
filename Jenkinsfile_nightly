@@ -38,7 +38,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 }
 
 withNightlyPipeline(type, product, component) {
-  env.TEST_URL = params.URL_TO_TEST
+  env.TEST_URL = "http://sscs-bulk-scan-aat.service.core-compute-aat.internal"
   env.Rules = params.SecurityRules
 
   loadVaultSecrets(secrets)
