@@ -36,8 +36,8 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 @Slf4j
 public class CcdCallbackHandler {
 
-    private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {}";
-    private static final String LOGSTR_VALIDATION_WARNING = "Warning found while validating exception record id {}";
+    private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {} - {}";
+    private static final String LOGSTR_VALIDATION_WARNING = "Warnings found while validating exception record id {} - {}";
 
     private final CaseTransformer caseTransformer;
 
@@ -72,7 +72,7 @@ public class CcdCallbackHandler {
             return caseTransformationResponse;
         }
 
-        log.info("Exception record id {} transformed successfully ready for validation");
+        log.info("Exception record id {} transformed successfully ready for validation", exceptionRecord.getId());
 
         return caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), true);
     }
@@ -88,24 +88,24 @@ public class CcdCallbackHandler {
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, false);
 
         if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
-            log.info("Errors found while transforming exception record id {}", exceptionRecordId);
+            log.info("Errors found while transforming exception record id {} - {}", exceptionRecordId, stringJoin(caseTransformationResponse.getErrors()));
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
         }
 
         if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
-            log.info("Warning found while transforming exception record id {}", exceptionRecordId);
+            log.info("Warnings found while transforming exception record id {} - {}", exceptionRecordId, stringJoin(caseTransformationResponse.getWarnings()));
             throw new InvalidExceptionRecordException(caseTransformationResponse.getWarnings());
         }
 
-        log.info("Exception record id {} transformed successfully. About to validate transformed case from exception");
+        log.info("Exception record id {} transformed successfully. About to validate transformed case from exception", exceptionRecordId);
 
         CaseResponse caseValidationResponse = caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), false);
 
         if (!ObjectUtils.isEmpty(caseValidationResponse.getErrors())) {
-            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId, stringJoin(caseValidationResponse.getErrors()));
             throw new InvalidExceptionRecordException(caseValidationResponse.getErrors());
         } else if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !ObjectUtils.isEmpty(caseValidationResponse.getWarnings())) {
-            log.info(LOGSTR_VALIDATION_WARNING, exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_WARNING, exceptionRecordId, stringJoin(caseValidationResponse.getWarnings()));
             throw new InvalidExceptionRecordException(caseValidationResponse.getWarnings());
         } else {
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
@@ -120,6 +120,10 @@ public class CcdCallbackHandler {
                 ),
             caseValidationResponse.getWarnings());
         }
+    }
+
+    private String stringJoin(List<String> messages) {
+        return String.join(". ", messages);
     }
 
     public PreSubmitCallbackResponse<SscsCaseData> handleValidationAndUpdate(Callback<SscsCaseData> callback, IdamTokens token) {
@@ -149,7 +153,7 @@ public class CcdCallbackHandler {
         PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
 
         if (validationErrorResponse != null) {
-            log.info(LOGSTR_VALIDATION_ERRORS, callback.getCaseDetails().getId());
+            log.info(LOGSTR_VALIDATION_ERRORS, callback.getCaseDetails().getId(), ".");
             return validationErrorResponse;
         } else {
             log.info("Exception record id {} validated successfully", callback.getCaseDetails().getId());
@@ -203,12 +207,12 @@ public class CcdCallbackHandler {
         List<String> appendedWarningsAndErrors = new ArrayList<>();
 
         if (!ObjectUtils.isEmpty(caseResponse.getWarnings())) {
-            log.info("Warnings found while validating exception record id {}", caseData.getCcdCaseId());
+            log.info(LOGSTR_VALIDATION_WARNING, caseData.getCcdCaseId(), stringJoin(caseResponse.getWarnings()));
             appendedWarningsAndErrors.addAll(caseResponse.getWarnings());
         }
 
         if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
-            log.info(LOGSTR_VALIDATION_ERRORS, caseData.getCcdCaseId());
+            log.info(LOGSTR_VALIDATION_ERRORS, caseData.getCcdCaseId(), stringJoin(caseResponse.getErrors()));
             appendedWarningsAndErrors.addAll(caseResponse.getErrors());
         }
 
