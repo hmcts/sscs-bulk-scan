@@ -9,27 +9,12 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: guava-20.0.jar
-   ]]></notes>
-    <gav regex="true">^com\.google\.guava:guava:.*$</gav>
-    <cve>CVE-2018-10237</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
    file name: org.apache.sling.javax.activation-0.1.0.jar
    suppress vulnerabilities because the is no other versions of the affected package
    org.apache.sling.javax.activation
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.sling/org\.apache\.sling\.javax\.activation@.*$</packageUrl>
     <cve>CVE-2016-5394</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: org.apache.sling.javax.activation-0.1.0.jar
-   suppress vulnerabilities because the is no other versions of the affected package
-   org.apache.sling.javax.activation
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.sling/org\.apache\.sling\.javax\.activation@.*$</packageUrl>
     <cve>CVE-2016-6798</cve>
   </suppress>
 </suppressions>
