@@ -93,7 +93,7 @@ public class CcdCallbackHandler {
         }
 
         if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
-            log.info("Warnings found while transforming exception record id {} - {}", exceptionRecordId, stringJoin(caseTransformationResponse.getWarnings()));
+            log.info("Warning found while transforming exception record id {}", exceptionRecordId);
             throw new InvalidExceptionRecordException(caseTransformationResponse.getWarnings());
         }
 
