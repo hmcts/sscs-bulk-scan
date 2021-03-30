@@ -31,7 +31,7 @@ public class OcrFormValidationFunctionalTest extends BaseFunctionalTest {
         Response response = validateOcrEndpointRequest(json, formType, OK.value());
 
         OcrValidationResponse validationResponse = response.getBody()
-            .as(OcrValidationResponse.class, ObjectMapperType.JACKSON_2);
+            .as(OcrValidationResponse.class, ObjectMapperType.GSON);
 
         assertThat(validationResponse.status).isEqualTo(ValidationStatus.SUCCESS);
         assertThat(validationResponse.errors).isEmpty();
