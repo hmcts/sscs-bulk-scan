@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.findBenefitByDescription;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.findBenefitByShortName;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
@@ -20,10 +22,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.DirectionType;
-import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
@@ -173,7 +172,7 @@ public class CcdCallbackHandler {
 
         if (appeal != null) {
             if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null) {
-                String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+                String benefitCode = getBenefitByCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
                 String issueCode = generateIssueCode();
 
                 callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
@@ -195,6 +194,18 @@ public class CcdCallbackHandler {
                     callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
                 }
             }
+        }
+    }
+
+    public static String getBenefitByCode(String code) {
+        Benefit benefit = findBenefitByShortName(code);
+        if (benefit == null) {
+            benefit = findBenefitByDescription(code);
+        }
+        if (benefit != null) {
+            return benefit.getBenefitCode();
+        } else {
+            return "";
         }
     }
 
