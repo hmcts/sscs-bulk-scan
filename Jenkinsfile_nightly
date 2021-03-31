@@ -41,8 +41,6 @@ withNightlyPipeline(type, product, component) {
   env.TEST_URL = "http://sscs-bulk-scan-aat.service.core-compute-aat.internal"
   env.Rules = params.SecurityRules
 
-  loadVaultSecrets(secrets)
-
   // Vars needed for AKS testing
   env.IDAM_S2S_AUTH = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   env.IDAM_URL = "https://idam-api.aat.platform.hmcts.net"
@@ -51,6 +49,8 @@ withNightlyPipeline(type, product, component) {
   env.DOCUMENT_MANAGEMENT_URL = 'http://dm-store-aat.service.core-compute-aat.internal'
   env.IDAM_OAUTH2_CLIENT_ID = "sscs"
   env.IDAM_S2S_AUTH_MICROSERVICE = "sscs_bulkscan"
+
+  loadVaultSecrets(secrets)
 
   enableMutationTest()
   enableSecurityScan()
