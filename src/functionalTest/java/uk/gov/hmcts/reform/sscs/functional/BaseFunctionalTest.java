@@ -192,7 +192,7 @@ public class BaseFunctionalTest {
 
     @SuppressWarnings("unchecked")
     protected void verifyResponseIsExpected(String expectedJson, Response response) throws JsonProcessingException {
-        JsonPath transformationResponse = response.getBody().jsonPath();
+        JsonPath transformationResponse = response.jsonPath();
 
         Map<String, Object> caseData = ((Map<String, Object>) transformationResponse
             .getMap("case_creation_details")
