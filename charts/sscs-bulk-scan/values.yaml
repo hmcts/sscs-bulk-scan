@@ -8,6 +8,7 @@ java:
     sscs-bulk-scan:
       secrets:
         - sscs-s2s-secret
+        - s2s-micro
         - idam-sscs-systemupdate-user
         - idam-sscs-systemupdate-password
         - idam-sscs-oauth2-client-secret
