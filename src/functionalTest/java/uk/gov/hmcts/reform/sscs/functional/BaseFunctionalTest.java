@@ -194,6 +194,7 @@ public class BaseFunctionalTest {
     protected void verifyResponseIsExpected(String expectedJson, Response response) throws JsonProcessingException {
         JsonPath transformationResponse = response.jsonPath();
 
+        System.out.println("transformationResponse---------------------- " + transformationResponse.toString());
         Map<String, Object> caseData = ((Map<String, Object>) transformationResponse
             .getMap("case_creation_details")
             .get("case_data"));
