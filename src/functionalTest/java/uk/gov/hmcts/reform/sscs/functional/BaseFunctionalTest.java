@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import java.io.File;
@@ -71,7 +72,7 @@ public class BaseFunctionalTest {
         Response response = RestAssured
             .given()
             .header("ServiceAuthorization", "" + idamTokens.getServiceAuthorization())
-            .contentType("application/json")
+            .contentType(ContentType.JSON)
             .body(json)
             .when()
             .post(callbackUrl);
@@ -88,7 +89,7 @@ public class BaseFunctionalTest {
         Response response = RestAssured
             .given()
             .header("ServiceAuthorization", "" + idamTokens.getServiceAuthorization())
-            .contentType("application/json")
+            .contentType(ContentType.JSON)
             .then()
             .body(json, equalTo(expectedJson.getMap("")))
             .when()
@@ -108,7 +109,7 @@ public class BaseFunctionalTest {
             .header("ServiceAuthorization", "" + idamTokens.getServiceAuthorization())
             .header(AUTHORIZATION, idamTokens.getIdamOauth2Token())
             .header("user-id", idamTokens.getUserId())
-            .contentType("application/json")
+            .contentType(ContentType.JSON)
             .body(json)
             .when()
             .post(callbackUrl);
@@ -127,7 +128,7 @@ public class BaseFunctionalTest {
             .header("ServiceAuthorization", "" + idamTokens.getServiceAuthorization())
             .header(AUTHORIZATION, idamTokens.getIdamOauth2Token())
             .header("user-id", idamTokens.getUserId())
-            .contentType("application/json")
+            .contentType(ContentType.JSON)
             .then()
             .body("", equalTo(expectedJson.getMap("")))
             .when()
