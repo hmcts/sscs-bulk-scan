@@ -171,8 +171,8 @@ public class CcdCallbackHandler {
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
         if (appeal != null) {
-            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null) {
-                String benefitCode = getBenefitByCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode() != null) {
+                String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
                 String issueCode = generateIssueCode();
 
                 callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);

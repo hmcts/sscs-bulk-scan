@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
-import static uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler.getBenefitByCode;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
@@ -50,8 +49,8 @@ public class SscsDataHelper {
         appealData.put("formType", formType);
 
         if (appeal != null) {
-            if (appeal.getBenefitType() != null) {
-                String benefitCode = getBenefitByCode(appeal.getBenefitType().getCode());
+            if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
+                String benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
                 String issueCode = generateIssueCode();
 
                 appealData.put("benefitCode", benefitCode);
