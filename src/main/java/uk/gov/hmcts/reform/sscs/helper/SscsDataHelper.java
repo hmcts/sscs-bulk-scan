@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
-import static uk.gov.hmcts.reform.sscs.bulkscancore.handlers.CcdCallbackHandler.getBenefitByCode;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
