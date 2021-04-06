@@ -1,1 +1,4 @@
 test_url: ${TEST_URL:http://localhost:8090}
+idam:
+  s2s-auth:
+    url: ${IDAM_S2S_AUTH:http://rpe-service-auth-provider-aat.service.core-compute-aat.internal}
