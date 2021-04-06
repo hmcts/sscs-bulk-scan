@@ -28,6 +28,9 @@
             "title": "Mr"
           }
         },
+        "rep": {
+          "hasRepresentative": "No"
+        },
         "benefitType": {
           "code": "ESA"
         },

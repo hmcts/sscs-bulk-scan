@@ -62,4 +62,5 @@ public final class SscsConstants {
     public static final String PHONE_SELECTED_NOT_PROVIDED = "has not been provided but data indicates hearing telephone is required";
     public static final String EMAIL_SELECTED_NOT_PROVIDED = "has not been provided but data indicates hearing video is required";
     public static final String HEARING_EXCLUDE_DATES_MISSING = "Excluded dates have been provided which must be recorded on CCD";
+    public static final String HAS_REPRESENTATIVE_FIELD_MISSING = "The \"Has representative\" field is not selected, please select an option to proceed";
 }

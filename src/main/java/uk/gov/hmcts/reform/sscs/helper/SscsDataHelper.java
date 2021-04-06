@@ -49,7 +49,7 @@ public class SscsDataHelper {
         appealData.put("formType", formType);
 
         if (appeal != null) {
-            if (appeal.getBenefitType() != null) {
+            if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
                 String benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
                 String issueCode = generateIssueCode();
 
