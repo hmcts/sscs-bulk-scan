@@ -37,7 +37,7 @@ idam:
   s2s-auth:
     totp_secret: ${S2S_SECRET:AAAAAAAAAAAAAAAD}
     microservice: ${IDAM_S2S_AUTH_MICROSERVICE:sscs_bulkscan}
-    url: ${IDAM_S2S_AUTH:http://localhost:4502}
+    url: ${IDAM_S2S_AUTH:http://rpe-service-auth-provider-aat.service.core-compute-aat.internal}
   oauth2:
     user:
       email: ${IDAM_SSCS_SYSTEMUPDATE_USER:system.update@hmcts.net}
