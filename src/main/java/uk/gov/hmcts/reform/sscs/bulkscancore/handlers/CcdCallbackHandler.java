@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.findBenefitByDescription;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.findBenefitByShortName;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
@@ -71,7 +69,7 @@ public class CcdCallbackHandler {
             return caseTransformationResponse;
         }
 
-        log.info("Exception record id {} transformed successfully ready for validation");
+        log.info("Exception record id {} transformed successfully ready for validation", exceptionRecord.getExceptionRecordId());
 
         return caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), true);
     }
@@ -96,7 +94,7 @@ public class CcdCallbackHandler {
             throw new InvalidExceptionRecordException(caseTransformationResponse.getWarnings());
         }
 
-        log.info("Exception record id {} transformed successfully. About to validate transformed case from exception");
+        log.info("Exception record id {} transformed successfully. About to validate transformed case from exception", exceptionRecordId);
 
         CaseResponse caseValidationResponse = caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), false);
 
@@ -197,18 +195,6 @@ public class CcdCallbackHandler {
         }
     }
 
-    public static String getBenefitByCode(String code) {
-        Benefit benefit = findBenefitByShortName(code);
-        if (benefit == null) {
-            benefit = findBenefitByDescription(code);
-        }
-        if (benefit != null) {
-            return benefit.getBenefitCode();
-        } else {
-            return "";
-        }
-    }
-
     private PreSubmitCallbackResponse<SscsCaseData> convertWarningsToErrors(SscsCaseData caseData, CaseResponse caseResponse) {
 
         List<String> appendedWarningsAndErrors = new ArrayList<>();
@@ -223,7 +209,7 @@ public class CcdCallbackHandler {
             appendedWarningsAndErrors.addAll(caseResponse.getErrors());
         }
 
-        if (appendedWarningsAndErrors.size() > 0) {
+        if (!appendedWarningsAndErrors.isEmpty()) {
             PreSubmitCallbackResponse<SscsCaseData> preSubmitCallbackResponse = new PreSubmitCallbackResponse<>(caseData);
 
             preSubmitCallbackResponse.addErrors(appendedWarningsAndErrors);
