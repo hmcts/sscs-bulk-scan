@@ -43,6 +43,7 @@ spec:
               value: "https://evidence-sharing-preprod.sscs.reform.hmcts.net"
           - name: S2S_SECRET
             value: "${S2S_SECRET}"
+          - IDAM_S2S_AUTH = ${IDAM_S2S_AUTH}
 
         envFrom:
           - configMapRef:
