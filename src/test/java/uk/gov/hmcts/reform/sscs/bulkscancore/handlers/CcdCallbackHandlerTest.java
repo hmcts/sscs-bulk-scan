@@ -14,16 +14,26 @@ import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.converters.Nullable;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -41,8 +51,14 @@ import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
-@RunWith(SpringRunner.class)
+@RunWith(JUnitParamsRunner.class)
 public class CcdCallbackHandlerTest {
+
+    @ClassRule
+    public static final SpringClassRule springClassRule = new SpringClassRule();
+
+    @Rule
+    public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
     private CcdCallbackHandler ccdCallbackHandler;
 
@@ -464,13 +480,35 @@ public class CcdCallbackHandlerTest {
         assertLogContains("Warnings found while validating exception record id 123 - Postcode is invalid");
     }
 
+    @Test
+    @Parameters({"", " ", "null", "Invalid"})
+    public void should_return_error_for_invalid_benefitType(@Nullable String benefitType) {
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().appeal(Appeal.builder().benefitType(BenefitType.builder().code(benefitType).build()).build()).benefitCode(benefitType).ccdCaseId("123").build())
+            .state("ScannedRecordReceived")
+            .caseId("123")
+            .build();
+
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+            .thenReturn(CaseResponse.builder()
+                .errors(ImmutableList.of("Benefit type is invalid"))
+                .build());
+        // when
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
+
+        // then
+        assertThat(ccdCallbackResponse.getErrors()).containsOnly("Benefit type is invalid");
+        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+    }
+
     private void assertLogContains(final String logMessage) {
         assertThat(listAppender.list.stream().map(ILoggingEvent::getFormattedMessage)).contains(logMessage);
     }
 
     private void assertExceptionDataEntries(SuccessfulTransformationResponse successfulTransformationResponse) {
-        assertThat(successfulTransformationResponse.getCaseCreationDetails().getCaseTypeId().equals("Benefit"));
-        assertThat(successfulTransformationResponse.getCaseCreationDetails().getEventId().equals("validAppealCreated"));
+        assertThat(successfulTransformationResponse.getCaseCreationDetails().getCaseTypeId()).isEqualTo("Benefit");
+        assertThat(successfulTransformationResponse.getCaseCreationDetails().getEventId()).isEqualTo("validAppealCreated");
         assertThat(successfulTransformationResponse.getCaseCreationDetails().getCaseData()).isEqualTo(transformedCase);
     }
 
