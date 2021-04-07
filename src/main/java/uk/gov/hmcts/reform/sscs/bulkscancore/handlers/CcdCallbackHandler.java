@@ -174,36 +174,35 @@ public class CcdCallbackHandler {
         callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(READY_TO_LIST.getId());
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
-        if (appeal != null) {
-            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
-                String benefitCode = null;
-                try {
-                    benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
-                } catch (BenefitMappingException ignored) {
-                    //
-                }
-                String issueCode = generateIssueCode();
+        if (appeal != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
+            String benefitCode = null;
+            try {
+                benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+            } catch (BenefitMappingException ignored) {
+                //
+            }
+            String issueCode = generateIssueCode();
 
-                callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
-                callback.getCaseDetails().getCaseData().setIssueCode(issueCode);
-                callback.getCaseDetails().getCaseData().setCaseCode(generateCaseCode(benefitCode, issueCode));
+            callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
+            callback.getCaseDetails().getCaseData().setIssueCode(issueCode);
+            callback.getCaseDetails().getCaseData().setCaseCode(generateCaseCode(benefitCode, issueCode));
 
-                if (callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails() != null
-                    && callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails().getDwpIssuingOffice() != null) {
+            if (callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails() != null
+                && callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails().getDwpIssuingOffice() != null) {
 
-                    String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
-                        appeal.getBenefitType().getCode(),
-                        appeal.getMrnDetails().getDwpIssuingOffice());
+                String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
+                    appeal.getBenefitType().getCode(),
+                    appeal.getMrnDetails().getDwpIssuingOffice());
 
-                    callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
-                }
+                callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
+            }
 
-                String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
-                if (isNotBlank(processingVenue)) {
-                    callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
-                }
+            String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
+            if (isNotBlank(processingVenue)) {
+                callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
             }
         }
+
     }
 
     private PreSubmitCallbackResponse<SscsCaseData> convertWarningsToErrors(SscsCaseData caseData, CaseResponse caseResponse) {

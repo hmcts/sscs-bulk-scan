@@ -499,7 +499,7 @@ public class CcdCallbackHandlerTest {
 
         // then
         assertThat(ccdCallbackResponse.getErrors()).containsOnly("Benefit type is invalid");
-        assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertThat(ccdCallbackResponse.getWarnings().size()).isZero();
     }
 
     private void assertLogContains(final String logMessage) {
