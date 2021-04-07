@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
@@ -8,13 +9,13 @@ import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
+import uk.gov.hmcts.reform.sscs.exception.BenefitMappingException;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
@@ -49,8 +50,13 @@ public class SscsDataHelper {
         appealData.put("formType", formType);
 
         if (appeal != null) {
-            if (appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
-                String benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
+            if (appeal.getBenefitType() != null && isNotBlank(appeal.getBenefitType().getCode())) {
+                String benefitCode = null;
+                try {
+                    benefitCode = generateBenefitCode(appeal.getBenefitType().getCode());
+                } catch (BenefitMappingException ignored) {
+                    //
+                }
                 String issueCode = generateIssueCode();
 
                 appealData.put("benefitCode", benefitCode);
@@ -104,7 +110,7 @@ public class SscsDataHelper {
     }
 
     public String findProcessingVenue(Appellant appellant, BenefitType benefitType) {
-        if (appellant != null && benefitType != null && StringUtils.isNotEmpty(benefitType.getCode())) {
+        if (appellant != null && benefitType != null && isNotBlank(benefitType.getCode())) {
             Appointee appointee = appellant.getAppointee();
             String postcode = null;
             if (appointee != null && appointee.getAddress() != null && isValidPostcode(appointee.getAddress().getPostcode())) {
@@ -113,7 +119,7 @@ public class SscsDataHelper {
                 postcode = appellant.getAddress().getPostcode();
             }
 
-            if (StringUtils.isNotEmpty(postcode)) {
+            if (isNotBlank(postcode)) {
                 return airLookupService.lookupAirVenueNameByPostCode(postcode, benefitType);
             }
         }

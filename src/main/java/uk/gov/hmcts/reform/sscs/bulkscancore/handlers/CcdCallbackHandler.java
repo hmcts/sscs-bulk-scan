@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
+import uk.gov.hmcts.reform.sscs.exception.BenefitMappingException;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -77,7 +79,7 @@ public class CcdCallbackHandler {
     public SuccessfulTransformationResponse handle(ExceptionRecord exceptionRecord) {
         // New transformation request contains exceptionRecordId
         // Old transformation request contains id field, which is the exception record id
-        String exceptionRecordId = StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId()) ? exceptionRecord.getExceptionRecordId() : exceptionRecord.getId();
+        String exceptionRecordId = isNotBlank(exceptionRecord.getExceptionRecordId()) ? exceptionRecord.getExceptionRecordId() : exceptionRecord.getId();
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
         log.info("IsAutomatedProcess: {}", exceptionRecord.getIsAutomatedProcess());
@@ -173,8 +175,13 @@ public class CcdCallbackHandler {
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
         if (appeal != null) {
-            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode() != null) {
-                String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
+                String benefitCode = null;
+                try {
+                    benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+                } catch (BenefitMappingException ignored) {
+                    //
+                }
                 String issueCode = generateIssueCode();
 
                 callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
@@ -192,7 +199,7 @@ public class CcdCallbackHandler {
                 }
 
                 String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
-                if (StringUtils.isNotEmpty(processingVenue)) {
+                if (isNotBlank(processingVenue)) {
                     callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
                 }
             }
@@ -237,7 +244,7 @@ public class CcdCallbackHandler {
     }
 
     private boolean appealReasonIsNotBlank(Appeal appeal) {
-        return appeal.getAppealReasons() != null && (StringUtils.isNotBlank(appeal.getAppealReasons().getOtherReasons())
+        return appeal.getAppealReasons() != null && (isNotBlank(appeal.getAppealReasons().getOtherReasons())
             || reasonsIsNotBlank(appeal));
     }
 
@@ -245,7 +252,7 @@ public class CcdCallbackHandler {
         return !isEmpty(appeal.getAppealReasons().getReasons())
             && appeal.getAppealReasons().getReasons().get(0) != null
             && appeal.getAppealReasons().getReasons().get(0).getValue() != null
-            && (StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getReason())
-            || StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getDescription()));
+            && (isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getReason())
+            || isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getDescription()));
     }
 }
