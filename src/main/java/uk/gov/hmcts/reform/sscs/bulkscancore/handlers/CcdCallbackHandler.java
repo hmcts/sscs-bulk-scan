@@ -244,7 +244,7 @@ public class CcdCallbackHandler {
     }
 
     private boolean appealReasonIsNotBlank(Appeal appeal) {
-        return appeal.getAppealReasons() != null && (isNotBlank(appeal.getAppealReasons().getOtherReasons())
+        return appeal.getAppealReasons() != null && (StringUtils.isNotBlank(appeal.getAppealReasons().getOtherReasons())
             || reasonsIsNotBlank(appeal));
     }
 
@@ -252,7 +252,7 @@ public class CcdCallbackHandler {
         return !isEmpty(appeal.getAppealReasons().getReasons())
             && appeal.getAppealReasons().getReasons().get(0) != null
             && appeal.getAppealReasons().getReasons().get(0).getValue() != null
-            && (isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getReason())
-            || isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getDescription()));
+            && (StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getReason())
+            || StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getDescription()));
     }
 }
