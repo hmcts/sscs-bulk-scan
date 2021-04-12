@@ -7,19 +7,33 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.converters.Nullable;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.slf4j.LoggerFactory;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -37,8 +51,14 @@ import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
-@RunWith(SpringRunner.class)
+@RunWith(JUnitParamsRunner.class)
 public class CcdCallbackHandlerTest {
+
+    @ClassRule
+    public static final SpringClassRule springClassRule = new SpringClassRule();
+
+    @Rule
+    public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
     private CcdCallbackHandler ccdCallbackHandler;
 
@@ -68,8 +88,18 @@ public class CcdCallbackHandlerTest {
 
     private IdamTokens idamTokens;
 
+    private ListAppender<ILoggingEvent> listAppender;
+
     @Before
     public void setUp() {
+        Logger fooLogger = (Logger) LoggerFactory.getLogger(CcdCallbackHandler.class);
+
+        listAppender = new ListAppender<>();
+        // create and start a ListAppender
+        listAppender.start();
+        // add the appender to the logger
+        fooLogger.addAppender(listAppender);
+
         sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator);
         ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService);
 
@@ -134,8 +164,12 @@ public class CcdCallbackHandlerTest {
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
-
-        invokeCallbackHandler(exceptionRecord);
+        try {
+            invokeCallbackHandler(exceptionRecord);
+        } catch (InvalidExceptionRecordException e) {
+            assertLogContains("Errors found while validating exception record id null - NI Number is invalid");
+            throw e;
+        }
     }
 
     @Test(expected = InvalidExceptionRecordException.class)
@@ -376,9 +410,9 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .caseData(SscsCaseData.builder().ccdCaseId("123").appeal(appeal).interlocReviewState("something").build())
             .state("ScannedRecordReceived")
-            .caseId("1234")
+            .caseId("123")
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(Lists.list("Mrn date is empty")).build();
@@ -388,7 +422,7 @@ public class CcdCallbackHandlerTest {
 
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors().size()).isEqualTo(1);
-        assertThat(ccdCallbackResponse.getErrors().contains("Mrn date is empty"));
+        assertThat(ccdCallbackResponse.getErrors()).contains("Mrn date is empty");
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
         assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
@@ -397,15 +431,16 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertLogContains("Warnings found while validating exception record id 123 - Mrn date is empty");
     }
 
     @Test
     public void should_return_exc_data_and_errors_in_callback_when_validation_endpoint_fails_with_errors() {
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().build())
+            .caseData(SscsCaseData.builder().ccdCaseId("123").build())
             .state("ScannedRecordReceived")
-            .caseId("1234")
+            .caseId("123")
             .build();
 
         when(caseValidator.validateValidationRecord(any(), anyBoolean()))
@@ -419,15 +454,16 @@ public class CcdCallbackHandlerTest {
         // then
         assertThat(ccdCallbackResponse.getErrors()).containsOnly("NI Number is invalid");
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertLogContains("Errors found while validating exception record id 123 - NI Number is invalid");
     }
 
     @Test
     public void should_return_exc_data_and_errors_in_callback_when_validation_endpoint_fails_with_warnings() {
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().build())
+            .caseData(SscsCaseData.builder().ccdCaseId("123").build())
             .state("ScannedRecordReceived")
-            .caseId("1234")
+            .caseId("123")
             .build();
 
         when(caseValidator.validateValidationRecord(any(), anyBoolean()))
@@ -441,11 +477,38 @@ public class CcdCallbackHandlerTest {
         // then
         assertThat(ccdCallbackResponse.getErrors()).containsOnly("Postcode is invalid");
         assertThat(ccdCallbackResponse.getWarnings().size()).isEqualTo(0);
+        assertLogContains("Warnings found while validating exception record id 123 - Postcode is invalid");
+    }
+
+    @Test
+    @Parameters({"", " ", "null", "Invalid"})
+    public void should_return_error_for_invalid_benefitType(@Nullable String benefitType) {
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().appeal(Appeal.builder().benefitType(BenefitType.builder().code(benefitType).build()).build()).benefitCode(benefitType).ccdCaseId("123").build())
+            .state("ScannedRecordReceived")
+            .caseId("123")
+            .build();
+
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+            .thenReturn(CaseResponse.builder()
+                .errors(ImmutableList.of("Benefit type is invalid"))
+                .build());
+        // when
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
+
+        // then
+        assertThat(ccdCallbackResponse.getErrors()).containsOnly("Benefit type is invalid");
+        assertThat(ccdCallbackResponse.getWarnings().size()).isZero();
+    }
+
+    private void assertLogContains(final String logMessage) {
+        assertThat(listAppender.list.stream().map(ILoggingEvent::getFormattedMessage)).contains(logMessage);
     }
 
     private void assertExceptionDataEntries(SuccessfulTransformationResponse successfulTransformationResponse) {
-        assertThat(successfulTransformationResponse.getCaseCreationDetails().getCaseTypeId().equals("Benefit"));
-        assertThat(successfulTransformationResponse.getCaseCreationDetails().getEventId().equals("validAppealCreated"));
+        assertThat(successfulTransformationResponse.getCaseCreationDetails().getCaseTypeId()).isEqualTo("Benefit");
+        assertThat(successfulTransformationResponse.getCaseCreationDetails().getEventId()).isEqualTo("validAppealCreated");
         assertThat(successfulTransformationResponse.getCaseCreationDetails().getCaseData()).isEqualTo(transformedCase);
     }
 
