@@ -7,7 +7,7 @@ plugins {
   id 'io.spring.dependency-management' version '1.0.11.RELEASE'
   id 'org.springframework.boot' version '2.3.5.RELEASE'
   id 'uk.gov.hmcts.java' version '0.12.8'
-  id 'org.owasp.dependencycheck' version '6.1.2'
+  id 'org.owasp.dependencycheck' version '6.1.5'
   id 'com.github.ben-manes.versions' version '0.38.0'
 }
 
@@ -214,7 +214,8 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.2.45-RC-SSCS-9031'
+
+  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.3.0'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -274,7 +275,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22112
-    dependencySet(group: 'org.springframework.security', version: '5.4.5') {
+    dependencySet(group: 'org.springframework.security', version: '5.4.6') {
       entry 'spring-security-crypto'
     }
 

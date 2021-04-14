@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
+import uk.gov.hmcts.reform.sscs.exception.BenefitMappingException;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -33,8 +35,8 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 @Slf4j
 public class CcdCallbackHandler {
 
-    private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {}";
-    private static final String LOGSTR_VALIDATION_WARNING = "Warning found while validating exception record id {}";
+    private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {} - {}";
+    private static final String LOGSTR_VALIDATION_WARNING = "Warnings found while validating exception record id {} - {}";
 
     private final CaseTransformer caseTransformer;
 
@@ -69,7 +71,7 @@ public class CcdCallbackHandler {
             return caseTransformationResponse;
         }
 
-        log.info("Exception record id {} transformed successfully ready for validation", exceptionRecord.getExceptionRecordId());
+        log.info("Exception record id {} transformed successfully ready for validation", exceptionRecord.getId());
 
         return caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), true);
     }
@@ -77,7 +79,7 @@ public class CcdCallbackHandler {
     public SuccessfulTransformationResponse handle(ExceptionRecord exceptionRecord) {
         // New transformation request contains exceptionRecordId
         // Old transformation request contains id field, which is the exception record id
-        String exceptionRecordId = StringUtils.isNotEmpty(exceptionRecord.getExceptionRecordId()) ? exceptionRecord.getExceptionRecordId() : exceptionRecord.getId();
+        String exceptionRecordId = isNotBlank(exceptionRecord.getExceptionRecordId()) ? exceptionRecord.getExceptionRecordId() : exceptionRecord.getId();
 
         log.info("Processing callback for SSCS exception record id {}", exceptionRecordId);
         log.info("IsAutomatedProcess: {}", exceptionRecord.getIsAutomatedProcess());
@@ -85,7 +87,7 @@ public class CcdCallbackHandler {
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, false);
 
         if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
-            log.info("Errors found while transforming exception record id {}", exceptionRecordId);
+            log.info("Errors found while transforming exception record id {} - {}", exceptionRecordId, stringJoin(caseTransformationResponse.getErrors()));
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
         }
 
@@ -99,10 +101,10 @@ public class CcdCallbackHandler {
         CaseResponse caseValidationResponse = caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), false);
 
         if (!ObjectUtils.isEmpty(caseValidationResponse.getErrors())) {
-            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId, stringJoin(caseValidationResponse.getErrors()));
             throw new InvalidExceptionRecordException(caseValidationResponse.getErrors());
         } else if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !ObjectUtils.isEmpty(caseValidationResponse.getWarnings())) {
-            log.info(LOGSTR_VALIDATION_WARNING, exceptionRecordId);
+            log.info(LOGSTR_VALIDATION_WARNING, exceptionRecordId, stringJoin(caseValidationResponse.getWarnings()));
             throw new InvalidExceptionRecordException(caseValidationResponse.getWarnings());
         } else {
             String eventId = sscsDataHelper.findEventToCreateCase(caseValidationResponse);
@@ -117,6 +119,10 @@ public class CcdCallbackHandler {
                 ),
             caseValidationResponse.getWarnings());
         }
+    }
+
+    private String stringJoin(List<String> messages) {
+        return String.join(". ", messages);
     }
 
     public PreSubmitCallbackResponse<SscsCaseData> handleValidationAndUpdate(Callback<SscsCaseData> callback, IdamTokens token) {
@@ -146,7 +152,7 @@ public class CcdCallbackHandler {
         PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
 
         if (validationErrorResponse != null) {
-            log.info(LOGSTR_VALIDATION_ERRORS, callback.getCaseDetails().getId());
+            log.info(LOGSTR_VALIDATION_ERRORS, callback.getCaseDetails().getId(), ".");
             return validationErrorResponse;
         } else {
             log.info("Exception record id {} validated successfully", callback.getCaseDetails().getId());
@@ -168,31 +174,35 @@ public class CcdCallbackHandler {
         callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(READY_TO_LIST.getId());
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
-        if (appeal != null) {
-            if (callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode() != null) {
-                String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
-                String issueCode = generateIssueCode();
+        if (appeal != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
+            String benefitCode = null;
+            try {
+                benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+            } catch (BenefitMappingException ignored) {
+                //
+            }
+            String issueCode = generateIssueCode();
 
-                callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
-                callback.getCaseDetails().getCaseData().setIssueCode(issueCode);
-                callback.getCaseDetails().getCaseData().setCaseCode(generateCaseCode(benefitCode, issueCode));
+            callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
+            callback.getCaseDetails().getCaseData().setIssueCode(issueCode);
+            callback.getCaseDetails().getCaseData().setCaseCode(generateCaseCode(benefitCode, issueCode));
 
-                if (callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails() != null
-                    && callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails().getDwpIssuingOffice() != null) {
+            if (callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails() != null
+                && callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails().getDwpIssuingOffice() != null) {
 
-                    String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
-                        appeal.getBenefitType().getCode(),
-                        appeal.getMrnDetails().getDwpIssuingOffice());
+                String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
+                    appeal.getBenefitType().getCode(),
+                    appeal.getMrnDetails().getDwpIssuingOffice());
 
-                    callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
-                }
+                callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
+            }
 
-                String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
-                if (StringUtils.isNotEmpty(processingVenue)) {
-                    callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
-                }
+            String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
+            if (isNotBlank(processingVenue)) {
+                callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
             }
         }
+
     }
 
     private PreSubmitCallbackResponse<SscsCaseData> convertWarningsToErrors(SscsCaseData caseData, CaseResponse caseResponse) {
@@ -200,12 +210,12 @@ public class CcdCallbackHandler {
         List<String> appendedWarningsAndErrors = new ArrayList<>();
 
         if (!ObjectUtils.isEmpty(caseResponse.getWarnings())) {
-            log.info("Warnings found while validating exception record id {}", caseData.getCcdCaseId());
+            log.info(LOGSTR_VALIDATION_WARNING, caseData.getCcdCaseId(), stringJoin(caseResponse.getWarnings()));
             appendedWarningsAndErrors.addAll(caseResponse.getWarnings());
         }
 
         if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
-            log.info(LOGSTR_VALIDATION_ERRORS, caseData.getCcdCaseId());
+            log.info(LOGSTR_VALIDATION_ERRORS, caseData.getCcdCaseId(), stringJoin(caseResponse.getErrors()));
             appendedWarningsAndErrors.addAll(caseResponse.getErrors());
         }
 
