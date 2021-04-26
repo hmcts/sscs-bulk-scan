@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.validators;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +44,7 @@ public class SscsKeyValuePairValidator {
         if (schema != null) {
             return;
         }
-
-        InputStream inputStream = getClass().getResourceAsStream(schemaLocation);
-        schema = SchemaLoader.load(new JSONObject(new JSONTokener(inputStream)));
+        schema = SchemaLoader.load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(schemaLocation))));
     }
 
 }
