@@ -189,6 +189,11 @@ public class BaseFunctionalTest {
         return json;
     }
 
+    protected String replaceMrnDate(String json, String value) {
+        json = json.replace("MRN_DATE", value);
+        return json;
+    }
+
     @SuppressWarnings("unchecked")
     protected void verifyResponseIsExpected(String expectedJson, Response response) throws JsonProcessingException {
         JsonPath transformationResponse = response.getBody().jsonPath();
