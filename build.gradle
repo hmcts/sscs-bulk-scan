@@ -109,9 +109,7 @@ dependencyCheck {
 
 repositories {
   mavenLocal()
-  maven {
-    url "https://dl.bintray.com/hmcts/hmcts-maven"
-  }
+
   mavenCentral()
   jcenter()
 
@@ -211,11 +209,10 @@ dependencies {
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
 
   compile group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version:'0.1.0'
-  compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
-  compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
+  compile group: 'com.github.hmcts', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
 
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.3.11'
+  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.3.12.RC1-SSCS-9066'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
