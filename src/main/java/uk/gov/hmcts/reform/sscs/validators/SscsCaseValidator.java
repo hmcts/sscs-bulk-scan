@@ -253,6 +253,7 @@ public class SscsCaseValidator implements CaseValidator {
             Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), dwpIssuingOffice);
 
             if (!officeMapping.isPresent()) {
+                log.info("DwpHandling handling office is not valid");
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
         } else if (dwpIssuingOffice == null) {
