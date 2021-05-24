@@ -112,7 +112,7 @@ public class SscsDataHelper {
     public String findProcessingVenue(Appellant appellant, BenefitType benefitType) {
         if (appellant != null && benefitType != null && isNotBlank(benefitType.getCode())) {
             Appointee appointee = appellant.getAppointee();
-            String postcode = null;
+            String postcode = "";
             if (appointee != null && appointee.getAddress() != null && isValidPostcode(appointee.getAddress().getPostcode())) {
                 postcode = appointee.getAddress().getPostcode();
             } else if (appellant.getAddress() != null && isValidPostcode(appellant.getAddress().getPostcode())) {
