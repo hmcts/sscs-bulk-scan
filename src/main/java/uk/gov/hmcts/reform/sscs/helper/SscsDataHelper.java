@@ -9,6 +9,7 @@ import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @Component
+@Slf4j
 public class SscsDataHelper {
 
     private final CaseEvent caseEvent;
@@ -67,7 +69,7 @@ public class SscsDataHelper {
                     String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
                         appeal.getBenefitType().getCode(),
                         appeal.getMrnDetails().getDwpIssuingOffice());
-
+                    log.info("DwpHandling handling office set as " + dwpRegionCentre);
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
             }
@@ -112,7 +114,7 @@ public class SscsDataHelper {
     public String findProcessingVenue(Appellant appellant, BenefitType benefitType) {
         if (appellant != null && benefitType != null && isNotBlank(benefitType.getCode())) {
             Appointee appointee = appellant.getAppointee();
-            String postcode = null;
+            String postcode = "";
             if (appointee != null && appointee.getAddress() != null && isValidPostcode(appointee.getAddress().getPostcode())) {
                 postcode = appointee.getAddress().getPostcode();
             } else if (appellant.getAddress() != null && isValidPostcode(appellant.getAddress().getPostcode())) {
