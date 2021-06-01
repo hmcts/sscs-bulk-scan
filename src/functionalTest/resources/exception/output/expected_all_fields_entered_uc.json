@@ -36,7 +36,7 @@
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Universal Credit",
-          "mrnDate": "2020-04-09",
+          "mrnDate": "MRN_DATE",
           "mrnLateReason": "see scanned SSCS1 form",
           "mrnMissingReason": null
         },

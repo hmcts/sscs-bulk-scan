@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -49,7 +50,9 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     public static final String TRANSFORM_EXCEPTION_RECORD = "/transform-exception-record/";
     public static final String TRANSFORM_SCANNED_DATA = "/transform-scanned-data/";
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final String MRN_DATE_YESTERDAY_YYYY_MM_DD = LocalDate.now().minusDays(1).toString();
+    public static final String MRN_DATE_YESTERDAY_DD_MM_YYYY = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private String newBaseUrl;
 
     @Before
@@ -62,11 +65,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2020-04-09");
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate("09/04/2020", this::addAppellant)),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant)),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -249,11 +252,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public void auto_scan_should_handle_callback_and_return_caseid_and_state_case_created()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2020-04-09");
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate("09/04/2020", this::addAppellant)),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant)),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -268,11 +271,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public void auto_scan_with_appointee_should_handle_callback_and_return_caseid_and_state_case_created()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2020-04-09");
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD);
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate("09/04/2020", this::addAppellantAndAppointee)),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee)),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -568,6 +571,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         String tya = getTya.apply(callbackResponse);
 
         expected = expected.replace("TYA_RANDOM_NUMBER", tya);
+        expected = expected.replace("MRN_DATE", MRN_DATE_YESTERDAY_YYYY_MM_DD);
 
         ObjectMapper obj = new ObjectMapper();
         String jsonStr = obj.writeValueAsString(callbackResponse);

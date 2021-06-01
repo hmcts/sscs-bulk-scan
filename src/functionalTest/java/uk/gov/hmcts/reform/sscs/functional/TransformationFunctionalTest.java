@@ -7,6 +7,8 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,8 @@ import org.springframework.test.context.TestPropertySource;
 @RunWith(JUnitParamsRunner.class)
 @Slf4j
 public class TransformationFunctionalTest extends BaseFunctionalTest {
+    public static final String MRN_DATE_YESTERDAY_YYYY_MM_DD = LocalDate.now().minusDays(1).toString();
+    public static final String MRN_DATE_YESTERDAY_DD_MM_YYYY = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
     @Test
     public void transform_appeal_created_case_when_all_fields_entered() throws IOException {
@@ -29,9 +33,11 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
         String person2Nino = generateRandomNino();
 
         expectedJson = replaceNino(expectedJson, person1Nino, person2Nino);
+        expectedJson = replaceMrnDate(expectedJson, MRN_DATE_YESTERDAY_YYYY_MM_DD);
 
         String jsonRequest = getJson("exception/all_fields_entered.json");
         jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
 
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
@@ -44,9 +50,11 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
         String person2Nino = generateRandomNino();
 
         expectedJson = replaceNino(expectedJson, person1Nino, person2Nino);
+        expectedJson = replaceMrnDate(expectedJson, MRN_DATE_YESTERDAY_YYYY_MM_DD);
 
         String jsonRequest = getJson("exception/all_fields_entered_uc.json");
         jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
 
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }

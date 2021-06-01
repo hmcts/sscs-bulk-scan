@@ -1,13 +1,13 @@
 plugins {
   id 'application'
   id 'pmd'
-  id 'org.sonarqube' version '3.1.1'
+  id 'org.sonarqube' version '3.2.0'
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.6.0'
   id 'io.spring.dependency-management' version '1.0.11.RELEASE'
   id 'org.springframework.boot' version '2.3.5.RELEASE'
   id 'uk.gov.hmcts.java' version '0.12.9'
-  id 'org.owasp.dependencycheck' version '6.1.5'
+  id 'org.owasp.dependencycheck' version '6.1.6'
   id 'com.github.ben-manes.versions' version '0.38.0'
 }
 
@@ -109,9 +109,7 @@ dependencyCheck {
 
 repositories {
   mavenLocal()
-  maven {
-    url "https://dl.bintray.com/hmcts/hmcts-maven"
-  }
+
   mavenCentral()
   jcenter()
 
@@ -163,7 +161,7 @@ sonarqube {
 // it is important to specify logback classic and core packages explicitly as libraries like spring boot
 // enforces it's own (older) version which is not recommended.
 def versions = [
-  reformLogging: '5.1.5',
+  reformLogging: '5.1.7',
   springBoot: springBoot.class.package.implementationVersion,
   springfoxSwagger: '2.9.2',
   lombok: '1.18.18',
@@ -203,7 +201,7 @@ dependencies {
   compile group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
   compile group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
   compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
-  compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.12.0'
+  compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.12.2'
   compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.12.1'
 
@@ -211,11 +209,10 @@ dependencies {
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
 
   compile group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version:'0.1.0'
-  compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
-  compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
+  compile group: 'com.github.hmcts', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
 
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.3.10'
+  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.3.23'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -237,7 +234,7 @@ dependencies {
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
   testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.6.0'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
-  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1', withoutJunit4
+  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.28.0', withoutJunit4
   testCompile group: 'com.typesafe', name: 'config', version: '1.4.1'
 
   integrationTestCompile (group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
@@ -275,7 +272,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22112
-    dependencySet(group: 'org.springframework.security', version: '5.4.6') {
+    dependencySet(group: 'org.springframework.security', version: '5.5.0') {
       entry 'spring-security-crypto'
     }
 
@@ -289,7 +286,7 @@ dependencyManagement {
     }
 
     imports {
-      mavenBom "org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR10"
+      mavenBom "org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR11"
     }
   }
 }
