@@ -203,7 +203,7 @@ dependencies {
   compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
   compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.12.2'
   compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.12.1'
+  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.13.0'
 
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
@@ -212,7 +212,7 @@ dependencies {
   compile group: 'com.github.hmcts', name: 'java-logging', version: versions.reformLogging
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
 
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.3.23-RC-SSCS-8820'
+  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.3.25-RC-SSCS-8820'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
