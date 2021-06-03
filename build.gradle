@@ -8,7 +8,7 @@ plugins {
   id 'org.springframework.boot' version '2.3.5.RELEASE'
   id 'uk.gov.hmcts.java' version '0.12.9'
   id 'org.owasp.dependencycheck' version '6.1.6'
-  id 'com.github.ben-manes.versions' version '0.38.0'
+  id 'com.github.ben-manes.versions' version '0.39.0'
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -203,7 +203,7 @@ dependencies {
   compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
   compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.12.2'
   compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.13.0'
+  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.13.1'
 
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
