@@ -234,7 +234,7 @@ dependencies {
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
   testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.6.0'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
-  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.28.0', withoutJunit4
+  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.28.1', withoutJunit4
   testCompile group: 'com.typesafe', name: 'config', version: '1.4.1'
 
   integrationTestCompile (group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
