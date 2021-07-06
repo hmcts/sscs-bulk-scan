@@ -176,8 +176,12 @@ public class CcdCallbackHandler {
 
         if (appeal != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
             String benefitCode = null;
+            String addressName = null;
+            if (appeal.getMrnDetails() != null) {
+                addressName = appeal.getMrnDetails().getDwpIssuingOffice();
+            }
             try {
-                benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode());
+                benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode(), addressName);
             } catch (BenefitMappingException ignored) {
                 //
             }
