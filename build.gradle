@@ -309,7 +309,7 @@ dependencyManagement {
     }
 
     imports {
-      mavenBom "org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR11"
+      mavenBom "org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR12"
     }
   }
 }
