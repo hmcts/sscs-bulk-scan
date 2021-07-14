@@ -270,9 +270,21 @@ public class SscsCaseTransformer implements CaseTransformer {
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
             if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
                 String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
-                Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
-                if (benefit.isPresent()) {
-                    code = benefit.get().name();
+                if ("is_benefit_type_other".equals(valueIndicatorWithTrueValue)) {
+                    String benefitTypeOther = getField(pairs, BENEFIT_TYPE_OTHER);
+
+                    if (benefitTypeOther != null) {
+                        Optional<Benefit> benefit = Benefit.findBenefitByDescription(benefitTypeOther);
+                        if (benefit.isPresent()) {
+                            code = benefit.get().getShortName();
+                            return BenefitType.builder().code(code).build();
+                        }
+                    }
+                } else {
+                    Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
+                    if (benefit.isPresent()) {
+                        code = benefit.get().name();
+                    }
                 }
             } else {
                 errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");

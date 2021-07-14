@@ -9,7 +9,9 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
 public enum BenefitTypeIndicator {
     PIP("is_benefit_type_pip", Benefit.PIP),
     ESA("is_benefit_type_esa", Benefit.ESA),
-    UC("is_benefit_type_uc", Benefit.UC);
+    UC("is_benefit_type_uc", Benefit.UC),
+    OTHER("is_benefit_type_other", null);
+
 
 
     private final String indicatorString;
