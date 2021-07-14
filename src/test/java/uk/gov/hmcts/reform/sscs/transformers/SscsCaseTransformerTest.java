@@ -133,6 +133,31 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenBenefitTypeIsOther_thenNullCodeIsReturned() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), true);
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+
+        assertEquals(null,  appeal.getBenefitType());
+    }
+
+    @Test
+    public void givenBenefitTypeIsOtherAttendanceAllowance_thenCorrectCodeIsReturned() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), true);
+        pairs.put(BENEFIT_TYPE_OTHER, "Attendance Allowance");
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Benefit expectedBenefit = Benefit.ATTENDANCE_ALLOWANCE;
+        assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
+    }
+
+    @Test
     @Parameters({"Yes", "No"})
     public void givenBenefitTypeIsDefinedWithYesNo_thenCheckCorrectCodeIsReturned(String isPip) {
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
