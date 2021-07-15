@@ -30,7 +30,7 @@
         "appointeeSubscription": null,
         "jointPartySubscription": null
       },
-      "formType": "sscs1",
+      "formType": "sscs1peu",
       "dwpRegionalCentre": "Universal Credit",
       "bulkScanCaseReference": "id",
       "appeal": {
