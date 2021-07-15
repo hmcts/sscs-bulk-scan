@@ -100,6 +100,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
 
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1PEU.getId()).build();
         given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().build());
@@ -111,13 +112,31 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"true", "false"})
-    public void givenInvalidBenefitTypePairings_thenReturnAnError(boolean value) {
-        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), value);
-        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), value);
+    public void givenInvalidBenefitTypePairings_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
         assertEquals("is_benefit_type_pip and is_benefit_type_esa have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenNoTrueBenefitTypePairings_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), false);
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and is_benefit_type_other fields are empty", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenNoBenefitTypePairings_thenReturnAnError() {
+        pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and is_benefit_type_other fields are empty", result.getErrors().get(0));
     }
 
     @Test
@@ -428,7 +447,8 @@ public class SscsCaseTransformerTest {
     public void givenKeyValuePairsWithEsaBenefitType_thenBuildAnAppealWithAppellant() {
         given(fuzzyMatcherService.matchBenefitType("ESA")).willReturn("ESA");
 
-        pairs.put("benefit_type_description", "ESA");
+        pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
+        pairs.put("is_benefit_type_esa", "true");
         pairs.put("office", "Balham DRT");
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
@@ -440,6 +460,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithUcOffice() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
         given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
 
         pairs.put("is_benefit_type_uc", "true");
@@ -454,6 +475,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithUcBenefitTypeAndNoOfficePopulated_thenBuildAnAppealWithUcOffice() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
         given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
 
         pairs.put("is_benefit_type_uc", "true");
@@ -781,6 +803,7 @@ public class SscsCaseTransformerTest {
     @Test
     @Parameters({"true", "Yes"})
     public void givenDisabledAccessIsRequired_thenBuildAnAppealWithArrangementsWithDisabledAccess(String disabledAccess) {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
 
         pairs.put("hearing_options_accessible_hearing_rooms", disabledAccess);
 
@@ -1161,6 +1184,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void createCaseWithTodaysCaseCreationDate() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String nowDateFormatted = df.format(new Date());
 

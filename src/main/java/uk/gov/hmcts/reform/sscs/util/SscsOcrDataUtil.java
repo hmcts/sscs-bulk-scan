@@ -76,6 +76,11 @@ public final class SscsOcrDataUtil {
         return values.stream().filter(value -> checkBooleanValue(pairs, errors, value)).collect(Collectors.toList());
     }
 
+    public static boolean isExactlyZeroBooleanTrue(Map<String, Object> pairs, Set<String> errors, String... values) {
+        long count = Stream.of(values).map(value -> extractBooleanValue(pairs, errors, value)).filter(Boolean::booleanValue).count();
+        return count == 0;
+    }
+
     public static boolean isExactlyOneBooleanTrue(Map<String, Object> pairs, Set<String> errors, String... values) {
         return Stream.of(values).map(value -> extractBooleanValue(pairs, errors, value)).filter(Boolean::booleanValue).count() == 1;
     }
