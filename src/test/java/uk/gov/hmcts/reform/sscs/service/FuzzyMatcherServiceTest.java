@@ -137,7 +137,7 @@ public class FuzzyMatcherServiceTest {
         "Bereavement Support Payment Scheme', BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
         "bereavementsupportpaymentscheme', BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
     })
-    public void getBenefitByCode(String code, Benefit expectedBenefit) {
+    public void matchBenefitType(String code, Benefit expectedBenefit) {
         final String result = fuzzyMatcherService.matchBenefitType(code);
         assertThat(result, is(expectedBenefit.getShortName()));
     }
