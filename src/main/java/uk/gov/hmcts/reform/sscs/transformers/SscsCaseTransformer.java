@@ -279,12 +279,16 @@ public class SscsCaseTransformer implements CaseTransformer {
                 if ("is_benefit_type_other".equals(valueIndicatorWithTrueValue)) {
                     String benefitTypeOther = getField(pairs, BENEFIT_TYPE_OTHER);
 
-                    if (benefitTypeOther != null) {
+                    if (!StringUtils.isEmpty(benefitTypeOther)) {
                         Optional<Benefit> benefit = Benefit.findBenefitByDescription(benefitTypeOther);
                         if (benefit.isPresent()) {
                             code = benefit.get().getShortName();
-                            return BenefitType.builder().code(code).build();
+                            return BenefitType.builder().code(code).description(benefit.get().getDescription()).build();
+                        } else {
+                            errors.add("enter valid benefit type in 'benefit_type_other");
                         }
+                    } else {
+                        errors.add("benefit_type_other field is empty");
                     }
                 } else {
                     Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
