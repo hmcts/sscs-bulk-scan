@@ -140,6 +140,15 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenOtherBenefitTypeNoType_thenReturnAnError() {
+        pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
+        pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), true);
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("benefit_type_other field is empty", result.getErrors().get(0));
+    }
+
+    @Test
     @Parameters({"true", "false"})
     public void givenBenefitTypeIsDefinedWithTrueFalse_thenCheckCorrectCodeIsReturned(boolean isPip) {
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
@@ -152,30 +161,32 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypeIsOther_thenNullCodeIsReturned() {
+    @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
+        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
+        "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
+        "Industrial Death Benefit, industrialDeathBenefit", "Pension Credits, pensionCredits", "Retirement Pension, retirementPension",})
+    public void givenBenefitTypeIsOtherAttendanceAllowance_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), true);
+        pairs.put(BENEFIT_TYPE_OTHER, benefitDescription);
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-
-        assertEquals(null,  appeal.getBenefitType());
+        assertEquals(shortName,  appeal.getBenefitType().getCode());
     }
 
     @Test
-    public void givenBenefitTypeIsOtherAttendanceAllowance_thenCorrectCodeIsReturned() {
-        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
+    public void givenBenefitTypeIsOtherWithInvalidType_thenErrorMessageReturned() {
+        pairs.remove("is_benefit_type_pip");
         pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), true);
-        pairs.put(BENEFIT_TYPE_OTHER, "Attendance Allowance");
+        pairs.put(BENEFIT_TYPE_OTHER, "Not a valid type");
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        Benefit expectedBenefit = Benefit.ATTENDANCE_ALLOWANCE;
-        assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
-    }
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("enter valid benefit type in 'benefit_type_other", result.getErrors().get(0));
 
+    }
+    
     @Test
     @Parameters({"Yes", "No"})
     public void givenBenefitTypeIsDefinedWithYesNo_thenCheckCorrectCodeIsReturned(String isPip) {
