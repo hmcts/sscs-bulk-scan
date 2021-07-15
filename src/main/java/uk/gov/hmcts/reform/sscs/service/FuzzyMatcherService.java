@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.sscs.service;
 
 import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.findBenefitByDescription;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,18 +48,24 @@ public class FuzzyMatcherService {
     public FuzzyMatcherService() {
         List<String> allMatches = stream(Benefit.values()).flatMap(benefit -> Stream.of(benefit.getShortName(), benefit.getDescription())).collect(Collectors.toList());
         allMatches.addAll(FUZZY_WORD_MATCH_MAP.keySet());
-        fuzzyChoices = Collections.unmodifiableList(allMatches);
+        fuzzyChoices = unmodifiableList(allMatches);
     }
 
     public String matchBenefitType(String ocrBenefitValue) {
-        return getBenefitByCode(ocrBenefitValue).map(Benefit::getShortName).orElse(ocrBenefitValue);
+        return getBenefitByCode(ocrBenefitValue)
+            .map(Benefit::getShortName)
+            .orElse(ocrBenefitValue);
     }
 
     private Optional<Benefit> getBenefitByCode(String code) {
-        final ExtractedResult extractedResult = FuzzySearch.extractOne(code.replaceAll("\\.",""), fuzzyChoices);
+        final ExtractedResult extractedResult = runFuzzySearch(code);
         logMessage(code, extractedResult);
-        String fuzzyCode = getSearchCodeBasedOnScoreThreshold(code, extractedResult);
-        return getBenefit(fuzzyCode);
+        String searchCode = getSearchCodeBasedOnScoreThreshold(code, extractedResult);
+        return getBenefit(searchCode);
+    }
+
+    private ExtractedResult runFuzzySearch(String code) {
+        return FuzzySearch.extractOne(code.replaceAll("\\.", ""), fuzzyChoices);
     }
 
     private String getSearchCodeBasedOnScoreThreshold(String code, ExtractedResult extractedResult) {
@@ -72,11 +78,11 @@ public class FuzzyMatcherService {
             extractedResult.getScore() < THRESHOLD_SCORE ? "Not Using" : "Using");
     }
 
-    private Optional<Benefit> getBenefit(String fuzzyCode) {
-        return ofNullable(findBenefitByShortName(fuzzyCode)
-            .orElseGet(() -> findBenefitByDescription(fuzzyCode)
-                    .orElseGet(() -> findBenefitByFuzzyExactWord(fuzzyCode)
-                    .orElseGet(() -> findBenefitByExactWord(fuzzyCode)
+    private Optional<Benefit> getBenefit(String code) {
+        return ofNullable(findBenefitByShortName(code)
+            .orElseGet(() -> findBenefitByDescription(code)
+                .orElseGet(() -> findBenefitByFuzzyExactWord(code)
+                    .orElseGet(() -> findBenefitByExactWord(code)
                         .orElse(null)))));
     }
 
