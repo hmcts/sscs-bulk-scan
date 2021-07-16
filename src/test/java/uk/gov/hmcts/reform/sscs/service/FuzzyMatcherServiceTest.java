@@ -33,7 +33,7 @@ public class FuzzyMatcherServiceTest {
     }
 
     @Test
-    @Parameters({"employment", "employment test", "EMPLOYMENT", "support", "ESA", "E.S.A", "employmentsupportallowance", "Employment Support Allowance"})
+    @Parameters({"employment", "employment test", "EMPLOYMENT", "E.S.A", "employmentsupportallowance", "Employment Support Allowance"})
     public void givenAWord_thenFuzzyMatchToEsa(String ocrValue) {
         String result = fuzzyMatcherService.matchBenefitType(ocrValue);
 
@@ -49,22 +49,54 @@ public class FuzzyMatcherServiceTest {
     }
 
     @Test
-    @Parameters({"unknown", "sdfhkjsdh", "fisls", "livewitre", "dlsb", "iida", "personel"})
+    @Parameters({
+        "unknown",
+        "sdfhkjsdh",
+        "fisls",
+        "livewitre",
+        "dlsb",
+        "iida",
+        "personel",
+        "fish",
+        "band",
+        "esaz",
+        "ipip",
+        "AND",
+        "of",
+        "Allowance",
+        "Benefit",
+        "Pension",
+        "pension;'",
+        "liv",
+        "",
+        "*",
+        "&",
+        "...",
+        "-$56w;'&4545[]()@£%^",
+        "\\,\\,\\,",
+        "support",
+        "SupporT",
+        "Sup.porT"
+    })
     public void unknownCodeWillBeReturned(String unknownCode) {
         assertThat(fuzzyMatcherService.matchBenefitType(unknownCode), is(unknownCode));
     }
 
+
     @Test
     @Parameters({
         "pip, PIP",
+        "pip test, PIP",
         "esa, ESA",
+        "esa test, ESA",
+        "uc, UC",
+        "uc test, UC",
         "Attendance, ATTENDANCE_ALLOWANCE",
         "att, ATTENDANCE_ALLOWANCE",
         "A.A, ATTENDANCE_ALLOWANCE",
         "AA, ATTENDANCE_ALLOWANCE",
         "Disability, DLA",
         "Living, DLA",
-        "liv, DLA",
         "livi, DLA",
         "livin, DLA",
         "D.L.A, DLA",
@@ -78,6 +110,7 @@ public class FuzzyMatcherServiceTest {
         "incom, INCOME_SUPPORT",
         "Income Support, INCOME_SUPPORT",
         "incomesupport, INCOME_SUPPORT",
+        "income support test, INCOME_SUPPORT",
         "incomesupport test, INCOME_SUPPORT",
         "I.S, INCOME_SUPPORT",
         "Injuries, IIDB",
@@ -93,12 +126,13 @@ public class FuzzyMatcherServiceTest {
         "Social, SOCIAL_FUND",
         "Fund, SOCIAL_FUND",
         "SF, SOCIAL_FUND",
-        "Social Fund', SOCIAL_FUND",
-        "socialfund', SOCIAL_FUND",
+        "Social Fund, SOCIAL_FUND",
+        "socialfund, SOCIAL_FUND",
         "PC, PENSION_CREDITS",
         "P.C, PENSION_CREDITS",
-        "Pension Credits', PENSION_CREDITS",
-        "pensioncredits', PENSION_CREDITS",
+        "Pension Credits, PENSION_CREDITS",
+        "pensioncredits, PENSION_CREDITS",
+        "credits, PENSION_CREDITS",
         "Retirement, RETIREMENT_PENSION",
         "Ret, RETIREMENT_PENSION",
         "Reti, RETIREMENT_PENSION",
@@ -130,16 +164,15 @@ public class FuzzyMatcherServiceTest {
         "Materni, MATERNITY_ALLOWANCE",
         "Maternit, MATERNITY_ALLOWANCE",
         "M.A, MATERNITY_ALLOWANCE",
-        "Maternity Allowance', MATERNITY_ALLOWANCE",
-        "maternityallowance', MATERNITY_ALLOWANCE",
+        "Maternity Allowance, MATERNITY_ALLOWANCE",
+        "maternityallowance, MATERNITY_ALLOWANCE",
         "BSPS, BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
-        "B.S.P.A, BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
-        "Bereavement Support Payment Scheme', BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
-        "bereavementsupportpaymentscheme', BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
+        "B.S.P.S, BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
+        "Bereavement Support Payment Scheme, BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
+        "bereavementsupportpaymentscheme, BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
     })
     public void matchBenefitType(String code, Benefit expectedBenefit) {
         final String result = fuzzyMatcherService.matchBenefitType(code);
         assertThat(result, is(expectedBenefit.getShortName()));
     }
-
 }
