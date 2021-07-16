@@ -200,7 +200,7 @@ dependencies {
   compile group: 'io.rest-assured', name: 'rest-assured', version: versions.restAssured
   compile group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
   compile group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
-  compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
+  compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.2'
   compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.12.3'
   compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.13.3'
