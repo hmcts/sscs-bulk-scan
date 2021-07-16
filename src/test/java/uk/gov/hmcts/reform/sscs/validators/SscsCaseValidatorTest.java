@@ -90,7 +90,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
             exceptionRecord,
-            buildMinimumAppealDataWithBenefitTypeAndFormType(ATTENDANCE_ALLOWANCE.getShortName(), buildAppellant(false), true, FormType.SSCS1),
+            buildMinimumAppealDataWithBenefitTypeAndFormType(ATTENDANCE_ALLOWANCE.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
             false);
 
         assertEquals("office is invalid", response.getWarnings().get(0));
