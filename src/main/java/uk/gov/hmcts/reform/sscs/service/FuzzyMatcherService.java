@@ -70,7 +70,8 @@ public class FuzzyMatcherService {
             .collect(toUnmodifiableSet());
 
     public String matchBenefitType(String ocrBenefitValue) {
-        return benefitByExactMatchOrFuzzySearch(stripToEmpty(stripNonAlphaNumeric(ocrBenefitValue)))
+        return wordExcludedFromFuzzySearch(ocrBenefitValue)
+            .flatMap(this::benefitByExactMatchOrFuzzySearch)
             .map(Benefit::getShortName)
             .orElse(ocrBenefitValue);
     }
@@ -87,20 +88,20 @@ public class FuzzyMatcherService {
     }
 
     private Optional<Benefit> benefitByFuzzySearch(String code) {
-        final Optional<BoundExtractedResult<Pair<String, Benefit>>> optionalResult = runFuzzySearchIfTextIsNotExcluded(code);
-        optionalResult.ifPresent(result -> logMessage(code, result));
-        return optionalResult.flatMap(this::benefitBasedOnThreshold);
+        final BoundExtractedResult<Pair<String, Benefit>> result = runFuzzySearch(code);
+        logMessage(code, result);
+        return benefitBasedOnThreshold(result);
     }
 
-    private Optional<BoundExtractedResult<Pair<String, Benefit>>> runFuzzySearchIfTextIsNotExcluded(String code) {
-        return isWordExcludedFromFuzzySearch(code)
-            ? empty() : Optional.of(FuzzySearch.extractOne(code, FUZZY_CHOICES, Pair::getLeft));
+    private BoundExtractedResult<Pair<String, Benefit>> runFuzzySearch(String code) {
+        return FuzzySearch.extractOne(code, FUZZY_CHOICES, Pair::getLeft);
     }
 
-    private boolean isWordExcludedFromFuzzySearch(String code) {
-        boolean match = EXACT_WORDS_THAT_WILL_NOT_CAUSE_A_MATCH.contains(lowerCase(code));
+    private Optional<String> wordExcludedFromFuzzySearch(String code) {
+        String searchCode = stripToEmpty(stripNonAlphaNumeric(code));
+        boolean match = EXACT_WORDS_THAT_WILL_NOT_CAUSE_A_MATCH.contains(lowerCase(searchCode));
         logMessageIfExcludedFromFuzzySearch(code, match);
-        return match;
+        return match ? empty() : Optional.of(searchCode);
     }
 
     private void logMessageIfExcludedFromFuzzySearch(String code, boolean match) {
