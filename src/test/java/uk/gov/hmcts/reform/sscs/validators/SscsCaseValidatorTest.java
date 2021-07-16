@@ -7,11 +7,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.converters.Nullable;
@@ -35,37 +37,23 @@ public class SscsCaseValidatorTest {
 
     private static final String VALID_MOBILE = "07832882849";
     private static final String VALID_POSTCODE = "CM13 0GD";
-
+    private final List<String> titles = new ArrayList<>();
+    private final Map<String, Object> ocrCaseData = new HashMap<>();
+    private final List<OcrDataField> ocrList = new ArrayList<>();
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
-
     @Mock
     RegionalProcessingCenterService regionalProcessingCenterService;
-
     @Mock
     SscsJsonExtractor sscsJsonExtractor;
-
+    DwpAddressLookupService dwpAddressLookupService;
     @Mock
     private PostcodeValidator postcodeValidator;
-
-    DwpAddressLookupService dwpAddressLookupService;
-
     private SscsCaseValidator validator;
-
     private MrnDetails defaultMrnDetails;
-
-    private List<String> titles = new ArrayList<>();
-
-    private Map<String, Object> ocrCaseData = new HashMap<>();
-
     private CaseResponse transformResponse;
-
     private CaseDetails caseDetails;
-
     private ScannedData scannedData;
-
-    private List<OcrDataField> ocrList = new ArrayList<>();
-
     private ExceptionRecord exceptionRecord;
 
     @Before
@@ -94,6 +82,172 @@ public class SscsCaseValidatorTest {
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
         given(postcodeValidator.isValid(anyString())).willReturn(true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
+    }
+
+    @Test
+    public void givenAnAppealContainsAnInvalidOfficeForBenefitType_thenAddAWarning() {
+        defaultMrnDetails.setDwpIssuingOffice("Invalid Test Office");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(ATTENDANCE_ALLOWANCE.getShortName(), buildAppellant(false), true, FormType.SSCS1),
+            false);
+
+        assertEquals("office is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    @Parameters({"The Pension Service 11", "Recovery from Estates"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeAttendanceAllowance_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator
+            .validateExceptionRecord(transformResponse,
+                exceptionRecord,
+                buildMinimumAppealDataWithBenefitTypeAndFormType(ATTENDANCE_ALLOWANCE.getShortName(),
+                    buildAppellant(false),
+                    true, FormType.SSCS1U),
+                false);
+
+        String assertionMessage = "Asserting Benefit: Attendance Allowance with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Disability Benefit Centre 4", "The Pension Service 11", "Recovery from Estates"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeDla_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(DLA.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: DLA with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Worthing DRT", "Birkenhead DRT", "Recovery from Estates", "Inverness DRT"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeIncomeSupport_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(INCOME_SUPPORT.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Income Support with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Barrow IIDB Centre", "Barnsley Benefit Centre"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeIidb_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(IIDB.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: IIDB with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Worthing DRT", "Birkenhead DRT", "Recovery from Estates", "Inverness DRT"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeJsa_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(JSA.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: JSA with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"St Helens Sure Start Maternity Grant", "Funeral Payment Dispute Resolution Team", "Pensions Dispute Resolution Team"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeSocialFund_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(SOCIAL_FUND.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Social Fund with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Barrow IIDB Centre", "Barnsley Benefit Centre"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeIndustrialDeathBenefit_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(INDUSTRIAL_DEATH_BENEFIT.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Industrial Death Benefit with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Pensions Dispute Resolution Team", "Recovery from Estates"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypePensionCredits_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(PENSION_CREDITS.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Pension Credits with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Pensions Dispute Resolution Team", "Recovery from Estates"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeRetirementPension_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(RETIREMENT_PENSION.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Retirement Pension with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Pensions Dispute Resolution Team"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeBereavementBenefit_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(BEREAVEMENT_BENEFIT.getShortName(), buildAppellant(false),
+                true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Bereavement Benefit with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
     }
 
     @Test
@@ -129,11 +283,11 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = new HashMap<>();
 
         pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().address(
-                Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode(VALID_POSTCODE).build())
-                .identity(Identity.builder().nino("BB000000B").build()).build())
-                .benefitType(BenefitType.builder().code(PIP.name()).build())
-                .mrnDetails(defaultMrnDetails)
-                .hearingType(HEARING_TYPE_ORAL).build());
+            Address.builder().line1("123 The Road").town("Harlow").county("Essex").postcode(VALID_POSTCODE).build())
+            .identity(Identity.builder().nino("BB000000B").build()).build())
+            .benefitType(BenefitType.builder().code(PIP.name()).build())
+            .mrnDetails(defaultMrnDetails)
+            .hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
@@ -157,9 +311,9 @@ public class SscsCaseValidatorTest {
         pairs.put("bulkScanCaseReference", 123);
         pairs.put("formType", FormType.SSCS1PEU);
 
-        ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL,"");
-        ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL,"");
-        ocrCaseData.put(HEARING_TYPE_FACE_TO_FACE_LITERAL,"");
+        ocrCaseData.put(HEARING_TYPE_TELEPHONE_LITERAL, "");
+        ocrCaseData.put(HEARING_TYPE_VIDEO_LITERAL, "");
+        ocrCaseData.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, "");
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 
@@ -1276,13 +1430,23 @@ public class SscsCaseValidatorTest {
         return Representative.builder().hasRepresentative(NO_LITERAL).build();
     }
 
+    private Map<String, Object> buildMinimumAppealDataWithBenefitTypeAndFormType(String benefitCode, Appellant appellant, Boolean exceptionCaseType, FormType formType) {
+        return buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(defaultMrnDetails, benefitCode, appellant, buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL, HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
+    }
+
     private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(MrnDetails mrn, String benefitCode, Appellant appellant, Representative representative, String excludeDates,
                                                                                 Boolean exceptionCaseType, String hearingType, HearingSubtype hearingSubtype) {
+        return buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(mrn, benefitCode, appellant, representative, excludeDates,
+            exceptionCaseType, hearingType, hearingSubtype, FormType.SSCS1PE);
+    }
+
+    private Map<String, Object> buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(MrnDetails mrn, String benefitCode, Appellant appellant, Representative representative, String excludeDates,
+                                                                                        Boolean exceptionCaseType, String hearingType, HearingSubtype hearingSubtype, FormType formType) {
         Map<String, Object> dataMap = new HashMap<>();
         List<ExcludeDate> excludedDates = new ArrayList<>();
         excludedDates.add(ExcludeDate.builder().value(DateRange.builder().start(excludeDates).build()).build());
 
-        dataMap.put("formType", FormType.SSCS1PE);
+        dataMap.put("formType", formType);
         dataMap.put("appeal", Appeal.builder()
             .mrnDetails(MrnDetails.builder().mrnDate(mrn.getMrnDate()).dwpIssuingOffice(mrn.getDwpIssuingOffice()).build())
             .benefitType(BenefitType.builder().code(benefitCode).build())

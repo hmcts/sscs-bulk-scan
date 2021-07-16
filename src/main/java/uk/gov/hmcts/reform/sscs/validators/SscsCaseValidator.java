@@ -483,7 +483,7 @@ public class SscsCaseValidator implements CaseValidator {
     private void isBenefitTypeValid(Appeal appeal) {
         BenefitType benefitType = appeal.getBenefitType();
         if (benefitType != null && benefitType.getCode() != null) {
-            if (!Benefit.isBenefitTypeValid(benefitType.getCode())) {
+            if (!Benefit.findBenefitByShortName(benefitType.getCode()).isPresent()) {
                 List<String> benefitNameList = new ArrayList<>();
                 for (Benefit be : Benefit.values()) {
                     benefitNameList.add(be.name());
