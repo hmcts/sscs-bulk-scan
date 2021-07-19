@@ -121,14 +121,14 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenNoTrueBenefitTypePairings_thenReturnAnError() {
+    public void givenNoTrueBenefitTypeIndicatorsOrOtherBenefitType_thenReturnAnError() {
         pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicator.UC.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), false);
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
-        assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and is_benefit_type_other fields are empty", result.getErrors().get(0));
+        assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and benefit_type_other fields are empty", result.getErrors().get(0));
     }
 
     @Test
@@ -186,7 +186,7 @@ public class SscsCaseTransformerTest {
         assertEquals("enter valid benefit type in 'benefit_type_other", result.getErrors().get(0));
 
     }
-    
+
     @Test
     @Parameters({"Yes", "No"})
     public void givenBenefitTypeIsDefinedWithYesNo_thenCheckCorrectCodeIsReturned(String isPip) {

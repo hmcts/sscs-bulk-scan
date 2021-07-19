@@ -268,28 +268,25 @@ public class SscsCaseTransformer implements CaseTransformer {
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
         List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.getAllIndicatorStrings());
 
-        // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
-        // for conflicting values.
+        String benefitTypeOther = getField(pairs, BENEFIT_TYPE_OTHER);
 
-        if (!validProvidedBooleanValues.isEmpty()
+        if (!StringUtils.isEmpty(benefitTypeOther)) {
+            Optional<Benefit> benefit = Benefit.findBenefitByDescription(benefitTypeOther);
+            if (benefit.isPresent()) {
+                code = benefit.get().getShortName();
+                return BenefitType.builder().code(code).description(benefit.get().getDescription()).build();
+            } else {
+                errors.add("enter valid benefit type in 'benefit_type_other");
+            }
+        } else if (!validProvidedBooleanValues.isEmpty()
             && !isExactlyZeroBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+            // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
+            // for conflicting values.
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
             if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
                 String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
                 if ("is_benefit_type_other".equals(valueIndicatorWithTrueValue)) {
-                    String benefitTypeOther = getField(pairs, BENEFIT_TYPE_OTHER);
-
-                    if (!StringUtils.isEmpty(benefitTypeOther)) {
-                        Optional<Benefit> benefit = Benefit.findBenefitByDescription(benefitTypeOther);
-                        if (benefit.isPresent()) {
-                            code = benefit.get().getShortName();
-                            return BenefitType.builder().code(code).description(benefit.get().getDescription()).build();
-                        } else {
-                            errors.add("enter valid benefit type in 'benefit_type_other");
-                        }
-                    } else {
-                        errors.add("benefit_type_other field is empty");
-                    }
+                    errors.add("benefit_type_other field is empty");
                 } else {
                     Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
                     if (benefit.isPresent()) {
@@ -300,7 +297,8 @@ public class SscsCaseTransformer implements CaseTransformer {
                 errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
             }
         } else {
-            errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(BenefitTypeIndicator.getAllIndicatorStrings()) + " fields are empty");
+            errors.add((uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(BenefitTypeIndicator.getAllIndicatorStrings()) + " fields are empty")
+                .replace("is_benefit_type_other", BENEFIT_TYPE_OTHER));
         }
 
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
