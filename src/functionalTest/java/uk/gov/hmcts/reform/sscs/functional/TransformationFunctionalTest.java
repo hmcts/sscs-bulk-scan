@@ -119,4 +119,21 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
         assertThat(errorResponse.getList("warnings")).isEmpty();
         assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
     }
+
+    @Test
+    public void transform_appeal_created_case_when_all_fields_entered_attendance_allowance() throws IOException {
+        String expectedJson = getJson("exception/output/expected_all_fields_entered_aa.json");
+
+        String person1Nino = generateRandomNino();
+        String person2Nino = generateRandomNino();
+
+        expectedJson = replaceNino(expectedJson, person1Nino, person2Nino);
+        expectedJson = replaceMrnDate(expectedJson, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+
+        String jsonRequest = getJson("exception/all_fields_entered_aa.json");
+        jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
+
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
+    }
 }
