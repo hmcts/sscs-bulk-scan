@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import uk.gov.hmcts.reform.sscs.TestDataConstants;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
@@ -136,7 +137,7 @@ public class SscsCaseTransformerTest {
         pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
-        assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and is_benefit_type_other fields are empty", result.getErrors().get(0));
+        assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and benefit_type_other fields are empty", result.getErrors().get(0));
     }
 
     @Test
@@ -183,8 +184,16 @@ public class SscsCaseTransformerTest {
         pairs.put(BENEFIT_TYPE_OTHER, "Not a valid type");
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
-        assertEquals("enter valid benefit type in 'benefit_type_other", result.getErrors().get(0));
+        assertEquals("enter valid benefit type in benefit_type_other", result.getErrors().get(0));
 
+    }
+
+    @Test
+    public void givenBenefitTypePipWithOtherBenefit_thenErrorMessage() {
+        pairs.put(BENEFIT_TYPE_OTHER, "any value at all");
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_benefit_type_pip and benefit_type_other have contradicting values", result.getErrors().get(0));
     }
 
     @Test
@@ -1804,7 +1813,7 @@ public class SscsCaseTransformerTest {
         hearingSupportArrangements.add("hearingLoop");
 
         return Appeal.builder()
-            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).build())
+            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).description(TestDataConstants.BENEFIT_TYPE_DESCRIPTION).build())
             .appellant(appellant)
             .appealReasons(AppealReasons.builder().reasons(Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(APPEAL_REASON).build()).build())).build())
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())

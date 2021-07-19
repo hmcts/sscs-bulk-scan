@@ -68,7 +68,9 @@
     "hearing_type_video": {"type": "string"},
     "hearing_video_email": {"type": "string"},
     "hearing_type_face_to_face": {"type": "string"},
-    "appeal_grounds_2": {"type": "string"}
+    "appeal_grounds_2": {"type": "string"},
+    "is_benefit_type_other": {"type": "string"},
+    "benefit_type_other": {"type": "string"}
   },
   "additionalProperties": false
 }
