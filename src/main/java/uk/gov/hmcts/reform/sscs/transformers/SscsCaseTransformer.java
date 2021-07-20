@@ -324,7 +324,9 @@ public class SscsCaseTransformer implements CaseTransformer {
                 } else {
                     if (StringUtils.isEmpty(benefitTypeOther)) {
                         benefit = BenefitTypeIndicatorSscs1U.findByIndicatorString(valueIndicatorWithTrueValue);
-                        code = benefit.get().getShortName();
+                        if (benefit.isPresent()) {
+                            code = benefit.get().getShortName();
+                        }
                     } else {
                         errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues)
                             + " and " + BENEFIT_TYPE_OTHER + " have contradicting values");
