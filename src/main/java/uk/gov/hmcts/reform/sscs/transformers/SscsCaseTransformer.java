@@ -252,7 +252,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private BenefitType getBenefitTypeForSscs1(Map<String, Object> pairs) {
-        String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
+        String code = getField(pairs, BENEFIT_TYPE_OTHER);
 
         if (code != null) {
             code = fuzzyMatcherService.matchBenefitType(code);
