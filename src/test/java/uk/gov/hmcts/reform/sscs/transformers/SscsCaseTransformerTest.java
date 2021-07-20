@@ -202,6 +202,17 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenBenefitTypePipWithIsOtherBenefit_thenErrorMessage() {
+        pairs.put(IS_BENEFIT_TYPE_OTHER, true);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BENEFIT_TYPE_OTHER, "Attendance Allowance");
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_benefit_type_pip and benefit_type_other have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
     @Parameters({"Yes", "No"})
     public void givenBenefitTypeIsDefinedWithYesNo_thenCheckCorrectCodeIsReturned(String isPip) {
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
