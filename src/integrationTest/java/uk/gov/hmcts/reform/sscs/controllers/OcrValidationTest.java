@@ -133,7 +133,7 @@ public class OcrValidationTest  {
     public void should_return_200_when_ocr_form_with_form_type_sscs1peu_and_hearing_sub_type_validation_request_data_are_empty() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        String content = readResource("mappings/ocr-validation/invalid-ocr-data-with-hearing-sub-type.json");
+        String content = readResource("mappings/ocr-validation/invalid-ocr-data-with-hearing-sub-type-sscs1peu.json");
 
         mvc.perform(
             post("/forms/SSCS1PEU/validate-ocr")

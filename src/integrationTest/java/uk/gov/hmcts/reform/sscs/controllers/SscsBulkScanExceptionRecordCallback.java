@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.InputScannedDoc;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
+import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsQueryBuilder;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 
@@ -69,7 +70,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant)),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1")),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -106,7 +107,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            exceptionCaseData(caseDataWithMrnDate("01/01/2017", this::addAppellant)),
+            exceptionCaseData(caseDataWithMrnDate("01/01/2017", this::addAppellant, "SSCS1")),
             httpHeaders()
         );
 
@@ -171,7 +172,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-                exceptionCaseData(caseDataWithMrnDate("01/01/2017",this::addAppellant)),
+                exceptionCaseData(caseDataWithMrnDate("01/01/2017",this::addAppellant, "SSCS1")),
                 httpHeaders()
         );
 
@@ -256,7 +257,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant)),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1PEU")),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -275,7 +276,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee)),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU")),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -390,7 +391,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("mrn_date", "09/12/2018");
         ocrList.put("office", "Balham DRT");
         ocrList.put("contains_mrn", true);
-        ocrList.put("benefit_type_description", "ESA");
+        ocrList.put("is_benefit_type_esa", "true");
         ocrList.put("person1_title", "Mr");
         ocrList.put("person1_first_name", "John");
         ocrList.put("is_hearing_type_oral", true);
@@ -465,10 +466,10 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     private Map<String, Object> caseData() {
-        return caseDataWithMrnDate("09/12/2018", this::addAppellant);
+        return caseDataWithMrnDate("09/12/2018", this::addAppellant, "SSCS1PEU");
     }
 
-    private Map<String, Object> caseDataWithMrnDate(String mrnDate, Consumer<Map<String, Object>> addPersonDetails) {
+    private Map<String, Object> caseDataWithMrnDate(String mrnDate, Consumer<Map<String, Object>> addPersonDetails, String formType) {
         Map<String, Object> ocrList = new HashMap<>();
         addPersonDetails.accept(ocrList);
 
@@ -490,7 +491,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("mrn_date", mrnDate);
         ocrList.put("office", "Balham DRT");
         ocrList.put("contains_mrn", true);
-        ocrList.put("benefit_type_description", "ESA");
+        if (formType.toLowerCase().equals(FormType.SSCS1.toString())) {
+            ocrList.put("benefit_type_description", "ESA");
+        } else {
+            ocrList.put("is_benefit_type_esa", "true");
+        }
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
         ocrList.put("hearing_options_exclude_dates", "01/12/2030");

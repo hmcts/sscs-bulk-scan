@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
+import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
@@ -124,7 +125,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token, String formType) {
-        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId);
+        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
@@ -181,7 +182,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .wantSmsNotifications(convertBooleanToYesNoString(wantsSms)).tya(generateAppealNumber()).build();
     }
 
-    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId) {
+    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType) {
         Appellant appellant = null;
 
         if (pairs != null && pairs.size() != 0) {
@@ -204,7 +205,15 @@ public class SscsCaseTransformer implements CaseTransformer {
             String hearingType = findHearingType(pairs);
             AppealReasons appealReasons = findAppealReasons(pairs);
 
-            BenefitType benefitType = getBenefitType(pairs);
+            BenefitType benefitType;
+            if (formType.toLowerCase().equals(FormType.SSCS1.toString())) {
+                benefitType = getBenefitTypeForSscs1(pairs);
+            } else if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
+                benefitType = getBenefitTypeForSscs1U(pairs);
+            } else {
+                benefitType = getBenefitType(pairs);
+            }
+
 
             return Appeal.builder()
                 .benefitType(benefitType)
@@ -242,6 +251,16 @@ public class SscsCaseTransformer implements CaseTransformer {
         return null;
     }
 
+    private BenefitType getBenefitTypeForSscs1(Map<String, Object> pairs) {
+        String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
+
+        if (code != null) {
+            code = fuzzyMatcherService.matchBenefitType(code);
+        }
+
+        return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
+    }
+
     private BenefitType getBenefitType(Map<String, Object> pairs) {
         String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
 
@@ -267,6 +286,63 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         }
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
+    }
+
+    private BenefitType getBenefitTypeForSscs1U(Map<String, Object> pairs) {
+        String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
+
+        if (code != null) {
+            code = fuzzyMatcherService.matchBenefitType(code);
+        }
+
+        // Extract all the provided benefit type booleans, outputting errors for any that are invalid
+        List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicatorSscs1U.getAllIndicatorStrings());
+
+        String benefitTypeOther = getField(pairs, BENEFIT_TYPE_OTHER);
+
+        Optional<Benefit> benefit;
+
+        if (!StringUtils.isEmpty(benefitTypeOther)) {
+            benefit = Benefit.findBenefitByDescription(benefitTypeOther);
+            if (benefit.isPresent()) {
+                code = benefit.get().getShortName();
+            } else {
+                errors.add("enter valid benefit type in " + BENEFIT_TYPE_OTHER);
+            }
+        }
+        if (!validProvidedBooleanValues.isEmpty()
+            && !isExactlyZeroBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+            // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
+            // for conflicting values.
+            // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
+            if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+                String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
+                if (IS_BENEFIT_TYPE_OTHER.equals(valueIndicatorWithTrueValue)) {
+                    if (StringUtils.isEmpty(benefitTypeOther)) {
+                        errors.add(BENEFIT_TYPE_OTHER + " field is empty");
+                    }
+                } else {
+                    if (StringUtils.isEmpty(benefitTypeOther)) {
+                        benefit = BenefitTypeIndicatorSscs1U.findByIndicatorString(valueIndicatorWithTrueValue);
+                        if (benefit.isPresent()) {
+                            code = benefit.get().getShortName();
+                        }
+                    } else {
+                        errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues)
+                            + " and " + BENEFIT_TYPE_OTHER + " have contradicting values");
+                    }
+                }
+            } else {
+                errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
+            }
+        } else {
+            if (code == null) {
+                errors.add((uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(BenefitTypeIndicatorSscs1U.getAllIndicatorStrings()) + " fields are empty")
+                    .replace(IS_BENEFIT_TYPE_OTHER, BENEFIT_TYPE_OTHER));
+            }
+        }
+        benefit = Benefit.findBenefitByShortName(code);
+        return (benefit.isPresent() && errors.size() == 0) ? BenefitType.builder().code(code).description(benefit.get().getDescription()).build() : null;
     }
 
     private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee, Contact contact) {
