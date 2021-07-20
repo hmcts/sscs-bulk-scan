@@ -201,7 +201,7 @@ dependencies {
   compile group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
   compile group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
   compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
-  compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.12.3'
+  compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.13.0'
   compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.13.3'
 
@@ -234,7 +234,7 @@ dependencies {
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
   testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.6.0'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
-  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.29.0', withoutJunit4
+  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.29.1', withoutJunit4
   testCompile group: 'com.typesafe', name: 'config', version: '1.4.1'
 
   integrationTestCompile (group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
@@ -260,7 +260,7 @@ dependencyManagement {
     dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.14.1'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.43') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.50') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
