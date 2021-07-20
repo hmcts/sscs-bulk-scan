@@ -781,7 +781,7 @@ public class SscsCaseValidatorTest {
 
         List<String> benefitNameList = new ArrayList<>();
         for (Benefit be : Benefit.values()) {
-            benefitNameList.add(be.name());
+            benefitNameList.add(be.getShortName());
         }
 
         assertEquals(BENEFIT_TYPE_DESCRIPTION + " invalid. Should be one of: " + String.join(", ", benefitNameList), response.getErrors().get(0));

@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
+import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -85,6 +86,8 @@ public class SscsCaseTransformerTest {
 
     ExceptionRecord exceptionRecord;
 
+    ExceptionRecord sscs1UExceptionRecord;
+
     IdamTokens token;
 
     @Before
@@ -100,6 +103,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
 
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1PEU.getId()).build();
         given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().build());
@@ -107,17 +111,56 @@ public class SscsCaseTransformerTest {
         given(postcodeValidator.isValid(anyString())).willReturn(true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
+        sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
+        given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
     }
 
     @Test
-    @Parameters({"true", "false"})
-    public void givenInvalidBenefitTypePairings_thenReturnAnError(boolean value) {
-        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), value);
-        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), value);
+    public void givenInvalidBenefitTypePairings_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
         assertEquals("is_benefit_type_pip and is_benefit_type_esa have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenNoTrueBenefitTypeIndicatorsOrOtherBenefitType_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and benefit_type_other fields are empty", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenNoBenefitTypePairings_thenReturnAnError() {
+        pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and benefit_type_other fields are empty", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenOtherBenefitTypeNoType_thenReturnAnError() {
+        pairs.remove(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString());
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
+
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("benefit_type_other field is empty", result.getErrors().get(0));
     }
 
     @Test
@@ -130,6 +173,92 @@ public class SscsCaseTransformerTest {
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = isPip ? PIP : ESA;
         assertEquals(expectedBenefit.name(),  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
+        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
+        "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
+        "Industrial Death Benefit, industrialDeathBenefit", "Pension Credits, pensionCredits", "Retirement Pension, retirementPension",})
+    public void givenBenefitTypeIsOtherWithValidType_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
+        pairs.put(BENEFIT_TYPE_OTHER, benefitDescription);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals(shortName,  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
+        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
+        "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
+        "Industrial Death Benefit, industrialDeathBenefit", "Pension Credits, pensionCredits", "Retirement Pension, retirementPension",})
+    public void givenBenefitTypeIsOtherNotTickedWithValidType_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
+        pairs.put(BENEFIT_TYPE_OTHER, benefitDescription);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals(shortName,  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    public void givenBenefitTypeIsOtherWithInvalidType_thenErrorMessageReturned() {
+        pairs.remove("is_benefit_type_pip");
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
+        pairs.put(BENEFIT_TYPE_OTHER, "Not a valid type");
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("enter valid benefit type in benefit_type_other field", result.getErrors().get(0));
+
+    }
+
+
+
+    @Test
+    public void givenBenefitTypePipWithIsOtherBenefit_thenErrorMessage() {
+        pairs.put(IS_BENEFIT_TYPE_OTHER, true);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BENEFIT_TYPE_OTHER, "Attendance Allowance");
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_pip and benefit_type_other have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenBenefitTypePipWithIsOtherBenefitYes_thenErrorMessage() {
+        pairs.remove("is_benefit_type_pip");
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), "No");
+        pairs.put(IS_BENEFIT_TYPE_OTHER, "Yes");
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), "Yes");
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), "Yes");
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_esa, is_benefit_type_uc and is_benefit_type_other have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenBenefitTypePipWithIsOtherBenefitTrue_thenErrorMessage() {
+        pairs.remove("is_benefit_type_pip");
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(IS_BENEFIT_TYPE_OTHER, true);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), true);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_esa, is_benefit_type_uc and is_benefit_type_other have contradicting values", result.getErrors().get(0));
     }
 
     @Test
@@ -403,7 +532,8 @@ public class SscsCaseTransformerTest {
     public void givenKeyValuePairsWithEsaBenefitType_thenBuildAnAppealWithAppellant() {
         given(fuzzyMatcherService.matchBenefitType("ESA")).willReturn("ESA");
 
-        pairs.put("benefit_type_description", "ESA");
+        pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
+        pairs.put("is_benefit_type_esa", "true");
         pairs.put("office", "Balham DRT");
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
@@ -415,6 +545,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithUcOffice() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
         given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
 
         pairs.put("is_benefit_type_uc", "true");
@@ -429,6 +560,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenKeyValuePairsWithUcBenefitTypeAndNoOfficePopulated_thenBuildAnAppealWithUcOffice() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
         given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
 
         pairs.put("is_benefit_type_uc", "true");
@@ -756,6 +888,7 @@ public class SscsCaseTransformerTest {
     @Test
     @Parameters({"true", "Yes"})
     public void givenDisabledAccessIsRequired_thenBuildAnAppealWithArrangementsWithDisabledAccess(String disabledAccess) {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
 
         pairs.put("hearing_options_accessible_hearing_rooms", disabledAccess);
 
@@ -1136,6 +1269,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void createCaseWithTodaysCaseCreationDate() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String nowDateFormatted = df.format(new Date());
 
