@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
+import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
@@ -207,6 +208,8 @@ public class SscsCaseTransformer implements CaseTransformer {
             BenefitType benefitType;
             if (formType.toLowerCase().equals(FormType.SSCS1.toString())) {
                 benefitType = getBenefitTypeForSscs1(pairs);
+            } else if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
+                benefitType = getBenefitTypeForSscs1U(pairs);
             } else {
                 benefitType = getBenefitType(pairs);
             }
@@ -268,6 +271,33 @@ public class SscsCaseTransformer implements CaseTransformer {
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
         List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.getAllIndicatorStrings());
 
+        // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
+        // for conflicting values.
+        if (!validProvidedBooleanValues.isEmpty()) {
+            // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
+            if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+                String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
+                Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
+                if (benefit.isPresent()) {
+                    code = benefit.get().name();
+                }
+            } else {
+                errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
+            }
+        }
+        return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
+    }
+
+    private BenefitType getBenefitTypeForSscs1U(Map<String, Object> pairs) {
+        String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
+
+        if (code != null) {
+            code = fuzzyMatcherService.matchBenefitType(code);
+        }
+
+        // Extract all the provided benefit type booleans, outputting errors for any that are invalid
+        List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicatorSscs1U.getAllIndicatorStrings());
+
         String benefitTypeOther = getField(pairs, BENEFIT_TYPE_OTHER);
 
         Optional<Benefit> benefit;
@@ -293,7 +323,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     }
                 } else {
                     if (StringUtils.isEmpty(benefitTypeOther)) {
-                        benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
+                        benefit = BenefitTypeIndicatorSscs1U.findByIndicatorString(valueIndicatorWithTrueValue);
                         code = benefit.get().getShortName();
                     } else {
                         errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues)
@@ -305,7 +335,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         } else {
             if (code == null) {
-                errors.add((uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(BenefitTypeIndicator.getAllIndicatorStrings()) + " fields are empty")
+                errors.add((uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(BenefitTypeIndicatorSscs1U.getAllIndicatorStrings()) + " fields are empty")
                     .replace(IS_BENEFIT_TYPE_OTHER, BENEFIT_TYPE_OTHER));
             }
         }

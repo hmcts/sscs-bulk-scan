@@ -6,26 +6,27 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
 
-public enum BenefitTypeIndicator {
+public enum BenefitTypeIndicatorSscs1U {
     PIP("is_benefit_type_pip", Benefit.PIP),
     ESA("is_benefit_type_esa", Benefit.ESA),
-    UC("is_benefit_type_uc", Benefit.UC);
+    UC("is_benefit_type_uc", Benefit.UC),
+    OTHER("is_benefit_type_other", null);
 
 
     private final String indicatorString;
     private final Benefit benefit;
 
-    BenefitTypeIndicator(String indicatorString, Benefit benefit) {
+    BenefitTypeIndicatorSscs1U(String indicatorString, Benefit benefit) {
         this.indicatorString = indicatorString;
         this.benefit = benefit;
     }
 
     public static List<String> getAllIndicatorStrings() {
-        return Arrays.stream(values()).map(BenefitTypeIndicator::getIndicatorString).collect(Collectors.toList());
+        return Arrays.stream(values()).map(BenefitTypeIndicatorSscs1U::getIndicatorString).collect(Collectors.toList());
     }
 
     public static Optional<Benefit> findByIndicatorString(String indicatorString) {
-        return  Arrays.stream(values()).filter(v -> v.getIndicatorString().equals(indicatorString)).map(BenefitTypeIndicator::getBenefit).findFirst();
+        return  Arrays.stream(values()).filter(v -> v.getIndicatorString().equals(indicatorString)).map(BenefitTypeIndicatorSscs1U::getBenefit).findFirst();
     }
 
     public String getIndicatorString() {
@@ -35,4 +36,5 @@ public enum BenefitTypeIndicator {
     public Benefit getBenefit() {
         return benefit;
     }
+
 }
