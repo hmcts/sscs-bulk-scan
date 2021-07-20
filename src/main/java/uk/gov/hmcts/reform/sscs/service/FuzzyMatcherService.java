@@ -76,6 +76,11 @@ public class FuzzyMatcherService {
             .orElse(ocrBenefitValue);
     }
 
+    public Optional<Benefit> benefitSearch(String ocrBenefitValue) {
+        return wordExcludedFromFuzzySearch(ocrBenefitValue)
+            .flatMap(this::benefitByExactMatchOrFuzzySearch);
+    }
+
     private Optional<Benefit> benefitByExactMatchOrFuzzySearch(String code) {
         return benefitByExactMatchSearch(code)
             .or(() -> benefitByFuzzySearch(code));
