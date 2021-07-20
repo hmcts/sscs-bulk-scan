@@ -343,7 +343,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             if (benefit.isPresent()) {
                 return benefit.get().getShortName();
             } else {
-                errors.add("enter valid benefit type in " + BENEFIT_TYPE_OTHER);
+                errors.add("enter valid benefit type in " + BENEFIT_TYPE_OTHER + " field");
             }
         }
         return null;
