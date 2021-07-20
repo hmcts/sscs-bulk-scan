@@ -118,6 +118,23 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenBenefitTypeIsOtherBereavementBenefit_thenCorrectOfficeIsReturned() {
+
+        String officeForBereavementBenefit = "Pensions Dispute Resolution Team";
+
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
+        pairs.put(BENEFIT_TYPE_OTHER, Benefit.BEREAVEMENT_BENEFIT.getDescription());
+        pairs.put(ISSUING_OFFICE, officeForBereavementBenefit);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals(officeForBereavementBenefit,  appeal.getMrnDetails().getDwpIssuingOffice());
+    }
+
+    @Test
     public void givenInvalidBenefitTypePairings_thenReturnAnError() {
         pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), true);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);

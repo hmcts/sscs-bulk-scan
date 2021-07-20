@@ -251,6 +251,54 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    @Parameters({"Carer’s Allowance Dispute Resolution Team"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeCarersAllowance_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(CARERS_ALLOWANCE.getShortName(), buildAppellant(false),
+                true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Bereavement Benefit with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Walsall Benefit Centre"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeMaternityAllowance_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(MATERNITY_ALLOWANCE.getShortName(), buildAppellant(false),
+                true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Bereavement Benefit with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
+    @Parameters({"Pensions Dispute Resolution Team"})
+    public void givenAnAppealContainsAValidOfficeForBenefitTypeBsps_thenDoNotAddAWarning(String dwpIssuingOffice) {
+        defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(BEREAVEMENT_SUPPORT_PAYMENT_SCHEME.getShortName(), buildAppellant(false),
+                true, FormType.SSCS1U),
+            false);
+
+        String assertionMessage = "Asserting Benefit: Bereavement Benefit with Office: " + dwpIssuingOffice;
+        assertEquals(assertionMessage, 0, response.getWarnings().size());
+        assertEquals(assertionMessage, 0, response.getErrors().size());
+    }
+
+    @Test
     public void givenAnAppellantIsEmpty_thenAddAWarning() {
         Map<String, Object> ocrCaseDataEmptyOffice = new HashMap<>();
         ocrCaseDataEmptyOffice.put("person1_address_line4", "county");
