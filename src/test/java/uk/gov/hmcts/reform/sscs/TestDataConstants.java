@@ -7,6 +7,7 @@ public class TestDataConstants {
     }
 
     public static final String BENEFIT_TYPE = "PIP";
+    public static final String BENEFIT_TYPE_DESCRIPTION = "Personal Independence Payment";
     public static final String MRN_DATE_VALUE = "01/11/2048";
     public static final String OFFICE = "5";
     public static final String DWP_REGIONAL_CENTRE = "Springburn";

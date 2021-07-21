@@ -206,6 +206,27 @@ public class OcrValidationControllerTest {
                 .json("{\"warnings\":[],\"errors\":[\"Form type 'sscs1' not found\"],\"status\":\"ERRORS\"}"));
     }
 
+    @Test
+    public void should_return_success_message_when_ocr_data_is_valid_for_sscs1u() throws Exception {
+        String requestBody = readResource("validation/valid-ocr-data.json");
+
+        given(authService.authenticate("testServiceAuthHeader")).willReturn("testServiceName");
+
+        given(handler.handleValidation(any()))
+            .willReturn(CaseResponse.builder().warnings(emptyList()).errors(emptyList()).status(SUCCESS).build());
+
+        mockMvc
+            .perform(
+                post("/forms/SSCS1U/validate-ocr")
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .header("ServiceAuthorization", "testServiceAuthHeader")
+                    .content(requestBody)
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+            .andExpect(content().json(readResource("validation/valid-ocr-response.json")));
+    }
+
     private String readResource(final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charsets.UTF_8);
     }

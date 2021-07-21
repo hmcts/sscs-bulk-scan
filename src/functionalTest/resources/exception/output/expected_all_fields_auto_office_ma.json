@@ -4,7 +4,7 @@
     "event_id": "validAppealCreated",
     "case_data": {
       "evidencePresent": "Yes",
-      "caseCode": "001DD",
+      "caseCode": "079DD",
       "subscriptions": {
         "appellantSubscription": {
           "wantSmsNotifications": "No",
@@ -30,14 +30,14 @@
         "appointeeSubscription": null,
         "jointPartySubscription": null
       },
-      "formType": "sscs1peu",
-      "dwpRegionalCentre": "Universal Credit",
+      "formType": "sscs1u",
+      "dwpRegionalCentre": "Maternity Allowance",
       "bulkScanCaseReference": "id",
       "appeal": {
         "mrnDetails": {
-          "dwpIssuingOffice": "Universal Credit",
+          "dwpIssuingOffice": "Walsall Benefit Centre",
           "mrnDate": "MRN_DATE",
-          "mrnLateReason": "see scanned SSCS1 form",
+          "mrnLateReason": "see scanned SSCS1U form",
           "mrnMissingReason": null
         },
         "appellant": {
@@ -67,8 +67,8 @@
           "isAddressSameAsAppointee": null
         },
         "benefitType": {
-          "code": "UC",
-          "description": "Universal Credit"
+          "code": "maternityAllowance",
+          "description": "Maternity Allowance"
         },
         "hearingOptions": {
           "wantsToAttend": "No",
@@ -101,7 +101,7 @@
             {
               "value": {
                 "reason": null,
-                "description": "see scanned SSCS1 form"
+                "description": "see scanned SSCS1U form"
               }
             }
           ]
@@ -132,7 +132,7 @@
         "hearingSubtype": {},
         "receivedVia": "Paper"
       },
-      "benefitCode": "001",
+      "benefitCode": "079",
       "sscsDocument": [
         {
           "value": {
