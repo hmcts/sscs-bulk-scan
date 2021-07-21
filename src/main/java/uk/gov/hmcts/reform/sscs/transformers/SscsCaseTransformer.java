@@ -399,9 +399,11 @@ public class SscsCaseTransformer implements CaseTransformer {
     private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
         String dwpIssuingOffice = getField(pairs, "office");
 
-        if (benefitType != null && Benefit.UC.name().equalsIgnoreCase(benefitType.getCode())) {
-            dwpIssuingOffice = "Universal Credit";
+        if (benefitType != null && benefitType.getCode() != null && isBenefitWithAutoFilledOffice(benefitType.getCode())) {
+            dwpIssuingOffice = dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode()).map(office -> office.getMapping().getCcd())
+                .orElse(null);
         }
+
         if (dwpIssuingOffice != null) {
 
             if (benefitType != null) {
@@ -413,6 +415,19 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         }
         return null;
+    }
+
+    private boolean isBenefitWithAutoFilledOffice(String benefitCode) {
+        switch (Benefit.getBenefitByCode(benefitCode)) {
+            case UC:
+            case CARERS_ALLOWANCE:
+            case BEREAVEMENT_BENEFIT:
+            case MATERNITY_ALLOWANCE:
+            case BEREAVEMENT_SUPPORT_PAYMENT_SCHEME:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private Name buildPersonName(Map<String, Object> pairs, String personType) {

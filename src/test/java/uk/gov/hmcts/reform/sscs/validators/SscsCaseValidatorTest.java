@@ -261,7 +261,7 @@ public class SscsCaseValidatorTest {
                 true, FormType.SSCS1U),
             false);
 
-        String assertionMessage = "Asserting Benefit: Bereavement Benefit with Office: " + dwpIssuingOffice;
+        String assertionMessage = "Asserting Benefit: Carers Allowance with Office: " + dwpIssuingOffice;
         assertEquals(assertionMessage, 0, response.getWarnings().size());
         assertEquals(assertionMessage, 0, response.getErrors().size());
     }
@@ -277,7 +277,7 @@ public class SscsCaseValidatorTest {
                 true, FormType.SSCS1U),
             false);
 
-        String assertionMessage = "Asserting Benefit: Bereavement Benefit with Office: " + dwpIssuingOffice;
+        String assertionMessage = "Asserting Benefit: Maternity Allowance with Office: " + dwpIssuingOffice;
         assertEquals(assertionMessage, 0, response.getWarnings().size());
         assertEquals(assertionMessage, 0, response.getErrors().size());
     }
@@ -293,7 +293,7 @@ public class SscsCaseValidatorTest {
                 true, FormType.SSCS1U),
             false);
 
-        String assertionMessage = "Asserting Benefit: Bereavement Benefit with Office: " + dwpIssuingOffice;
+        String assertionMessage = "Asserting Benefit: Bereavement Support Payment Scheme with Office: " + dwpIssuingOffice;
         assertEquals(assertionMessage, 0, response.getWarnings().size());
         assertEquals(assertionMessage, 0, response.getErrors().size());
     }
