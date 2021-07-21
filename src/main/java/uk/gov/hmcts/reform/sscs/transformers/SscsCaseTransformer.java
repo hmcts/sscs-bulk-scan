@@ -295,7 +295,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private BenefitType getBenefitTypeForSscs1U(Map<String, Object> pairs) {
         String benefitTypeOther = getCodeFromField(pairs, BENEFIT_TYPE_OTHER);
-        String code = getBenefitTypeOther(pairs, benefitTypeOther);
+        String code = getBenefitTypeOther(benefitTypeOther);
 
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
         List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicatorSscs1U.getAllIndicatorStrings());
@@ -346,13 +346,11 @@ public class SscsCaseTransformer implements CaseTransformer {
         return null;
     }
 
-    private String getBenefitTypeOther(Map<String, Object> pairs, String benefitTypeOther) {
+    private String getBenefitTypeOther(String benefitTypeOther) {
         if (!StringUtils.isEmpty(benefitTypeOther)) {
             Optional<Benefit> benefit = Benefit.findBenefitByDescription(benefitTypeOther);
             if (benefit.isPresent()) {
                 return benefit.get().getShortName();
-            } else {
-                //errors.add("enter valid benefit type in " + BENEFIT_TYPE_OTHER + " field");
             }
         }
         return null;
