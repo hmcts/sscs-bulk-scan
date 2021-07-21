@@ -290,7 +290,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypePipWithIsOtherBenefitYes_thenErrorMessage() {
+    public void givenBenefitTypeEsaAndUcWithIsOtherBenefitYes_thenErrorMessage() {
         pairs.remove("is_benefit_type_pip");
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), "No");
         pairs.put(IS_BENEFIT_TYPE_OTHER, "Yes");
@@ -302,7 +302,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypePipWithIsOtherBenefitTrue_thenErrorMessage() {
+    public void givenBenefitTypeEsaAndUcWithIsOtherBenefitTrue_thenErrorMessage() {
         pairs.remove("is_benefit_type_pip");
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
         pairs.put(IS_BENEFIT_TYPE_OTHER, true);
