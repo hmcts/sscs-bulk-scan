@@ -118,20 +118,22 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypeIsOtherBereavementBenefit_thenCorrectOfficeIsReturned() {
-
-        String officeForBereavementBenefit = "Pensions Dispute Resolution Team";
+    @Parameters({"Bereavement Benefit, Pensions Dispute Resolution Team",
+        "Carer's Allowance, Carer’s Allowance Dispute Resolution Team",
+        "Maternity Allowance, Walsall Benefit Centre",
+        "Bereavement Support Payment Scheme, Pensions Dispute Resolution Team"})
+    public void givenBenefitTypeIsOtherBenefitAutoOfficeWithAnyOffice_thenCorrectOfficeIsReturned(String benefit, String office) {
 
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
-        pairs.put(BENEFIT_TYPE_OTHER, Benefit.BEREAVEMENT_BENEFIT.getDescription());
-        pairs.put(ISSUING_OFFICE, officeForBereavementBenefit);
+        pairs.put(BENEFIT_TYPE_OTHER, benefit);
+        pairs.put(ISSUING_OFFICE, "Anything");
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(officeForBereavementBenefit,  appeal.getMrnDetails().getDwpIssuingOffice());
+        assertEquals(office,  appeal.getMrnDetails().getDwpIssuingOffice());
     }
 
     @Test
