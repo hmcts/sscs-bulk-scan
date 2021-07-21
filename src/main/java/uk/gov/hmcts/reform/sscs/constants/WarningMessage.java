@@ -35,7 +35,7 @@ public enum WarningMessage {
     APPOINTEE_POSTCODE(ADDRESS_POSTCODE, "Appointee postcode"),
     REPRESENTATIVE_POSTCODE(ADDRESS_POSTCODE, "Representative postcode"),
     BENEFIT_TYPE_DESCRIPTION(SscsConstants.BENEFIT_TYPE_DESCRIPTION, "Benefit type description"),
-    BENEFIT_TYPE_OTHER(SscsConstants.BENEFIT_TYPE_OTHER, "Benefit type other"),
+    BENEFIT_TYPE_OTHER(SscsConstants.BENEFIT_TYPE_OTHER, "Benefit type description"),
     MRN_DATE(SscsConstants.MRN_DATE, "Mrn date"),
     OFFICE(ISSUING_OFFICE, "DWP issuing office"),
     HEARING_OPTIONS_EXCLUDE_DATES(HEARING_OPTIONS_EXCLUDE_DATES_LITERAL, "Hearing options exclude dates"),
