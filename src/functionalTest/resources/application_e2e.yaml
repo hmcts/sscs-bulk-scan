@@ -1,1 +1,60 @@
 test_url: ${TEST_URL:http://localhost:8090}
+idam:
+  url: ${IDAM_URL:http://localhost:5000}
+  s2s-auth:
+    totp_secret: ${S2S_SECRET:AAAAAAAAAAAAAAAD}
+    microservice: ${IDAM_S2S_AUTH_MICROSERVICE:sscs_bulkscan}
+    url: ${IDAM_S2S_AUTH:http://localhost:4502}
+  oauth2:
+    user:
+      email: ${IDAM_SSCS_SYSTEMUPDATE_USER:system.update@hmcts.net}
+      password: ${IDAM_SSCS_SYSTEMUPDATE_PASSWORD:Pa55word11}
+    client:
+      id: ${IDAM_OAUTH2_CLIENT_ID:sscs}
+      secret: ${IDAM_OAUTH2_CLIENT_SECRET:QM5RQQ53LZFOSIXJ}
+    redirectUrl: ${IDAM_OAUTH2_REDIRECT_URL:https://localhost:3000/authenticated}
+    jwkUrl: ${IDAM_API_JWK_URL:http://localhost:5000/jwks}
+  api:
+    url: ${IDAM_URL:http://localhost:5000}
+  client:
+    id: ${IDAM_OAUTH2_CLIENT_ID:sscs}
+    secret: ${IDAM_OAUTH2_CLIENT_SECRET:QM5RQQ53LZFOSIXJ}
+    redirect_uri: ${IDAM_OAUTH2_REDIRECT_URL:https://localhost:3000/authenticated}
+allowed-services-for-callback : ccd_data,sscs_bulkscan,bulk_scan_processor,bulk_scan_orchestrator,sscs  # comma separated list of service names
+
+document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://dm-store:5005}
+
+schema.location: /schema/sscs-bulk-scan-schema.json
+
+validation:
+  titles: Cllr,Count,DC,Dr,DS,Insp,Lady,Lord,Miss,Mr & Mrs,Mr,Mrs,Ms,PC,Rev,S/M,Sgt
+
+postcode-validator:
+  url: ${POSTCODE_VALIDATOR_URL:https://api.postcodes.io/postcodes/{postcode}/validate}
+  enabled: ${POSTCODE_VALIDATOR_ENABLED:true}
+  test-postcodes: ${POSTCODE_VALIDATOR_TEST_POSTCODES:TS1 1ST, TS2 2ST, TS3 3ST}
+
+
+spring:
+  application:
+    name: SscsBulkScan
+  main:
+    allow-bean-definition-overriding: true
+
+ccd:
+  case:
+    jurisdiction: SSCS
+    type: Benefit
+    caseCreatedEventId: appealCreated
+    validAppealCreatedEventId: validAppealCreated
+    incompleteApplicationEventId: incompleteApplicationReceived
+    nonCompliantEventId: nonCompliant
+
+test.url: ${TEST_URL:http://localhost:8090}
+
+core_case_data:
+  jurisdictionId: ${CORE_CASE_DATA_JURISDICTION_ID:SSCS}
+  caseTypeId: ${CORE_CASE_DATA_CASE_TYPE_ID:Benefit}
+  api:
+    url: ${CORE_CASE_DATA_API_URL:http://localhost:4452}
+
