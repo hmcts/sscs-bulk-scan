@@ -106,6 +106,7 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = new HashMap<>();
         pairs.put("appeal", Appeal.builder().hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
+        pairs.put("formType", FormType.SSCS1);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 

@@ -209,7 +209,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypeIsOtherWithInvalidType_thenErrorMessageReturned() {
+    public void givenBenefitTypeIsOtherWithInvalidType_thenNoErrorMessageReturned() {
         pairs.remove("is_benefit_type_pip");
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
@@ -218,12 +218,20 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
         pairs.put(BENEFIT_TYPE_OTHER, "Not a valid type");
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
-        assertEquals("enter valid benefit type in benefit_type_other field", result.getErrors().get(0));
-
+        assertTrue(result.getErrors().size() == 0);
     }
 
+    @Test
+    public void givenInvalidBenefitTypePipWithOtherBenefit_thenTwoErrorMessages() {
+        pairs.put(BENEFIT_TYPE_OTHER, "any value at all");
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
 
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_pip and benefit_type_other have contradicting values", result.getErrors().get(0));
+    }
 
     @Test
     public void givenBenefitTypePipWithIsOtherBenefit_thenErrorMessage() {
@@ -237,7 +245,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypePipWithIsOtherBenefitYes_thenErrorMessage() {
+    public void givenBenefitTypeEsaAndUcWithIsOtherBenefitYes_thenErrorMessage() {
         pairs.remove("is_benefit_type_pip");
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), "No");
         pairs.put(IS_BENEFIT_TYPE_OTHER, "Yes");
@@ -249,7 +257,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypePipWithIsOtherBenefitTrue_thenErrorMessage() {
+    public void givenBenefitTypeEsaAndUcWithIsOtherBenefitTrue_thenErrorMessage() {
         pairs.remove("is_benefit_type_pip");
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
         pairs.put(IS_BENEFIT_TYPE_OTHER, true);
