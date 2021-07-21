@@ -18,14 +18,13 @@ public class BenefitTypeIndicatorTest {
         for (BenefitTypeIndicator benefitTypeIndicator : BenefitTypeIndicator.values()) {
             // Assert that each BenefitTypeIndicator enum has both an indicator string and a benefit
             assertNotNull(benefitTypeIndicator.getIndicatorString());
-            if (!benefitTypeIndicator.getIndicatorString().equals("is_benefit_type_other")) {
-                assertNotNull(benefitTypeIndicator.getBenefit());
-                // Assert that if we lookup the benefit type indicator via it's indicator string, we
-                // find the same benefit as has been configured.
-                Optional<Benefit> benefitTypeLookup = BenefitTypeIndicator.findByIndicatorString(benefitTypeIndicator.getIndicatorString());
-                assertTrue(benefitTypeLookup.isPresent());
-                assertEquals(benefitTypeLookup.get(), benefitTypeIndicator.getBenefit());
-            }
+            assertNotNull(benefitTypeIndicator.getBenefit());
+            // Assert that if we lookup the benefit type indicator via it's indicator string, we
+            // find the same benefit as has been configured.
+            Optional<Benefit> benefitTypeLookup = BenefitTypeIndicator.findByIndicatorString(benefitTypeIndicator.getIndicatorString());
+            assertTrue(benefitTypeLookup.isPresent());
+            assertEquals(benefitTypeLookup.get(), benefitTypeIndicator.getBenefit());
+
         }
     }
 
