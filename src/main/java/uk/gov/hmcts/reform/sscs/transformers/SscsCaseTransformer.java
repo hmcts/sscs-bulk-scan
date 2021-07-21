@@ -295,8 +295,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private BenefitType getBenefitTypeForSscs1U(Map<String, Object> pairs) {
         String benefitTypeOther = getCodeFromField(pairs, BENEFIT_TYPE_OTHER);
-
-        //String benefitTypeOther = getField(pairs, BENEFIT_TYPE_OTHER);
         String code = getBenefitTypeOther(pairs, benefitTypeOther);
 
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
