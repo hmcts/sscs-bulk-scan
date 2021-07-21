@@ -10,8 +10,7 @@ public enum BenefitTypeIndicator {
     PIP("is_benefit_type_pip", Benefit.PIP),
     ESA("is_benefit_type_esa", Benefit.ESA),
     UC("is_benefit_type_uc", Benefit.UC);
-
-
+    
     private final String indicatorString;
     private final Benefit benefit;
 
