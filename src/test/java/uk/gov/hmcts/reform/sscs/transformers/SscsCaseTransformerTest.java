@@ -169,20 +169,6 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenOtherBenefitTypeNoType_thenReturnAnError() {
-        pairs.remove(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString());
-        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
-
-        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
-
-        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
-        assertEquals("benefit_type_other field is empty", result.getErrors().get(0));
-    }
-
-    @Test
     @Parameters({"true", "false"})
     public void givenBenefitTypeIsDefinedWithTrueFalse_thenCheckCorrectCodeIsReturned(boolean isPip) {
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
@@ -196,10 +182,11 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenBenefitTypeIsOther_thenNullCodeIsReturned() {
-        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), true);
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
 
@@ -208,11 +195,11 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenBenefitTypeIsOtherAttendanceAllowance_thenCorrectCodeIsReturned() {
-        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicator.OTHER.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
         pairs.put(BENEFIT_TYPE_OTHER, "Attendance Allowance");
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = Benefit.ATTENDANCE_ALLOWANCE;
@@ -267,7 +254,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenInvalidBenefitTypePipWithOtherBenefit_thenTwoErrorMessages() {
+    public void givenInvalidBenefitTypePipWithOtherBenefit_thenOneErrorMessage() {
         pairs.put(BENEFIT_TYPE_OTHER, "any value at all");
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
