@@ -1,13 +1,13 @@
 package uk.gov.hmcts.reform.sscs.constants;
 
+import static org.junit.Assert.*;
+
+import java.util.Optional;
 import junitparams.JUnitParamsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
 
-import java.util.Optional;
-
-import static org.junit.Assert.*;
 
 @RunWith(JUnitParamsRunner.class)
 public class BenefitTypeIndicatorSscs1UTest {
