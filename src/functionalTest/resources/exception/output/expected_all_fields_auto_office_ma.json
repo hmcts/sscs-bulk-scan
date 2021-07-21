@@ -4,7 +4,7 @@
     "event_id": "validAppealCreated",
     "case_data": {
       "evidencePresent": "Yes",
-      "caseCode": "013DD",
+      "caseCode": "079DD",
       "subscriptions": {
         "appellantSubscription": {
           "wantSmsNotifications": "No",
