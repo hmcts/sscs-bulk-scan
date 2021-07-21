@@ -346,7 +346,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private String getCodeFromField(String caseId, Map<String, Object> pairs, String fieldName) {
         String code = getField(pairs, fieldName);
-
         if (code != null) {
             code = fuzzyMatcherService.matchBenefitType(caseId, code);
         }
