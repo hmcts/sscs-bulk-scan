@@ -250,7 +250,7 @@ public class OcrValidationTest  {
     }
 
     @Test
-    public void fuzzyMatchingTestOnBenefitTypeForSSCS1UForm() throws Throwable {
+    public void fuzzyMatchingTestOnBenefitTypeForSscs1uForm() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         String content = readResource("mappings/ocr-validation/valid-ocr-data.json");
