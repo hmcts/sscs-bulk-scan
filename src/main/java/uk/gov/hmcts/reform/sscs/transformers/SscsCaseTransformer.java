@@ -208,11 +208,11 @@ public class SscsCaseTransformer implements CaseTransformer {
 
             BenefitType benefitType;
             if (formType.toLowerCase().equals(FormType.SSCS1.toString())) {
-                benefitType = getBenefitTypeForSscs1(pairs);
+                benefitType = getBenefitTypeForSscs1(caseId, pairs);
             } else if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
-                benefitType = getBenefitTypeForSscs1U(pairs);
+                benefitType = getBenefitTypeForSscs1U(caseId, pairs);
             } else {
-                benefitType = getBenefitType(pairs);
+                benefitType = getBenefitType(caseId, pairs);
             }
 
 
@@ -252,14 +252,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         return null;
     }
 
-    private BenefitType getBenefitTypeForSscs1(Map<String, Object> pairs) {
-        String code = getCodeFromBenefitTypeDescription(pairs);
+    private BenefitType getBenefitTypeForSscs1(String caseId, Map<String, Object> pairs) {
+        String code = getCodeFromBenefitTypeDescription(caseId, pairs);
 
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
     }
 
-    private BenefitType getBenefitType(Map<String, Object> pairs) {
-        String code = getCodeFromBenefitTypeDescription(pairs);
+    private BenefitType getBenefitType(String caseId, Map<String, Object> pairs) {
+        String code = getCodeFromBenefitTypeDescription(caseId, pairs);
 
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
         List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.getAllIndicatorStrings());
@@ -281,14 +281,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
     }
 
-    private BenefitType getBenefitTypeForSscs1U(Map<String, Object> pairs) {
+    private BenefitType getBenefitTypeForSscs1U(String caseId, Map<String, Object> pairs) {
         String code = null;
 
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
         List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicatorSscs1U.getAllIndicatorStrings());
 
         String benefitTypeOther = getField(pairs, BENEFIT_TYPE_OTHER);
-        code = getBenefitTypeOther(pairs, benefitTypeOther);
+        code = getBenefitTypeOther(caseId, benefitTypeOther);
 
         Optional<Benefit> benefit;
 
@@ -337,9 +337,9 @@ public class SscsCaseTransformer implements CaseTransformer {
         return null;
     }
 
-    private String getBenefitTypeOther(Map<String, Object> pairs, String benefitTypeOther) {
+    private String getBenefitTypeOther(String caseId, String benefitTypeOther) {
         if (!StringUtils.isEmpty(benefitTypeOther)) {
-            Optional<Benefit> benefit = fuzzyMatcherService.benefitSearch(benefitTypeOther);
+            Optional<Benefit> benefit = fuzzyMatcherService.benefitSearch(caseId, benefitTypeOther);
             if (benefit.isPresent()) {
                 return benefit.get().getShortName();
             } else {
@@ -349,11 +349,11 @@ public class SscsCaseTransformer implements CaseTransformer {
         return null;
     }
 
-    private String getCodeFromBenefitTypeDescription(Map<String, Object> pairs) {
+    private String getCodeFromBenefitTypeDescription(String caseId, Map<String, Object> pairs) {
         String code = getField(pairs, BENEFIT_TYPE_DESCRIPTION);
 
         if (code != null) {
-            code = fuzzyMatcherService.matchBenefitType(code);
+            code = fuzzyMatcherService.matchBenefitType(caseId, code);
         }
         return code;
     }

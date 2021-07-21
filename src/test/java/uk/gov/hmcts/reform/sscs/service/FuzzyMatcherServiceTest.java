@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.sscs.service;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -15,19 +14,19 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
 @RunWith(JUnitParamsRunner.class)
 public class FuzzyMatcherServiceTest {
 
-    FuzzyMatcherService fuzzyMatcherService;
+    private static final String CASE_ID = "123489";
+
+    private FuzzyMatcherService fuzzyMatcherService;
 
     @Before
     public void setup() {
-        initMocks(this);
-
         fuzzyMatcherService = new FuzzyMatcherService();
     }
 
     @Test
     @Parameters({"personal", "personal test", "PERSONAL", "independence", "personal independence", "personal independence payment", "independence test", "PIP", "p.i.p."})
     public void givenAWord_thenFuzzyMatchToPip(String ocrValue) {
-        String result = fuzzyMatcherService.matchBenefitType(ocrValue);
+        String result = fuzzyMatcherService.matchBenefitType(CASE_ID, ocrValue);
 
         assertEquals("PIP", result);
     }
@@ -35,7 +34,7 @@ public class FuzzyMatcherServiceTest {
     @Test
     @Parameters({"employment", "employment test", "EMPLOYMENT", "E.S.A", "employmentsupportallowance", "Employment Support Allowance"})
     public void givenAWord_thenFuzzyMatchToEsa(String ocrValue) {
-        String result = fuzzyMatcherService.matchBenefitType(ocrValue);
+        String result = fuzzyMatcherService.matchBenefitType(CASE_ID, ocrValue);
 
         assertEquals("ESA", result);
     }
@@ -43,7 +42,7 @@ public class FuzzyMatcherServiceTest {
     @Test
     @Parameters({"universal", "universal test", "UNIVERSAL", "credit", "UC", "U.C", "UniversalCredit", "Universal Credit"})
     public void givenAWord_thenFuzzyMatchToUc(String ocrValue) {
-        String result = fuzzyMatcherService.matchBenefitType(ocrValue);
+        String result = fuzzyMatcherService.matchBenefitType(CASE_ID, ocrValue);
 
         assertEquals("UC", result);
     }
@@ -79,7 +78,7 @@ public class FuzzyMatcherServiceTest {
         "Sup.porT"
     })
     public void unknownCodeWillBeReturned(String unknownCode) {
-        assertThat(fuzzyMatcherService.matchBenefitType(unknownCode), is(unknownCode));
+        assertThat(fuzzyMatcherService.matchBenefitType(CASE_ID, unknownCode), is(unknownCode));
     }
 
 
@@ -92,10 +91,13 @@ public class FuzzyMatcherServiceTest {
         "uc, UC",
         "uc test, UC",
         "Attendance, ATTENDANCE_ALLOWANCE",
+        "Attendance blah, ATTENDANCE_ALLOWANCE",
         "att, ATTENDANCE_ALLOWANCE",
         "A.A, ATTENDANCE_ALLOWANCE",
         "AA, ATTENDANCE_ALLOWANCE",
         "Disability, DLA",
+        "Disability allowance, DLA",
+        "Disability blah, DLA",
         "Living, DLA",
         "livi, DLA",
         "livin, DLA",
@@ -156,8 +158,11 @@ public class FuzzyMatcherServiceTest {
         "Car, CARERS_ALLOWANCE",
         "C.A, CARERS_ALLOWANCE",
         "Carer's Allowance, CARERS_ALLOWANCE",
+        "Carers Allowance, CARERS_ALLOWANCE",
+        "Carers something, CARERS_ALLOWANCE",
         "carersallowance, CARERS_ALLOWANCE",
         "Maternity, MATERNITY_ALLOWANCE",
+        "Maternity something, MATERNITY_ALLOWANCE",
         "Mat, MATERNITY_ALLOWANCE",
         "Mate, MATERNITY_ALLOWANCE",
         "Mater, MATERNITY_ALLOWANCE",
@@ -171,9 +176,15 @@ public class FuzzyMatcherServiceTest {
         "B.S.P.S, BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
         "Bereavement Support Payment Scheme, BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
         "bereavementsupportpaymentscheme, BEREAVEMENT_SUPPORT_PAYMENT_SCHEME",
+        "Death, INDUSTRIAL_DEATH_BENEFIT",
+        "Death blah, INDUSTRIAL_DEATH_BENEFIT",
+        "Deat, INDUSTRIAL_DEATH_BENEFIT",
+        "I.D.B, INDUSTRIAL_DEATH_BENEFIT",
+        "Industrial Death Benefit, INDUSTRIAL_DEATH_BENEFIT",
+        "industrialdeathbenefit, INDUSTRIAL_DEATH_BENEFIT",
     })
     public void matchBenefitType(String code, Benefit expectedBenefit) {
-        final String result = fuzzyMatcherService.matchBenefitType(code);
+        final String result = fuzzyMatcherService.matchBenefitType(CASE_ID, code);
         assertThat(result, is(expectedBenefit.getShortName()));
     }
 }

@@ -249,6 +249,25 @@ public class OcrValidationTest  {
 
     }
 
+    @Test
+    public void fuzzyMatchingTestOnBenefitTypeForSSCS1UForm() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/valid-ocr-data.json");
+        content = content.replaceAll("benefit_type_description", "benefit_type_other");
+        content = content.replaceAll("PIP", "Maternity something");
+
+        mvc.perform(
+            post("/forms/SSCS1U/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
     private String readResource(final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charsets.UTF_8);
     }

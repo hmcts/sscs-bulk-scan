@@ -49,7 +49,8 @@ public class FuzzyMatcherService {
                     Pair.of("MA", MATERNITY_ALLOWANCE),
                     Pair.of("IIDB", IIDB),
                     Pair.of("BSPS", BEREAVEMENT_SUPPORT_PAYMENT_SCHEME),
-                    Pair.of("Credit", UC)
+                    Pair.of("Credit", UC),
+                    Pair.of("IDB", INDUSTRIAL_DEATH_BENEFIT)
                 ))
             .addAll(addBenefitShortNamesThatHaveAcronyms())
             .build();
@@ -62,28 +63,36 @@ public class FuzzyMatcherService {
                     Pair.of("personal", PIP),
                     Pair.of("independence", PIP),
                     Pair.of("universal", UC),
-                    Pair.of("employment", ESA)
+                    Pair.of("employment", ESA),
+                    Pair.of("attendance", ATTENDANCE_ALLOWANCE),
+                    Pair.of("disability", DLA),
+                    Pair.of("death", INDUSTRIAL_DEATH_BENEFIT),
+                    Pair.of("retirement", RETIREMENT_PENSION),
+                    Pair.of("social", SOCIAL_FUND),
+                    Pair.of("carer's", CARERS_ALLOWANCE),
+                    Pair.of("carers", CARERS_ALLOWANCE),
+                    Pair.of("maternity", MATERNITY_ALLOWANCE)
                 ))
             .build()
             .stream()
             .filter(pair -> pair.getLeft().length() >= MAX_FUZZY_SEARCH_LENGTH)
             .collect(toUnmodifiableSet());
 
-    public String matchBenefitType(String ocrBenefitValue) {
-        return wordExcludedFromFuzzySearch(ocrBenefitValue)
-            .flatMap(this::benefitByExactMatchOrFuzzySearch)
+    public String matchBenefitType(String caseId, String ocrBenefitValue) {
+        return wordExcludedFromFuzzySearch(caseId, ocrBenefitValue)
+            .flatMap(code -> benefitByExactMatchOrFuzzySearch(caseId, code))
             .map(Benefit::getShortName)
             .orElse(ocrBenefitValue);
     }
 
-    public Optional<Benefit> benefitSearch(String ocrBenefitValue) {
-        return wordExcludedFromFuzzySearch(ocrBenefitValue)
-            .flatMap(this::benefitByExactMatchOrFuzzySearch);
+    public Optional<Benefit> benefitSearch(String caseId, String ocrBenefitValue) {
+        return wordExcludedFromFuzzySearch(caseId, ocrBenefitValue)
+            .flatMap((code) -> benefitByExactMatchOrFuzzySearch(caseId, code));
     }
 
-    private Optional<Benefit> benefitByExactMatchOrFuzzySearch(String code) {
+    private Optional<Benefit> benefitByExactMatchOrFuzzySearch(String caseId, String code) {
         return benefitByExactMatchSearch(code)
-            .or(() -> benefitByFuzzySearch(code));
+            .or(() -> benefitByFuzzySearch(caseId, code));
     }
 
     private Optional<Benefit> benefitByExactMatchSearch(String code) {
@@ -92,9 +101,9 @@ public class FuzzyMatcherService {
             .or(() -> findBenefitByExactWord(code));
     }
 
-    private Optional<Benefit> benefitByFuzzySearch(String code) {
+    private Optional<Benefit> benefitByFuzzySearch(String caseId, String code) {
         final BoundExtractedResult<Pair<String, Benefit>> result = runFuzzySearch(code);
-        logMessage(code, result);
+        logMessage(caseId, code, result);
         return benefitBasedOnThreshold(result);
     }
 
@@ -102,16 +111,16 @@ public class FuzzyMatcherService {
         return FuzzySearch.extractOne(code, FUZZY_CHOICES, Pair::getLeft);
     }
 
-    private Optional<String> wordExcludedFromFuzzySearch(String code) {
+    private Optional<String> wordExcludedFromFuzzySearch(String caseId, String code) {
         String searchCode = stripToEmpty(stripNonAlphaNumeric(code));
         boolean match = EXACT_WORDS_THAT_WILL_NOT_CAUSE_A_MATCH.contains(lowerCase(searchCode));
-        logMessageIfExcludedFromFuzzySearch(code, match);
+        logMessageIfExcludedFromFuzzySearch(caseId, code, match);
         return match ? empty() : Optional.of(searchCode);
     }
 
-    private void logMessageIfExcludedFromFuzzySearch(String code, boolean match) {
+    private void logMessageIfExcludedFromFuzzySearch(String caseId, String code, boolean match) {
         if (match) {
-            log.info("The word '{}' has matched the unknown word list. Cannot work out the benefit.", code);
+            log.info("The word '{}' has matched the unknown word list. Cannot work out the benefit for caseId {}.", code, caseId);
         }
     }
 
@@ -124,10 +133,10 @@ public class FuzzyMatcherService {
             ? empty() : Optional.of(extractedResult.getReferent().getRight());
     }
 
-    private void logMessage(String code, BoundExtractedResult<Pair<String, Benefit>> result) {
-        log.info("Search code '{}' has a fuzzy match score of {} with '{}'. The threshold score is {}. {} the fuzzy match.",
+    private void logMessage(String caseId, String code, BoundExtractedResult<Pair<String, Benefit>> result) {
+        log.info("Search code '{}' has a fuzzy match score of {} with '{}'. The threshold score is {}. {} the fuzzy match for caseId {}.",
             code, result.getScore(), result.getString(), THRESHOLD_MATCH_SCORE,
-            result.getScore() < THRESHOLD_MATCH_SCORE ? "Not Using" : "Using");
+            result.getScore() < THRESHOLD_MATCH_SCORE ? "Not Using" : "Using", caseId);
     }
 
     private static Optional<Benefit> findBenefitByExactWord(String code) {
