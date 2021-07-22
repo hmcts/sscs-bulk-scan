@@ -167,6 +167,7 @@ public class FuzzyMatcherServiceTest {
         "bereavementbenefit, BEREAVEMENT_BENEFIT",
         "Carers, CARERS_ALLOWANCE",
         "Care, CARERS_ALLOWANCE",
+        "My Care Benefit, CARERS_ALLOWANCE",
         "Car, CARERS_ALLOWANCE",
         "C.A, CARERS_ALLOWANCE",
         "Carer's Allowance, CARERS_ALLOWANCE",

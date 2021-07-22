@@ -75,6 +75,7 @@ public class FuzzyMatcherService {
         Pair.of("retirement", RETIREMENT_PENSION),
         Pair.of("reti", RETIREMENT_PENSION),
         Pair.of("retir", RETIREMENT_PENSION),
+        Pair.of("retire", RETIREMENT_PENSION),
         Pair.of("retirem", RETIREMENT_PENSION),
         Pair.of("retireme", RETIREMENT_PENSION),
         Pair.of("retiremen", RETIREMENT_PENSION),
@@ -87,6 +88,7 @@ public class FuzzyMatcherService {
         Pair.of("social", SOCIAL_FUND),
         Pair.of("fund", SOCIAL_FUND),
         Pair.of("carer's", CARERS_ALLOWANCE),
+        Pair.of("care", CARERS_ALLOWANCE),
         Pair.of("carers", CARERS_ALLOWANCE),
         Pair.of("maternity", MATERNITY_ALLOWANCE),
         Pair.of("mate", MATERNITY_ALLOWANCE),
@@ -94,8 +96,7 @@ public class FuzzyMatcherService {
         Pair.of("matern", MATERNITY_ALLOWANCE),
         Pair.of("materni", MATERNITY_ALLOWANCE),
         Pair.of("maternit", MATERNITY_ALLOWANCE),
-        Pair.of("maternit", MATERNITY_ALLOWANCE),
-        Pair.of("BSPS", BEREAVEMENT_SUPPORT_PAYMENT_SCHEME)
+        Pair.of("bsps", BEREAVEMENT_SUPPORT_PAYMENT_SCHEME)
     );
 
     private static final Set<Pair<String, Benefit>> FUZZY_CHOICES =
@@ -119,6 +120,12 @@ public class FuzzyMatcherService {
             .or(() -> benefitByFuzzySearch(caseId, code));
     }
 
+    private Optional<Benefit> benefitByExactMatchSearch(String code) {
+        return findBenefitByShortName(code)
+            .or(() -> findBenefitByDescription(code))
+            .or(() -> findBenefitByExactWord(code));
+    }
+
     private Optional<? extends Benefit> benefitByContainsString(String caseId, String code) {
         List<Benefit> benefits = CONTAINS_STRING.stream()
             .filter(pair -> contains(lowerCase(code).split(" "), pair.getLeft()))
@@ -127,17 +134,10 @@ public class FuzzyMatcherService {
             .collect(Collectors.toList());
         if (benefits.size() == 1) {
             log.info("Search code {}, contains the word that matches the benefit {} for caseId {}", code, benefits.get(0).getShortName(), caseId);
-           return Optional.of(benefits.get(0));
+            return Optional.of(benefits.get(0));
         }
-        log.info("No match Search code {}, contains the word that does the benefit {} for caseId {}", code, benefits, caseId);
 
         return Optional.empty();
-    }
-
-    private Optional<Benefit> benefitByExactMatchSearch(String code) {
-        return findBenefitByShortName(code)
-            .or(() -> findBenefitByDescription(code))
-            .or(() -> findBenefitByExactWord(code));
     }
 
     private Optional<Benefit> benefitByFuzzySearch(String caseId, String code) {
