@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.service;
 
+import static java.lang.String.format;
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toUnmodifiableSet;
@@ -127,17 +128,33 @@ public class FuzzyMatcherService {
     }
 
     private Optional<? extends Benefit> benefitByContainsString(String caseId, String code) {
-        List<Benefit> benefits = CONTAINS_STRING.stream()
+        List<Benefit> benefits = findBenefitsInTheContainsStringSet(code);
+        Optional<Benefit> benefitOptional = (benefits.size() == 1) ? Optional.of(benefits.get(0)) : Optional.empty();
+        logInfoIfPresent(caseId, code, benefitOptional);
+        logWarningIfMultipleContainsStringMatchesOnBenefits(caseId, code, benefits);
+        return benefitOptional;
+    }
+
+    private void logInfoIfPresent(String caseId, String code, Optional<Benefit> benefitOptional) {
+        benefitOptional.ifPresent(benefit -> log.info("Search code {}, contains the word that matches the benefit {} for caseId {}", code, benefit.getShortName(), caseId));
+    }
+
+    private void logWarningIfMultipleContainsStringMatchesOnBenefits(String caseId, String code, List<Benefit> benefits) {
+        if (benefits.size() > 1) {
+            log.warn("Search code {}, contains multiple matches to benefits {} for caseId {}", code, getBenefitNames(benefits), caseId);
+        }
+    }
+
+    private List<Benefit> findBenefitsInTheContainsStringSet(String code) {
+        return CONTAINS_STRING.stream()
             .filter(pair -> contains(lowerCase(code).split(" "), pair.getLeft()))
             .map(Pair::getRight)
             .distinct()
             .collect(Collectors.toList());
-        if (benefits.size() == 1) {
-            log.info("Search code {}, contains the word that matches the benefit {} for caseId {}", code, benefits.get(0).getShortName(), caseId);
-            return Optional.of(benefits.get(0));
-        }
+    }
 
-        return Optional.empty();
+    private String getBenefitNames(List<Benefit> benefits) {
+        return benefits.stream().map(Benefit::getShortName).reduce("", (a, b) -> format("%s, %s", a, b));
     }
 
     private Optional<Benefit> benefitByFuzzySearch(String caseId, String code) {
