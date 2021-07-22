@@ -219,7 +219,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         headers.set(AUTHORIZATION, USER_AUTH_TOKEN);
         headers.set(USER_ID_HEADER, USER_ID);
 
-        ExceptionRecord exceptionRecord = (isAuto) ? autoExceptionCaseData(caseData()) : exceptionCaseData(caseData());
+        ExceptionRecord exceptionRecord = (isAuto) ? autoExceptionCaseData(caseData(),"SSCS1PEU") : exceptionCaseData(caseData());
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionRecord, headers);
 
         // When
@@ -236,7 +236,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("forbidden_service");
 
-        ExceptionRecord exceptionRecord = (isAuto) ? autoExceptionCaseData(caseData()) : exceptionCaseData(caseData());
+        ExceptionRecord exceptionRecord = (isAuto) ? autoExceptionCaseData(caseData(), "SSCS1PEU") : exceptionCaseData(caseData());
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionRecord, httpHeaders());
 
         // When
@@ -257,7 +257,26 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1PEU")),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1PEU"), "SSCS1PEU"),
+            httpHeaders());
+
+        ResponseEntity<SuccessfulTransformationResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
+
+        SuccessfulTransformationResponse callbackResponse = result.getBody();
+
+        verifyResultData(result, "mappings/exception/auto-valid-appeal-response.json", this::getAppellantTya);
+    }
+
+    @Test
+    public void auto_scan_should_handle_callback_and_return_caseid_and_state_case_created_Sscs1U()
+        throws Exception {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1U"), "SSCS1PEU"),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -276,7 +295,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU")),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU"), "SSCS1PEU"),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -292,7 +311,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            autoExceptionCaseData(caseDataWithMissingAppellantAndHearingSubTypeDetails()),
+            autoExceptionCaseData(caseDataWithMissingAppellantAndHearingSubTypeDetails(), "SSCS1PEU"),
             httpHeaders()
         );
 
@@ -434,7 +453,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     @SuppressWarnings("unchecked")
-    private ExceptionRecord autoExceptionCaseData(Map<String, Object> caseData) {
+    private ExceptionRecord autoExceptionCaseData(Map<String, Object> caseData, String formType) {
         Map<String, Object> scannedData = (HashMap<String, Object>) caseData.get("scanOCRData");
         List<OcrDataField> scanOcrData = getOcrDataFields(scannedData);
 
@@ -442,7 +461,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .ocrDataFields(scanOcrData)
             .poBox("SSCSPO")
             .jurisdiction("SSCS")
-            .formType("SSCS1PEU")
+            .formType(formType)
             .journeyClassification(NEW_APPLICATION)
             .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
             .id(null)
