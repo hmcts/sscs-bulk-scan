@@ -73,6 +73,7 @@ public class FuzzyMatcherService {
                     Pair.of("inco", INCOME_SUPPORT),
                     Pair.of("incom", INCOME_SUPPORT),
                     Pair.of("death", INDUSTRIAL_DEATH_BENEFIT),
+                    Pair.of("deat", INDUSTRIAL_DEATH_BENEFIT),
                     Pair.of("retirement", RETIREMENT_PENSION),
                     Pair.of("injuries", IIDB),
                     Pair.of("disablement", IIDB),

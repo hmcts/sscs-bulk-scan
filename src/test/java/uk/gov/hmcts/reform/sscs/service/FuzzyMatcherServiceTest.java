@@ -184,6 +184,7 @@ public class FuzzyMatcherServiceTest {
         "Death, INDUSTRIAL_DEATH_BENEFIT",
         "Death blah, INDUSTRIAL_DEATH_BENEFIT",
         "Deat, INDUSTRIAL_DEATH_BENEFIT",
+        "lo Deat cop, INDUSTRIAL_DEATH_BENEFIT",
         "I.D.B, INDUSTRIAL_DEATH_BENEFIT",
         "Industrial Death Benefit, INDUSTRIAL_DEATH_BENEFIT",
         "industrialdeathbenefit, INDUSTRIAL_DEATH_BENEFIT",
