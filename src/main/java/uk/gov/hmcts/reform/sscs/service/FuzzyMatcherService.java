@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.service;
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toUnmodifiableSet;
+import static org.apache.commons.lang3.ArrayUtils.contains;
 import static org.apache.commons.lang3.RegExUtils.replaceAll;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.commons.lang3.StringUtils.rightPad;
@@ -13,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
@@ -55,37 +57,50 @@ public class FuzzyMatcherService {
             .addAll(addBenefitShortNamesThatHaveAcronyms())
             .build();
 
+    private static final Set<Pair<String, Benefit>> CONTAINS_STRING = Set.of(
+        Pair.of("personal", PIP),
+        Pair.of("independence", PIP),
+        Pair.of("universal", UC),
+        Pair.of("employment", ESA),
+        Pair.of("attendance", ATTENDANCE_ALLOWANCE),
+        Pair.of("disability", DLA),
+        Pair.of("living", DLA),
+        Pair.of("livi", DLA),
+        Pair.of("livin", DLA),
+        Pair.of("income", INCOME_SUPPORT),
+        Pair.of("inco", INCOME_SUPPORT),
+        Pair.of("incom", INCOME_SUPPORT),
+        Pair.of("death", INDUSTRIAL_DEATH_BENEFIT),
+        Pair.of("deat", INDUSTRIAL_DEATH_BENEFIT),
+        Pair.of("retirement", RETIREMENT_PENSION),
+        Pair.of("reti", RETIREMENT_PENSION),
+        Pair.of("retir", RETIREMENT_PENSION),
+        Pair.of("retirem", RETIREMENT_PENSION),
+        Pair.of("retireme", RETIREMENT_PENSION),
+        Pair.of("retiremen", RETIREMENT_PENSION),
+        Pair.of("injuries", IIDB),
+        Pair.of("disablement", IIDB),
+        Pair.of("iidb", IIDB),
+        Pair.of("job", JSA),
+        Pair.of("seeker", JSA),
+        Pair.of("seeker's", JSA),
+        Pair.of("social", SOCIAL_FUND),
+        Pair.of("fund", SOCIAL_FUND),
+        Pair.of("carer's", CARERS_ALLOWANCE),
+        Pair.of("carers", CARERS_ALLOWANCE),
+        Pair.of("maternity", MATERNITY_ALLOWANCE),
+        Pair.of("mate", MATERNITY_ALLOWANCE),
+        Pair.of("mater", MATERNITY_ALLOWANCE),
+        Pair.of("matern", MATERNITY_ALLOWANCE),
+        Pair.of("materni", MATERNITY_ALLOWANCE),
+        Pair.of("maternit", MATERNITY_ALLOWANCE),
+        Pair.of("maternit", MATERNITY_ALLOWANCE),
+        Pair.of("BSPS", BEREAVEMENT_SUPPORT_PAYMENT_SCHEME)
+    );
+
     private static final Set<Pair<String, Benefit>> FUZZY_CHOICES =
         ImmutableSet.<Pair<String, Benefit>>builder()
             .addAll(getBenefitShortNameAndDescriptionFuzzyChoices())
-            .addAll(
-                Set.of(
-                    Pair.of("personal", PIP),
-                    Pair.of("independence", PIP),
-                    Pair.of("universal", UC),
-                    Pair.of("employment", ESA),
-                    Pair.of("attendance", ATTENDANCE_ALLOWANCE),
-                    Pair.of("disability", DLA),
-                    Pair.of("living", DLA),
-                    Pair.of("livi", DLA),
-                    Pair.of("livin", DLA),
-                    Pair.of("income", INCOME_SUPPORT),
-                    Pair.of("inco", INCOME_SUPPORT),
-                    Pair.of("incom", INCOME_SUPPORT),
-                    Pair.of("death", INDUSTRIAL_DEATH_BENEFIT),
-                    Pair.of("deat", INDUSTRIAL_DEATH_BENEFIT),
-                    Pair.of("retirement", RETIREMENT_PENSION),
-                    Pair.of("injuries", IIDB),
-                    Pair.of("disablement", IIDB),
-                    Pair.of("job", JSA),
-                    Pair.of("seeker", JSA),
-                    Pair.of("seeker's", JSA),
-                    Pair.of("social", SOCIAL_FUND),
-                    Pair.of("fund", SOCIAL_FUND),
-                    Pair.of("carer's", CARERS_ALLOWANCE),
-                    Pair.of("carers", CARERS_ALLOWANCE),
-                    Pair.of("maternity", MATERNITY_ALLOWANCE)
-                ))
             .build()
             .stream()
             .filter(pair -> pair.getLeft().length() >= MAX_FUZZY_SEARCH_LENGTH)
@@ -98,14 +113,25 @@ public class FuzzyMatcherService {
             .orElse(ocrBenefitValue);
     }
 
-    public Optional<Benefit> benefitSearch(String caseId, String ocrBenefitValue) {
-        return wordExcludedFromFuzzySearch(caseId, ocrBenefitValue)
-            .flatMap((code) -> benefitByExactMatchOrFuzzySearch(caseId, code));
-    }
-
     private Optional<Benefit> benefitByExactMatchOrFuzzySearch(String caseId, String code) {
         return benefitByExactMatchSearch(code)
+            .or(() -> benefitByContainsString(caseId, code))
             .or(() -> benefitByFuzzySearch(caseId, code));
+    }
+
+    private Optional<? extends Benefit> benefitByContainsString(String caseId, String code) {
+        List<Benefit> benefits = CONTAINS_STRING.stream()
+            .filter(pair -> contains(lowerCase(code).split(" "), pair.getLeft()))
+            .map(Pair::getRight)
+            .distinct()
+            .collect(Collectors.toList());
+        if (benefits.size() == 1) {
+            log.info("Search code {}, contains the word that matches the benefit {} for caseId {}", code, benefits.get(0).getShortName(), caseId);
+           return Optional.of(benefits.get(0));
+        }
+        log.info("No match Search code {}, contains the word that does the benefit {} for caseId {}", code, benefits, caseId);
+
+        return Optional.empty();
     }
 
     private Optional<Benefit> benefitByExactMatchSearch(String code) {
