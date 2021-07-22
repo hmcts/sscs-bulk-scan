@@ -295,11 +295,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
             if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
                 String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
-                if (IS_BENEFIT_TYPE_OTHER.equals(valueIndicatorWithTrueValue)) {
-                    if (StringUtils.isEmpty(benefitTypeOther)) {
-                        errors.add(BENEFIT_TYPE_OTHER + " field is empty");
-                    }
-                } else {
+                if (!IS_BENEFIT_TYPE_OTHER.equals(valueIndicatorWithTrueValue)) {
                     code = getBenefitCodeFromIndicators(pairs, benefitTypeOther, valueIndicatorWithTrueValue, validProvidedBooleanValues);
                 }
             } else {
@@ -393,9 +389,11 @@ public class SscsCaseTransformer implements CaseTransformer {
     private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
         String dwpIssuingOffice = getField(pairs, "office");
 
-        if (benefitType != null && Benefit.UC.name().equalsIgnoreCase(benefitType.getCode())) {
-            dwpIssuingOffice = "Universal Credit";
+        if (benefitType != null && benefitType.getCode() != null && isBenefitWithAutoFilledOffice(benefitType.getCode())) {
+            dwpIssuingOffice = dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode()).map(office -> office.getMapping().getCcd())
+                .orElse(null);
         }
+
         if (dwpIssuingOffice != null) {
 
             if (benefitType != null) {
@@ -407,6 +405,19 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         }
         return null;
+    }
+
+    private boolean isBenefitWithAutoFilledOffice(String benefitCode) {
+        switch (Benefit.getBenefitByCode(benefitCode)) {
+            case UC:
+            case CARERS_ALLOWANCE:
+            case BEREAVEMENT_BENEFIT:
+            case MATERNITY_ALLOWANCE:
+            case BEREAVEMENT_SUPPORT_PAYMENT_SCHEME:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private Name buildPersonName(Map<String, Object> pairs, String personType) {
