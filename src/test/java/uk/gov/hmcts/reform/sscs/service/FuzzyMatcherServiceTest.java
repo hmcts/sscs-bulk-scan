@@ -80,6 +80,27 @@ public class FuzzyMatcherServiceTest {
         assertThat(fuzzyMatcherService.matchBenefitType(CASE_ID, unknownCode), is(unknownCode));
     }
 
+    @Test
+    @Parameters({
+        "Job Disablement",
+        "livi Attendance",
+        "Maternity fund",
+        "injuries Job",
+        "disablement death income"
+    })
+    public void wordsContainsMultipleBenefitKeywordsWillNotMatch(String multiWordMatch) {
+        assertThat(fuzzyMatcherService.matchBenefitType(CASE_ID, multiWordMatch), is(multiWordMatch));
+    }
+
+    @Test
+    @Parameters({
+        "personal independence something, PIP",
+        "disability living something, DLA",
+        "Baa carers care something, CARERS_ALLOWANCE",
+    })
+    public void multipleWordsContainsSameBenefitKeywordsWillMatch(String multiWordMatch, Benefit matchedBenefit) {
+        assertThat(fuzzyMatcherService.matchBenefitType(CASE_ID, multiWordMatch), is(matchedBenefit.getShortName()));
+    }
 
     @Test
     @Parameters({
