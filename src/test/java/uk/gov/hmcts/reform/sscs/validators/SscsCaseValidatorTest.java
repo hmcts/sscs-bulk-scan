@@ -56,6 +56,8 @@ public class SscsCaseValidatorTest {
     private ScannedData scannedData;
     private ExceptionRecord exceptionRecord;
 
+    private ExceptionRecord exceptionRecordSscs1U;
+
     @Before
     public void setup() {
         dwpAddressLookupService = new DwpAddressLookupService();
@@ -83,6 +85,9 @@ public class SscsCaseValidatorTest {
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
         given(postcodeValidator.isValid(anyString())).willReturn(true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
+
+        exceptionRecordSscs1U = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1U.getId()).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs1U)).willReturn(scannedData);
     }
 
     @Test
@@ -353,6 +358,7 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = new HashMap<>();
         pairs.put("appeal", Appeal.builder().hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
+        pairs.put("formType", FormType.SSCS1);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 
@@ -866,6 +872,15 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(null, buildAppellant(false), true), false);
 
         assertEquals(BENEFIT_TYPE_DESCRIPTION + " is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppealDoesNotContainABenefitTypeOther_thenAddAWarning() {
+        Map<String, Object> caseData = buildMinimumAppealDataWithBenefitType(null, buildAppellant(false), true);
+        caseData.put("formType", FormType.SSCS1U);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecordSscs1U, caseData, false);
+
+        assertEquals(BENEFIT_TYPE_OTHER + " is empty", response.getWarnings().get(0));
     }
 
     @Test

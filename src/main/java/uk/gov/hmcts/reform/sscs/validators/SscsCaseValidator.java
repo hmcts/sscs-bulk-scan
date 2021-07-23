@@ -115,7 +115,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     @Override
-    public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation) {
+    public CaseResponse  validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation) {
         warnings = new ArrayList<>();
         errors = new ArrayList<>();
         callbackType = VALIDATION_CALLBACK;
@@ -142,7 +142,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkExcludedDates(appeal);
 
-        isBenefitTypeValid(appeal);
+        isBenefitTypeValid(appeal, (FormType) caseData.get("formType"));
 
         isHearingTypeValid(appeal);
 
@@ -495,7 +495,7 @@ public class SscsCaseValidator implements CaseValidator {
             && name.getTitle() == null);
     }
 
-    private void isBenefitTypeValid(Appeal appeal) {
+    private void isBenefitTypeValid(Appeal appeal, FormType formType) {
         BenefitType benefitType = appeal.getBenefitType();
         if (benefitType != null && benefitType.getCode() != null) {
             if (!Benefit.findBenefitByShortName(benefitType.getCode()).isPresent()) {
@@ -512,7 +512,11 @@ public class SscsCaseValidator implements CaseValidator {
                     .build());
             }
         } else {
-            warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, IS_EMPTY));
+            if (formType != null && formType.equals(FormType.SSCS1U)) {
+                warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_OTHER, IS_EMPTY));
+            } else {
+                warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, IS_EMPTY));
+            }
         }
     }
 
