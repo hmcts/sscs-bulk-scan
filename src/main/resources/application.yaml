@@ -26,6 +26,10 @@ ccd:
 
 test.url: ${TEST_URL:http://localhost:8090}
 
+feature:
+  uc-office-feature:
+    enabled: ${UC_OFFICE_FEATURE:false}
+
 core_case_data:
   jurisdictionId: ${CORE_CASE_DATA_JURISDICTION_ID:SSCS}
   caseTypeId: ${CORE_CASE_DATA_CASE_TYPE_ID:Benefit}

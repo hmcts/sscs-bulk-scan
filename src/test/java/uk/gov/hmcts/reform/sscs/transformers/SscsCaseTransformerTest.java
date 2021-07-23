@@ -30,7 +30,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
@@ -77,7 +76,6 @@ public class SscsCaseTransformerTest {
 
     SscsDataHelper sscsDataHelper;
 
-    @InjectMocks
     SscsCaseTransformer transformer;
 
     List<OcrDataField> ocrList = new ArrayList<>();
@@ -99,7 +97,7 @@ public class SscsCaseTransformerTest {
         token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
         sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator);
-        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, false);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -563,6 +561,23 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithoutOffice() {
+        transformer.setUcOfficeFeatureActive(true);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
+
+        pairs.put("is_benefit_type_uc", "true");
+        pairs.put("office", "Anything");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(null, result.getTransformedCase().get("dwpRegionalCentre"));
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    //TODO: Remove when uc-office-feature switched on
     public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithUcOffice() {
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
         given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
