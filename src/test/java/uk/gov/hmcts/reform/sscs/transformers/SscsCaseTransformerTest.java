@@ -579,7 +579,6 @@ public class SscsCaseTransformerTest {
     public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithoutOffice() {
         transformer.setUcOfficeFeatureActive(true);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
-        given(fuzzyMatcherService.matchBenefitType("UC")).willReturn("UC");
 
         pairs.put("is_benefit_type_uc", "true");
         pairs.put("office", "Anything");
