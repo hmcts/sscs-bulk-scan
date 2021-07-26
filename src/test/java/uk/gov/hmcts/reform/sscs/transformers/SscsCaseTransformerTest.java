@@ -591,6 +591,24 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenKeyValuePairsWithUcBenefitTypeAndRecoveryFromEstatesOffice_thenSetOfficesCorrectly() {
+        transformer.setUcOfficeFeatureActive(true);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+
+        pairs.put("is_benefit_type_uc", "true");
+        pairs.put("office", "Recovery from Estates");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals("RfE", result.getTransformedCase().get("dwpRegionalCentre"));
+
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals("UC Recovery from Estates", appeal.getMrnDetails().getDwpIssuingOffice());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     //TODO: Remove when uc-office-feature switched on
     public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithUcOffice() {
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
