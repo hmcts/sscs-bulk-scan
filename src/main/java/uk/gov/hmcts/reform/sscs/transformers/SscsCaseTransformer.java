@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -34,37 +35,33 @@ import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 @Slf4j
 public class SscsCaseTransformer implements CaseTransformer {
 
-    @Autowired
     private SscsJsonExtractor sscsJsonExtractor;
-
-    @Autowired
     private SscsKeyValuePairValidator keyValuePairValidator;
-
-    @Autowired
     private SscsDataHelper sscsDataHelper;
-
-    @Autowired
     private FuzzyMatcherService fuzzyMatcherService;
-
-    @Autowired
     private DwpAddressLookupService dwpAddressLookupService;
-
-    @Autowired
     private final IdamService idamService;
-
-    @Autowired
     private final CcdService ccdService;
 
     private Set<String> errors;
     private Set<String> warnings;
 
+    //TODO: Remove when uc-office-feature switched on
+    private boolean ucOfficeFeatureActive;
+
+    public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
+        this.ucOfficeFeatureActive = ucOfficeFeatureActive;
+    }
+
+    @Autowired
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
                                SscsKeyValuePairValidator keyValuePairValidator,
                                SscsDataHelper sscsDataHelper,
                                FuzzyMatcherService fuzzyMatcherService,
                                DwpAddressLookupService dwpAddressLookupService,
                                IdamService idamService,
-                               CcdService ccdService) {
+                               CcdService ccdService,
+                               @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
         this.sscsDataHelper = sscsDataHelper;
@@ -72,6 +69,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.idamService = idamService;
         this.ccdService = ccdService;
+        this.ucOfficeFeatureActive = ucOfficeFeatureActive;
     }
 
     @Override
@@ -169,8 +167,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private Subscription generateSubscriptionWithAppealNumber(Map<String, Object> pairs, String personType) {
         boolean wantsSms = getBoolean(pairs, errors, personType + "_want_sms_notifications");
-        String email = getField(pairs,personType + "_email");
-        String mobile = getField(pairs,personType + "_mobile");
+        String email = getField(pairs, personType + "_email");
+        String mobile = getField(pairs, personType + "_mobile");
 
         boolean wantEmailNotifications = false;
         if ((PERSON1_VALUE.equals(personType) || REPRESENTATIVE_VALUE.equals(personType))
@@ -389,27 +387,27 @@ public class SscsCaseTransformer implements CaseTransformer {
     private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
         String dwpIssuingOffice = getField(pairs, "office");
 
-        if (benefitType != null && benefitType.getCode() != null && isBenefitWithAutoFilledOffice(benefitType.getCode())) {
-            dwpIssuingOffice = dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode()).map(office -> office.getMapping().getCcd())
-                .orElse(null);
-        }
-
-        if (dwpIssuingOffice != null) {
-
-            if (benefitType != null) {
+        if (benefitType != null && benefitType.getCode() != null) {
+            if (isBenefitWithAutoFilledOffice(benefitType.getCode(), dwpIssuingOffice)) {
+                return dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode()).map(office -> office.getMapping().getCcd())
+                    .orElse(null);
+            } else if (dwpIssuingOffice != null) {
                 return dwpAddressLookupService.getDwpMappingByOffice(benefitType.getCode(), dwpIssuingOffice)
                     .map(office -> office.getMapping().getCcd())
                     .orElse(null);
-            } else {
-                return dwpIssuingOffice;
             }
         }
-        return null;
+
+        return dwpIssuingOffice;
     }
 
-    private boolean isBenefitWithAutoFilledOffice(String benefitCode) {
+    //TODO: After ucOfficeFeatureActive fully enabled this method should go into Benefit enum in sscs-common
+    private boolean isBenefitWithAutoFilledOffice(String benefitCode, String office) {
         switch (Benefit.getBenefitByCode(benefitCode)) {
             case UC:
+                if (ucOfficeFeatureActive && office != null && !office.isBlank()) {
+                    return false;
+                } //else fallthrough
             case CARERS_ALLOWANCE:
             case BEREAVEMENT_BENEFIT:
             case MATERNITY_ALLOWANCE:
@@ -487,7 +485,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         } else if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL)
             && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null
             || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
-            pairs.put(IS_HEARING_TYPE_ORAL_LITERAL,!Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).toString()));
+            pairs.put(IS_HEARING_TYPE_ORAL_LITERAL, !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).toString()));
         }
 
         if (areBooleansValid(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)
@@ -565,7 +563,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String wantsSupport = !arrangements.isEmpty() ? YES_LITERAL : NO_LITERAL;
 
-        List<ExcludeDate> excludedDates = extractExcludedDates(pairs, getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));;
+        List<ExcludeDate> excludedDates = extractExcludedDates(pairs, getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));
+        ;
 
         String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)
             ? convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;
@@ -667,7 +666,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<String> arrangements = new ArrayList<>();
 
         if (areBooleansValid(pairs, errors, HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL)
-            &&  BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
+            && BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL).toString())) {
             arrangements.add("disabledAccess");
         }
         if (areBooleansValid(pairs, errors, HEARING_OPTIONS_HEARING_LOOP_LITERAL)

@@ -63,14 +63,23 @@ public class SscsCaseValidator implements CaseValidator {
     @Value("#{'${validation.titles}'.split(',')}")
     private List<String> titles;
 
+    //TODO: Remove when uc-office-feature switched on
+    private boolean ucOfficeFeatureActive;
+
+    public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
+        this.ucOfficeFeatureActive = ucOfficeFeatureActive;
+    }
+
     public SscsCaseValidator(RegionalProcessingCenterService regionalProcessingCenterService,
                              DwpAddressLookupService dwpAddressLookupService,
                              PostcodeValidator postcodeValidator,
-                             SscsJsonExtractor sscsJsonExtractor) {
+                             SscsJsonExtractor sscsJsonExtractor,
+                             @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive) {
         this.regionalProcessingCenterService = regionalProcessingCenterService;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.postcodeValidator = postcodeValidator;
         this.sscsJsonExtractor = sscsJsonExtractor;
+        this.ucOfficeFeatureActive = ucOfficeFeatureActive;
     }
 
     @Override
@@ -250,7 +259,13 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (dwpIssuingOffice != null && appeal.getBenefitType() != null && appeal.getBenefitType().getCode() != null) {
 
-            Optional<OfficeMapping> officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), dwpIssuingOffice);
+            Optional<OfficeMapping> officeMapping = Optional.empty();
+            //TODO: remove when ucOfficeFeatureActive fully enabled.
+            if (!ucOfficeFeatureActive && Benefit.UC.getShortName().equals(appeal.getBenefitType().getCode())) {
+                officeMapping = dwpAddressLookupService.getDefaultDwpMappingByBenefitType(Benefit.UC.getShortName());
+            } else {
+                officeMapping = dwpAddressLookupService.getDwpMappingByOffice(appeal.getBenefitType().getCode(), dwpIssuingOffice);
+            }
 
             if (!officeMapping.isPresent()) {
                 log.info("DwpHandling handling office is not valid");

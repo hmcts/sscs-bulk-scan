@@ -63,7 +63,7 @@ public class SscsCaseValidatorTest {
         dwpAddressLookupService = new DwpAddressLookupService();
         scannedData = mock(ScannedData.class);
         caseDetails = mock(CaseDetails.class);
-        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, postcodeValidator, sscsJsonExtractor);
+        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, postcodeValidator, sscsJsonExtractor, false);
         transformResponse = CaseResponse.builder().build();
 
         defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2018-12-09").build();
@@ -76,7 +76,8 @@ public class SscsCaseValidatorTest {
         ocrCaseData.put("representative_address_line4", "county");
         ocrCaseData.put("office", "2");
 
-        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
+        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE))
+            .willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
 
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PE.getId()).build();
 
@@ -90,15 +91,59 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealContainsAnInvalidOfficeForBenefitType_thenAddAWarning() {
+    @Parameters({"ESA", "JSA", "PIP", "DLA", "attendanceAllowance", "industrialInjuriesDisablement",
+        "socialFund", "incomeSupport", "industrialDeathBenefit", "pensionCredits", "retirementPension"})
+    public void givenAnAppealContainsAnInvalidOfficeForBenefitTypeOtherNotAutoOffice_thenAddAWarning(String benefitShortName) {
         defaultMrnDetails.setDwpIssuingOffice("Invalid Test Office");
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
             exceptionRecord,
-            buildMinimumAppealDataWithBenefitTypeAndFormType(ATTENDANCE_ALLOWANCE.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            buildMinimumAppealDataWithBenefitTypeAndFormType(benefitShortName, buildAppellant(false), true, FormType.SSCS1U),
             false);
 
         assertEquals("office is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    @Parameters({"carersAllowance", "bereavementBenefit", "maternityAllowance", "bereavementSupportPaymentScheme"})
+    public void givenAnAppealContainsAnInvalidOfficeForBenefitTypeOtherAutoOffice_thenDoNotAddAWarning(String benefitShortName) {
+        defaultMrnDetails.setDwpIssuingOffice("Invalid Test Office");
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(benefitShortName, buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenAnAppealContainsAnInvalidOfficeForBenefitTypeUC_ucOfficeFeatureActive_thenAddAWarning() {
+        defaultMrnDetails.setDwpIssuingOffice("Invalid Test Office");
+        validator.setUcOfficeFeatureActive(true);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(UC.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        assertEquals("office is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    //TODO: Invalid when ucOfficeFeatureActive fully enabled, to be removed then.
+    public void givenAnAppealContainsAnInvalidOfficeForBenefitTypeUC_thenDoNotAddAWarning() {
+        defaultMrnDetails.setDwpIssuingOffice("Invalid Test Office");
+        validator.setUcOfficeFeatureActive(false);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildMinimumAppealDataWithBenefitTypeAndFormType(UC.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            false);
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
