@@ -498,14 +498,15 @@ public class SscsCaseValidator implements CaseValidator {
     private void isBenefitTypeValid(Appeal appeal, FormType formType) {
         BenefitType benefitType = appeal.getBenefitType();
         if (benefitType != null && benefitType.getCode() != null) {
-            if (!Benefit.findBenefitByShortName(benefitType.getCode()).isPresent()) {
+            final Optional<Benefit> benefitOptional = Benefit.findBenefitByShortName(benefitType.getCode());
+            if (benefitOptional.isEmpty()) {
                 List<String> benefitNameList = new ArrayList<>();
                 for (Benefit be : Benefit.values()) {
                     benefitNameList.add(be.getShortName());
                 }
                 errors.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, "invalid. Should be one of: " + String.join(", ", benefitNameList)));
             } else {
-                Benefit benefit = Benefit.getBenefitByCode(benefitType.getCode());
+                Benefit benefit = benefitOptional.get();
                 appeal.setBenefitType(BenefitType.builder()
                     .code(benefit.getShortName())
                     .description(benefit.getDescription())
