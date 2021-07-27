@@ -296,6 +296,10 @@ dependencyManagement {
       entry 'batik-all'
     }
 
+    dependencySet(group: 'org.apache.commons', version: '1.21') {
+      entry 'commons-compress'
+    }
+
     //CVE-2021-22118
     dependencySet(group: 'org.springframework', version: '5.2.15.RELEASE') {
       entry 'spring-aop'
