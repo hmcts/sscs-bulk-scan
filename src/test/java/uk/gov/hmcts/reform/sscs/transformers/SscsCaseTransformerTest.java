@@ -85,6 +85,8 @@ public class SscsCaseTransformerTest {
 
     ExceptionRecord sscs1UExceptionRecord;
 
+    ExceptionRecord nullFormExceptionRecord;
+
     IdamTokens token;
 
     @Before
@@ -109,6 +111,9 @@ public class SscsCaseTransformerTest {
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
         sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
+        given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        nullFormExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
@@ -163,6 +168,16 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().size() == 1);
         assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and benefit_type_other fields are empty", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenNullFormType_thenNoError() {
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
+        CaseResponse result = transformer.transformExceptionRecord(nullFormExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 0);
     }
 
     @Test
