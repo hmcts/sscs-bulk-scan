@@ -205,9 +205,10 @@ public class SscsCaseTransformer implements CaseTransformer {
             AppealReasons appealReasons = findAppealReasons(pairs);
 
             BenefitType benefitType;
-            if (formType.toLowerCase().equals(FormType.SSCS1.toString())) {
+
+            if (FormType.SSCS1.toString().equalsIgnoreCase(formType)) {
                 benefitType = getBenefitTypeForSscs1(caseId, pairs);
-            } else if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
+            } else if (FormType.SSCS1U.toString().equalsIgnoreCase(formType)) {
                 benefitType = getBenefitTypeForSscs1U(caseId, pairs);
             } else {
                 benefitType = getBenefitType(caseId, pairs);
