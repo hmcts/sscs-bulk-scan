@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
@@ -16,7 +17,6 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
-import uk.gov.hmcts.reform.sscs.exception.BenefitMappingException;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
@@ -58,11 +58,8 @@ public class SscsDataHelper {
                 if (appeal.getMrnDetails() != null) {
                     addressName = appeal.getMrnDetails().getDwpIssuingOffice();
                 }
-                try {
-                    benefitCode = generateBenefitCode(appeal.getBenefitType().getCode(), addressName);
-                } catch (BenefitMappingException ignored) {
-                    //
-                }
+                benefitCode = generateBenefitCode(appeal.getBenefitType().getCode(), addressName).orElse(EMPTY);
+
                 String issueCode = generateIssueCode();
 
                 appealData.put("benefitCode", benefitCode);

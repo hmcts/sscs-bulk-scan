@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
@@ -24,7 +25,6 @@ import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
-import uk.gov.hmcts.reform.sscs.exception.BenefitMappingException;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
@@ -180,11 +180,8 @@ public class CcdCallbackHandler {
             if (appeal.getMrnDetails() != null) {
                 addressName = appeal.getMrnDetails().getDwpIssuingOffice();
             }
-            try {
-                benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode(), addressName);
-            } catch (BenefitMappingException ignored) {
-                //
-            }
+            benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode(), addressName).orElse(EMPTY);
+
             String issueCode = generateIssueCode();
 
             callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
