@@ -1586,7 +1586,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"(AE)", "AE", "DWP PIP (AE)"})
+    @Parameters({"(AE)", "AE", "PIP AE", "DWP PIP (AE)"})
     public void givenAPipAeCase_thenAcceptOfficeWithFuzzyMatching(String pipAe) {
         pairs.put("office", pipAe);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
@@ -1611,6 +1611,21 @@ public class SscsCaseTransformerTest {
 
         assertEquals("Bellevale", result.getTransformedCase().get("dwpRegionalCentre"));
         assertEquals("DWP PIP (3)", ((Appeal) result.getTransformedCase().get("appeal")).getMrnDetails().getDwpIssuingOffice());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({"Recovery from Estates", "PIP Recovery from Estates"})
+    public void givenAPipOfficeRecoveryEstatesCase_thenAcceptOfficeWithFuzzyMatching(String pipRecoveryEstates) {
+        pairs.put("office", pipRecoveryEstates);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals("RfE", result.getTransformedCase().get("dwpRegionalCentre"));
+        assertEquals("PIP Recovery from Estates", ((Appeal) result.getTransformedCase().get("appeal")).getMrnDetails().getDwpIssuingOffice());
 
         assertTrue(result.getErrors().isEmpty());
     }

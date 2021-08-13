@@ -67,8 +67,8 @@
           "isAddressSameAsAppointee": null
         },
         "benefitType": {
-          "code": "3",
-          "description": "DWP PIP (3)"
+          "code": "PIP",
+          "description": "Personal Independence Payment"
         },
         "hearingOptions": {
           "wantsToAttend": "No",
