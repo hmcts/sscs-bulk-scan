@@ -80,6 +80,7 @@ logging.level:
   uk.gov.hmcts.reform.sscs: ${LOG_LEVEL_SSCS:debug}
   uk.gov.hmcts.reform.sscs.idam.IdamApiClient: DEBUG
   uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi: DEBUG
+  uk.gov.hmcts.fortifyclient: INFO
 
 feign:
   client:

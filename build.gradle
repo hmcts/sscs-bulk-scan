@@ -70,6 +70,12 @@ task smoke(type: Test, description: 'Runs Smoke Tests.') {
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
+task fortifyScan(type: JavaExec)  {
+  main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
+  classpath += sourceSets.test.runtimeClasspath
+  jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
+}
+
 pmd {
   toolVersion = "6.5.0"
   ignoreFailures = true
@@ -204,7 +210,7 @@ dependencies {
   compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
   compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.13.0'
   compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.13.4'
+  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.14.0'
 
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
@@ -216,9 +222,9 @@ dependencies {
   // Added to fix CVE-2021-33037
   compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.50'
   compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.50'
-  compile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.8'
+  compile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.10'
 
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.4.53'
+  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.4.56'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -228,6 +234,7 @@ dependencies {
 
   testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  testCompile 'com.github.hmcts:fortify-client:1.2.1:all'
 
   functionalTestCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
@@ -240,7 +247,7 @@ dependencies {
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
   testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.6.0'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
-  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.29.1', withoutJunit4
+  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.30.0', withoutJunit4
   testCompile group: 'com.typesafe', name: 'config', version: '1.4.1'
 
   // Added to fix CVE-2021-33037

@@ -389,7 +389,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         String dwpIssuingOffice = getField(pairs, "office");
 
         if (benefitType != null && benefitType.getCode() != null) {
-            if (isBenefitWithAutoFilledOffice(benefitType.getCode(), dwpIssuingOffice)) {
+            if (Benefit.getBenefitOptionalByCode(benefitType.getCode()).filter(benefit -> isBenefitWithAutoFilledOffice(benefit, dwpIssuingOffice)).isPresent()) {
                 return dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode()).map(office -> office.getMapping().getCcd())
                     .orElse(null);
             } else if (dwpIssuingOffice != null) {
@@ -403,8 +403,8 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     //TODO: After ucOfficeFeatureActive fully enabled this method should go into Benefit enum in sscs-common
-    private boolean isBenefitWithAutoFilledOffice(String benefitCode, String office) {
-        switch (Benefit.getBenefitByCode(benefitCode)) {
+    private boolean isBenefitWithAutoFilledOffice(Benefit benefit, String office) {
+        switch (benefit) {
             case UC:
                 if (ucOfficeFeatureActive && office != null && !office.isBlank()) {
                     return false;
