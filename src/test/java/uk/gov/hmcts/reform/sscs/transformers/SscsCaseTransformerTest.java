@@ -1601,6 +1601,21 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    @Parameters({"PIP (3)", "  PIP 3  ", "PIP 3", "DWP PIP (3)"})
+    public void givenAPipOffice3Case_thenAcceptOfficeWithFuzzyMatching(String pip3) {
+        pairs.put("office", pip3);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), false);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals("Bellevale", result.getTransformedCase().get("dwpRegionalCentre"));
+        assertEquals("DWP PIP (3)", ((Appeal) result.getTransformedCase().get("appeal")).getMrnDetails().getDwpIssuingOffice());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     public void givenACaseWithNoReadyToListOffice_thenSetCreatedInGapsFromFieldToReadyToList() {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
