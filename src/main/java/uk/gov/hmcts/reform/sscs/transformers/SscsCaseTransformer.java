@@ -386,7 +386,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String getDwpIssuingOffice(Map<String, Object> pairs, BenefitType benefitType) {
-        String dwpIssuingOffice = StringUtils.trim(getField(pairs, "office"));
+        String dwpIssuingOffice = getField(pairs, "office");
 
         if (benefitType != null && benefitType.getCode() != null) {
             if (isBenefitWithAutoFilledOffice(benefitType.getCode(), dwpIssuingOffice)) {

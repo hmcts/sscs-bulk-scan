@@ -40,7 +40,7 @@ public final class SscsOcrDataUtil {
     }
 
     public static String getField(Map<String, Object> pairs, String field) {
-        return pairs.containsKey(field) && pairs.get(field) != null ? pairs.get(field).toString() : null;
+        return pairs.containsKey(field) && pairs.get(field) != null ? StringUtils.trim(pairs.get(field).toString()) : null;
     }
 
     public static boolean isKeyExists(Map<String, Object> pairs, String field) {
