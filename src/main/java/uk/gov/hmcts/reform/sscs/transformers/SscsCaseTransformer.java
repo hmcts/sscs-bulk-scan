@@ -287,6 +287,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
         List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicatorSscs1U.getAllIndicatorStrings());
 
+
         if (!validProvidedBooleanValues.isEmpty()
             && !isExactlyZeroBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
             // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
@@ -311,7 +312,13 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .replace(IS_BENEFIT_TYPE_OTHER, BENEFIT_TYPE_OTHER));
             }
         }
+
         Optional<Benefit> benefit = Benefit.findBenefitByShortName(code);
+
+        if (benefit.isEmpty() && errors.size() == 0) {
+            // only add when no other errors, otherwise similar errors get added to the list
+            errors.add(BENEFIT_TYPE_OTHER + " " + IS_INVALID);
+        }
         return (benefit.isPresent() && errors.size() == 0) ? BenefitType.builder().code(code).description(benefit.get().getDescription()).build() : null;
     }
 

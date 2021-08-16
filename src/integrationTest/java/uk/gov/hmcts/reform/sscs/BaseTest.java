@@ -75,8 +75,8 @@ public abstract class BaseTest {
         ccdServer.stop();
     }
 
-    protected void findCaseByForCaseworker(String eventUrl, String mrnDate) {
-        SearchSourceBuilder query = SscsQueryBuilder.findCcdCaseByNinoAndBenefitTypeAndMrnDateQuery("BB000000B", "ESA", mrnDate);
+    protected void findCaseByForCaseworker(String eventUrl, String mrnDate, String benefitType) {
+        SearchSourceBuilder query = SscsQueryBuilder.findCcdCaseByNinoAndBenefitTypeAndMrnDateQuery("BB000000B", benefitType, mrnDate);
 
         ccdServer.stubFor(post(concat(eventUrl)).atPriority(1)
             .withHeader(AUTHORIZATION, equalTo(USER_AUTH_TOKEN))

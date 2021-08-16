@@ -193,19 +193,6 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypeIsOther_thenNullCodeIsReturned() {
-        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
-        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-
-        assertEquals(null,  appeal.getBenefitType());
-    }
-
-    @Test
     public void givenBenefitTypeIsOtherAttendanceAllowance_thenCorrectCodeIsReturned() {
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
@@ -253,7 +240,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenBenefitTypeIsOtherWithInvalidType_thenNoErrorMessageReturned() {
+    public void givenBenefitTypeIsOtherWithInvalidType_thenErrorMessageReturned() {
         pairs.remove("is_benefit_type_pip");
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
@@ -262,7 +249,19 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
         pairs.put(BENEFIT_TYPE_OTHER, "Not a valid type");
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 0);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("benefit_type_other is invalid", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenBenefitTypeIsOther_thenNullCodeIsReturned() {
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
+        CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("benefit_type_other is invalid", result.getErrors().get(0));
     }
 
     @Test
