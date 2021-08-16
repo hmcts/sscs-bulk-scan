@@ -92,7 +92,7 @@ public class SscsCaseValidatorTest {
 
     @Test
     @Parameters({"ESA", "JSA", "PIP", "DLA", "attendanceAllowance", "industrialInjuriesDisablement",
-        "socialFund", "incomeSupport", "industrialDeathBenefit", "pensionCredits"})
+        "socialFund", "incomeSupport", "industrialDeathBenefit", "pensionCredits", "retirementPension"})
     public void givenAnAppealContainsAnInvalidOfficeForBenefitTypeOtherNotAutoOffice_thenAddAWarning(String benefitShortName) {
         defaultMrnDetails.setDwpIssuingOffice("Invalid Test Office");
 
@@ -105,7 +105,7 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    @Parameters({"carersAllowance", "bereavementBenefit", "maternityAllowance", "bereavementSupportPaymentScheme", "retirementPension"})
+    @Parameters({"carersAllowance", "bereavementBenefit", "maternityAllowance", "bereavementSupportPaymentScheme"})
     public void givenAnAppealContainsAnInvalidOfficeForBenefitTypeOtherAutoOffice_thenDoNotAddAWarning(String benefitShortName) {
         defaultMrnDetails.setDwpIssuingOffice("Invalid Test Office");
 
