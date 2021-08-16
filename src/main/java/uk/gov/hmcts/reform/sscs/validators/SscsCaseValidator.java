@@ -513,7 +513,7 @@ public class SscsCaseValidator implements CaseValidator {
                     .build());
             }
         } else {
-            if (formType == null || (formType != null && !formType.equals(FormType.SSCS1U))) {
+            if (formType == null || !formType.equals(FormType.SSCS1U)) {
                 warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, IS_EMPTY));
             }
         }

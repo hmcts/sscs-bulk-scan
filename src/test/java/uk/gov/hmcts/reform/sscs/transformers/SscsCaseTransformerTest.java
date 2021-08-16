@@ -249,7 +249,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
         pairs.put(BENEFIT_TYPE_OTHER, "Not a valid type");
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("benefit_type_other is invalid", result.getErrors().get(0));
     }
 
@@ -260,7 +260,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("benefit_type_other is invalid", result.getErrors().get(0));
     }
 

@@ -315,7 +315,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         Optional<Benefit> benefit = Benefit.findBenefitByShortName(code);
 
-        if (benefit.isEmpty() && errors.size() == 0) {
+        if (benefit.isEmpty() && errors.isEmpty()) {
             // only add when no other errors, otherwise similar errors get added to the list
             errors.add(BENEFIT_TYPE_OTHER + " " + IS_INVALID);
         }
