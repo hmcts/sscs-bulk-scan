@@ -4,7 +4,7 @@
     "event_id": "validAppealCreated",
     "case_data": {
       "evidencePresent": "Yes",
-      "caseCode": "013DD",
+      "caseCode": "002DD",
       "subscriptions": {
         "appellantSubscription": {
           "wantSmsNotifications": "No",
@@ -132,7 +132,7 @@
         "hearingSubtype": {},
         "receivedVia": "Paper"
       },
-      "benefitCode": "013",
+      "benefitCode": "002",
       "sscsDocument": [
         {
           "value": {
