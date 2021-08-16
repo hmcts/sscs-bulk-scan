@@ -122,6 +122,13 @@ public class SscsOcrDataUtilTest {
     }
 
     @Test
+    public void givenAMap_thenFindTrimField() {
+        pairs.put("office", " PIP 1 ");
+
+        assertEquals("PIP 1", SscsOcrDataUtil.getField(pairs, "office"));
+    }
+
+    @Test
     public void givenAFieldWithEmptyValue_thenReturnNull() {
         pairs.put("person1_title", null);
 
