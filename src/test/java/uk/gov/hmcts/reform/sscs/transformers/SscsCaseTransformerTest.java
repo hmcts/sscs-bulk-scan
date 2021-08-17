@@ -222,7 +222,7 @@ public class SscsCaseTransformerTest {
     @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
         "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
         "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
-        "Industrial Death Benefit, industrialDeathBenefit", "Pension Credits, pensionCredits", "Retirement Pension, retirementPension",})
+        "Industrial Death Benefit, industrialDeathBenefit", "Pension Credit, pensionCredit", "Retirement Pension, retirementPension",})
     public void givenBenefitTypeIsOtherWithValidType_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
@@ -239,7 +239,7 @@ public class SscsCaseTransformerTest {
     @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
         "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
         "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
-        "Industrial Death Benefit, industrialDeathBenefit", "Pension Credits, pensionCredits", "Retirement Pension, retirementPension",})
+        "Industrial Death Benefit, industrialDeathBenefit", "Pension Credit, pensionCredit", "Retirement Pension, retirementPension",})
     public void givenBenefitTypeIsOtherNotTickedWithValidType_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
         pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);

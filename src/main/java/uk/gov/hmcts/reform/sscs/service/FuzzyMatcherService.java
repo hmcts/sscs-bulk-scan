@@ -45,7 +45,7 @@ public class FuzzyMatcherService {
                     Pair.of("AA", ATTENDANCE_ALLOWANCE),
                     Pair.of("IS", INCOME_SUPPORT),
                     Pair.of("SF", SOCIAL_FUND),
-                    Pair.of("PC", PENSION_CREDITS),
+                    Pair.of("PC", PENSION_CREDIT),
                     Pair.of("RP", RETIREMENT_PENSION),
                     Pair.of("BB", BEREAVEMENT_BENEFIT),
                     Pair.of("CA", CARERS_ALLOWANCE),
