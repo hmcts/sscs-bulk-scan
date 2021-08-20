@@ -875,12 +875,12 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealDoesNotContainABenefitTypeOther_thenAddAWarning() {
+    public void givenAnAppealDoesNotContainABenefitTypeOtherForSscs1UForm_thenDoNotAddAWarning() {
         Map<String, Object> caseData = buildMinimumAppealDataWithBenefitType(null, buildAppellant(false), true);
         caseData.put("formType", FormType.SSCS1U);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecordSscs1U, caseData, false);
 
-        assertEquals(BENEFIT_TYPE_OTHER + " is empty", response.getWarnings().get(0));
+        assertTrue(response.getWarnings().isEmpty());
     }
 
     @Test

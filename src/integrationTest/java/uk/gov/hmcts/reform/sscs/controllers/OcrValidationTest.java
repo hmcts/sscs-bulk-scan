@@ -302,7 +302,7 @@ public class OcrValidationTest  {
             .andExpect(jsonPath("$.status").value("WARNINGS"))
             .andExpect(jsonPath("$.warnings", hasSize(1)))
             .andExpect(jsonPath("$.errors", hasSize(0)))
-            .andExpect(content().json("{\"warnings\":[\"benefit_type_other is empty\"],\"errors\":[],\"status\":\"WARNINGS\"}"));
+            .andExpect(content().json("{\"warnings\":[\"benefit_type_other is invalid\"],\"errors\":[],\"status\":\"WARNINGS\"}"));
     }
 
     private String readResource(final String fileName) throws IOException {

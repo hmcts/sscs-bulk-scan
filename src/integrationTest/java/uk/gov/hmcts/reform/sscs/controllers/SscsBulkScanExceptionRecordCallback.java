@@ -66,7 +66,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public void should_handle_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -102,7 +102,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     @Test
     public void should_create_non_compliant_case_when_mrn_date_greater_than_13_months() throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2017-01-01");
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, "2017-01-01", "ESA");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -253,7 +253,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public void auto_scan_should_handle_callback_and_return_caseid_and_state_case_created()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -263,8 +263,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ResponseEntity<SuccessfulTransformationResponse> result =
             this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
 
-        SuccessfulTransformationResponse callbackResponse = result.getBody();
-
         verifyResultData(result, "mappings/exception/auto-valid-appeal-response.json", this::getAppellantTya);
     }
 
@@ -272,26 +270,24 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public void auto_scan_should_handle_callback_and_return_caseid_and_state_case_created_Sscs1U()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "attendanceAllowance");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1U"), "SSCS1PEU"),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1U"), "SSCS1U"),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
             this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
 
-        SuccessfulTransformationResponse callbackResponse = result.getBody();
-
-        verifyResultData(result, "mappings/exception/auto-valid-appeal-response.json", this::getAppellantTya);
+        verifyResultData(result, "mappings/exception/auto-valid-appeal-response-attendance-allowance.json", this::getAppellantTya);
     }
 
     @Test
     public void auto_scan_with_appointee_should_handle_callback_and_return_caseid_and_state_case_created()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -508,10 +504,18 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
                 .build());
 
         ocrList.put("mrn_date", mrnDate);
-        ocrList.put("office", "Balham DRT");
+        if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
+            ocrList.put("office", "The Pension Service 11");
+        } else {
+            ocrList.put("office", "Balham DRT");
+        }
         ocrList.put("contains_mrn", true);
+
         if (formType.toLowerCase().equals(FormType.SSCS1.toString())) {
             ocrList.put("benefit_type_description", "ESA");
+        } else if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
+            ocrList.put("is_benefit_type_other", false);
+            ocrList.put("benefit_type_other", "Attendance Allowance");
         } else {
             ocrList.put("is_benefit_type_esa", "true");
         }
