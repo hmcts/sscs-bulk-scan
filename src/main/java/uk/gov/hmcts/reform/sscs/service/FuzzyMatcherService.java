@@ -86,6 +86,7 @@ public class FuzzyMatcherService {
         Pair.of("job", JSA),
         Pair.of("seeker", JSA),
         Pair.of("seeker's", JSA),
+        Pair.of("seekers", JSA),
         Pair.of("social", SOCIAL_FUND),
         Pair.of("fund", SOCIAL_FUND),
         Pair.of("carer's", CARERS_ALLOWANCE),
