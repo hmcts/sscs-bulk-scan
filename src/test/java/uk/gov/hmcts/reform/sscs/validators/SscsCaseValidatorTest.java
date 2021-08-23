@@ -92,7 +92,7 @@ public class SscsCaseValidatorTest {
 
     @Test
     @Parameters({"ESA", "JSA", "PIP", "DLA", "attendanceAllowance", "industrialInjuriesDisablement",
-        "socialFund", "incomeSupport", "industrialDeathBenefit", "pensionCredits", "retirementPension"})
+        "socialFund", "incomeSupport", "industrialDeathBenefit", "pensionCredit", "retirementPension"})
     public void givenAnAppealContainsAnInvalidOfficeForBenefitTypeOtherNotAutoOffice_thenAddAWarning(String benefitShortName) {
         defaultMrnDetails.setDwpIssuingOffice("Invalid Test Office");
 
@@ -256,15 +256,15 @@ public class SscsCaseValidatorTest {
 
     @Test
     @Parameters({"Pensions Dispute Resolution Team", "Recovery from Estates"})
-    public void givenAnAppealContainsAValidOfficeForBenefitTypePensionCredits_thenDoNotAddAWarning(String dwpIssuingOffice) {
+    public void givenAnAppealContainsAValidOfficeForBenefitTypePensionCredit_thenDoNotAddAWarning(String dwpIssuingOffice) {
         defaultMrnDetails.setDwpIssuingOffice(dwpIssuingOffice);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
             exceptionRecord,
-            buildMinimumAppealDataWithBenefitTypeAndFormType(PENSION_CREDITS.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
+            buildMinimumAppealDataWithBenefitTypeAndFormType(PENSION_CREDIT.getShortName(), buildAppellant(false), true, FormType.SSCS1U),
             false);
 
-        String assertionMessage = "Asserting Benefit: Pension Credits with Office: " + dwpIssuingOffice;
+        String assertionMessage = "Asserting Benefit: Pension Credit with Office: " + dwpIssuingOffice;
         assertEquals(assertionMessage, 0, response.getWarnings().size());
         assertEquals(assertionMessage, 0, response.getErrors().size());
     }
