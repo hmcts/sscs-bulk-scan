@@ -396,12 +396,15 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
         if (address != null && address.getPostcode() != null) {
-            if (postcodeValidator.isValidPostcodeFormat(address.getPostcode()) && postcodeValidator.isValid(address.getPostcode())) {
-                return true;
-            } else {
-                errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
-                return false;
+            if (postcodeValidator.isValidPostcodeFormat(address.getPostcode())) {
+                boolean isValidPostcode = postcodeValidator.isValid(address.getPostcode());
+                if (!isValidPostcode) {
+                    warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
+                }
+                return isValidPostcode;
             }
+            errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
+            return false;
         }
         warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_EMPTY));
         return false;
