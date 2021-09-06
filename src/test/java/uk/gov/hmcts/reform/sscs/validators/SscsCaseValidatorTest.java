@@ -1044,7 +1044,7 @@ public class SscsCaseValidatorTest {
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(false);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithPostcode("Bla Bla"), true), false);
 
-        assertEquals("person1_postcode is not a valid postcode", response.getErrors().get(0));
+        assertEquals("person1_postcode is not in a valid format", response.getErrors().get(0));
     }
 
     @Test
