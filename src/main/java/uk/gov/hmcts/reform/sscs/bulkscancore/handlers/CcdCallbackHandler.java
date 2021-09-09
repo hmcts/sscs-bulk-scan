@@ -1,21 +1,22 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.springframework.util.ObjectUtils.isEmpty;
+import static org.springframework.util.CollectionUtils.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
+import static uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator.IS_NOT_A_VALID_POSTCODE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
@@ -91,7 +92,7 @@ public class CcdCallbackHandler {
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
         }
 
-        if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !CollectionUtils.isEmpty(caseTransformationResponse.getWarnings())) {
+        if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !isEmpty(caseTransformationResponse.getWarnings())) {
             log.info("Warning found while transforming exception record id {}", exceptionRecordId);
             throw new InvalidExceptionRecordException(caseTransformationResponse.getWarnings());
         }
@@ -100,10 +101,10 @@ public class CcdCallbackHandler {
 
         CaseResponse caseValidationResponse = caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), false);
 
-        if (!ObjectUtils.isEmpty(caseValidationResponse.getErrors())) {
+        if (!isEmpty(caseValidationResponse.getErrors())) {
             log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId, stringJoin(caseValidationResponse.getErrors()));
             throw new InvalidExceptionRecordException(caseValidationResponse.getErrors());
-        } else if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !ObjectUtils.isEmpty(caseValidationResponse.getWarnings())) {
+        } else if (BooleanUtils.isTrue(exceptionRecord.getIsAutomatedProcess()) && !isEmpty(caseValidationResponse.getWarnings())) {
             log.info(LOGSTR_VALIDATION_WARNING, exceptionRecordId, stringJoin(caseValidationResponse.getWarnings()));
             throw new InvalidExceptionRecordException(caseValidationResponse.getWarnings());
         } else {
@@ -210,23 +211,36 @@ public class CcdCallbackHandler {
 
         List<String> appendedWarningsAndErrors = new ArrayList<>();
 
-        if (!ObjectUtils.isEmpty(caseResponse.getWarnings())) {
-            log.info(LOGSTR_VALIDATION_WARNING, caseData.getCcdCaseId(), stringJoin(caseResponse.getWarnings()));
-            appendedWarningsAndErrors.addAll(caseResponse.getWarnings());
+        List<String> allWarnings = caseResponse.getWarnings();
+        List<String> warningsThatAreNotErrors = getWarningsThatShouldNotBeErrors(caseResponse);
+        List<String> filteredWarnings = emptyIfNull(allWarnings).stream()
+            .filter(w -> !warningsThatAreNotErrors.contains(w))
+            .collect(Collectors.toList());
+
+        if (!isEmpty(filteredWarnings)) {
+            log.info(LOGSTR_VALIDATION_WARNING, caseData.getCcdCaseId(), stringJoin(filteredWarnings));
+            appendedWarningsAndErrors.addAll(filteredWarnings);
         }
 
-        if (!ObjectUtils.isEmpty(caseResponse.getErrors())) {
+        if (!isEmpty(caseResponse.getErrors())) {
             log.info(LOGSTR_VALIDATION_ERRORS, caseData.getCcdCaseId(), stringJoin(caseResponse.getErrors()));
             appendedWarningsAndErrors.addAll(caseResponse.getErrors());
         }
 
-        if (!appendedWarningsAndErrors.isEmpty()) {
+        if (!appendedWarningsAndErrors.isEmpty() || !warningsThatAreNotErrors.isEmpty()) {
             PreSubmitCallbackResponse<SscsCaseData> preSubmitCallbackResponse = new PreSubmitCallbackResponse<>(caseData);
 
             preSubmitCallbackResponse.addErrors(appendedWarningsAndErrors);
+            preSubmitCallbackResponse.addWarnings(warningsThatAreNotErrors);
             return preSubmitCallbackResponse;
         }
         return null;
+    }
+
+    private List<String> getWarningsThatShouldNotBeErrors(CaseResponse caseResponse) {
+        return emptyIfNull(caseResponse.getWarnings()).stream()
+            .filter(warning -> warning.endsWith(IS_NOT_A_VALID_POSTCODE))
+            .collect(Collectors.toList());
     }
 
     private void stampReferredCase(CaseResponse caseValidationResponse, String eventId) {

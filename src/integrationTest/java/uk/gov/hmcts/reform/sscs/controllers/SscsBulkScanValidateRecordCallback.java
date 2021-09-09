@@ -320,7 +320,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_error_when_postcode_is_invalid()
+    public void should_return_warning_when_postcode_is_invalid()
         throws Exception {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -338,7 +338,8 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
+        assertThat(result.getBody().getErrors().size()).isEqualTo(0);
+        assertThat(result.getBody().getWarnings())
             .containsOnly("Appellant postcode is not a valid postcode");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);

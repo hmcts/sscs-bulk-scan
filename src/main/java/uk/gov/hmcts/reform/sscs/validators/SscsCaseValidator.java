@@ -49,6 +49,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     @SuppressWarnings("squid:S5843")
     private static final String COUNTY_REGEX = "^\\.$|^[a-zA-ZÀ-ž0-9]{1}[a-zA-ZÀ-ž0-9 \\r\\n\\.“”\",’\\?\\!\\[\\]\\(\\)/£:\\\\_+\\-%&;]{1,}$";
+    public static final String IS_NOT_A_VALID_POSTCODE = "is not a valid postcode";
 
     List<String> warnings;
     List<String> errors;
@@ -399,7 +400,7 @@ public class SscsCaseValidator implements CaseValidator {
             if (postcodeValidator.isValidPostcodeFormat(address.getPostcode())) {
                 boolean isValidPostcode = postcodeValidator.isValid(address.getPostcode());
                 if (!isValidPostcode) {
-                    warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
+                    warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_NOT_A_VALID_POSTCODE));
                 }
                 return isValidPostcode;
             }
