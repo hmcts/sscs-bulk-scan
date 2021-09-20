@@ -6,6 +6,17 @@ import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.doValuesContradict;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.extractBooleanValue;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.extractValuesWhereBooleansValid;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.findBooleanExists;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.generateDateForCcd;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getBoolean;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getDateForCcd;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.hasPerson;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.isExactlyOneBooleanTrue;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.isExactlyZeroBooleanTrue;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
 import java.util.*;
@@ -35,23 +46,18 @@ import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 @Slf4j
 public class SscsCaseTransformer implements CaseTransformer {
 
+    private final IdamService idamService;
+    private final CcdService ccdService;
     private SscsJsonExtractor sscsJsonExtractor;
     private SscsKeyValuePairValidator keyValuePairValidator;
     private SscsDataHelper sscsDataHelper;
     private FuzzyMatcherService fuzzyMatcherService;
     private DwpAddressLookupService dwpAddressLookupService;
-    private final IdamService idamService;
-    private final CcdService ccdService;
-
     private Set<String> errors;
     private Set<String> warnings;
 
     //TODO: Remove when uc-office-feature switched on
     private boolean ucOfficeFeatureActive;
-
-    public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
-        this.ucOfficeFeatureActive = ucOfficeFeatureActive;
-    }
 
     @Autowired
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
@@ -72,6 +78,10 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
     }
 
+    public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
+        this.ucOfficeFeatureActive = ucOfficeFeatureActive;
+    }
+
     @Override
     public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
         // New transformation request contains exceptionRecordId
@@ -84,10 +94,13 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
         log.info("Validating exception record against schema caseId {}", caseId);
 
-        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields());
+        String formType = exceptionRecord.getFormType();
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields(),
+            FormType.getById(formType));
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
-            log.info("Errors found while validating key value pairs while transforming exception record caseId {}", caseId);
+            log.info("Errors found while validating key value pairs while transforming exception record caseId {}",
+                caseId);
             return keyValuePairValidatorResponse;
         }
 
@@ -100,7 +113,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        String formType = exceptionRecord.getFormType();
         Map<String, Object> transformed = transformData(caseId, scannedData, token, formType);
 
         duplicateCaseCheck(caseId, transformed, token);
@@ -109,7 +121,8 @@ public class SscsCaseTransformer implements CaseTransformer {
             warnings = combineWarnings();
         }
 
-        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors)).warnings(new ArrayList<>(warnings))
+        return CaseResponse.builder().transformedCase(transformed).errors(new ArrayList<>(errors))
+            .warnings(new ArrayList<>(warnings))
             .status(getValidationStatus(new ArrayList<>(errors), new ArrayList<>(warnings))).build();
     }
 
@@ -123,17 +136,19 @@ public class SscsCaseTransformer implements CaseTransformer {
         return mergedWarnings;
     }
 
-    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token, String formType) {
+    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token,
+                                              String formType) {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
         Map<String, Object> transformed = new HashMap<>();
-
-        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType));
+        String childMaintenanceNumber = scannedData.getOcrCaseData() != null
+            ? getField(scannedData.getOcrCaseData(), PERSON_1_CHILD_MAINTENANCE_NUMBER) : null;
+        sscsDataHelper.addSscsDataToMap(
+            transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType), childMaintenanceNumber);
 
         transformed.put("bulkScanCaseReference", caseId);
-
         transformed.put("caseCreated", scannedData.getOpeningDate());
 
         String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
@@ -143,7 +158,8 @@ public class SscsCaseTransformer implements CaseTransformer {
             transformed.put("processingVenue", processingVenue);
         }
 
-        log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId, scannedData.getOpeningDate());
+        log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId,
+            scannedData.getOpeningDate());
 
         transformed = checkForMatches(transformed, token);
 
@@ -261,20 +277,25 @@ public class SscsCaseTransformer implements CaseTransformer {
         String code = getCodeFromField(caseId, pairs, BENEFIT_TYPE_DESCRIPTION);
 
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
-        List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.getAllIndicatorStrings());
+        List<String> validProvidedBooleanValues =
+            extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.getAllIndicatorStrings());
 
         // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
         // for conflicting values.
         if (!validProvidedBooleanValues.isEmpty()) {
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
-            if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
-                String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
+            if (isExactlyOneBooleanTrue(pairs, errors,
+                validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+                String valueIndicatorWithTrueValue =
+                    validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value))
+                        .findFirst().orElse(null);
                 Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
                 if (benefit.isPresent()) {
                     code = benefit.get().name();
                 }
             } else {
-                errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
+                errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
+                    .getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
             }
         }
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
@@ -285,22 +306,30 @@ public class SscsCaseTransformer implements CaseTransformer {
         String code = getBenefitTypeOther(benefitTypeOther);
 
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
-        List<String> validProvidedBooleanValues = extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicatorSscs1U.getAllIndicatorStrings());
+        List<String> validProvidedBooleanValues =
+            extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicatorSscs1U.getAllIndicatorStrings());
 
 
         if (!validProvidedBooleanValues.isEmpty()
-            && !isExactlyZeroBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+            && !isExactlyZeroBooleanTrue(pairs, errors,
+            validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
             // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
             // for conflicting values.
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
-            if (isExactlyOneBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
-                String valueIndicatorWithTrueValue = validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value)).findFirst().orElse(null);
+            if (isExactlyOneBooleanTrue(pairs, errors,
+                validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+                String valueIndicatorWithTrueValue =
+                    validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value))
+                        .findFirst().orElse(null);
                 if (!IS_BENEFIT_TYPE_OTHER.equals(valueIndicatorWithTrueValue)) {
-                    code = getBenefitCodeFromIndicators(pairs, benefitTypeOther, valueIndicatorWithTrueValue, validProvidedBooleanValues);
+                    code = getBenefitCodeFromIndicators(pairs, benefitTypeOther, valueIndicatorWithTrueValue,
+                        validProvidedBooleanValues);
                 }
             } else {
-                String error = uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues.stream()
-                    .filter(value -> extractBooleanValue(pairs, errors, value)).collect(Collectors.toList())) + " have contradicting values";
+                String error = uk.gov.hmcts.reform.sscs.utility.StringUtils
+                    .getGramaticallyJoinedStrings(validProvidedBooleanValues.stream()
+                        .filter(value -> extractBooleanValue(pairs, errors, value)).collect(Collectors.toList()))
+                    + " have contradicting values";
                 if (!StringUtils.isEmpty(benefitTypeOther)) {
                     error = error.replace(IS_BENEFIT_TYPE_OTHER, BENEFIT_TYPE_OTHER);
                 }
@@ -308,7 +337,9 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         } else {
             if (StringUtils.isEmpty(benefitTypeOther)) {
-                errors.add((uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(BenefitTypeIndicatorSscs1U.getAllIndicatorStrings()) + " fields are empty")
+                errors.add((uk.gov.hmcts.reform.sscs.utility.StringUtils
+                    .getGramaticallyJoinedStrings(BenefitTypeIndicatorSscs1U.getAllIndicatorStrings())
+                    + " fields are empty")
                     .replace(IS_BENEFIT_TYPE_OTHER, BENEFIT_TYPE_OTHER));
             }
         }
@@ -319,18 +350,22 @@ public class SscsCaseTransformer implements CaseTransformer {
             // only add when no other errors, otherwise similar errors get added to the list
             errors.add(BENEFIT_TYPE_OTHER + " " + IS_INVALID);
         }
-        return (benefit.isPresent() && errors.size() == 0) ? BenefitType.builder().code(code).description(benefit.get().getDescription()).build() : null;
+        return (benefit.isPresent() && errors.size() == 0)
+            ? BenefitType.builder().code(code).description(benefit.get().getDescription()).build() : null;
     }
 
-    private String getBenefitCodeFromIndicators(Map<String, Object> pairs, String benefitTypeOther, String valueIndicatorWithTrueValue, List<String> validProvidedBooleanValues) {
+    private String getBenefitCodeFromIndicators(Map<String, Object> pairs, String benefitTypeOther,
+                                                String valueIndicatorWithTrueValue,
+                                                List<String> validProvidedBooleanValues) {
         if (StringUtils.isEmpty(benefitTypeOther)) {
             Optional<Benefit> benefit = BenefitTypeIndicatorSscs1U.findByIndicatorString(valueIndicatorWithTrueValue);
             if (benefit.isPresent()) {
                 return benefit.get().getShortName();
             }
         } else {
-            errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils.getGramaticallyJoinedStrings(validProvidedBooleanValues.stream()
-                .filter(value -> extractBooleanValue(pairs, errors, value)).collect(Collectors.toList()))
+            errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
+                .getGramaticallyJoinedStrings(validProvidedBooleanValues.stream()
+                    .filter(value -> extractBooleanValue(pairs, errors, value)).collect(Collectors.toList()))
                 + " and " + BENEFIT_TYPE_OTHER + " have contradicting values");
         }
         return null;
@@ -354,7 +389,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         return code;
     }
 
-    private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee, Contact contact) {
+    private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee,
+                                     Contact contact) {
         return Appellant.builder()
             .name(buildPersonName(pairs, personType))
             .isAppointee(convertBooleanToYesNoString(appointee != null))
@@ -396,8 +432,10 @@ public class SscsCaseTransformer implements CaseTransformer {
         String dwpIssuingOffice = getField(pairs, "office");
 
         if (benefitType != null && benefitType.getCode() != null) {
-            if (Benefit.getBenefitOptionalByCode(benefitType.getCode()).filter(benefit -> isBenefitWithAutoFilledOffice(benefit, dwpIssuingOffice)).isPresent()) {
-                return dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode()).map(office -> office.getMapping().getCcd())
+            if (Benefit.getBenefitOptionalByCode(benefitType.getCode())
+                .filter(benefit -> isBenefitWithAutoFilledOffice(benefit, dwpIssuingOffice)).isPresent()) {
+                return dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode())
+                    .map(office -> office.getMapping().getCcd())
                     .orElse(null);
             } else if (dwpIssuingOffice != null) {
                 return dwpAddressLookupService.getDwpMappingByOffice(benefitType.getCode(), dwpIssuingOffice)
@@ -456,7 +494,8 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .build();
         }
         boolean line3IsBlank = false;
-        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE2)) && !findBooleanExists(getField(pairs, personType + ADDRESS_LINE3))) {
+        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE2))
+            && !findBooleanExists(getField(pairs, personType + ADDRESS_LINE3))) {
             line3IsBlank = true;
         }
         return Address.builder()
@@ -489,16 +528,19 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL)
             && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null
             || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
-            pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()));
+            pairs.put(IS_HEARING_TYPE_PAPER_LITERAL,
+                !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()));
         } else if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL)
             && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null
             || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
-            pairs.put(IS_HEARING_TYPE_ORAL_LITERAL, !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).toString()));
+            pairs.put(IS_HEARING_TYPE_ORAL_LITERAL,
+                !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).toString()));
         }
 
         if (areBooleansValid(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)
             && !doValuesContradict(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL, IS_HEARING_TYPE_PAPER_LITERAL)) {
-            return BooleanUtils.toBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
+            return BooleanUtils.toBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()) ? HEARING_TYPE_ORAL :
+                HEARING_TYPE_PAPER;
         }
         return null;
     }
@@ -560,8 +602,9 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String signLanguageType = findSignLanguageType(pairs, isSignLanguageInterpreterRequired);
 
-        boolean isLanguageInterpreterRequired = findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL))
-            || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL));
+        boolean isLanguageInterpreterRequired =
+            findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL))
+                || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL));
 
         String languageType = isLanguageInterpreterRequired ? findLanguageTypeString(pairs) : null;
 
@@ -571,7 +614,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String wantsSupport = !arrangements.isEmpty() ? YES_LITERAL : NO_LITERAL;
 
-        List<ExcludeDate> excludedDates = extractExcludedDates(pairs, getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));
+        List<ExcludeDate> excludedDates =
+            extractExcludedDates(pairs, getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));
         ;
 
         String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)
@@ -610,7 +654,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private Optional<Boolean> findSignLanguageInterpreterRequiredInOldForm(Map<String, Object> pairs) {
         if (areBooleansValid(pairs, errors, HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL)) {
-            return Optional.of(BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString()));
+            return Optional
+                .of(BooleanUtils.toBoolean(pairs.get(HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL).toString()));
         }
         return Optional.empty();
     }
@@ -654,7 +699,8 @@ public class SscsCaseTransformer implements CaseTransformer {
                 if (2 == range.size()) {
                     endDate = getDateForCcd(range.get(1), errors, errorMessage);
                 }
-                excludeDates.add(ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
+                excludeDates.add(
+                    ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
             }
         }
         if (excludeDates.size() == 0) {
@@ -693,11 +739,13 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (records != null) {
             for (InputScannedDoc record : records) {
 
-                String documentType = StringUtils.startsWithIgnoreCase(record.getSubtype(), "sscs1") ? "sscs1" : "appellantEvidence";
+                String documentType =
+                    StringUtils.startsWithIgnoreCase(record.getSubtype(), "sscs1") ? "sscs1" : "appellantEvidence";
 
                 checkFileExtensionValid(record.getFileName());
 
-                String scannedDate = record.getScannedDate() != null ? record.getScannedDate().toLocalDate().toString() : null;
+                String scannedDate =
+                    record.getScannedDate() != null ? record.getScannedDate().toLocalDate().toString() : null;
 
                 SscsDocumentDetails details = SscsDocumentDetails.builder()
                     .documentLink(record.getUrl())
@@ -740,7 +788,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         return sscsCaseData;
     }
 
-    private Map<String, Object> addAssociatedCases(Map<String, Object> sscsCaseData, List<SscsCaseDetails> matchedByNinoCases) {
+    private Map<String, Object> addAssociatedCases(Map<String, Object> sscsCaseData,
+                                                   List<SscsCaseDetails> matchedByNinoCases) {
         List<CaseLink> associatedCases = new ArrayList<>();
 
         for (SscsCaseDetails sscsCaseDetails : matchedByNinoCases) {
@@ -785,7 +834,8 @@ public class SscsCaseTransformer implements CaseTransformer {
             searchCriteria.put("case.appeal.benefitType.code", benefitType);
             searchCriteria.put("case.appeal.mrnDetails.mrnDate", mrnDate);
 
-            SscsCaseDetails duplicateCase = ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(nino, benefitType, mrnDate, token);
+            SscsCaseDetails duplicateCase =
+                ccdService.findCcdCaseByNinoAndBenefitTypeAndMrnDate(nino, benefitType, mrnDate, token);
 
             if (duplicateCase != null) {
                 log.info("Duplicate case already exists for exception record id {}", caseId);

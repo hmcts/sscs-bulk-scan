@@ -9,6 +9,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1PEU;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1U;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS2;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
@@ -87,6 +90,8 @@ public class SscsCaseTransformerTest {
 
     ExceptionRecord nullFormExceptionRecord;
 
+    private ExceptionRecord sscs2UExceptionRecord;
+
     IdamTokens token;
 
     @Before
@@ -104,8 +109,9 @@ public class SscsCaseTransformerTest {
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
 
-        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1PEU.getId()).build();
-        given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().build());
+        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            SSCS1PEU.getId()).build();
+        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
         given(postcodeValidator.isValid(anyString())).willReturn(true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
@@ -113,8 +119,14 @@ public class SscsCaseTransformerTest {
         sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
+        given(keyValuePairValidator.validate(ocrList, SSCS1U)).willReturn(CaseResponse.builder().build());
         nullFormExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        given(keyValuePairValidator.validate(ocrList, SSCS2)).willReturn(CaseResponse.builder().build());
+        sscs2UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            SSCS2.getId()).build();
+        given(sscsJsonExtractor.extractJson(sscs2UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
     }
@@ -1338,7 +1350,7 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenACaseWithFailedSchemaValidation_thenAddErrorToList() {
 
-        given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1752,7 +1764,7 @@ public class SscsCaseTransformerTest {
     public void givenATransformForValidationRequestFailsSchemaValidation_thenReturnErrors() {
         pairs.put("bla", "12/99/1987");
 
-        given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, true);
 
@@ -1962,6 +1974,46 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
+    }
+
+    @Test
+    @Parameters({"Test1234", ""})
+    public void givenBenefitTypeIsOtherBenefitWithChildMaintenance_thenCaseDataValueIsSet(String childMaintenance) {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put(PERSON_1_CHILD_MAINTENANCE_NUMBER, childMaintenance);
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        CaseResponse result = transformer.transformExceptionRecord(sscs2UExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+        assertEquals(childMaintenance,  result.getTransformedCase().get("childMaintenanceNumber"));
+    }
+
+    @Test
+    public void givenAppealWithoutChildMaintenance_thenCaseDataValueNotSet() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        CaseResponse result = transformer.transformExceptionRecord(sscs2UExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+        assertNull(result.getTransformedCase().get("childMaintenanceNumber"));
     }
 
     private Appeal buildTestAppealData() {

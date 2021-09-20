@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -108,5 +109,19 @@ public class SscsDataHelperTest {
             .appointee(Appointee.builder().address(Address.builder().postcode("CR2 8YY").build()).build())
             .build(), BenefitType.builder().code("PIP").build());
         assertEquals("Cardiff", result);
+    }
+
+    @Test
+    public void givenASscs2CaseResponseWithChildMaintenance_thenReturnSscsDataMapSet() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS2, "Test1234");
+        assertEquals("Test1234", transformedCase.get("childMaintenanceNumber"));
+    }
+
+    @Test
+    public void givenASscs1CaseResponseWithChildMaintenance_thenReturnSscsDataMapIgnoresValue() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS1U, "Test1234");
+        assertNull(transformedCase.get("childMaintenanceNumber"));
     }
 }

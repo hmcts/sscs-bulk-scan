@@ -38,6 +38,11 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     @Rule
     public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
+    private static String loadJson(String fileName) throws IOException {
+        URL url = getResource(fileName);
+        return Resources.toString(url, Charsets.toCharset("UTF-8"));
+    }
+
     @Before
     public void setup() {
         baseUrl = "http://localhost:" + randomServerPort + "/validate-record/";
@@ -99,6 +104,56 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
+    public void should_handle_callback_and_return_caseid_and_state_case_created_for_sscs2_record_data()
+        throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+
+        String validationJson = loadJson("mappings/validation/sscs2-validate-appeal-created-case-request.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isEmpty();
+        assertThat(callbackResponse.getWarnings()).isEmpty();
+
+        assertEquals("Test1234", callbackResponse.getData().get("childMaintenanceNumber"));
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_warning_when_child_maintenance_number_is_not_entered() throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson =
+            loadJson("mappings/validation/sscs2-validate-appeal-created-missing-child-maintenance.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("Child maintenance number is blank");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
     public void should_return_error_when_appellant_details_are_partially_entered() throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -133,13 +188,14 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_error_when_appointee_details_are_only_partially_entered_and_missing_hearing_sub_type_for_form_type_null() throws IOException {
+    public void should_return_error_when_appointee_details_are_only_partially_entered_and_missing_hearing_sub_type_for_form_type_null()
+        throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-appointee-request.json");
 
-        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
 
         // When
         ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
@@ -157,13 +213,15 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_error_when_appointee_details_are_only_partially_entered_and_missing_hearing_sub_type_for_auto_scan_form() throws IOException {
+    public void should_return_error_when_appointee_details_are_only_partially_entered_and_missing_hearing_sub_type_for_auto_scan_form()
+        throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        String validationJson = loadJson("mappings/validation/auto-validate-appeal-created-missing-appointee-request.json");
+        String validationJson =
+            loadJson("mappings/validation/auto-validate-appeal-created-missing-appointee-request.json");
 
-        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
 
         // When
         ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
@@ -182,13 +240,15 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_error_when_appellant_and_appointee_details_are_only_partially_entered_for_auto_scan_form_type() throws IOException {
+    public void should_return_error_when_appellant_and_appointee_details_are_only_partially_entered_for_auto_scan_form_type()
+        throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        String validationJson = loadJson("mappings/validation/auto-validate-appeal-created-missing-appellant-and-appointee-request.json");
+        String validationJson =
+            loadJson("mappings/validation/auto-validate-appeal-created-missing-appellant-and-appointee-request.json");
 
-        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
 
         // When
         ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
@@ -209,13 +269,15 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_error_when_appellant_and_appointee_details_are_only_partially_entered_for_form_type_null() throws IOException {
+    public void should_return_error_when_appellant_and_appointee_details_are_only_partially_entered_for_form_type_null()
+        throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-appellant-and-appointee-request.json");
+        String validationJson =
+            loadJson("mappings/validation/validate-appeal-created-missing-appellant-and-appointee-request.json");
 
-        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
 
         // When
         ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
@@ -239,9 +301,10 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-representative-request.json");
+        String validationJson =
+            loadJson("mappings/validation/validate-appeal-created-missing-representative-request.json");
 
-        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
 
         // When
         ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
@@ -250,7 +313,8 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors())
-            .containsOnly("Representative organisation, Representative first name and Representative last name are empty. At least one must be populated",
+            .containsOnly(
+                "Representative organisation, Representative first name and Representative last name are empty. At least one must be populated",
                 "Representative address town is empty",
                 "Representative address county is empty",
                 "Representative postcode is empty");
@@ -260,14 +324,16 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
     @Test
     @Parameters({"rep", "hasRepresentative"})
-    public void should_return_error_when_representative_details_are_not_entered(String fieldToRename) throws IOException {
+    public void should_return_error_when_representative_details_are_not_entered(String fieldToRename)
+        throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        String validationJson = loadJson("mappings/validation/validate-appeal-created-missing-representative-request.json")
-            .replaceAll(fieldToRename, "fieldMoved");
+        String validationJson =
+            loadJson("mappings/validation/validate-appeal-created-missing-representative-request.json")
+                .replaceAll(fieldToRename, "fieldMoved");
 
-        HttpEntity<String> request = new HttpEntity<>(validationJson,  httpHeaders());
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
 
         // When
         ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
@@ -342,11 +408,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
             .containsOnly("Appellant postcode is not a valid postcode");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
-    }
-
-    private static String loadJson(String fileName) throws IOException {
-        URL url = getResource(fileName);
-        return Resources.toString(url, Charsets.toCharset("UTF-8"));
     }
 
     private HttpHeaders httpHeaders() {

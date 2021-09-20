@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.google.common.io.Resources.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Strings.concat;
@@ -13,7 +16,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification.NEW_APPLICATION;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_EXCLUDE_DATES_MISSING;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
-import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.FIND_CASE_EVENT_URL;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.SERVICE_AUTHORIZATION_HEADER_KEY;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.USER_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.USER_ID;
+import static uk.gov.hmcts.reform.sscs.helper.TestConstants.USER_ID_HEADER;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -22,7 +30,11 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.commons.codec.Charsets;
@@ -52,9 +64,19 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public static final String TRANSFORM_EXCEPTION_RECORD = "/transform-exception-record/";
     public static final String TRANSFORM_SCANNED_DATA = "/transform-scanned-data/";
     public static final String MRN_DATE_YESTERDAY_YYYY_MM_DD = LocalDate.now().minusDays(1).toString();
-    public static final String MRN_DATE_YESTERDAY_DD_MM_YYYY = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    public static final String MRN_DATE_YESTERDAY_DD_MM_YYYY =
+        LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private String newBaseUrl;
+
+    private static String loadJson(String fileName) throws IOException {
+        URL url = getResource(fileName);
+        return Resources.toString(url, Charsets.toCharset("UTF-8"));
+    }
+
+    private static <K, V> Map.Entry<K, V> entry(K key, V value) {
+        return new AbstractMap.SimpleImmutableEntry<>(key, value);
+    }
 
     @Before
     public void setup() {
@@ -70,11 +92,13 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1")),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1")),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
 
         SuccessfulTransformationResponse callbackResponse = result.getBody();
 
@@ -92,7 +116,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
 
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
 
         verifyResultData(result, "mappings/exception/case-incomplete-response.json", this::getAppellantTya);
 
@@ -113,7 +138,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         // When
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
 
         verifyResultData(result, "mappings/exception/case-non-compliant-response.json", this::getAppellantTya);
     }
@@ -130,7 +156,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         );
 
         // When
-        ResponseEntity<ErrorResponse> result = this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(422);
@@ -163,28 +190,29 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
-
     //FIXME: delete after bulk scan auto case creation is switch on
     @Test
-    public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benefit_code_case_exists() throws Exception {
+    public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benefit_code_case_exists()
+        throws Exception {
         // Given
         checkForLinkedCases(FIND_CASE_EVENT_URL);
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-                exceptionCaseData(caseDataWithMrnDate("01/01/2017",this::addAppellant, "SSCS1")),
-                httpHeaders()
+            exceptionCaseData(caseDataWithMrnDate("01/01/2017", this::addAppellant, "SSCS1")),
+            httpHeaders()
         );
 
         findCaseByForCaseworkerReturnCaseDetails(FIND_CASE_EVENT_URL, "2017-01-01");
 
         // When
         ResponseEntity<ErrorResponse> result =
-                this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(422);
-        assertThat(result.getBody().errors).containsOnly("Duplicate case already exists - please reject this exception record");
+        assertThat(result.getBody().errors)
+            .containsOnly("Duplicate case already exists - please reject this exception record");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -202,7 +230,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         // When
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
@@ -219,7 +248,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         headers.set(AUTHORIZATION, USER_AUTH_TOKEN);
         headers.set(USER_ID_HEADER, USER_ID);
 
-        ExceptionRecord exceptionRecord = (isAuto) ? autoExceptionCaseData(caseData(),"SSCS1PEU") : exceptionCaseData(caseData());
+        ExceptionRecord exceptionRecord =
+            (isAuto) ? autoExceptionCaseData(caseData(), "SSCS1PEU") : exceptionCaseData(caseData());
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionRecord, headers);
 
         // When
@@ -236,7 +266,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("forbidden_service");
 
-        ExceptionRecord exceptionRecord = (isAuto) ? autoExceptionCaseData(caseData(), "SSCS1PEU") : exceptionCaseData(caseData());
+        ExceptionRecord exceptionRecord =
+            (isAuto) ? autoExceptionCaseData(caseData(), "SSCS1PEU") : exceptionCaseData(caseData());
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(exceptionRecord, httpHeaders());
 
         // When
@@ -257,11 +288,14 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1PEU"), "SSCS1PEU"),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1PEU"),
+                "SSCS1PEU"),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
 
         verifyResultData(result, "mappings/exception/auto-valid-appeal-response.json", this::getAppellantTya);
     }
@@ -274,13 +308,17 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1U"), "SSCS1U"),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS1U"),
+                "SSCS1U"),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
 
-        verifyResultData(result, "mappings/exception/auto-valid-appeal-response-attendance-allowance.json", this::getAppellantTya);
+        verifyResultData(result, "mappings/exception/auto-valid-appeal-response-attendance-allowance.json",
+            this::getAppellantTya);
     }
 
     @Test
@@ -291,15 +329,18 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU"), "SSCS1PEU"),
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(
+            caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU"), "SSCS1PEU"),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
-            this.restTemplate.postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
 
         SuccessfulTransformationResponse callbackResponse = result.getBody();
 
-        verifyResultData(result, "mappings/exception/auto-valid-appeal-with-appointee-response.json", this::getAppointeeTya);
+        verifyResultData(result, "mappings/exception/auto-valid-appeal-with-appointee-response.json",
+            this::getAppointeeTya);
     }
 
     @Test
@@ -351,11 +392,72 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    @Test
+    public void should_handle_sscs2_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
+        throws Exception {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            sscs2ExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS2")),
+            httpHeaders());
+
+        ResponseEntity<SuccessfulTransformationResponse> result =
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+
+        SuccessfulTransformationResponse callbackResponse = result.getBody();
+
+        verifyResultData(result, "mappings/exception/sscs2-valid-appeal-response.json", this::getAppellantTya);
+    }
+
+    @Test
+    public void should_return_error_list_populated_when_sscs2_key_value_pair_validation_fails() {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            sscs2ExceptionCaseData(caseDataWithInvalidKey()),
+            httpHeaders()
+        );
+
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+
+        assertThat(result.getStatusCodeValue()).isEqualTo(422);
+        assertThat(result.getBody().errors)
+            .containsOnly("#: extraneous key [invalid_key] is not permitted");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_warning_list_populated_when_sscs2_child_maintenance_validation_fails() {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            sscs2ExceptionCaseData(caseDataWithoutChildMaintenance()),
+            httpHeaders()
+        );
+
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().warnings)
+            .containsOnly("'person1_child_maintenance_number' is blank");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
     //FIXME: update after bulk scan auto case creation is switch on
     private Object[] endPoints() {
-        return new Object[]{
-            new Object[]{"http://localhost:" + randomServerPort + TRANSFORM_EXCEPTION_RECORD, false},
-            new Object[]{"http://localhost:" + randomServerPort + TRANSFORM_SCANNED_DATA, true}
+        return new Object[] {
+            new Object[] {"http://localhost:" + randomServerPort + TRANSFORM_EXCEPTION_RECORD, false},
+            new Object[] {"http://localhost:" + randomServerPort + TRANSFORM_SCANNED_DATA, true}
         };
     }
 
@@ -469,6 +571,28 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .build();
     }
 
+    //FIXME: delete after bulk scan auto case creation is switch on
+    @SuppressWarnings("unchecked")
+    private ExceptionRecord sscs2ExceptionCaseData(Map<String, Object> caseData) {
+        Map<String, Object> scannedData = (HashMap<String, Object>) caseData.get("scanOCRData");
+        List<OcrDataField> scanOcrData = getOcrDataFields(scannedData);
+
+        return ExceptionRecord.builder()
+            .ocrDataFields(scanOcrData)
+            .poBox("SSCSPO")
+            .jurisdiction("SSCS")
+            .formType("SSCS2")
+            .journeyClassification(NEW_APPLICATION)
+            .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
+            .id("1234567890")
+            .openingDate(LocalDateTime.parse("2021-01-11 12:00:00", formatter))
+            .deliveryDate(LocalDateTime.parse("2021-01-11 12:00:00", formatter))
+            .envelopeId("envelopeId")
+            .isAutomatedProcess(false)
+            .exceptionRecordId(null)
+            .build();
+    }
+
     @SuppressWarnings("unchecked")
     private List<OcrDataField> getOcrDataFields(Map<String, Object> scannedData) {
         List<OcrDataField> ocrData = buildScannedValidationOcrData(scannedData.entrySet().stream().map(f -> {
@@ -484,7 +608,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return caseDataWithMrnDate("09/12/2018", this::addAppellant, "SSCS1PEU");
     }
 
-    private Map<String, Object> caseDataWithMrnDate(String mrnDate, Consumer<Map<String, Object>> addPersonDetails, String formType) {
+    private Map<String, Object> caseDataWithMrnDate(String mrnDate, Consumer<Map<String, Object>> addPersonDetails,
+                                                    String formType) {
         Map<String, Object> ocrList = new HashMap<>();
         addPersonDetails.accept(ocrList);
 
@@ -519,6 +644,11 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         } else {
             ocrList.put("is_benefit_type_esa", "true");
         }
+
+        if (formType.toLowerCase().equals(FormType.SSCS2.toString())) {
+            ocrList.put("person1_child_maintenance_number", "Test1234");
+        }
+
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
         ocrList.put("hearing_options_exclude_dates", "01/12/2030");
@@ -571,6 +701,27 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("person2_nino", "BB000000B");
     }
 
+    private Map<String, Object> caseDataWithoutChildMaintenance() {
+
+        Map<String, Object> ocrList = new HashMap<>();
+        ocrList.put("person1_child_maintenance_number", "");
+        addAppellant(ocrList);
+        ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
+        ocrList.put("office", "Balham DRT");
+        ocrList.put("contains_mrn", true);
+        ocrList.put("is_benefit_type_esa", "true");
+        ocrList.put("is_hearing_type_oral", true);
+        ocrList.put("is_hearing_type_paper", false);
+        ocrList.put("hearing_options_exclude_dates", "01/12/2030");
+        ocrList.put("hearing_type_telephone", "Yes");
+        ocrList.put("hearing_telephone_number", "01234567890");
+        ocrList.put("hearing_type_video", "Yes");
+        ocrList.put("hearing_video_email", "my@email.com");
+        ocrList.put("hearing_type_face_to_face", "No");
+
+        return exceptionRecord(ocrList, null);
+    }
+
     private void findCaseByForCaseworkerReturnCaseDetails(String eventUrl, String mrnDate) throws Exception {
         SearchSourceBuilder query = SscsQueryBuilder.findCcdCaseByNinoAndBenefitTypeAndMrnDateQuery("BB000000B", "ESA", mrnDate);
 
@@ -585,12 +736,9 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
                     .withBody(loadJson("mappings/existing-case-details-200-response.json"))));
     }
 
-    private static String loadJson(String fileName) throws IOException {
-        URL url = getResource(fileName);
-        return Resources.toString(url, Charsets.toCharset("UTF-8"));
-    }
-
-    private void verifyResultData(ResponseEntity<SuccessfulTransformationResponse> result, String expectedDataFileLocation, Function<SuccessfulTransformationResponse, String> getTya) throws Exception {
+    private void verifyResultData(ResponseEntity<SuccessfulTransformationResponse> result,
+                                  String expectedDataFileLocation,
+                                  Function<SuccessfulTransformationResponse, String> getTya) throws Exception {
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
 
         SuccessfulTransformationResponse callbackResponse = result.getBody();
@@ -610,15 +758,13 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     private String getAppellantTya(SuccessfulTransformationResponse callbackResponse) {
-        return ((HashMap) ((HashMap) callbackResponse.getCaseCreationDetails().getCaseData().get("subscriptions")).get("appellantSubscription")).get("tya").toString();
+        return ((HashMap) ((HashMap) callbackResponse.getCaseCreationDetails().getCaseData().get("subscriptions"))
+            .get("appellantSubscription")).get("tya").toString();
     }
 
     private String getAppointeeTya(SuccessfulTransformationResponse callbackResponse) {
-        return ((HashMap) ((HashMap) callbackResponse.getCaseCreationDetails().getCaseData().get("subscriptions")).get("appointeeSubscription")).get("tya").toString();
-    }
-
-    private static <K, V> Map.Entry<K, V> entry(K key, V value) {
-        return new AbstractMap.SimpleImmutableEntry<>(key, value);
+        return ((HashMap) ((HashMap) callbackResponse.getCaseCreationDetails().getCaseData().get("subscriptions"))
+            .get("appointeeSubscription")).get("tya").toString();
     }
 
     private HttpHeaders httpHeaders() {

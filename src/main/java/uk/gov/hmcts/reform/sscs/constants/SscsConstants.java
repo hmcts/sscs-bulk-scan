@@ -10,6 +10,7 @@ public final class SscsConstants {
     public static final String APPEAL_GROUNDS = "appeal_grounds";
     public static final String APPEAL_GROUNDS_2 = "appeal_grounds_2";
     public static final String PERSON1_VALUE = "person1";
+    public static final String PERSON_1_CHILD_MAINTENANCE_NUMBER = "person1_child_maintenance_number";
     public static final String PERSON2_VALUE = "person2";
     public static final String REPRESENTATIVE_VALUE = "representative";
     public static final String HEARING_TYPE_ORAL = "oral";
@@ -49,6 +50,7 @@ public final class SscsConstants {
     public static final String NINO = "_nino";
     public static final String DOB = "_dob";
     public static final String IS_EMPTY = "is empty";
+    public static final String IS_BLANK = "is blank";
     public static final String ARE_EMPTY = "are empty. At least one must be populated";
     public static final String IS_INVALID = "is invalid";
     public static final String HAS_INVALID_ADDRESS  = "has invalid characters at the beginning";
