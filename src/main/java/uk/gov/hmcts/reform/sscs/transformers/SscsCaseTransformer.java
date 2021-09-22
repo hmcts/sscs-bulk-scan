@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.convertBooleanToYesNoString;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
 import java.util.*;
@@ -16,7 +16,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.InputScannedDoc;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
@@ -30,6 +33,9 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
+
+
+
 
 @Component
 @Slf4j
@@ -210,6 +216,10 @@ public class SscsCaseTransformer implements CaseTransformer {
                 benefitType = getBenefitTypeForSscs1(caseId, pairs);
             } else if (FormType.SSCS1U.toString().equalsIgnoreCase(formType)) {
                 benefitType = getBenefitTypeForSscs1U(caseId, pairs);
+            } else if (FormType.SSCS2.toString().equalsIgnoreCase(formType)) {
+                benefitType = BenefitType.builder()
+                    .code(CHILD_SUPPORT.getShortName())
+                    .description(CHILD_SUPPORT.getDescription()).build();
             } else {
                 benefitType = getBenefitType(caseId, pairs);
             }
@@ -420,6 +430,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             case BEREAVEMENT_BENEFIT:
             case MATERNITY_ALLOWANCE:
             case BEREAVEMENT_SUPPORT_PAYMENT_SCHEME:
+            case CHILD_SUPPORT:
                 return true;
             default:
                 return false;
