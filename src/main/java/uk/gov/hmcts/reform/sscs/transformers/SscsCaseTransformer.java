@@ -35,8 +35,6 @@ import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 
-
-
 @Component
 @Slf4j
 public class SscsCaseTransformer implements CaseTransformer {
