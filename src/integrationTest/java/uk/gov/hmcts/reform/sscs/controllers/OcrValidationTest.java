@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -320,8 +319,11 @@ public class OcrValidationTest  {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("ERRORS"))
             .andExpect(jsonPath("$.warnings", hasSize(0)))
-            .andExpect(jsonPath("$.errors", hasSize(1)))
-            .andExpect(jsonPath("$.errors", contains("#: extraneous key [person1_child_maintenance_number] is not permitted")));
+            .andExpect(jsonPath("$.errors", hasSize(4)))
+            .andExpect(jsonPath("$.errors[0]").value("#: extraneous key [other_party_last_name] is not permitted"))
+            .andExpect(jsonPath("$.errors[1]").value("#: extraneous key [person1_child_maintenance_number] is not permitted"))
+            .andExpect(jsonPath("$.errors[2]").value("#: extraneous key [other_party_first_name] is not permitted"))
+            .andExpect(jsonPath("$.errors[3]").value("#: extraneous key [other_party_title] is not permitted"));
     }
 
     @Test
@@ -345,7 +347,7 @@ public class OcrValidationTest  {
     public void should_return_200_with_warning_when_ocr_form_with_sscs2_form_validation_request_data_is_invalid() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        String content = readResource("mappings/ocr-validation/sscs2-invalid-ocr-data-child-maintenance.json");
+        String content = readResource("mappings/ocr-validation/sscs2-invalid-ocr-data.json");
 
         mvc.perform(
             post("/forms/SSCS2/validate-ocr")
@@ -355,8 +357,9 @@ public class OcrValidationTest  {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("WARNINGS"))
             .andExpect(jsonPath("$.errors", hasSize(0)))
-            .andExpect(jsonPath("$.warnings", hasSize(1)))
-            .andExpect(jsonPath("$.warnings", contains("'person1_child_maintenance_number' is blank")));
+            .andExpect(jsonPath("$.warnings", hasSize(2)))
+            .andExpect(jsonPath("$.warnings[0]").value("'person1_child_maintenance_number' is blank"))
+            .andExpect(jsonPath("$.warnings[1]").value("other_party_first_name is empty"));
     }
 
     private String readResource(final String fileName) throws IOException {

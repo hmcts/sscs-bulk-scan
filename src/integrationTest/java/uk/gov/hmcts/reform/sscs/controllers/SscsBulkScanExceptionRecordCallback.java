@@ -438,9 +438,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
-        //FIXME: Check that other person name is blank
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithoutChildMaintenance()),
+            sscs2ExceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyName()),
             httpHeaders()
         );
 
@@ -449,7 +448,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().warnings)
-            .containsOnly("'person1_child_maintenance_number' is blank");
+            .contains("'person1_child_maintenance_number' is blank",
+                "other_party_last_name is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -709,10 +709,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("other_party_last_name", "Butler");
     }
 
-    private Map<String, Object> caseDataWithoutChildMaintenance() {
+    private Map<String, Object> caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyName() {
 
         Map<String, Object> ocrList = new HashMap<>();
         ocrList.put("person1_child_maintenance_number", "");
+        ocrList.put("other_party_title", "Mrs");
+        ocrList.put("other_party_first_name", "Zoe");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
         ocrList.put("office", "Balham DRT");
