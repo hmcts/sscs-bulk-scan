@@ -146,6 +146,11 @@ public class SscsCaseValidator implements CaseValidator {
         FormType formType = (FormType) caseData.get("formType");
         if (formType != null && formType.equals(FormType.SSCS2)) {
             checkChildMaintenance((String) caseData.get("childMaintenanceNumber"));
+
+            @SuppressWarnings("unchecked")
+            List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) caseData.get("otherParties"));
+
+            checkOtherParty(otherParties);
         }
 
         checkExcludedDates(appeal);
@@ -284,6 +289,35 @@ public class SscsCaseValidator implements CaseValidator {
 
             checkMobileNumber(repsContact, REPRESENTATIVE_VALUE);
         }
+    }
+
+    private void checkOtherParty(List<CcdValue<OtherParty>> otherParties) {
+        OtherParty otherParty;
+
+        //FIXME: Need a Change Request from Bulk Scan so we can find out if ignore warnings button has been pressed by user. If it has, then don't add these name warnings to list
+        //FIXME: SSCS-9564 No unit tests to cover this scenario due to above issue (there are integration tests) - not sure what correct business logic is until we get above in place. Once get confirmation then tests should be added
+        if (otherParties != null && !otherParties.isEmpty()) {
+            otherParty = otherParties.get(0).getValue();
+
+            Name name = otherParty.getName();
+
+            if (name != null && !isTitleValid(name.getTitle())) {
+                warnings.add(
+                    getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE, getWarningMessageName(OTHER_PARTY_VALUE, null) + TITLE,
+                        IS_INVALID));
+            }
+
+            if (!doesFirstNameExist(name)) {
+                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + FIRST_NAME, IS_EMPTY));
+            }
+
+            if (!doesLastNameExist(name)) {
+                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
+            }
+        }
+
     }
 
     private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData, boolean ignoreMrnValidation) {
@@ -649,6 +683,8 @@ public class SscsCaseValidator implements CaseValidator {
     private String getWarningMessageName(String personType, Appellant appellant) {
         if (personType.equals(REPRESENTATIVE_VALUE)) {
             return "REPRESENTATIVE";
+        } else if (personType.equals(OTHER_PARTY_VALUE)) {
+            return "OTHER_PARTY";
         } else if (personType.equals(PERSON2_VALUE) || appellant == null
             || isAppointeeDetailsEmpty(appellant.getAppointee())) {
             return "APPELLANT";

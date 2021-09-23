@@ -4,6 +4,17 @@
     "callback_response_status": null,
     "callback_response_status_code": null,
     "case_data": {
+      "otherParties": [
+        {
+          "value": {
+            "name": {
+              "firstName": "Zoe",
+              "lastName": "Butler",
+              "title": "Mrs"
+            }
+          }
+        }
+      ],
       "appeal": {
         "appealReasons": {},
         "appellant": {

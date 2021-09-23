@@ -1978,7 +1978,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     @Parameters({"Test1234", ""})
-    public void givenBenefitTypeIsOtherBenefitWithChildMaintenance_thenCaseDataValueIsSet(String childMaintenance) {
+    public void givenSscs2FormWithChildMaintenanceNumber_thenCaseDataValueIsSet(String childMaintenance) {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put(PERSON_1_CHILD_MAINTENANCE_NUMBER, childMaintenance);
         pairs.put("person1_title", APPELLANT_TITLE);
@@ -1998,7 +1998,34 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenAppealWithoutChildMaintenance_thenCaseDataValueNotSet() {
+    public void givenSscs2FormWithOtherPartyNameSet_thenCaseDataValueIsSet() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("other_party_title", OTHER_PARTY_TITLE);
+        pairs.put("other_party_first_name", OTHER_PARTY_FIRST_NAME);
+        pairs.put("other_party_last_name", OTHER_PARTY_LAST_NAME);
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        CaseResponse result = transformer.transformExceptionRecord(sscs2UExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+
+        @SuppressWarnings("unchecked")
+        Name otherPartyName = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties")).get(0).getValue().getName();
+        assertEquals(OTHER_PARTY_TITLE, otherPartyName.getTitle());
+        assertEquals(OTHER_PARTY_FIRST_NAME, otherPartyName.getFirstName());
+        assertEquals(OTHER_PARTY_LAST_NAME, otherPartyName.getLastName());
+    }
+
+    @Test
+    public void givenSscs2FormWithoutChildMaintenanceNumberOrOtherPartyName_thenCaseDataValueIsNotSet() {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -2014,6 +2041,9 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
         assertNull(result.getTransformedCase().get("childMaintenanceNumber"));
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
+        assertNull(otherParties);
     }
 
     private Appeal buildTestAppealData() {

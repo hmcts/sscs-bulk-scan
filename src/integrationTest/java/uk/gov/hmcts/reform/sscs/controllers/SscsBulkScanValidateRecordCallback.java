@@ -132,7 +132,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_warning_when_child_maintenance_number_is_not_entered() throws IOException {
+    public void should_return_warning_when_child_maintenance_number_is_not_entered_and_other_party_partially_entered() throws IOException {
         // Given
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -148,7 +148,9 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors())
-            .containsOnly("Child maintenance number is blank");
+            .containsOnly(
+                "Child maintenance number is blank",
+                "Other party first name is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }

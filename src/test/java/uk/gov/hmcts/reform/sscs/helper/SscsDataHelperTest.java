@@ -114,14 +114,14 @@ public class SscsDataHelperTest {
     @Test
     public void givenASscs2CaseResponseWithChildMaintenance_thenReturnSscsDataMapSet() {
         Map<String, Object> transformedCase = new HashMap<>();
-        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS2, "Test1234");
+        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS2, "Test1234", null);
         assertEquals("Test1234", transformedCase.get("childMaintenanceNumber"));
     }
 
     @Test
     public void givenASscs1CaseResponseWithChildMaintenance_thenReturnSscsDataMapIgnoresValue() {
         Map<String, Object> transformedCase = new HashMap<>();
-        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS1U, "Test1234");
+        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS1U, "Test1234", null);
         assertNull(transformedCase.get("childMaintenanceNumber"));
     }
 }

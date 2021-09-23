@@ -12,6 +12,7 @@ public final class SscsConstants {
     public static final String PERSON1_VALUE = "person1";
     public static final String PERSON_1_CHILD_MAINTENANCE_NUMBER = "person1_child_maintenance_number";
     public static final String PERSON2_VALUE = "person2";
+    public static final String OTHER_PARTY_VALUE = "other_party";
     public static final String REPRESENTATIVE_VALUE = "representative";
     public static final String HEARING_TYPE_ORAL = "oral";
     public static final String HEARING_TYPE_PAPER = "paper";

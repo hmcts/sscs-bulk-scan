@@ -1,6 +1,17 @@
 {
   "case_creation_details": {
     "case_data": {
+      "otherParties": [
+        {
+          "value": {
+            "name": {
+              "firstName": "Zoe",
+              "lastName": "Butler",
+              "title": "Mrs"
+            }
+          }
+        }
+      ],
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Sheffield DRT",
