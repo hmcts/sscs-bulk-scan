@@ -47,6 +47,9 @@ public class TestDataConstants {
     public static final String REPRESENTATIVE_PERSON_TITLE = "Mr";
     public static final String REPRESENTATIVE_PERSON_FIRST_NAME = "David";
     public static final String REPRESENTATIVE_PERSON_LAST_NAME = "North";
+    public static final String OTHER_PARTY_TITLE = "Mrs";
+    public static final String OTHER_PARTY_FIRST_NAME = "Wendy";
+    public static final String OTHER_PARTY_LAST_NAME = "Fisher";
     public static final String APPEAL_LATE_REASON = "On holiday";
     public static final String APPEAL_REASON = "This is the reason of the appeal";
     public static final String IS_HEARING_TYPE_ORAL = "true";

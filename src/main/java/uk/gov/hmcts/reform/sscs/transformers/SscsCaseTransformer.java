@@ -145,8 +145,11 @@ public class SscsCaseTransformer implements CaseTransformer {
         Map<String, Object> transformed = new HashMap<>();
         String childMaintenanceNumber = scannedData.getOcrCaseData() != null
             ? getField(scannedData.getOcrCaseData(), PERSON_1_CHILD_MAINTENANCE_NUMBER) : null;
+
+        List<CcdValue<OtherParty>> otherParties = buildOtherParty(scannedData.getOcrCaseData());
+
         sscsDataHelper.addSscsDataToMap(
-            transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType), childMaintenanceNumber);
+            transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType), childMaintenanceNumber, otherParties);
 
         transformed.put("bulkScanCaseReference", caseId);
         transformed.put("caseCreated", scannedData.getOpeningDate());
@@ -415,6 +418,21 @@ public class SscsCaseTransformer implements CaseTransformer {
         } else {
             return Representative.builder().hasRepresentative(NO_LITERAL).build();
         }
+    }
+
+    private List<CcdValue<OtherParty>> buildOtherParty(Map<String, Object> pairs) {
+        if (pairs != null && pairs.size() != 0) {
+
+            boolean doesOtherPartyExist = hasPerson(pairs, OTHER_PARTY_VALUE);
+
+            if (doesOtherPartyExist) {
+                return Collections.singletonList(CcdValue.<OtherParty>builder().value(
+                    OtherParty.builder()
+                        .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
+                    .build());
+            }
+        }
+        return null;
     }
 
     private MrnDetails buildMrnDetails(Map<String, Object> pairs, BenefitType benefitType) {

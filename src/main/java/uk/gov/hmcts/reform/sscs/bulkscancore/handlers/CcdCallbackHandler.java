@@ -141,7 +141,8 @@ public class CcdCallbackHandler {
             callback.getCaseDetails().getCaseData().getSscsDocument(),
             callback.getCaseDetails().getCaseData().getSubscriptions(),
             formType,
-            callback.getCaseDetails().getCaseData().getChildMaintenanceNumber()
+            callback.getCaseDetails().getCaseData().getChildMaintenanceNumber(),
+            callback.getCaseDetails().getCaseData().getOtherParties()
         );
 
         boolean ignoreMrnValidation = false;
