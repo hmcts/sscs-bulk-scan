@@ -34,6 +34,8 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 GradleBuilder builder = new GradleBuilder(this, product)
 
+def branchesToSync = ['demo', 'ithc', 'perftest']
+
 withPipeline("java", product, component) {
 
     // Vars needed for AKS testing
@@ -64,5 +66,6 @@ withPipeline("java", product, component) {
   loadVaultSecrets(secrets)
   disableLegacyDeployment()
   enableAksStagingDeployment()
+  syncBranchesWithMaster(branchesToSync)
 }
 
