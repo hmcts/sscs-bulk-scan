@@ -50,8 +50,8 @@
           }
         },
         "benefitType": {
-          "code": "ESA",
-          "description": "Employment and Support Allowance"
+          "code": "childSupport",
+          "description": "Child Support"
         },
         "hearingOptions": {
           "agreeLessNotice": "Yes",
@@ -82,7 +82,7 @@
         "hearingSubtype": {},
         "hearingType": "paper",
         "mrnDetails": {
-          "dwpIssuingOffice": "Sheffield DRT",
+          "dwpIssuingOffice": "Child Support",
           "mrnDate": "MRN_DATE",
           "mrnLateReason": "see scanned SSCS2 form",
           "mrnMissingReason": null
@@ -111,12 +111,12 @@
         },
         "signer": "Sarah Smith"
       },
-      "benefitCode": "051",
+      "benefitCode": "022",
       "bulkScanCaseReference": "id",
-      "caseCode": "051DD",
+      "caseCode": "022DD",
       "caseCreated": "2019-08-02",
       "createdInGapsFrom": "readyToList",
-      "dwpRegionalCentre": "Sheffield DRT",
+      "dwpRegionalCentre": "Child Support",
       "evidencePresent": "Yes",
       "formType": "sscs2",
       "childMaintenanceNumber": "Test1234",
