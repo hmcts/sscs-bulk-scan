@@ -138,19 +138,16 @@ public class OcrValidationControllerTest {
         given(handler.handleValidation(any()))
             .willReturn(CaseResponse.builder().warnings(newArrayList("warning1")).errors(emptyList()).status(WARNINGS).build());
 
-
-        for (String formType : new String[]{"SSCS1", "SSCS2"}) {
-            mockMvc
-                .perform(
-                    post("/forms/" + formType + "/validate-ocr")
-                        .contentType(APPLICATION_JSON_VALUE)
-                        .header("ServiceAuthorization", "testServiceAuthHeader")
-                        .content(requestBody)
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_VALUE))
-                .andExpect(content().json(readResource("validation/valid-ocr-response-warnings.json")));
-        }
+        mockMvc
+            .perform(
+                post("/forms/SSCS1/validate-ocr")
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .header("ServiceAuthorization", "testServiceAuthHeader")
+                    .content(requestBody)
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+            .andExpect(content().json(readResource("validation/valid-ocr-response-warnings.json")));
     }
 
     @Test
@@ -162,18 +159,16 @@ public class OcrValidationControllerTest {
         given(handler.handleValidation(any()))
             .willReturn(CaseResponse.builder().warnings(newArrayList(emptyList())).errors(newArrayList("error1")).status(ERRORS).build());
 
-        for (String formType : new String[]{"SSCS1", "SSCS2"}) {
-            mockMvc
-                .perform(
-                    post("/forms/" + formType + "/validate-ocr")
-                        .contentType(APPLICATION_JSON_VALUE)
-                        .header("ServiceAuthorization", "testServiceAuthHeader")
-                        .content(requestBody)
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_VALUE))
-                .andExpect(content().json(readResource("validation/valid-ocr-response-errors.json")));
-        }
+        mockMvc
+            .perform(
+                post("/forms/SSCS1/validate-ocr")
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .header("ServiceAuthorization", "testServiceAuthHeader")
+                    .content(requestBody)
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+            .andExpect(content().json(readResource("validation/valid-ocr-response-errors.json")));
     }
 
     @Test

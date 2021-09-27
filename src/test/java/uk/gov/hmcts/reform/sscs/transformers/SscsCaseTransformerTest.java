@@ -88,8 +88,6 @@ public class SscsCaseTransformerTest {
 
     ExceptionRecord sscs1UExceptionRecord;
 
-    ExceptionRecord sscs2ExceptionRecord;
-
     ExceptionRecord nullFormExceptionRecord;
 
     private ExceptionRecord sscs2UExceptionRecord;
@@ -120,9 +118,6 @@ public class SscsCaseTransformerTest {
 
         sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-
-        sscs2ExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS2.getId()).build();
-        given(sscsJsonExtractor.extractJson(sscs2ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         given(keyValuePairValidator.validate(ocrList, SSCS1U)).willReturn(CaseResponse.builder().build());
         nullFormExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
@@ -219,18 +214,6 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = Benefit.ATTENDANCE_ALLOWANCE;
-        assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
-    }
-
-    @Test
-    public void givenSscs2_thenBenefitTypeIsChildSupport() {
-        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
-        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        Benefit expectedBenefit = Benefit.CHILD_SUPPORT;
         assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
     }
 
