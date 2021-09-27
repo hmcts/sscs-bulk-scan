@@ -404,8 +404,7 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    @Parameters({"sscs1", "sscs2"})
-    public void givenAnAppellantIsEmpty_thenAddAWarning(String formType) {
+    public void givenAnAppellantIsEmpty_thenAddAWarning() {
         Map<String, Object> ocrCaseDataEmptyOffice = new HashMap<>();
         ocrCaseDataEmptyOffice.put("person1_address_line4", "county");
         ocrCaseDataEmptyOffice.put("person2_address_line4", "county");
@@ -414,7 +413,7 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = new HashMap<>();
         pairs.put("appeal", Appeal.builder().hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
-        pairs.put("formType", "sscs1".equals(formType) ? FormType.SSCS1 : FormType.SSCS2);
+        pairs.put("formType", FormType.SSCS1);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 
