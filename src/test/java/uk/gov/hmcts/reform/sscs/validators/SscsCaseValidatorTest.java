@@ -404,7 +404,8 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppellantIsEmpty_thenAddAWarning() {
+    @Parameters({"sscs1", "sscs2"})
+    public void givenAnAppellantIsEmpty_thenAddAWarning(String formType) {
         Map<String, Object> ocrCaseDataEmptyOffice = new HashMap<>();
         ocrCaseDataEmptyOffice.put("person1_address_line4", "county");
         ocrCaseDataEmptyOffice.put("person2_address_line4", "county");
@@ -413,7 +414,7 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = new HashMap<>();
         pairs.put("appeal", Appeal.builder().hearingType(HEARING_TYPE_ORAL).build());
         pairs.put("bulkScanCaseReference", 123);
-        pairs.put("formType", FormType.SSCS1);
+        pairs.put("formType", "sscs1".equals(formType) ? FormType.SSCS1 : FormType.SSCS2);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 
@@ -1696,6 +1697,11 @@ public class SscsCaseValidatorTest {
             response.getWarnings().get(0));
     }
 
+    @Test
+    @Parameters({"sscs1", "sscs2"})
+    public void givenAnAppealWithAnEmptyHearingSubTypeForSscsCase_thenNoWarning(String formType) {
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        pairs.put("formType", "sscs1".equals(formType) ? FormType.SSCS1 : FormType.SSCS2);
     public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypIsSscs1eForSscsCase_thenNoWarning() {
         Map<String, Object> pairs =
             buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
@@ -1704,6 +1710,7 @@ public class SscsCaseValidatorTest {
         assertEquals(0, response.getWarnings().size());
     }
 
+    @Test
     public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypIsNulleForSscsCase_thenNoWarning() {
         Map<String, Object> pairs =
             buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
