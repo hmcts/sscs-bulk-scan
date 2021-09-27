@@ -396,7 +396,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public void should_handle_sscs2_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
         throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -435,7 +435,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     @Test
     public void should_return_warning_list_populated_when_sscs2_child_maintenance_validation_fails() {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
-        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(

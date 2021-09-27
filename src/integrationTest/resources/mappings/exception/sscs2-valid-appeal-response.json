@@ -14,7 +14,7 @@
       ],
       "appeal": {
         "mrnDetails": {
-          "dwpIssuingOffice": "Sheffield DRT",
+          "dwpIssuingOffice": "Child Support",
           "mrnDate": "MRN_DATE",
           "mrnLateReason": null,
           "mrnMissingReason": null
@@ -46,8 +46,8 @@
           "isAddressSameAsAppointee": null
         },
         "benefitType": {
-          "code": "ESA",
-          "description": "Employment and Support Allowance"
+          "code": "childSupport",
+          "description": "Child Support"
         },
         "hearingSubtype": {
           "wantsHearingTypeTelephone": "Yes",
@@ -126,14 +126,14 @@
         "faxNumber": "0126 434 7983",
         "email": "SSCS_Bradford@justice.gov.uk"
       },
-      "processingVenue": "Basildon Combined Court",
+      "processingVenue": "Chelmsford",
       "evidencePresent": "Yes",
       "bulkScanCaseReference": "1234567890",
-      "benefitCode": "051",
-      "caseCode": "051DD",
+      "benefitCode": "022",
+      "caseCode": "022DD",
       "caseCreated": "2021-01-11",
       "createdInGapsFrom": "readyToList",
-      "dwpRegionalCentre": "Sheffield DRT",
+      "dwpRegionalCentre": "Child Support",
       "issueCode": "DD",
       "linkedCasesBoolean": "No",
       "formType": "sscs2",
