@@ -1703,7 +1703,6 @@ public class SscsCaseValidatorTest {
         assertEquals(0, response.getWarnings().size());
     }
 
-    @Test
     public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypIsNulleForSscsCase_thenNoWarning() {
         Map<String, Object> pairs =
             buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
