@@ -404,7 +404,7 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppellantIsEmpty_thenAddAWarning(String formType) {
+    public void givenAnAppellantIsEmpty_thenAddAWarning() {
         Map<String, Object> ocrCaseDataEmptyOffice = new HashMap<>();
         ocrCaseDataEmptyOffice.put("person1_address_line4", "county");
         ocrCaseDataEmptyOffice.put("person2_address_line4", "county");
