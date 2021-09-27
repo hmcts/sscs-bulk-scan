@@ -1697,14 +1697,8 @@ public class SscsCaseValidatorTest {
             response.getWarnings().get(0));
     }
 
-    @Test
-    @Parameters({"sscs1", "sscs2"})
-    public void givenAnAppealWithAnEmptyHearingSubTypeForSscsCase_thenNoWarning(String formType) {
-        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
-        pairs.put("formType", "sscs1".equals(formType) ? FormType.SSCS1 : FormType.SSCS2);
     public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypIsSscs1eForSscsCase_thenNoWarning() {
-        Map<String, Object> pairs =
-            buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
         pairs.put("formType", FormType.SSCS1);
         CaseResponse response = validator.validateValidationRecord(pairs, true);
         assertEquals(0, response.getWarnings().size());
