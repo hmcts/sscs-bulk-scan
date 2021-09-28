@@ -425,11 +425,11 @@ public class SscsCaseTransformer implements CaseTransformer {
             if (!checkIfEmpty(valueIndicatorsWithTrueValue, otherPartyDetails) && validateValues(valueIndicatorsWithTrueValue, otherPartyDetails, errors)) {
                 if (!valueIndicatorsWithTrueValue.isEmpty()) {
                     String selectedValue = valueIndicatorsWithTrueValue.get(0);
-                    AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(selectedValue).get();
+                    AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(selectedValue).orElse(null);
 
                     if (OTHER.equals(appellantRole)) {
                         return Role.builder().name(OTHER.getName()).description(otherPartyDetails).build();
-                    } else {
+                    } else if (appellantRole != null) {
                         return Role.builder().name(appellantRole.getName()).build();
                     }
                 } else if (StringUtils.isNotEmpty(otherPartyDetails)) {
@@ -444,11 +444,9 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (validValues.isEmpty() && StringUtils.isEmpty(otherPartyDetails)) {
             return true;
         } else if (!validValues.isEmpty()) {
-            AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).get();
+            AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).orElse(null);
 
-            if (StringUtils.isEmpty(otherPartyDetails) && OTHER.equals(appellantRole)) {
-                return true;
-            }
+            return StringUtils.isEmpty(otherPartyDetails) && OTHER.equals(appellantRole);
         }
 
         return false;
@@ -464,7 +462,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             return false;
         }
 
-        AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).get();
+        AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).orElse(null);
 
         if (StringUtils.isNotEmpty(otherPartyDetails) && !OTHER.equals(appellantRole)) {
             errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
