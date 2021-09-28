@@ -39,6 +39,12 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
+    public static Boolean hasAddress(Map<String, Object> pairs, String person) {
+
+        return findBooleanExists(getField(pairs,person + "_address_line1"), getField(pairs,person + "_address_line2"),
+            getField(pairs,person + "_address_line3"), getField(pairs,person + "_address_line4"), getField(pairs,person + "_postcode"));
+    }
+
     public static String getField(Map<String, Object> pairs, String field) {
         return pairs.containsKey(field) && pairs.get(field) != null ? StringUtils.trim(pairs.get(field).toString()) : null;
     }

@@ -11,6 +11,12 @@
               "firstName": "Zoe",
               "lastName": "Butler",
               "title": "Mrs"
+            },
+            "address": {
+              "line1": "299 Harrow",
+              "town": "The Avenue",
+              "county": "Hatch End",
+              "postcode": "HA5 4QT"
             }
           }
         }

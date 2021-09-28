@@ -7,6 +7,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.CHILD_MAINTENANCE_NUMBER;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE1;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE2;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE3;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_POSTCODE;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
@@ -93,7 +98,7 @@ public class SscsCaseValidatorTest {
 
         exceptionRecordSscs2 =
             ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).build();
-        ocrCaseData.put("person1_child_maintenance_number", "Test1234");
+        ocrCaseData.put("person1_child_maintenance_number", CHILD_MAINTENANCE_NUMBER);
         given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
     }
 
@@ -1726,19 +1731,53 @@ public class SscsCaseValidatorTest {
     public void givenSscs2FormWithChildMaintenance_thenAppellantShouldReturnValue() {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecord, buildCaseWithChildMaintenanceAndOtherParty(buildOtherParties()), false);
+            exceptionRecord, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, buildOtherPartyName()), false);
 
         assertEquals(0, response.getWarnings().size());
-        assertEquals("Test1234", response.getTransformedCase().get("childMaintenanceNumber"));
+        assertEquals(CHILD_MAINTENANCE_NUMBER, response.getTransformedCase().get("childMaintenanceNumber"));
     }
 
     @Test
-    public void givenSscs2FormWithOtherPartyLastNameMissingAndIgnoreWarningsFalse_thenOtherPartyShouldReturnWarning() {
+    @Parameters({", test2, test3, TS1 1ST, other_party_address_line1 is empty, 1",
+        "test1, , , TS1 1ST, other_party_address_line2 is empty, 1",
+        "test1, test2, , , other_party_postcode is empty, 1",
+        "test1, , , , other_party_address_line2 is empty, 2",
+        ", , , , other_party_address_line1 is empty, 3",
+    })
+    public void givenSscs2FormWithoutOtherPartyAddressEntry_thenAddAWarning(String line1, String line2, String line3, String postcode, String warning, int size) {
 
-        List<CcdValue<Object>> otherParties = buildOtherParties();
-        ((OtherParty) otherParties.get(0).getValue()).getName().setLastName(null);
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+            exceptionRecord,
+            buildCaseWithChildMaintenanceWithOtherPartyNameAddress(CHILD_MAINTENANCE_NUMBER,line1, line2,line3, postcode, buildOtherPartyName()),
+            false);
+
+        assertFalse(response.getWarnings().isEmpty());
+        assertEquals(size, response.getWarnings().size());
+        assertEquals(warning, response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyAddressEntry_thenValueIsSet() {
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, buildOtherPartyName()),
+            false);
+
+        assertTrue(response.getWarnings().isEmpty());
+        assertTrue(response.getErrors().isEmpty());
+    }
+
+
+    @Test
+    public void givenSscs2FormWithOtherPartyLastNameMissingAndIgnoreWarningsFalse_thenOtherPartyShouldReturnWarning() {
+        Name otherPartyName = buildOtherPartyName();
+        otherPartyName.setLastName(null);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, otherPartyName),
+            false);
 
         assertEquals(1, response.getWarnings().size());
         assertEquals("other_party_last_name is empty", response.getWarnings().get(0));
@@ -1746,11 +1785,12 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenSscs2FormWithOtherPartyFirstNameMissingAndIgnoreWarningsFalse_thenOtherPartyShouldReturnWarning() {
-
-        List<CcdValue<Object>> otherParties = buildOtherParties();
-        ((OtherParty) otherParties.get(0).getValue()).getName().setFirstName(null);
+        Name otherPartyName = buildOtherPartyName();
+        otherPartyName.setFirstName(null);
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, otherPartyName),
+            false);
 
         assertEquals(1, response.getWarnings().size());
         assertEquals("other_party_first_name is empty", response.getWarnings().get(0));
@@ -1758,11 +1798,12 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenSscs2FormWithOtherPartyTitleInvalidAndIgnoreWarningsFalse_thenOtherPartyShouldReturnWarning() {
-
-        List<CcdValue<Object>> otherParties = buildOtherParties();
-        ((OtherParty) otherParties.get(0).getValue()).getName().setTitle("Random");
+        Name otherPartyName = buildOtherPartyName();
+        otherPartyName.setTitle("Random");
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, otherPartyName),
+            false);
 
         assertEquals(1, response.getWarnings().size());
         assertEquals("other_party_title is invalid", response.getWarnings().get(0));
@@ -1770,48 +1811,51 @@ public class SscsCaseValidatorTest {
 
     @Test
     public void givenSscs2FormWithOtherPartyLastNameMissingAndIgnoreWarningsTrue_thenNoWarningsShown() {
-
-        List<CcdValue<Object>> otherParties = buildOtherParties();
-        ((OtherParty) otherParties.get(0).getValue()).getName().setLastName(null);
+        Name otherPartyName = buildOtherPartyName();
+        otherPartyName.setLastName(null);
 
         exceptionRecordSscs2 =
             ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).ignoreWarnings(true).build();
         given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, otherPartyName),
+            false);
 
         assertEquals(0, response.getWarnings().size());
     }
 
     @Test
     public void givenSscs2FormWithOtherPartyFirstNameMissingAndIgnoreWarningsTrue_thenNoWarningsShown() {
-
-        List<CcdValue<Object>> otherParties = buildOtherParties();
-        ((OtherParty) otherParties.get(0).getValue()).getName().setFirstName(null);
+        Name otherPartyName = buildOtherPartyName();
+        otherPartyName.setFirstName(null);
 
         exceptionRecordSscs2 =
             ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).ignoreWarnings(true).build();
         given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, otherPartyName),
+            false);
 
         assertEquals(0, response.getWarnings().size());
     }
 
     @Test
     public void givenSscs2FormWithOtherPartyTitleInvalidAndIgnoreWarningsTrue_thenNoWarningsShown() {
-
-        List<CcdValue<Object>> otherParties = buildOtherParties();
-        ((OtherParty) otherParties.get(0).getValue()).getName().setTitle("Random");
+        Name otherPartyName = buildOtherPartyName();
+        otherPartyName.setTitle("Random");
 
         exceptionRecordSscs2 =
             ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).ignoreWarnings(true).build();
         given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, otherPartyName),
+            false);
 
         assertEquals(0, response.getWarnings().size());
     }
@@ -1954,7 +1998,7 @@ public class SscsCaseValidatorTest {
             .role(Role.builder().name("Paying parent").build()).build();
     }
 
-    private Map<String, Object> buildCaseWithChildMaintenanceAndOtherParty(List<CcdValue<Object>> otherParties) {
+    private Map<String, Object> buildCaseWithChildMaintenanceWithOtherPartyNameAddress(String childMaintenanceNumber, String line1, String line2, String line3, String postcode, Name otherPartyName) {
         Map<String, Object> datamap = buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(
             defaultMrnDetails,
             UC.getShortName(),
@@ -1965,15 +2009,23 @@ public class SscsCaseValidatorTest {
             HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
             FormType.SSCS2);
-        datamap.put("childMaintenanceNumber", "Test1234");
-        datamap.put("otherParties", otherParties);
+        datamap.put("childMaintenanceNumber", childMaintenanceNumber);
+        datamap.put("otherParties", Collections.singletonList(CcdValue.<OtherParty>builder().value(
+            OtherParty.builder()
+                .name(otherPartyName)
+                .address(Address.builder()
+                    .line1(line1)
+                    .town(line2)
+                    .county((line3 != null && !line3.equals("")) ? "." : line3)
+                    .postcode(postcode)
+                    .build())
+                .build())
+            .build()));
         return datamap;
     }
 
-    private List<CcdValue<Object>> buildOtherParties() {
-        return Collections.singletonList(CcdValue.builder().value(OtherParty.builder()
-            .name(Name.builder().title("Mr").firstName("Jerry").lastName("Fisher").build())
-            .address(Address.builder().line1("123 My road").line2("Bigworth").town("Brentwood").county("Essex").postcode("CM4 1ND").build()).build()).build());
+    private Name buildOtherPartyName() {
+        return Name.builder().title("Mr").firstName("Jerry").lastName("Fisher").build();
     }
 
     private Appointee buildAppointeeWithMobileNumber(String mobileNumber) {

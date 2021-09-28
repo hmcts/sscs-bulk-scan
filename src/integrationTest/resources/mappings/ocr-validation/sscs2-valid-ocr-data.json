@@ -61,6 +61,22 @@
       "value": "Biggs"
     },
     {
+      "name": "is_other_party_address_known",
+      "value": "true"
+    },
+    {
+      "name": "other_party_address_line1",
+      "value": "299 Harrow"
+    },
+    {
+      "name": "other_party_address_line2",
+      "value": "The Avenue"
+    },
+    {
+      "name": "other_party_postcode",
+      "value": "HA5 4QT"
+    },
+    {
       "name": "office",
       "value": "3"
     },
