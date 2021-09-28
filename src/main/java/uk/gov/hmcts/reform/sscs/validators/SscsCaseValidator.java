@@ -295,7 +295,7 @@ public class SscsCaseValidator implements CaseValidator {
         OtherParty otherParty;
 
         //FIXME: Need a Change Request from Bulk Scan so we can find out if ignore warnings button has been pressed by user. If it has, then don't add these name warnings to list
-        //FIXME: SSCS-9564 No unit tests to cover this scenario due to above issue (there are integration tests) - not sure what correct business logic is until we get above in place. Once get confirmation then tests should be added
+        //FIXME: SSCS-9564, SSCS-9578 No unit tests to cover this scenario due to above issue (there are integration tests) - not sure what correct business logic is until we get above in place. Once get confirmation then tests should be added
         if (otherParties != null && !otherParties.isEmpty()) {
             otherParty = otherParties.get(0).getValue();
 
@@ -316,6 +316,23 @@ public class SscsCaseValidator implements CaseValidator {
                 warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
                     getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
             }
+
+            Address address = otherParty.getAddress();
+            if (!doesAddressLine1Exist(address)) {
+                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE1, IS_EMPTY));
+            }
+
+            if (!doesAddressTownExist(address)) {
+                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE2, IS_EMPTY));
+            }
+
+            if (!doesAddressPostcodeExist(address)) {
+                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_POSTCODE, IS_EMPTY));
+            }
+
         }
 
     }
@@ -467,6 +484,13 @@ public class SscsCaseValidator implements CaseValidator {
     private Boolean doesAddressLine1Exist(Address address) {
         if (address != null) {
             return StringUtils.isNotEmpty(address.getLine1());
+        }
+        return false;
+    }
+
+    private Boolean doesAddressPostcodeExist(Address address) {
+        if (address != null) {
+            return StringUtils.isNotEmpty(address.getPostcode());
         }
         return false;
     }

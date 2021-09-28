@@ -14,6 +14,7 @@ import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.generateDateForCcd;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getBoolean;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getDateForCcd;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.hasAddress;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.hasPerson;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.isExactlyOneBooleanTrue;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.isExactlyZeroBooleanTrue;
@@ -149,7 +150,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<CcdValue<OtherParty>> otherParties = buildOtherParty(scannedData.getOcrCaseData());
 
         sscsDataHelper.addSscsDataToMap(
-            transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType), childMaintenanceNumber, otherParties);
+            transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType), childMaintenanceNumber,
+            otherParties);
 
         transformed.put("bulkScanCaseReference", caseId);
         transformed.put("caseCreated", scannedData.getOpeningDate());
@@ -426,6 +428,15 @@ public class SscsCaseTransformer implements CaseTransformer {
             boolean doesOtherPartyExist = hasPerson(pairs, OTHER_PARTY_VALUE);
 
             if (doesOtherPartyExist) {
+                if (isOtherPartyAddressValid(pairs)) {
+                    return Collections.singletonList(CcdValue.<OtherParty>builder().value(
+                        OtherParty.builder()
+                            .name(buildPersonName(pairs, OTHER_PARTY_VALUE))
+                            .address(buildPersonAddress(pairs, OTHER_PARTY_VALUE))
+                            .build())
+                        .build());
+                }
+
                 return Collections.singletonList(CcdValue.<OtherParty>builder().value(
                     OtherParty.builder()
                         .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
@@ -433,6 +444,15 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         }
         return null;
+    }
+
+    private boolean isOtherPartyAddressValid(Map<String, Object> pairs) {
+        // yes+dont check address, no
+        if (extractBooleanValue(pairs, errors, IS_OTHER_PARTY_ADDRESS_KNOWN)
+            || (hasAddress(pairs, OTHER_PARTY_VALUE))) {
+            return true;
+        }
+        return false;
     }
 
     private MrnDetails buildMrnDetails(Map<String, Object> pairs, BenefitType benefitType) {

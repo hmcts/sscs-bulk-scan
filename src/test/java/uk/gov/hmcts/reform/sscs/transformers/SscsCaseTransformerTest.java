@@ -1977,7 +1977,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"Test1234", ""})
+    @Parameters({CHILD_MAINTENANCE_NUMBER, ""})
     public void givenSscs2FormWithChildMaintenanceNumber_thenCaseDataValueIsSet(String childMaintenance) {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put(PERSON_1_CHILD_MAINTENANCE_NUMBER, childMaintenance);
@@ -1998,11 +1998,16 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenSscs2FormWithOtherPartyNameSet_thenCaseDataValueIsSet() {
+    public void givenSscs2FormWithOtherPartyNameAndAddressSet_thenCaseDataValueIsSet() {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put("other_party_title", OTHER_PARTY_TITLE);
         pairs.put("other_party_first_name", OTHER_PARTY_FIRST_NAME);
         pairs.put("other_party_last_name", OTHER_PARTY_LAST_NAME);
+        pairs.put("is_other_party_address_known", "true");
+        pairs.put("other_party_address_line1", OTHER_PARTY_ADDRESS_LINE1);
+        pairs.put("other_party_address_line2", OTHER_PARTY_ADDRESS_LINE2);
+        pairs.put("other_party_address_line3", OTHER_PARTY_ADDRESS_LINE3);
+        pairs.put("other_party_postcode", OTHER_PARTY_POSTCODE);
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -2018,14 +2023,20 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getWarnings().isEmpty());
 
         @SuppressWarnings("unchecked")
-        Name otherPartyName = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties")).get(0).getValue().getName();
+        OtherParty otherParty = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties")).get(0).getValue();
+        Name otherPartyName = otherParty.getName();
         assertEquals(OTHER_PARTY_TITLE, otherPartyName.getTitle());
         assertEquals(OTHER_PARTY_FIRST_NAME, otherPartyName.getFirstName());
         assertEquals(OTHER_PARTY_LAST_NAME, otherPartyName.getLastName());
+        Address otherPartyAddress = otherParty.getAddress();
+        assertEquals(OTHER_PARTY_ADDRESS_LINE1, otherPartyAddress.getLine1());
+        assertEquals(OTHER_PARTY_ADDRESS_LINE2, otherPartyAddress.getTown());
+        assertEquals(OTHER_PARTY_ADDRESS_LINE3, otherPartyAddress.getCounty());
+        assertEquals(OTHER_PARTY_POSTCODE, otherPartyAddress.getPostcode());
     }
 
     @Test
-    public void givenSscs2FormWithoutChildMaintenanceNumberOrOtherPartyName_thenCaseDataValueIsNotSet() {
+    public void givenSscs2FormWithoutChildMaintenanceNumberOrOtherPartyNameAndAddress_thenCaseDataValueIsNotSet() {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -2044,6 +2055,59 @@ public class SscsCaseTransformerTest {
         @SuppressWarnings("unchecked")
         List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
         assertNull(otherParties);
+    }
+
+    @Test
+    public void givenSscs2FormWithIncorrectOtherPartyAddressSelection_thenErrorIsThrown() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("other_party_title", OTHER_PARTY_TITLE);
+        pairs.put("other_party_first_name", OTHER_PARTY_FIRST_NAME);
+        pairs.put("other_party_last_name", OTHER_PARTY_LAST_NAME);
+        pairs.put("is_other_party_address_known", "Invalid");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        CaseResponse result = transformer.transformExceptionRecord(sscs2UExceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_other_party_address_known has an invalid value. Should be Yes/No or True/False", result.getErrors().get(0));
+        assertTrue(result.getWarnings().isEmpty());
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
+        assertNull(otherParties.get(0).getValue().getAddress());
+    }
+
+    @Test
+    public void givenSscs2FormWithPartyAddressNotSelectedButAddressEntered_thenAddressIsSet() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("other_party_title", OTHER_PARTY_TITLE);
+        pairs.put("other_party_first_name", OTHER_PARTY_FIRST_NAME);
+        pairs.put("other_party_last_name", OTHER_PARTY_LAST_NAME);
+        pairs.put("is_other_party_address_known", null);
+        pairs.put("other_party_address_line1", OTHER_PARTY_ADDRESS_LINE1);
+        pairs.put("other_party_address_line2", OTHER_PARTY_ADDRESS_LINE2);
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        CaseResponse result = transformer.transformExceptionRecord(sscs2UExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
+        assertNotNull(otherParties.get(0).getValue().getAddress());
     }
 
     private Appeal buildTestAppealData() {

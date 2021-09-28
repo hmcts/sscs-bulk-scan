@@ -7,10 +7,16 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.CHILD_MAINTENANCE_NUMBER;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE1;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE2;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE3;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_POSTCODE;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +42,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appointee;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
 import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.CcdValue;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Contact;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DateRange;
 import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
@@ -46,6 +53,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.HearingSubtype;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Identity;
 import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Name;
+import uk.gov.hmcts.reform.sscs.ccd.domain.OtherParty;
 import uk.gov.hmcts.reform.sscs.ccd.domain.RegionalProcessingCenter;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Representative;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
@@ -115,7 +123,7 @@ public class SscsCaseValidatorTest {
 
         exceptionRecordSscs2 =
             ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).build();
-        ocrCaseData.put("person1_child_maintenance_number", "Test1234");
+        ocrCaseData.put("person1_child_maintenance_number", CHILD_MAINTENANCE_NUMBER);
         given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
     }
 
@@ -1747,11 +1755,43 @@ public class SscsCaseValidatorTest {
     public void givenSscs2FormWithChildMaintenance_thenAppellantShouldReturnValue() {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecord, buildCaseWithChildMaintenance(), false);
+            exceptionRecord, buildCaseWithChildMaintenanceWithOtherPartyAddress(CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE), false);
 
         assertEquals(0, response.getWarnings().size());
-        assertEquals("Test1234", response.getTransformedCase().get("childMaintenanceNumber"));
+        assertEquals(CHILD_MAINTENANCE_NUMBER, response.getTransformedCase().get("childMaintenanceNumber"));
     }
+
+    @Test
+    @Parameters({", test2, test3, TS1 1ST, other_party_address_line1 is empty, 1",
+        "test1, , , TS1 1ST, other_party_address_line2 is empty, 1",
+        "test1, test2, , , other_party_postcode is empty, 1",
+        "test1, , , , other_party_address_line2 is empty, 2",
+        ", , , , other_party_address_line1 is empty, 3",
+    })
+    public void givenSscs2FormWithoutOtherPartyAddressEntry_thenAddAWarning(String line1, String line2, String line3, String postcode, String warning, int size) {
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildCaseWithChildMaintenanceWithOtherPartyAddress(CHILD_MAINTENANCE_NUMBER,line1, line2,line3, postcode),
+            false);
+
+        assertFalse(response.getWarnings().isEmpty());
+        assertEquals(size, response.getWarnings().size());
+        assertEquals(warning, response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyAddressEntry_thenValueIsSet() {
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildCaseWithChildMaintenanceWithOtherPartyAddress(CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE),
+            false);
+
+        assertTrue(response.getWarnings().isEmpty());
+        assertTrue(response.getErrors().isEmpty());
+    }
+
 
     private Object buildDocument(String filename) {
         List<SscsDocument> documentDetails = new ArrayList<>();
@@ -1890,7 +1930,7 @@ public class SscsCaseValidatorTest {
             .appointee(appointee).build();
     }
 
-    private Map<String, Object> buildCaseWithChildMaintenance() {
+    private Map<String, Object> buildCaseWithChildMaintenanceWithOtherPartyAddress(String childMaintenanceNumber, String line1, String line2, String line3, String postcode) {
         Map<String, Object> datamap = buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(
             defaultMrnDetails,
             UC.getShortName(),
@@ -1901,7 +1941,22 @@ public class SscsCaseValidatorTest {
             HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
             FormType.SSCS2);
-        datamap.put("childMaintenanceNumber", "Test1234");
+        datamap.put("childMaintenanceNumber", childMaintenanceNumber);
+        datamap.put("otherParties", Collections.singletonList(CcdValue.<OtherParty>builder().value(
+            OtherParty.builder()
+                .name(Name.builder()
+                    .title("Mrs")
+                    .firstName("Jane")
+                    .lastName("Goodall")
+                    .build())
+                .address(Address.builder()
+                    .line1(line1)
+                    .town(line2)
+                    .county((line3 != null && !line3.equals("")) ? "." : line3)
+                    .postcode(postcode)
+                    .build())
+                .build())
+            .build()));
         return datamap;
     }
 

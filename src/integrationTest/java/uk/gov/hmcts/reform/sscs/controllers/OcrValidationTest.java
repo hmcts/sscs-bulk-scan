@@ -319,11 +319,16 @@ public class OcrValidationTest  {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("ERRORS"))
             .andExpect(jsonPath("$.warnings", hasSize(0)))
-            .andExpect(jsonPath("$.errors", hasSize(4)))
-            .andExpect(jsonPath("$.errors[0]").value("#: extraneous key [other_party_last_name] is not permitted"))
-            .andExpect(jsonPath("$.errors[1]").value("#: extraneous key [person1_child_maintenance_number] is not permitted"))
-            .andExpect(jsonPath("$.errors[2]").value("#: extraneous key [other_party_first_name] is not permitted"))
-            .andExpect(jsonPath("$.errors[3]").value("#: extraneous key [other_party_title] is not permitted"));
+            .andExpect(jsonPath("$.errors", hasSize(8)))
+            .andExpect(jsonPath("$.errors[0]").value("#: extraneous key [other_party_first_name] is not permitted"))
+            .andExpect(jsonPath("$.errors[1]").value("#: extraneous key [other_party_address_line1] is not permitted"))
+            .andExpect(jsonPath("$.errors[2]").value("#: extraneous key [other_party_title] is not permitted"))
+            .andExpect(jsonPath("$.errors[3]").value("#: extraneous key [other_party_address_line2] is not permitted"))
+            .andExpect(jsonPath("$.errors[4]").value("#: extraneous key [other_party_postcode] is not permitted"))
+            .andExpect(jsonPath("$.errors[5]").value("#: extraneous key [other_party_last_name] is not permitted"))
+            .andExpect(jsonPath("$.errors[6]").value("#: extraneous key [person1_child_maintenance_number] is not permitted"))
+            .andExpect(jsonPath("$.errors[7]").value("#: extraneous key [is_other_party_address_known] is not permitted"));
+
     }
 
     @Test
@@ -357,9 +362,11 @@ public class OcrValidationTest  {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("WARNINGS"))
             .andExpect(jsonPath("$.errors", hasSize(0)))
-            .andExpect(jsonPath("$.warnings", hasSize(2)))
+            .andExpect(jsonPath("$.warnings", hasSize(4)))
             .andExpect(jsonPath("$.warnings[0]").value("'person1_child_maintenance_number' is blank"))
-            .andExpect(jsonPath("$.warnings[1]").value("other_party_first_name is empty"));
+            .andExpect(jsonPath("$.warnings[1]").value("other_party_first_name is empty"))
+            .andExpect(jsonPath("$.warnings[2]").value("other_party_address_line1 is empty"))
+            .andExpect(jsonPath("$.warnings[3]").value("other_party_postcode is empty"));
     }
 
     private String readResource(final String fileName) throws IOException {

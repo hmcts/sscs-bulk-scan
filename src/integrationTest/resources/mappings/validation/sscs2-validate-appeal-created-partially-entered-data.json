@@ -10,6 +10,11 @@
             "name": {
               "lastName": "Butler",
               "title": "Mrs"
+            },
+            "address": {
+              "line1": "299 Harrow",
+              "county": "Hatch End",
+              "postcode": "HA5 4QT"
             }
           }
         }

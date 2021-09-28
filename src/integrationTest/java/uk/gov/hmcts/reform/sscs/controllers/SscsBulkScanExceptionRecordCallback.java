@@ -433,13 +433,13 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     @Test
-    public void should_return_warning_list_populated_when_sscs2_child_maintenance_validation_fails() {
+    public void should_return_warning_list_populated_when_sscs2_missing_data_validation_fails() {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyName()),
+            sscs2ExceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress()),
             httpHeaders()
         );
 
@@ -449,7 +449,9 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().warnings)
             .contains("'person1_child_maintenance_number' is blank",
-                "other_party_last_name is empty");
+                "other_party_last_name is empty",
+                "other_party_address_line2 is empty",
+                "other_party_postcode is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -707,14 +709,23 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("other_party_title", "Mrs");
         ocrList.put("other_party_first_name", "Zoe");
         ocrList.put("other_party_last_name", "Butler");
+        ocrList.put("is_other_party_address_known",null);
+        ocrList.put("other_party_address_line1","299 Harrow");
+        ocrList.put("other_party_address_line2","The Avenue");
+        ocrList.put("other_party_address_line3","Hatch End");
+        ocrList.put("other_party_postcode","HA5 4QT");
+
     }
 
-    private Map<String, Object> caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyName() {
+    private Map<String, Object> caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress() {
 
         Map<String, Object> ocrList = new HashMap<>();
         ocrList.put("person1_child_maintenance_number", "");
         ocrList.put("other_party_title", "Mrs");
         ocrList.put("other_party_first_name", "Zoe");
+        ocrList.put("is_other_party_address_known","true");
+        ocrList.put("other_party_address_line1","299 Harrow");
+        ocrList.put("other_party_address_line3","Hatch End");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
         ocrList.put("office", "Balham DRT");

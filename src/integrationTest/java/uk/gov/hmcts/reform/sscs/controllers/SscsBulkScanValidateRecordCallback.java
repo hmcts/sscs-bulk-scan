@@ -137,7 +137,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         String validationJson =
-            loadJson("mappings/validation/sscs2-validate-appeal-created-missing-child-maintenance.json");
+            loadJson("mappings/validation/sscs2-validate-appeal-created-partially-entered-data.json");
 
         HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
 
@@ -150,7 +150,8 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         assertThat(result.getBody().getErrors())
             .containsOnly(
                 "Child maintenance number is blank",
-                "Other party first name is empty");
+                "Other party first name is empty",
+                "Other party address town is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
