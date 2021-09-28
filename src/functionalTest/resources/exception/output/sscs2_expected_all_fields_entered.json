@@ -47,6 +47,10 @@
             "firstName": "Frederick",
             "lastName": "Falafel",
             "title": "Dr"
+          },
+          "role": {
+            "name": "Other",
+            "description": "Papa"
           }
         },
         "benefitType": {

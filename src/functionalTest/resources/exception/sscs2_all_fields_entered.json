@@ -214,6 +214,14 @@
      {
       "name": "is_benefit_type_uc",
       "value": "no"
+    },
+    {
+      "name": "is_another_party",
+      "value": "true"
+    },
+    {
+      "name": "other_party_details",
+      "value": "Papa"
     }
   ]
 }

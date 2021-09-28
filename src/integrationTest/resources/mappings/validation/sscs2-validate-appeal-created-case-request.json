@@ -36,6 +36,9 @@
             "firstName": "User",
             "lastName": "Test",
             "title": "Mr"
+          },
+          "role": {
+            "name": "Paying parent"
           }
         },
         "rep": {

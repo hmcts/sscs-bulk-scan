@@ -1,6 +1,10 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
+<<<<<<< HEAD
 import static org.hamcrest.Matchers.hasSize;
+=======
+import static org.hamcrest.Matchers.*;
+>>>>>>> SSCS-9577: Bulk Scan: SSCS2 Form - Section 1
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -353,11 +357,12 @@ public class OcrValidationTest  {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("ERRORS"))
             .andExpect(jsonPath("$.warnings", hasSize(0)))
-            .andExpect(jsonPath("$.errors", hasSize(4)))
-            .andExpect(jsonPath("$.errors[0]").value("#: extraneous key [other_party_last_name] is not permitted"))
-            .andExpect(jsonPath("$.errors[1]").value("#: extraneous key [person1_child_maintenance_number] is not permitted"))
-            .andExpect(jsonPath("$.errors[2]").value("#: extraneous key [other_party_first_name] is not permitted"))
-            .andExpect(jsonPath("$.errors[3]").value("#: extraneous key [other_party_title] is not permitted"));
+            .andExpect(jsonPath("$.errors", hasSize(5)))
+            .andExpect(jsonPath("$.errors", containsInAnyOrder("#: extraneous key [person1_child_maintenance_number] is not permitted",
+                "#: extraneous key [other_party_last_name] is not permitted",
+                "#: extraneous key [other_party_first_name] is not permitted",
+                "#: extraneous key [other_party_title] is not permitted",
+                "#: extraneous key [is_paying_parent] is not permitted")));
     }
 
     @Test
@@ -391,9 +396,48 @@ public class OcrValidationTest  {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("WARNINGS"))
             .andExpect(jsonPath("$.errors", hasSize(0)))
+            .andExpect(jsonPath("$.warnings", hasSize(3)))
+            .andExpect(jsonPath("$.warnings", containsInAnyOrder("'person1_child_maintenance_number' is blank",
+                "is_paying_parent, is_receiving_parent, is_another_party and other_party_details fields are empty",
+                "other_party_first_name is empty")));
+    }
+
+    @Test
+    public void should_return_200_with_warning_when_ocr_form_with_sscs2_form_validation_request_appellant_role_invalid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs2-invalid-ocr-data-appellant-role.json");
+
+        mvc.perform(
+            post("/forms/SSCS2/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("WARNINGS"))
+            .andExpect(jsonPath("$.errors", hasSize(0)))
             .andExpect(jsonPath("$.warnings", hasSize(2)))
-            .andExpect(jsonPath("$.warnings[0]").value("'person1_child_maintenance_number' is blank"))
-            .andExpect(jsonPath("$.warnings[1]").value("other_party_first_name is empty"));
+            .andExpect(jsonPath("$.warnings", containsInAnyOrder("is_paying_parent, is_receiving_parent, is_another_party and other_party_details fields are empty",
+                "is_paying_parent, is_receiving_parent, is_another_party and other_party_details have conflicting values")));
+    }
+
+    @Test
+    public void fuzzyMatchingInvalidNameBenefitTypeForSscs2uForm() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs2-invalid-ocr-data-benefit-type.json");
+
+        mvc.perform(
+            post("/forms/SSCS2/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("WARNINGS"))
+            .andExpect(jsonPath("$.warnings", hasSize(2)))
+            .andExpect(jsonPath("$.errors", hasSize(0)))
+            .andExpect(jsonPath("$.warnings", containsInAnyOrder("benefit_type_description is empty",
+                "is_benefit_type_pip and is_benefit_type_esa have contradicting values")));
     }
 
     private String readResource(final String fileName) throws IOException {
