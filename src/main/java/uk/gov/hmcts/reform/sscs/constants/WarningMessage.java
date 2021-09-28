@@ -54,7 +54,9 @@ public enum WarningMessage {
     HEARING_TELEPHONE_NUMBER_MULTIPLE("Telephone hearing selected but the number used is invalid. Please check either the hearing_telephone_number or person1_phone fields", "Telephone hearing selected but the number used is invalid. Please check either the telephone or hearing telephone number fields"),
     HEARING_TYPE_TELEPHONE(HEARING_TELEPHONE_LITERAL, "Hearing telephone number"),
     HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE("hearing_type_telephone, hearing_type_video and hearing_type_face_to_face", "Hearing option telephone, video and face to face"),
-    PERSON1_CHILD_MAINTENANCE_NUMBER("'person1_child_maintenance_number'", "Child maintenance number");
+    PERSON1_CHILD_MAINTENANCE_NUMBER("'person1_child_maintenance_number'", "Child maintenance number"),
+    APPELLANT_PARTY_NAME("is_paying_parent, is_receiving_parent, is_another_party and other_party_details", "Appellant role and/or description"),
+    APPELLANT_PARTY_DESCRIPTION("other_party_details", "Appellant role and/or description");
     private String exceptionRecordMessage;
     private String validationRecordMessage;
 

@@ -454,6 +454,48 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    @Test
+    public void should_return_warning_list_populated_when_sscs2_appellant_role_empty() {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            sscs2ExceptionCaseData(caseDataWithoutAppellantRole()),
+            httpHeaders()
+        );
+
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().warnings)
+            .containsOnly("is_paying_parent, is_receiving_parent, is_another_party and other_party_details fields are empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_warning_list_populated_when_sscs2_appellant_role_invalid() {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            sscs2ExceptionCaseData(caseDataWithInvalidAppellantRole()),
+            httpHeaders()
+        );
+
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+
+        assertThat(result.getStatusCodeValue()).isEqualTo(422);
+        assertThat(result.getBody().errors)
+            .containsOnly("is_paying_parent, is_receiving_parent and is_another_party have conflicting values");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
     //FIXME: update after bulk scan auto case creation is switch on
     private Object[] endPoints() {
         return new Object[] {
@@ -648,6 +690,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         if (formType.toLowerCase().equals(FormType.SSCS2.toString())) {
             ocrList.put("person1_child_maintenance_number", "Test1234");
+            ocrList.put("is_paying_parent", "true");
             addOtherParty(ocrList);
         }
 
@@ -728,6 +771,52 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("hearing_type_video", "Yes");
         ocrList.put("hearing_video_email", "my@email.com");
         ocrList.put("hearing_type_face_to_face", "No");
+        ocrList.put("is_paying_parent", "true");
+
+        return exceptionRecord(ocrList, null);
+    }
+
+    private Map<String, Object> caseDataWithoutAppellantRole() {
+
+        Map<String, Object> ocrList = new HashMap<>();
+        ocrList.put("person1_child_maintenance_number", "12334");
+        addAppellant(ocrList);
+        ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
+        ocrList.put("office", "Balham DRT");
+        ocrList.put("contains_mrn", true);
+        ocrList.put("is_benefit_type_esa", "true");
+        ocrList.put("is_hearing_type_oral", true);
+        ocrList.put("is_hearing_type_paper", false);
+        ocrList.put("hearing_options_exclude_dates", "01/12/2030");
+        ocrList.put("hearing_type_telephone", "Yes");
+        ocrList.put("hearing_telephone_number", "01234567890");
+        ocrList.put("hearing_type_video", "Yes");
+        ocrList.put("hearing_video_email", "my@email.com");
+        ocrList.put("hearing_type_face_to_face", "No");
+
+        return exceptionRecord(ocrList, null);
+    }
+
+    private Map<String, Object> caseDataWithInvalidAppellantRole() {
+
+        Map<String, Object> ocrList = new HashMap<>();
+        ocrList.put("person1_child_maintenance_number", "");
+        addAppellant(ocrList);
+        ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
+        ocrList.put("office", "Balham DRT");
+        ocrList.put("contains_mrn", true);
+        ocrList.put("is_benefit_type_esa", "true");
+        ocrList.put("is_hearing_type_oral", true);
+        ocrList.put("is_hearing_type_paper", false);
+        ocrList.put("hearing_options_exclude_dates", "01/12/2030");
+        ocrList.put("hearing_type_telephone", "Yes");
+        ocrList.put("hearing_telephone_number", "01234567890");
+        ocrList.put("hearing_type_video", "Yes");
+        ocrList.put("hearing_video_email", "my@email.com");
+        ocrList.put("hearing_type_face_to_face", "No");
+        ocrList.put("is_paying_parent", "true");
+        ocrList.put("is_receiving_parent", "true");
+        ocrList.put("is_another_party", "true");
 
         return exceptionRecord(ocrList, null);
     }

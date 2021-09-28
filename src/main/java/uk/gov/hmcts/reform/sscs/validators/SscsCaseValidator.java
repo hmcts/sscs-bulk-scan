@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.constants.WarningMessage;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
@@ -136,14 +137,14 @@ public class SscsCaseValidator implements CaseValidator {
     private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData,
                                         boolean ignoreMrnValidation) {
 
+        FormType formType = (FormType) caseData.get("formType");
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
 
-        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType);
+        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType);
         checkRepresentative(appeal, ocrCaseData, caseData);
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation);
 
-        FormType formType = (FormType) caseData.get("formType");
         if (formType != null && formType.equals(FormType.SSCS2)) {
             checkChildMaintenance((String) caseData.get("childMaintenanceNumber"));
 
@@ -195,7 +196,7 @@ public class SscsCaseValidator implements CaseValidator {
 
 
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                String personType) {
+                                String personType, FormType formType) {
         Appellant appellant = appeal.getAppellant();
 
         if (appellant == null) {
@@ -228,9 +229,28 @@ public class SscsCaseValidator implements CaseValidator {
             checkMobileNumber(appellant.getContact(), personType);
 
             checkHearingSubtypeDetails(appeal.getHearingSubtype());
-
+            if (formType != null && formType.equals(FormType.SSCS2)) {
+                checkAppellantRole(appellant.getRole());
+            }
         }
 
+    }
+
+    private void checkAppellantRole(Role role) {
+        if (role == null) {
+            warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
+                EXCEPTION_CALLBACK == callbackType ? FIELDS_EMPTY : IS_MISSING));
+        } else {
+            String name = role.getName();
+            String description = role.getDescription();
+            if (StringUtils.isEmpty(name)) {
+                warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
+                    EXCEPTION_CALLBACK == callbackType ? FIELDS_EMPTY : IS_MISSING));
+            } else if (AppellantRole.OTHER.getName().equalsIgnoreCase(name) && StringUtils.isEmpty(description)) {
+                warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_DESCRIPTION.toString(),
+                    EXCEPTION_CALLBACK == callbackType ? IS_EMPTY : IS_MISSING));
+            }
+        }
     }
 
     private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {

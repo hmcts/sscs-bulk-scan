@@ -64,7 +64,11 @@
     "hearing_type_face_to_face": {"type": "string"},
     "appeal_grounds_2": {"type": "string"},
     "is_benefit_type_other": {"type": "string"},
-    "benefit_type_other": {"type": "string"}
+    "benefit_type_other": {"type": "string"},
+    "is_paying_parent": {"type": "string"},
+    "is_receiving_parent": {"type": "string"},
+    "is_another_party": {"type": "string"},
+    "other_party_details": {"type": "string"}
   },
   "additionalProperties": false
 }

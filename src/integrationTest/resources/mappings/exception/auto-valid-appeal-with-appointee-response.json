@@ -77,7 +77,8 @@
               "nino": "BB000000B"
             }
           },
-          "isAddressSameAsAppointee": null
+          "isAddressSameAsAppointee": null,
+          "role": null
         },
         "benefitType": {
           "code": "ESA",

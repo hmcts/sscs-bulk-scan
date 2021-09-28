@@ -26,6 +26,10 @@
             "firstName": "User",
             "lastName": "Test",
             "title": "Mr"
+          },
+          "role": {
+            "name": "Other",
+            "description": "Papa"
           }
         },
         "rep": {

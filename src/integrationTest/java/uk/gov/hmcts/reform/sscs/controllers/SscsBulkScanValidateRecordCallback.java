@@ -412,6 +412,50 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    @Test
+    public void should_return_warning_when_appellant_role_is_not_entered() throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson =
+            loadJson("mappings/validation/sscs2-validate-appeal-created-missing-appellant-role.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("Appellant role and/or description is missing");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_warning_when_appellant_role_description_is_not_entered() throws IOException {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String validationJson =
+            loadJson("mappings/validation/sscs2-validate-appeal-created-missing-appellant-role-description.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getErrors())
+            .containsOnly("Appellant role and/or description is missing");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
     private HttpHeaders httpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.set(AUTHORIZATION, USER_AUTH_TOKEN);
