@@ -1,10 +1,6 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
-<<<<<<< HEAD
-import static org.hamcrest.Matchers.hasSize;
-=======
 import static org.hamcrest.Matchers.*;
->>>>>>> SSCS-9577: Bulk Scan: SSCS2 Form - Section 1
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -421,24 +417,6 @@ public class OcrValidationTest  {
                 "is_paying_parent, is_receiving_parent, is_another_party and other_party_details have conflicting values")));
     }
 
-    @Test
-    public void fuzzyMatchingInvalidNameBenefitTypeForSscs2uForm() throws Throwable {
-        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-
-        String content = readResource("mappings/ocr-validation/sscs2-invalid-ocr-data-benefit-type.json");
-
-        mvc.perform(
-            post("/forms/SSCS2/validate-ocr")
-                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(content))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("WARNINGS"))
-            .andExpect(jsonPath("$.warnings", hasSize(2)))
-            .andExpect(jsonPath("$.errors", hasSize(0)))
-            .andExpect(jsonPath("$.warnings", containsInAnyOrder("benefit_type_description is empty",
-                "is_benefit_type_pip and is_benefit_type_esa have contradicting values")));
-    }
 
     private String readResource(final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charsets.UTF_8);
