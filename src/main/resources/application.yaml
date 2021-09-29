@@ -7,6 +7,7 @@ management:
       show-details: "always"
       probes:
         enabled: true
+      enabled: true
   endpoints:
     web:
       base-path: /
