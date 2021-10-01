@@ -64,7 +64,9 @@
     "hearing_type_face_to_face": {"type": "string"},
     "appeal_grounds_2": {"type": "string"},
     "is_benefit_type_other": {"type": "string"},
-    "benefit_type_other": {"type": "string"}
+    "benefit_type_other": {"type": "string"},
+    "does_other_person_know_where_you_live": {"type": "string"},
+    "keep_home_address_confidential": {"type": "string"}
   },
   "additionalProperties": false
 }

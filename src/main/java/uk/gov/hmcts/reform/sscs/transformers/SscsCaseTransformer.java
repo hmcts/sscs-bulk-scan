@@ -114,7 +114,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType, errors);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -138,19 +138,17 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token,
-                                              String formType) {
-        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType);
+                                              String formType, Set<String> errors) {
+        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType, errors);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
         Map<String, Object> transformed = new HashMap<>();
-        String childMaintenanceNumber = scannedData.getOcrCaseData() != null
-            ? getField(scannedData.getOcrCaseData(), PERSON_1_CHILD_MAINTENANCE_NUMBER) : null;
 
         List<CcdValue<OtherParty>> otherParties = buildOtherParty(scannedData.getOcrCaseData());
 
-        sscsDataHelper.addSscsDataToMap(
-            transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType), childMaintenanceNumber, otherParties);
+        sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType),
+            getField(scannedData.getOcrCaseData(), PERSON_1_CHILD_MAINTENANCE_NUMBER), otherParties);
 
         transformed.put("bulkScanCaseReference", caseId);
         transformed.put("caseCreated", scannedData.getOpeningDate());
@@ -201,7 +199,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .wantSmsNotifications(convertBooleanToYesNoString(wantsSms)).tya(generateAppealNumber()).build();
     }
 
-    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType) {
+    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType, Set<String> errors) {
         Appellant appellant = null;
 
         if (pairs != null && pairs.size() != 0) {
@@ -215,10 +213,10 @@ public class SscsCaseTransformer implements CaseTransformer {
                         .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
                         .build();
                 }
-                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, buildPersonContact(pairs, PERSON2_VALUE));
+                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, buildPersonContact(pairs, PERSON2_VALUE), errors);
 
             } else if (hasPerson(pairs, PERSON1_VALUE)) {
-                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE));
+                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE), errors);
             }
 
             String hearingType = findHearingType(pairs);
@@ -398,15 +396,22 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee,
-                                     Contact contact) {
+                                     Contact contact, Set<String> errors) {
         return Appellant.builder()
             .name(buildPersonName(pairs, personType))
             .isAppointee(convertBooleanToYesNoString(appointee != null))
             .address(buildPersonAddress(pairs, personType))
             .identity(buildPersonIdentity(pairs, personType))
             .contact(contact)
+            .confidentialityRequired(getConfidentialityRequired(pairs, errors))
             .appointee(appointee)
             .build();
+    }
+
+    private YesNo getConfidentialityRequired(Map<String, Object> pairs, Set<String> errors) {
+        String keepHomeAddressConfidential = (String) pairs.get(KEEP_HOME_ADDRESS_CONFIDENTIAL);
+        return keepHomeAddressConfidential != null && StringUtils.isNotBlank(keepHomeAddressConfidential)
+            ? convertBooleanToYesNo(getBoolean(pairs, errors, KEEP_HOME_ADDRESS_CONFIDENTIAL)) : null;
     }
 
     private Representative buildRepresentative(Map<String, Object> pairs) {
