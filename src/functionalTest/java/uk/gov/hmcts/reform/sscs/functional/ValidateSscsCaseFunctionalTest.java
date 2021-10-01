@@ -9,6 +9,7 @@ import io.restassured.response.Response;
 import java.io.IOException;
 import junitparams.JUnitParamsRunner;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,7 @@ public class ValidateSscsCaseFunctionalTest extends BaseFunctionalTest {
     private String documentManagementUrl;
 
     @Test
+    @Ignore
     public void validate_nino_normalised() throws IOException {
         createCase();
         String json = getJson("validationsscs/validate_sscs_case_request.json");
