@@ -583,6 +583,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .jurisdiction("SSCS")
             .formType("SSCS1")
             .journeyClassification(NEW_APPLICATION)
+            .ignoreWarnings(false)
             .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
             .id("1234567890")
             .openingDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))

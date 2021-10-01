@@ -10,10 +10,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.converters.Nullable;
@@ -1729,10 +1726,94 @@ public class SscsCaseValidatorTest {
     public void givenSscs2FormWithChildMaintenance_thenAppellantShouldReturnValue() {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
-            exceptionRecord, buildCaseWithChildMaintenance(), false);
+            exceptionRecord, buildCaseWithChildMaintenanceAndOtherParty(buildOtherParties()), false);
 
         assertEquals(0, response.getWarnings().size());
         assertEquals("Test1234", response.getTransformedCase().get("childMaintenanceNumber"));
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyLastNameMissingAndIgnoreWarningsFalse_thenOtherPartyShouldReturnWarning() {
+
+        List<CcdValue<Object>> otherParties = buildOtherParties();
+        ((OtherParty) otherParties.get(0).getValue()).getName().setLastName(null);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+
+        assertEquals(1, response.getWarnings().size());
+        assertEquals("other_party_last_name is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyFirstNameMissingAndIgnoreWarningsFalse_thenOtherPartyShouldReturnWarning() {
+
+        List<CcdValue<Object>> otherParties = buildOtherParties();
+        ((OtherParty) otherParties.get(0).getValue()).getName().setFirstName(null);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+
+        assertEquals(1, response.getWarnings().size());
+        assertEquals("other_party_first_name is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyTitleInvalidAndIgnoreWarningsFalse_thenOtherPartyShouldReturnWarning() {
+
+        List<CcdValue<Object>> otherParties = buildOtherParties();
+        ((OtherParty) otherParties.get(0).getValue()).getName().setTitle("Random");
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+
+        assertEquals(1, response.getWarnings().size());
+        assertEquals("other_party_title is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyLastNameMissingAndIgnoreWarningsTrue_thenNoWarningsShown() {
+
+        List<CcdValue<Object>> otherParties = buildOtherParties();
+        ((OtherParty) otherParties.get(0).getValue()).getName().setLastName(null);
+
+        exceptionRecordSscs2 =
+            ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).ignoreWarnings(true).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyFirstNameMissingAndIgnoreWarningsTrue_thenNoWarningsShown() {
+
+        List<CcdValue<Object>> otherParties = buildOtherParties();
+        ((OtherParty) otherParties.get(0).getValue()).getName().setFirstName(null);
+
+        exceptionRecordSscs2 =
+            ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).ignoreWarnings(true).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyTitleInvalidAndIgnoreWarningsTrue_thenNoWarningsShown() {
+
+        List<CcdValue<Object>> otherParties = buildOtherParties();
+        ((OtherParty) otherParties.get(0).getValue()).getName().setTitle("Random");
+
+        exceptionRecordSscs2 =
+            ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).ignoreWarnings(true).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceAndOtherParty(otherParties), false);
+
+        assertEquals(0, response.getWarnings().size());
     }
 
     private Object buildDocument(String filename) {
@@ -1873,7 +1954,7 @@ public class SscsCaseValidatorTest {
             .role(Role.builder().name("Paying parent").build()).build();
     }
 
-    private Map<String, Object> buildCaseWithChildMaintenance() {
+    private Map<String, Object> buildCaseWithChildMaintenanceAndOtherParty(List<CcdValue<Object>> otherParties) {
         Map<String, Object> datamap = buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(
             defaultMrnDetails,
             UC.getShortName(),
@@ -1885,7 +1966,14 @@ public class SscsCaseValidatorTest {
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
             FormType.SSCS2);
         datamap.put("childMaintenanceNumber", "Test1234");
+        datamap.put("otherParties", otherParties);
         return datamap;
+    }
+
+    private List<CcdValue<Object>> buildOtherParties() {
+        return Collections.singletonList(CcdValue.builder().value(OtherParty.builder()
+            .name(Name.builder().title("Mr").firstName("Jerry").lastName("Fisher").build())
+            .address(Address.builder().line1("123 My road").line2("Bigworth").town("Brentwood").county("Essex").postcode("CM4 1ND").build()).build()).build());
     }
 
     private Appointee buildAppointeeWithMobileNumber(String mobileNumber) {
