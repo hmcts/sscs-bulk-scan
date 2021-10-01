@@ -27,7 +27,6 @@ public class ValidateSscsCaseFunctionalTest extends BaseFunctionalTest {
     private String documentManagementUrl;
 
     @Test
-    @Ignore
     public void validate_nino_normalised() throws IOException {
         createCase();
         String json = getJson("validationsscs/validate_sscs_case_request.json");
