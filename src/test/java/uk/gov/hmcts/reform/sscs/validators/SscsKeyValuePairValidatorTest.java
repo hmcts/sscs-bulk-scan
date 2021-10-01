@@ -126,4 +126,20 @@ public class SscsKeyValuePairValidatorTest {
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
+
+    @Test
+    public void givenAppellantRoleKeyValuePair_thenReturnAnEmptyCaseResponse() {
+        Map<String, Object> valueMap = new HashMap<>();
+
+        valueMap.put("is_paying_parent", "true");
+        valueMap.put("is_receiving_parent", "false");
+        valueMap.put("is_another_party", "false");
+        valueMap.put("other_party_details", "Step Mother");
+
+        List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
+
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
+        assertNull(response.getErrors());
+        assertEquals(0, response.getWarnings().size());
+    }
 }

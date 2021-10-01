@@ -4,16 +4,6 @@
     "callback_response_status": null,
     "callback_response_status_code": null,
     "case_data": {
-      "otherParties": [
-        {
-          "value": {
-            "name": {
-              "lastName": "Butler",
-              "title": "Mrs"
-            }
-          }
-        }
-      ],
       "appeal": {
         "appealReasons": {},
         "appellant": {
@@ -37,7 +27,7 @@
             "title": "Mr"
           },
           "role": {
-            "name": "Paying parent"
+            "name": "Other"
           }
         },
         "rep": {
@@ -68,7 +58,7 @@
       },
       "caseReference": "SC022/14/12423",
       "formType": "sscs2",
-      "childMaintenanceNumber": ""
+      "childMaintenanceNumber": "1234"
     },
     "case_type_id": "Benefit",
     "created_date": [

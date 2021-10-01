@@ -43,7 +43,10 @@
           },
           "appointee": null,
           "isAppointee": "No",
-          "isAddressSameAsAppointee": null
+          "isAddressSameAsAppointee": null,
+          "role": {
+            "name": "Paying parent"
+          }
         },
         "benefitType": {
           "code": "childSupport",

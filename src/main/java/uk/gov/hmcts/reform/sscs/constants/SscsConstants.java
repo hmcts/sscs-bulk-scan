@@ -52,9 +52,11 @@ public final class SscsConstants {
     public static final String NINO = "_nino";
     public static final String DOB = "_dob";
     public static final String IS_EMPTY = "is empty";
+    public static final String IS_MISSING = "is missing";
     public static final String IS_BLANK = "is blank";
     public static final String ARE_EMPTY = "are empty. At least one must be populated";
     public static final String IS_INVALID = "is invalid";
+    public static final String FIELDS_EMPTY = "fields are empty";
     public static final String HAS_INVALID_ADDRESS  = "has invalid characters at the beginning";
     public static final String IS_IN_FUTURE = "is in future";
     public static final String IS_IN_PAST = "is in past";
@@ -69,4 +71,8 @@ public final class SscsConstants {
     public static final String EMAIL_SELECTED_NOT_PROVIDED = "has not been provided but data indicates hearing video is required";
     public static final String HEARING_EXCLUDE_DATES_MISSING = "Excluded dates have been provided which must be recorded on CCD";
     public static final String HAS_REPRESENTATIVE_FIELD_MISSING = "The \"Has representative\" field is not selected, please select an option to proceed";
+    public static final String IS_PAYING_PARENT = "is_paying_parent";
+    public static final String IS_RECEIVING_PARENT = "is_receiving_parent";
+    public static final String IS_ANOTHER_PARTY = "is_another_party";
+    public static final String OTHER_PARTY_DETAILS = "other_party_details";
 }

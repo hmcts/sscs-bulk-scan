@@ -64,7 +64,8 @@
           },
           "isAppointee": "No",
           "appointee": null,
-          "isAddressSameAsAppointee": null
+          "isAddressSameAsAppointee": null,
+          "role": null
         },
         "benefitType": {
           "code": "UC",

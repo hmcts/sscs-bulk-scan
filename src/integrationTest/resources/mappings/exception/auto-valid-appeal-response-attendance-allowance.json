@@ -32,7 +32,8 @@
           },
           "appointee": null,
           "isAppointee": "No",
-          "isAddressSameAsAppointee": null
+          "isAddressSameAsAppointee": null,
+          "role": null
         },
         "benefitType": {
           "code": "attendanceAllowance",

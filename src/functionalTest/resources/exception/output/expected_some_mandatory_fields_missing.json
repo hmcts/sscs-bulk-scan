@@ -35,7 +35,8 @@
             "firstName": "Frederick",
             "lastName": "Falafel",
             "title": "Dr"
-          }
+          },
+          "role": null
         },
         "benefitType": {
           "code": "ESA",

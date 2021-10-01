@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.constants.WarningMessage;
 import uk.gov.hmcts.reform.sscs.domain.CallbackType;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
@@ -92,7 +93,8 @@ public class SscsCaseValidator implements CaseValidator {
 
         ScannedData ocrCaseData = sscsJsonExtractor.extractJson(exceptionRecord);
 
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false);
+        boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, ignoreWarningsValue);
 
         if (combineWarnings) {
             warnings = combineWarnings();
@@ -124,7 +126,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         Map<String, Object> ocrCaseData = new HashMap<>();
 
-        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation);
+        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation, false);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -134,23 +136,23 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                        boolean ignoreMrnValidation) {
+                                        boolean ignoreMrnValidation, boolean ignoreWarnings) {
 
+        FormType formType = (FormType) caseData.get("formType");
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
 
-        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType);
+        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType);
         checkRepresentative(appeal, ocrCaseData, caseData);
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation);
 
-        FormType formType = (FormType) caseData.get("formType");
         if (formType != null && formType.equals(FormType.SSCS2)) {
             checkChildMaintenance((String) caseData.get("childMaintenanceNumber"));
 
             @SuppressWarnings("unchecked")
             List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) caseData.get("otherParties"));
 
-            checkOtherParty(otherParties);
+            checkOtherParty(otherParties, ignoreWarnings);
         }
 
         checkExcludedDates(appeal);
@@ -195,7 +197,7 @@ public class SscsCaseValidator implements CaseValidator {
 
 
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                String personType) {
+                                String personType, FormType formType) {
         Appellant appellant = appeal.getAppellant();
 
         if (appellant == null) {
@@ -228,9 +230,28 @@ public class SscsCaseValidator implements CaseValidator {
             checkMobileNumber(appellant.getContact(), personType);
 
             checkHearingSubtypeDetails(appeal.getHearingSubtype());
-
+            if (formType != null && formType.equals(FormType.SSCS2)) {
+                checkAppellantRole(appellant.getRole());
+            }
         }
 
+    }
+
+    private void checkAppellantRole(Role role) {
+        if (role == null) {
+            warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
+                EXCEPTION_CALLBACK == callbackType ? FIELDS_EMPTY : IS_MISSING));
+        } else {
+            String name = role.getName();
+            String description = role.getDescription();
+            if (StringUtils.isEmpty(name)) {
+                warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
+                    EXCEPTION_CALLBACK == callbackType ? FIELDS_EMPTY : IS_MISSING));
+            } else if (AppellantRole.OTHER.getName().equalsIgnoreCase(name) && StringUtils.isEmpty(description)) {
+                warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_DESCRIPTION.toString(),
+                    EXCEPTION_CALLBACK == callbackType ? IS_EMPTY : IS_MISSING));
+            }
+        }
     }
 
     private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {
@@ -291,12 +312,9 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkOtherParty(List<CcdValue<OtherParty>> otherParties) {
+    private void checkOtherParty(List<CcdValue<OtherParty>> otherParties, boolean ignoreWarnings) {
         OtherParty otherParty;
-
-        //FIXME: Need a Change Request from Bulk Scan so we can find out if ignore warnings button has been pressed by user. If it has, then don't add these name warnings to list
-        //FIXME: SSCS-9564 No unit tests to cover this scenario due to above issue (there are integration tests) - not sure what correct business logic is until we get above in place. Once get confirmation then tests should be added
-        if (otherParties != null && !otherParties.isEmpty()) {
+        if (!ignoreWarnings && otherParties != null && !otherParties.isEmpty()) {
             otherParty = otherParties.get(0).getValue();
 
             Name name = otherParty.getName();

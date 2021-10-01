@@ -1,13 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static junit.framework.TestCase.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
@@ -38,6 +32,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.platform.commons.util.StringUtils;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
@@ -153,7 +148,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(office, appeal.getMrnDetails().getDwpIssuingOffice());
+        assertEquals(office,  appeal.getMrnDetails().getDwpIssuingOffice());
     }
 
     @Test
@@ -207,7 +202,7 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = isPip ? PIP : ESA;
-        assertEquals(expectedBenefit.name(), appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefit.name(),  appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -220,7 +215,7 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = Benefit.ATTENDANCE_ALLOWANCE;
-        assertEquals(expectedBenefit.getShortName(), appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -232,12 +227,12 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = Benefit.CHILD_SUPPORT;
-        assertEquals(expectedBenefit.getShortName(), appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
     }
 
     @Test
     @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
-        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement", "Job Seekers Allowance, JSA",
+        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
         "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
         "Industrial Death Benefit, industrialDeathBenefit", "Pension Credit, pensionCredit", "Retirement Pension, retirementPension",})
     public void givenBenefitTypeIsOtherWithValidType_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
@@ -249,12 +244,12 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(shortName, appeal.getBenefitType().getCode());
+        assertEquals(shortName,  appeal.getBenefitType().getCode());
     }
 
     @Test
     @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
-        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement", "Job Seekers Allowance, JSA",
+        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
         "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
         "Industrial Death Benefit, industrialDeathBenefit", "Pension Credit, pensionCredit", "Retirement Pension, retirementPension",})
     public void givenBenefitTypeIsOtherNotTickedWithValidType_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
@@ -266,7 +261,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(shortName, appeal.getBenefitType().getCode());
+        assertEquals(shortName,  appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -350,7 +345,7 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = isPip.equals("Yes") ? PIP : ESA;
-        assertEquals(expectedBenefit.name(), appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefit.name(),  appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -361,7 +356,7 @@ public class SscsCaseTransformerTest {
 
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(BENEFIT_TYPE, appeal.getBenefitType().getCode());
+        assertEquals(BENEFIT_TYPE,  appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -370,7 +365,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(BENEFIT_TYPE, appeal.getBenefitType().getCode());
+        assertEquals(BENEFIT_TYPE,  appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -1319,7 +1314,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("Yes", result.getTransformedCase().get("linkedCasesBoolean"));
-        assertEquals("123", ((CaseLink) ((List) result.getTransformedCase().get("associatedCase")).get(0)).getValue().getCaseReference());
+        assertEquals("123", ((CaseLink)((List) result.getTransformedCase().get("associatedCase")).get(0)).getValue().getCaseReference());
     }
 
     @Test
@@ -2009,10 +2004,11 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
-        assertEquals(childMaintenance, result.getTransformedCase().get("childMaintenanceNumber"));
+        assertEquals(childMaintenance,  result.getTransformedCase().get("childMaintenanceNumber"));
     }
 
     @Test
@@ -2055,6 +2051,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -2065,8 +2062,12 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"Yes, Yes", "No, No", "true, Yes", "false, No"})
-    public void givenSscs2FormAndConfidentialityRequired_thenCaseDataValueIsSet(String keepHomeAddressConfidential, String expected) {
+    @Parameters({
+        "true,false,false,,PAYING_PARENT",
+        "false,true,false,,RECEIVING_PARENT",
+        "false,false,true,Guardian,OTHER"
+    })
+    public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellantAndRole(String payingParent, String receivingParent, String other, String description, AppellantRole appellantRole) {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -2076,19 +2077,34 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
         pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("keep_home_address_confidential", keepHomeAddressConfidential);
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        pairs.put("person1_nino", APPELLANT_NINO);
+        pairs.put("is_paying_parent", payingParent);
+        pairs.put("is_receiving_parent", receivingParent);
+        pairs.put("is_another_party", other);
+        pairs.put("other_party_details", description);
 
-        YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired.toString(), is(expected));
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+
+        Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
+        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
+        Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob("1987-08-12").build();
+        Role role = Role.builder().name(appellantRole.getName()).description(StringUtils.isBlank(description) ? null : description).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").role(role).address(appellantAddress).contact(Contact.builder().build()).build();
+
+        Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
+        assertEquals(expectedAppellant, appellantResult);
+
+        assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
-    public void givenSscs2FormAndConfidentialityRequiredEmpty_thenCaseDataValueIsNull() {
+    @Parameters({
+        "true,true,true,any,is_paying_parent\\, is_receiving_parent\\, is_another_party and other_party_details have conflicting values",
+        "true,false,false,any,is_paying_parent and other_party_details have conflicting values",
+        "true,false,true,any,is_paying_parent\\, is_another_party and other_party_details have conflicting values",
+    })
+    public void givenKeyValuePairsWithPerson1AndInvalidAppellantRole_thenReturnAnError(String payingParent, String receivingParent, String other, String description, String errorMessage) {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -2098,36 +2114,16 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
         pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("keep_home_address_confidential", "");
+        pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        pairs.put("person1_nino", APPELLANT_NINO);
+        pairs.put("is_paying_parent", payingParent);
+        pairs.put("is_receiving_parent", receivingParent);
+        pairs.put("is_another_party", other);
+        pairs.put("other_party_details", description);
+
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
-
-        YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired, is(nullValue()));
-    }
-
-    @Test
-    public void givenSscs2FormAndNoConfidentiality_thenCaseDataValueIsNull() {
-        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
-
-        YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired, is(nullValue()));
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals(errorMessage, result.getErrors().get(0));
     }
 
     private Appeal buildTestAppealData() {

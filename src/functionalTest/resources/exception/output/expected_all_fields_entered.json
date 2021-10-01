@@ -58,7 +58,8 @@
             "firstName": "Sarah",
             "lastName": "Smith",
             "title": "Mrs"
-          }
+          },
+          "role": null
         },
         "benefitType": {
           "code": "ESA",

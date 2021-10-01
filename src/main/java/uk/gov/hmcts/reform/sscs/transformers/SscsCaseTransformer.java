@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
@@ -31,7 +32,9 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Role;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
+import uk.gov.hmcts.reform.sscs.constants.AppellantRoleIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
@@ -213,10 +216,10 @@ public class SscsCaseTransformer implements CaseTransformer {
                         .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
                         .build();
                 }
-                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, buildPersonContact(pairs, PERSON2_VALUE), errors);
+                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, buildPersonContact(pairs, PERSON2_VALUE), formType, errors);
 
             } else if (hasPerson(pairs, PERSON1_VALUE)) {
-                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE), errors);
+                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE), formType, errors);
             }
 
             String hearingType = findHearingType(pairs);
@@ -396,7 +399,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee,
-                                     Contact contact, Set<String> errors) {
+                                     Contact contact, String formType,Set<String> errors) {
         return Appellant.builder()
             .name(buildPersonName(pairs, personType))
             .isAppointee(convertBooleanToYesNoString(appointee != null))
@@ -405,6 +408,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .contact(contact)
             .confidentialityRequired(getConfidentialityRequired(pairs, errors))
             .appointee(appointee)
+            .role(buildAppellantRole(pairs, formType))
             .build();
     }
 
@@ -429,6 +433,68 @@ public class SscsCaseTransformer implements CaseTransformer {
             return Representative.builder().hasRepresentative(NO_LITERAL).build();
         }
     }
+
+    private Role buildAppellantRole(Map<String, Object> pairs, String formType) {
+        if (FormType.SSCS2.toString().equalsIgnoreCase(formType)) {
+            List<String> validProvidedBooleanValues =
+                extractValuesWhereBooleansValid(pairs, errors, AppellantRoleIndicator.getAllIndicatorStrings());
+            List<String> valueIndicatorsWithTrueValue =
+                validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value))
+                    .collect(Collectors.toList());
+            String otherPartyDetails = getField(pairs, OTHER_PARTY_DETAILS);
+
+            if (!checkIfEmpty(valueIndicatorsWithTrueValue, otherPartyDetails) && validateValues(valueIndicatorsWithTrueValue, otherPartyDetails, errors)) {
+                if (!valueIndicatorsWithTrueValue.isEmpty()) {
+                    String selectedValue = valueIndicatorsWithTrueValue.get(0);
+                    AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(selectedValue).orElse(null);
+
+                    if (OTHER.equals(appellantRole)) {
+                        return Role.builder().name(OTHER.getName()).description(otherPartyDetails).build();
+                    } else if (appellantRole != null) {
+                        return Role.builder().name(appellantRole.getName()).build();
+                    }
+                } else if (StringUtils.isNotEmpty(otherPartyDetails)) {
+                    return Role.builder().name(OTHER.getName()).description(otherPartyDetails).build();
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean checkIfEmpty(List<String> validValues, String otherPartyDetails) {
+        if (validValues.isEmpty() && StringUtils.isEmpty(otherPartyDetails)) {
+            return true;
+        } else if (!validValues.isEmpty()) {
+            AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).orElse(null);
+
+            return StringUtils.isEmpty(otherPartyDetails) && OTHER.equals(appellantRole);
+        }
+
+        return false;
+    }
+
+    private boolean validateValues(List<String> validValues, String otherPartyDetails, Set<String> errors) {
+        if (validValues.size() > 1) {
+            if (StringUtils.isNotEmpty(otherPartyDetails)) {
+                validValues.add(OTHER_PARTY_DETAILS);
+            }
+            errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
+                .getGramaticallyJoinedStrings(validValues) + " have conflicting values");
+            return false;
+        }
+
+        AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).orElse(null);
+
+        if (StringUtils.isNotEmpty(otherPartyDetails) && !OTHER.equals(appellantRole)) {
+            errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
+                .getGramaticallyJoinedStrings(List.of(validValues.get(0), OTHER_PARTY_DETAILS))
+                + " have conflicting values");
+            return false;
+        }
+
+        return true;
+    }
+
 
     private List<CcdValue<OtherParty>> buildOtherParty(Map<String, Object> pairs) {
         if (pairs != null && pairs.size() != 0) {
