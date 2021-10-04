@@ -314,22 +314,21 @@ public class SscsCaseValidator implements CaseValidator {
         List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) caseData.get("otherParties"));
 
         OtherParty otherParty;
-        if (!ignoreWarnings && otherParties != null && !otherParties.isEmpty()) {
+        if (otherParties != null && !otherParties.isEmpty()) {
             otherParty = otherParties.get(0).getValue();
 
             Name name = otherParty.getName();
             Address address = otherParty.getAddress();
 
-            checkOtherPartyDataValid(name, address);
-
-        } else if (ignoreWarnings && otherParties != null && !otherParties.isEmpty()) {
-            otherParty = otherParties.get(0).getValue();
-
-            Name name = otherParty.getName();
-
-            // If other party data not valid and ignore warnings pressed then remove otherParties from case data
-            if (!doesFirstNameExist(name) || !doesLastNameExist(name)) {
-                caseData.remove("otherParties");
+            if (!ignoreWarnings) {
+                checkOtherPartyDataValid(name, address);
+            } else {
+                if (!doesFirstNameExist(name) || !doesLastNameExist(name)) {
+                    caseData.remove("otherParties");
+                } else if (!doesAddressLine1Exist(address) || !doesAddressTownExist(address)
+                    || !doesAddressPostcodeExist(address)) {
+                    otherParty.setAddress(null);
+                }
             }
         }
     }
@@ -337,7 +336,8 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkOtherPartyDataValid(Name name, Address address) {
         if (name != null && !isTitleValid(name.getTitle())) {
             warnings.add(
-                getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE, getWarningMessageName(OTHER_PARTY_VALUE, null) + TITLE,
+                getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + TITLE,
                     IS_INVALID));
         }
 

@@ -1744,7 +1744,7 @@ public class SscsCaseValidatorTest {
         "test1, , , , other_party_address_line2 is empty, 2",
         ", , , , other_party_address_line1 is empty, 3",
     })
-    public void givenSscs2FormWithoutOtherPartyAddressEntry_thenAddAWarning(String line1, String line2, String line3, String postcode, String warning, int size) {
+    public void givenSscs2FormWithoutOtherPartyAddressEntryAndIgnoreWarningsFalse_thenAddAWarning(String line1, String line2, String line3, String postcode, String warning, int size) {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
             exceptionRecord,
@@ -1820,7 +1820,7 @@ public class SscsCaseValidatorTest {
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
             exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
-                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, otherPartyName),
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,null, OTHER_PARTY_POSTCODE, otherPartyName),
             false);
 
         assertEquals(0, response.getWarnings().size());
@@ -1862,6 +1862,9 @@ public class SscsCaseValidatorTest {
 
         assertEquals(0, response.getWarnings().size());
         assertEquals("Jerry Fisher", ((List<CcdValue<OtherParty>>) response.getTransformedCase().get("otherParties")).get(0).getValue().getName().getFullNameNoTitle());
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) response.getTransformedCase().get("otherParties"));
+        assertNotNull(otherParties.get(0).getValue().getAddress());
     }
 
     @Test
@@ -1880,6 +1883,30 @@ public class SscsCaseValidatorTest {
 
         assertEquals(0, response.getWarnings().size());
         assertEquals("Mr Jerry Fisher", ((List<CcdValue<OtherParty>>) response.getTransformedCase().get("otherParties")).get(0).getValue().getName().getFullName());
+    }
+
+    @Test
+    @Parameters({", test2, test3, TS1 1ST",
+        "test1, , , TS1 1ST",
+        "test1, test2, test3,"
+    })
+    public void givenSscs2FormWithOtherPartyAddressFieldMissingAndIgnoreWarningsTrue_thenNoWarningsShownAddressNull(String line1, String line2, String line3, String postcode) {
+
+        exceptionRecordSscs2 =
+            ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).ignoreWarnings(true).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,line1, line2, line3, postcode, buildOtherPartyName()),
+            false);
+
+        assertEquals(0, response.getWarnings().size());
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) response.getTransformedCase().get("otherParties"));
+        assertNotNull(otherParties);
+        assertNotNull(otherParties.get(0).getValue().getName());
+        assertNull(otherParties.get(0).getValue().getAddress());
     }
 
     private Object buildDocument(String filename) {
