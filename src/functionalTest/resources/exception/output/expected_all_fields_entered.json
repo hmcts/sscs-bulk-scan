@@ -53,6 +53,7 @@
             "nino": "{PERSON2_NINO}"
           },
           "isAddressSameAsAppointee": null,
+          "confidentialityRequired": null,
           "isAppointee": "Yes",
           "name": {
             "firstName": "Sarah",

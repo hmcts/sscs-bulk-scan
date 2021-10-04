@@ -224,7 +224,7 @@ dependencies {
   compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.50'
   compile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.10'
 
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.4.70-RC-SSCS-9577'
+  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.4.71-RC-SSCS-9565-5'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -329,6 +329,9 @@ dependencyManagement {
       entry 'json-smart'
       entry 'accessors-smart'
     }
+
+    //CVE-2021-40690
+    dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.2.3'
 
     imports {
       mavenBom "org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR12"

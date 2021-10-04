@@ -54,6 +54,7 @@
             "nino": "BB000000B"
           },
           "isAppointee": "Yes",
+          "confidentialityRequired": null,
           "appointee": {
             "name": {
               "title": "Mr",
