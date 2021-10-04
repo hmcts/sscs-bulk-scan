@@ -330,6 +330,9 @@ dependencyManagement {
       entry 'accessors-smart'
     }
 
+    //CVE-2021-40690
+    dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.2.3'
+
     imports {
       mavenBom "org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR12"
     }
