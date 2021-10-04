@@ -334,6 +334,23 @@ public class SscsCaseValidator implements CaseValidator {
                 warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
                     getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
             }
+
+            Address address = otherParty.getAddress();
+            if (!doesAddressLine1Exist(address)) {
+                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE1, IS_EMPTY));
+            }
+
+            if (!doesAddressTownExist(address)) {
+                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE2, IS_EMPTY));
+            }
+
+            if (!doesAddressPostcodeExist(address)) {
+                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_POSTCODE, IS_EMPTY));
+            }
+
         }
 
     }
@@ -485,6 +502,13 @@ public class SscsCaseValidator implements CaseValidator {
     private Boolean doesAddressLine1Exist(Address address) {
         if (address != null) {
             return StringUtils.isNotEmpty(address.getLine1());
+        }
+        return false;
+    }
+
+    private Boolean doesAddressPostcodeExist(Address address) {
+        if (address != null) {
+            return StringUtils.isNotEmpty(address.getPostcode());
         }
         return false;
     }

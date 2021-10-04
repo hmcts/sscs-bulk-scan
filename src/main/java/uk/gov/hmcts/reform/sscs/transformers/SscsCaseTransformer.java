@@ -117,7 +117,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType, errors);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -202,7 +202,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .wantSmsNotifications(convertBooleanToYesNoString(wantsSms)).tya(generateAppealNumber()).build();
     }
 
-    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType, Set<String> errors) {
+    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType) {
         Appellant appellant = null;
 
         if (pairs != null && pairs.size() != 0) {
@@ -216,10 +216,10 @@ public class SscsCaseTransformer implements CaseTransformer {
                         .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
                         .build();
                 }
-                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, buildPersonContact(pairs, PERSON2_VALUE), formType, errors);
+                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, buildPersonContact(pairs, PERSON2_VALUE), formType);
 
             } else if (hasPerson(pairs, PERSON1_VALUE)) {
-                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE), formType, errors);
+                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE), formType);
             }
 
             String hearingType = findHearingType(pairs);
@@ -399,39 +399,16 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee,
-                                     Contact contact, String formType,Set<String> errors) {
+                                     Contact contact, String formType) {
         return Appellant.builder()
             .name(buildPersonName(pairs, personType))
             .isAppointee(convertBooleanToYesNoString(appointee != null))
             .address(buildPersonAddress(pairs, personType))
             .identity(buildPersonIdentity(pairs, personType))
             .contact(contact)
-            .confidentialityRequired(getConfidentialityRequired(pairs, errors))
             .appointee(appointee)
             .role(buildAppellantRole(pairs, formType))
             .build();
-    }
-
-    private YesNo getConfidentialityRequired(Map<String, Object> pairs, Set<String> errors) {
-        String keepHomeAddressConfidential = (String) pairs.get(KEEP_HOME_ADDRESS_CONFIDENTIAL);
-        return keepHomeAddressConfidential != null && StringUtils.isNotBlank(keepHomeAddressConfidential)
-            ? convertBooleanToYesNo(getBoolean(pairs, errors, KEEP_HOME_ADDRESS_CONFIDENTIAL)) : null;
-    }
-
-    private Representative buildRepresentative(Map<String, Object> pairs) {
-        boolean doesRepExist = hasPerson(pairs, REPRESENTATIVE_VALUE);
-
-        if (doesRepExist) {
-            return Representative.builder()
-                .hasRepresentative(YES_LITERAL)
-                .name(buildPersonName(pairs, REPRESENTATIVE_VALUE))
-                .address(buildPersonAddress(pairs, REPRESENTATIVE_VALUE))
-                .organisation(getField(pairs, "representative_company"))
-                .contact(buildPersonContact(pairs, REPRESENTATIVE_VALUE))
-                .build();
-        } else {
-            return Representative.builder().hasRepresentative(NO_LITERAL).build();
-        }
     }
 
     private Role buildAppellantRole(Map<String, Object> pairs, String formType) {
@@ -495,6 +472,21 @@ public class SscsCaseTransformer implements CaseTransformer {
         return true;
     }
 
+    private Representative buildRepresentative(Map<String, Object> pairs) {
+        boolean doesRepExist = hasPerson(pairs, REPRESENTATIVE_VALUE);
+
+        if (doesRepExist) {
+            return Representative.builder()
+                .hasRepresentative(YES_LITERAL)
+                .name(buildPersonName(pairs, REPRESENTATIVE_VALUE))
+                .address(buildPersonAddress(pairs, REPRESENTATIVE_VALUE))
+                .organisation(getField(pairs, "representative_company"))
+                .contact(buildPersonContact(pairs, REPRESENTATIVE_VALUE))
+                .build();
+        } else {
+            return Representative.builder().hasRepresentative(NO_LITERAL).build();
+        }
+    }
 
     private List<CcdValue<OtherParty>> buildOtherParty(Map<String, Object> pairs) {
         if (pairs != null && pairs.size() != 0) {
