@@ -117,7 +117,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType, errors);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -202,7 +202,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .wantSmsNotifications(convertBooleanToYesNoString(wantsSms)).tya(generateAppealNumber()).build();
     }
 
-    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType) {
+    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType, Set<String> errors) {
         Appellant appellant = null;
 
         if (pairs != null && pairs.size() != 0) {
@@ -406,9 +406,16 @@ public class SscsCaseTransformer implements CaseTransformer {
             .address(buildPersonAddress(pairs, personType))
             .identity(buildPersonIdentity(pairs, personType))
             .contact(contact)
+            .confidentialityRequired(getConfidentialityRequired(pairs, errors))
             .appointee(appointee)
             .role(buildAppellantRole(pairs, formType))
             .build();
+    }
+
+    private YesNo getConfidentialityRequired(Map<String, Object> pairs, Set<String> errors) {
+        String keepHomeAddressConfidential = (String) pairs.get(KEEP_HOME_ADDRESS_CONFIDENTIAL);
+        return keepHomeAddressConfidential != null && StringUtils.isNotBlank(keepHomeAddressConfidential)
+            ? convertBooleanToYesNo(getBoolean(pairs, errors, KEEP_HOME_ADDRESS_CONFIDENTIAL)) : null;
     }
 
     private Role buildAppellantRole(Map<String, Object> pairs, String formType) {
@@ -494,6 +501,15 @@ public class SscsCaseTransformer implements CaseTransformer {
             boolean doesOtherPartyExist = hasPerson(pairs, OTHER_PARTY_VALUE);
 
             if (doesOtherPartyExist) {
+                if (isOtherPartyAddressValid(pairs)) {
+                    return Collections.singletonList(CcdValue.<OtherParty>builder().value(
+                        OtherParty.builder()
+                            .name(buildPersonName(pairs, OTHER_PARTY_VALUE))
+                            .address(buildPersonAddress(pairs, OTHER_PARTY_VALUE))
+                            .build())
+                        .build());
+                }
+
                 return Collections.singletonList(CcdValue.<OtherParty>builder().value(
                     OtherParty.builder()
                         .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
@@ -501,6 +517,15 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         }
         return null;
+    }
+
+    private boolean isOtherPartyAddressValid(Map<String, Object> pairs) {
+        // yes+dont check address, no
+        if (extractBooleanValue(pairs, errors, IS_OTHER_PARTY_ADDRESS_KNOWN)
+            || (hasAddress(pairs, OTHER_PARTY_VALUE))) {
+            return true;
+        }
+        return false;
     }
 
     private MrnDetails buildMrnDetails(Map<String, Object> pairs, BenefitType benefitType) {
