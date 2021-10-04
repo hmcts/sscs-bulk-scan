@@ -149,10 +149,7 @@ public class SscsCaseValidator implements CaseValidator {
         if (formType != null && formType.equals(FormType.SSCS2)) {
             checkChildMaintenance((String) caseData.get("childMaintenanceNumber"));
 
-            @SuppressWarnings("unchecked")
-            List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) caseData.get("otherParties"));
-
-            checkOtherParty(otherParties, ignoreWarnings);
+            checkOtherParty(caseData, ignoreWarnings);
         }
 
         checkExcludedDates(appeal);
@@ -312,47 +309,62 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkOtherParty(List<CcdValue<OtherParty>> otherParties, boolean ignoreWarnings) {
+    private void checkOtherParty(Map<String, Object> caseData, boolean ignoreWarnings) {
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) caseData.get("otherParties"));
+
         OtherParty otherParty;
         if (!ignoreWarnings && otherParties != null && !otherParties.isEmpty()) {
             otherParty = otherParties.get(0).getValue();
 
             Name name = otherParty.getName();
-
-            if (name != null && !isTitleValid(name.getTitle())) {
-                warnings.add(
-                    getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE, getWarningMessageName(OTHER_PARTY_VALUE, null) + TITLE,
-                        IS_INVALID));
-            }
-
-            if (!doesFirstNameExist(name)) {
-                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                    getWarningMessageName(OTHER_PARTY_VALUE, null) + FIRST_NAME, IS_EMPTY));
-            }
-
-            if (!doesLastNameExist(name)) {
-                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                    getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
-            }
-
             Address address = otherParty.getAddress();
-            if (!doesAddressLine1Exist(address)) {
-                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE1, IS_EMPTY));
-            }
 
-            if (!doesAddressTownExist(address)) {
-                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE2, IS_EMPTY));
-            }
+            checkOtherPartyDataValid(name, address);
 
-            if (!doesAddressPostcodeExist(address)) {
-                warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                    getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_POSTCODE, IS_EMPTY));
-            }
+        } else if (ignoreWarnings && otherParties != null && !otherParties.isEmpty()) {
+            otherParty = otherParties.get(0).getValue();
 
+            Name name = otherParty.getName();
+
+            // If other party data not valid and ignore warnings pressed then remove otherParties from case data
+            if (!doesFirstNameExist(name) || !doesLastNameExist(name)) {
+                caseData.remove("otherParties");
+            }
+        }
+    }
+
+    private void checkOtherPartyDataValid(Name name, Address address) {
+        if (name != null && !isTitleValid(name.getTitle())) {
+            warnings.add(
+                getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE, getWarningMessageName(OTHER_PARTY_VALUE, null) + TITLE,
+                    IS_INVALID));
         }
 
+        if (!doesFirstNameExist(name)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + FIRST_NAME, IS_EMPTY));
+        }
+
+        if (!doesLastNameExist(name)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
+        }
+
+        if (!doesAddressLine1Exist(address)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE1, IS_EMPTY));
+        }
+
+        if (!doesAddressTownExist(address)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE2, IS_EMPTY));
+        }
+
+        if (!doesAddressPostcodeExist(address)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_POSTCODE, IS_EMPTY));
+        }
     }
 
     private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData, boolean ignoreMrnValidation) {

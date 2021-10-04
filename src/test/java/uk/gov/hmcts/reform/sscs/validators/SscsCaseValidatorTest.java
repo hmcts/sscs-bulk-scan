@@ -1810,7 +1810,7 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenSscs2FormWithOtherPartyLastNameMissingAndIgnoreWarningsTrue_thenNoWarningsShown() {
+    public void givenSscs2FormWithOtherPartyLastNameMissingAndIgnoreWarningsTrue_thenNoWarningsShownAndOtherPartyRemoved() {
         Name otherPartyName = buildOtherPartyName();
         otherPartyName.setLastName(null);
 
@@ -1824,6 +1824,7 @@ public class SscsCaseValidatorTest {
             false);
 
         assertEquals(0, response.getWarnings().size());
+        assertNull(response.getTransformedCase().get("otherParties"));
     }
 
     @Test
@@ -1841,9 +1842,11 @@ public class SscsCaseValidatorTest {
             false);
 
         assertEquals(0, response.getWarnings().size());
+        assertNull(response.getTransformedCase().get("otherParties"));
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void givenSscs2FormWithOtherPartyTitleInvalidAndIgnoreWarningsTrue_thenNoWarningsShown() {
         Name otherPartyName = buildOtherPartyName();
         otherPartyName.setTitle("Random");
@@ -1858,6 +1861,25 @@ public class SscsCaseValidatorTest {
             false);
 
         assertEquals(0, response.getWarnings().size());
+        assertEquals("Jerry Fisher", ((List<CcdValue<OtherParty>>) response.getTransformedCase().get("otherParties")).get(0).getValue().getName().getFullNameNoTitle());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void givenSscs2FormWithValidOtherPartyAndIgnoreWarningsTrue_thenNoWarningsShownAndOtherPartiesCreated() {
+        Name otherPartyName = buildOtherPartyName();
+
+        exceptionRecordSscs2 =
+            ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).ignoreWarnings(true).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(
+                CHILD_MAINTENANCE_NUMBER,OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,OTHER_PARTY_ADDRESS_LINE3, OTHER_PARTY_POSTCODE, otherPartyName),
+            false);
+
+        assertEquals(0, response.getWarnings().size());
+        assertEquals("Mr Jerry Fisher", ((List<CcdValue<OtherParty>>) response.getTransformedCase().get("otherParties")).get(0).getValue().getName().getFullName());
     }
 
     private Object buildDocument(String filename) {
