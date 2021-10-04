@@ -31,6 +31,7 @@
           },
           "isAddressSameAsAppointee": null,
           "isAppointee": "No",
+          "confidentialityRequired": null,
           "name": {
             "firstName": "Frederick",
             "lastName": "Falafel",
