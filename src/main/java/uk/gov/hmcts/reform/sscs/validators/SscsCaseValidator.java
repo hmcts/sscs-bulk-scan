@@ -171,7 +171,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkChildMaintenance(String childMaintenanceNumber) {
         if (childMaintenanceNumber == null || childMaintenanceNumber.equals("")) {
-            warnings.add(getMessageByCallbackType(callbackType, "", PERSON_1_CHILD_MAINTENANCE_NUMBER, IS_BLANK));
+            warnings.add(getMessageByCallbackType(callbackType, "", PERSON_1_CHILD_MAINTENANCE_NUMBER, IS_EMPTY));
         }
     }
 

@@ -1724,7 +1724,7 @@ public class SscsCaseValidatorTest {
                 FormType.SSCS2),
             false);
 
-        assertEquals("'person1_child_maintenance_number' is blank", response.getWarnings().get(0));
+        assertEquals("person1_child_maintenance_number is empty", response.getWarnings().get(0));
     }
 
     @Test

@@ -149,7 +149,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors())
             .containsOnly(
-                "Child maintenance number is blank",
+                "Child maintenance number is empty",
                 "Other party first name is empty",
                 "Other party address town is empty");
 

@@ -448,7 +448,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().warnings)
-            .contains("'person1_child_maintenance_number' is blank",
+            .contains("person1_child_maintenance_number is empty",
                 "other_party_last_name is empty",
                 "other_party_address_line2 is empty",
                 "other_party_postcode is empty");

@@ -54,7 +54,6 @@ public final class SscsConstants {
     public static final String DOB = "_dob";
     public static final String IS_EMPTY = "is empty";
     public static final String IS_MISSING = "is missing";
-    public static final String IS_BLANK = "is blank";
     public static final String ARE_EMPTY = "are empty. At least one must be populated";
     public static final String IS_INVALID = "is invalid";
     public static final String FIELDS_EMPTY = "fields are empty";

@@ -397,7 +397,7 @@ public class OcrValidationTest  {
             .andExpect(jsonPath("$.status").value("WARNINGS"))
             .andExpect(jsonPath("$.errors", hasSize(0)))
             .andExpect(jsonPath("$.warnings", hasSize(5)))
-            .andExpect(jsonPath("$.warnings", containsInAnyOrder("'person1_child_maintenance_number' is blank",
+            .andExpect(jsonPath("$.warnings", containsInAnyOrder("person1_child_maintenance_number is empty",
                 "is_paying_parent, is_receiving_parent, is_another_party and other_party_details fields are empty",
                 "other_party_first_name is empty",
                 "other_party_address_line1 is empty",
