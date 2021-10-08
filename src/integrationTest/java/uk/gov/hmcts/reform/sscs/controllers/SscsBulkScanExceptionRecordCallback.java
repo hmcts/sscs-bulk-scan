@@ -470,8 +470,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ResponseEntity<ErrorResponse> result =
             this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
 
-        assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().warnings)
+        assertThat(result.getStatusCodeValue()).isEqualTo(422);
+        assertThat(result.getBody().errors)
             .containsOnly("is_paying_parent, is_receiving_parent, is_another_party and other_party_details fields are empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);

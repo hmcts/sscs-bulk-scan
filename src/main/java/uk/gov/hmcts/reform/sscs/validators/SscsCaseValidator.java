@@ -94,7 +94,7 @@ public class SscsCaseValidator implements CaseValidator {
         ScannedData ocrCaseData = sscsJsonExtractor.extractJson(exceptionRecord);
 
         boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, ignoreWarningsValue);
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, ignoreWarningsValue, true);
 
         if (combineWarnings) {
             warnings = combineWarnings();
@@ -126,7 +126,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         Map<String, Object> ocrCaseData = new HashMap<>();
 
-        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation, false);
+        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation, false, false);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -136,13 +136,13 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                        boolean ignoreMrnValidation, boolean ignoreWarnings) {
+                                        boolean ignoreMrnValidation, boolean ignoreWarnings, boolean ignorePartyRoleValidation) {
 
         FormType formType = (FormType) caseData.get("formType");
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
 
-        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType);
+        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType, ignorePartyRoleValidation);
         checkRepresentative(appeal, ocrCaseData, caseData);
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation);
 
@@ -194,7 +194,7 @@ public class SscsCaseValidator implements CaseValidator {
 
 
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                String personType, FormType formType) {
+                                String personType, FormType formType, boolean ignorePartyRoleValidation) {
         Appellant appellant = appeal.getAppellant();
 
         if (appellant == null) {
@@ -227,7 +227,7 @@ public class SscsCaseValidator implements CaseValidator {
             checkMobileNumber(appellant.getContact(), personType);
 
             checkHearingSubtypeDetails(appeal.getHearingSubtype());
-            if (formType != null && formType.equals(FormType.SSCS2)) {
+            if (!ignorePartyRoleValidation && formType != null && formType.equals(FormType.SSCS2)) {
                 checkAppellantRole(appellant.getRole());
             }
         }
@@ -237,16 +237,16 @@ public class SscsCaseValidator implements CaseValidator {
     private void checkAppellantRole(Role role) {
         if (role == null) {
             warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
-                EXCEPTION_CALLBACK == callbackType ? FIELDS_EMPTY : IS_MISSING));
+                IS_MISSING));
         } else {
             String name = role.getName();
             String description = role.getDescription();
             if (StringUtils.isEmpty(name)) {
                 warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
-                    EXCEPTION_CALLBACK == callbackType ? FIELDS_EMPTY : IS_MISSING));
+                    IS_MISSING));
             } else if (AppellantRole.OTHER.getName().equalsIgnoreCase(name) && StringUtils.isEmpty(description)) {
                 warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_DESCRIPTION.toString(),
-                    EXCEPTION_CALLBACK == callbackType ? IS_EMPTY : IS_MISSING));
+                    IS_MISSING));
             }
         }
     }

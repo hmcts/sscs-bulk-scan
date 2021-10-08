@@ -2034,6 +2034,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -2209,6 +2210,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("keep_home_address_confidential", keepHomeAddressConfidential);
+        pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -2231,6 +2233,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("keep_home_address_confidential", "");
+        pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -2252,6 +2255,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());

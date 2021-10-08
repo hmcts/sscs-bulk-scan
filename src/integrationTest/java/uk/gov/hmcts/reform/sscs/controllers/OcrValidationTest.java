@@ -418,9 +418,8 @@ public class OcrValidationTest  {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("WARNINGS"))
             .andExpect(jsonPath("$.errors", hasSize(0)))
-            .andExpect(jsonPath("$.warnings", hasSize(2)))
-            .andExpect(jsonPath("$.warnings", containsInAnyOrder("is_paying_parent, is_receiving_parent, is_another_party and other_party_details fields are empty",
-                "is_paying_parent, is_receiving_parent, is_another_party and other_party_details have conflicting values")));
+            .andExpect(jsonPath("$.warnings", hasSize(1)))
+            .andExpect(jsonPath("$.warnings", contains("is_paying_parent, is_receiving_parent, is_another_party and other_party_details have conflicting values")));
     }
 
 
