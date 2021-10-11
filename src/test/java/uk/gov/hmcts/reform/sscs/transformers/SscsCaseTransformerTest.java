@@ -2173,7 +2173,7 @@ public class SscsCaseTransformerTest {
         "true,false,false,any,is_paying_parent and other_party_details have conflicting values",
         "true,false,true,any,is_paying_parent\\, is_another_party and other_party_details have conflicting values",
     })
-    public void givenKeyValuePairsWithPerson1AndInvalidAppellantRole_thenReturnAnError(String payingParent, String receivingParent, String other, String description, String errorMessage) {
+    public void givenKeyValuePairsWithPerson1AndInvalidAppellantRole_thenReturnAnWarnings(String payingParent, String receivingParent, String other, String description, String errorMessage) {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -2191,8 +2191,8 @@ public class SscsCaseTransformerTest {
         pairs.put("other_party_details", description);
 
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertFalse(result.getErrors().isEmpty());
-        assertEquals(errorMessage, result.getErrors().get(0));
+        assertFalse(result.getWarnings().isEmpty());
+        assertEquals(errorMessage, result.getWarnings().get(0));
     }
 
     @Test
