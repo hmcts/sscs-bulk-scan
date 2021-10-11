@@ -491,8 +491,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ResponseEntity<ErrorResponse> result =
             this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
 
-        assertThat(result.getStatusCodeValue()).isEqualTo(422);
-        assertThat(result.getBody().errors)
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().warnings)
             .containsOnly("is_paying_parent, is_receiving_parent and is_another_party have conflicting values");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
@@ -812,7 +812,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     private Map<String, Object> caseDataWithInvalidAppellantRole() {
 
         Map<String, Object> ocrList = new HashMap<>();
-        ocrList.put("person1_child_maintenance_number", "");
+        ocrList.put("person1_child_maintenance_number", "123");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
         ocrList.put("office", "Balham DRT");

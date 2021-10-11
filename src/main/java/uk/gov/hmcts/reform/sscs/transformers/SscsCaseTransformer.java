@@ -4,6 +4,8 @@ import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
+import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCallbackType;
+import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
@@ -37,6 +39,7 @@ import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.AppellantRoleIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
+import uk.gov.hmcts.reform.sscs.constants.WarningMessage;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
@@ -427,7 +430,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .collect(Collectors.toList());
             String otherPartyDetails = getField(pairs, OTHER_PARTY_DETAILS);
 
-            if (!checkIfEmpty(valueIndicatorsWithTrueValue, otherPartyDetails) && validateValues(valueIndicatorsWithTrueValue, otherPartyDetails, errors)) {
+            if (validateValues(valueIndicatorsWithTrueValue, otherPartyDetails)) {
                 if (!valueIndicatorsWithTrueValue.isEmpty()) {
                     String selectedValue = valueIndicatorsWithTrueValue.get(0);
                     AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(selectedValue).orElse(null);
@@ -445,37 +448,34 @@ public class SscsCaseTransformer implements CaseTransformer {
         return null;
     }
 
-    private boolean checkIfEmpty(List<String> validValues, String otherPartyDetails) {
+    private boolean validateValues(List<String> validValues, String otherPartyDetails) {
         if (validValues.isEmpty() && StringUtils.isEmpty(otherPartyDetails)) {
-            return true;
+            warnings.add(getMessageByCallbackType(EXCEPTION_CALLBACK, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
+                FIELDS_EMPTY));
+            return false;
         } else if (!validValues.isEmpty()) {
+            if (validValues.size() > 1) {
+                if (StringUtils.isNotEmpty(otherPartyDetails)) {
+                    validValues.add(OTHER_PARTY_DETAILS);
+                }
+                warnings.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
+                    .getGramaticallyJoinedStrings(validValues) + " have conflicting values");
+                return false;
+            }
+
             AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).orElse(null);
 
-            return StringUtils.isEmpty(otherPartyDetails) && OTHER.equals(appellantRole);
-        }
-
-        return false;
-    }
-
-    private boolean validateValues(List<String> validValues, String otherPartyDetails, Set<String> errors) {
-        if (validValues.size() > 1) {
-            if (StringUtils.isNotEmpty(otherPartyDetails)) {
-                validValues.add(OTHER_PARTY_DETAILS);
+            if (OTHER.equals(appellantRole) && StringUtils.isEmpty(otherPartyDetails)) {
+                warnings.add(getMessageByCallbackType(EXCEPTION_CALLBACK, "", WarningMessage.APPELLANT_PARTY_DESCRIPTION.toString(),
+                    FIELDS_EMPTY));
+                return false;
+            } else if (StringUtils.isNotEmpty(otherPartyDetails) && !OTHER.equals(appellantRole)) {
+                warnings.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
+                    .getGramaticallyJoinedStrings(List.of(validValues.get(0), OTHER_PARTY_DETAILS))
+                    + " have conflicting values");
+                return false;
             }
-            errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
-                .getGramaticallyJoinedStrings(validValues) + " have conflicting values");
-            return false;
         }
-
-        AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).orElse(null);
-
-        if (StringUtils.isNotEmpty(otherPartyDetails) && !OTHER.equals(appellantRole)) {
-            errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
-                .getGramaticallyJoinedStrings(List.of(validValues.get(0), OTHER_PARTY_DETAILS))
-                + " have conflicting values");
-            return false;
-        }
-
         return true;
     }
 
