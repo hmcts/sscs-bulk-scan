@@ -4,8 +4,22 @@
     "callback_response_status": null,
     "callback_response_status_code": null,
     "case_data": {
+      "otherParties": [
+        {
+          "value": {
+            "name": {
+              "lastName": "Butler",
+              "title": "Mrs"
+            },
+            "address": {
+              "line1": "299 Harrow",
+              "county": "Hatch End",
+              "postcode": "HA5 4QT"
+            }
+          }
+        }
+      ],
       "appeal": {
-        "hearingType": "paper",
         "appealReasons": {},
         "appellant": {
           "address": {
@@ -20,7 +34,7 @@
           },
           "identity": {
             "dob": "1904-03-10",
-            "nino": "AB 22 55 66 B"
+            "nino": "BB000000B"
           },
           "name": {
             "firstName": "User",
@@ -28,8 +42,7 @@
             "title": "Mr"
           },
           "role": {
-            "name": "Other",
-            "description": "Papa"
+            "name": "Paying parent"
           }
         },
         "rep": {
@@ -38,11 +51,19 @@
         "benefitType": {
           "code": "ESA"
         },
+        "hearingType": "oral",
         "hearingOptions": {
           "languageInterpreter": "Yes",
           "other": "No",
           "wantsSupport": "Yes",
           "wantsToAttend": "Yes"
+        },
+        "hearingSubtype": {
+          "wantsHearingTypeTelephone": "Yes",
+          "hearingTelephoneNumber": "01234555996",
+          "wantsHearingTypeVideo": "Yes",
+          "hearingVideoEmail": "my@email.com",
+          "wantsHearingTypeFaceToFace": "No"
         },
         "mrnDetails": {
           "mrnDate": "2018-12-09",
@@ -50,7 +71,9 @@
         },
         "signer": null
       },
-      "caseReference": "SC022/14/12423"
+      "caseReference": "SC022/14/12423",
+      "formType": "sscs2",
+      "childMaintenanceNumber": ""
     },
     "case_type_id": "Benefit",
     "created_date": [
@@ -63,7 +86,7 @@
       23000000
     ],
     "state": "incompleteApplication",
-    "id": "1234567898765432"
+    "id": "1234567"
   },
   "event_id": "validAppeal"
 }

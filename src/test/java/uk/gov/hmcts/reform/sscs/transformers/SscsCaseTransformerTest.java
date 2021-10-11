@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -9,6 +11,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1PEU;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1U;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS2;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
@@ -29,6 +34,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.platform.commons.util.StringUtils;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
@@ -87,6 +93,8 @@ public class SscsCaseTransformerTest {
 
     ExceptionRecord nullFormExceptionRecord;
 
+    private ExceptionRecord sscs2ExceptionRecord;
+
     IdamTokens token;
 
     @Before
@@ -104,8 +112,9 @@ public class SscsCaseTransformerTest {
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), true);
 
-        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1PEU.getId()).build();
-        given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().build());
+        exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            SSCS1PEU.getId()).build();
+        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
         given(postcodeValidator.isValid(anyString())).willReturn(true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
@@ -113,8 +122,14 @@ public class SscsCaseTransformerTest {
         sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
+        given(keyValuePairValidator.validate(ocrList, SSCS1U)).willReturn(CaseResponse.builder().build());
         nullFormExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        given(keyValuePairValidator.validate(ocrList, SSCS2)).willReturn(CaseResponse.builder().build());
+        sscs2ExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            SSCS2.getId()).build();
+        given(sscsJsonExtractor.extractJson(sscs2ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
     }
@@ -202,6 +217,18 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = Benefit.ATTENDANCE_ALLOWANCE;
+        assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    public void givenSscs2_thenBenefitTypeIsChildSupport() {
+        pairs.put(BenefitTypeIndicatorSscs1U.PIP.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), true);
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        Benefit expectedBenefit = Benefit.CHILD_SUPPORT;
         assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
     }
 
@@ -1338,7 +1365,7 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenACaseWithFailedSchemaValidation_thenAddErrorToList() {
 
-        given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1752,7 +1779,7 @@ public class SscsCaseTransformerTest {
     public void givenATransformForValidationRequestFailsSchemaValidation_thenReturnErrors() {
         pairs.put("bla", "12/99/1987");
 
-        given(keyValuePairValidator.validate(ocrList)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, true);
 
@@ -1963,6 +1990,280 @@ public class SscsCaseTransformerTest {
 
         assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
     }
+
+    @Test
+    @Parameters({CHILD_MAINTENANCE_NUMBER, ""})
+    public void givenSscs2FormWithChildMaintenanceNumber_thenCaseDataValueIsSet(String childMaintenance) {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put(PERSON_1_CHILD_MAINTENANCE_NUMBER, childMaintenance);
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+        assertEquals(childMaintenance,  result.getTransformedCase().get("childMaintenanceNumber"));
+    }
+
+    @Test
+    public void givenSscs2FormWithOtherPartyNameAndAddressSet_thenCaseDataValueIsSet() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("other_party_title", OTHER_PARTY_TITLE);
+        pairs.put("other_party_first_name", OTHER_PARTY_FIRST_NAME);
+        pairs.put("other_party_last_name", OTHER_PARTY_LAST_NAME);
+        pairs.put("is_other_party_address_known", "true");
+        pairs.put("other_party_address_line1", OTHER_PARTY_ADDRESS_LINE1);
+        pairs.put("other_party_address_line2", OTHER_PARTY_ADDRESS_LINE2);
+        pairs.put("other_party_address_line3", OTHER_PARTY_ADDRESS_LINE3);
+        pairs.put("other_party_postcode", OTHER_PARTY_POSTCODE);
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+
+        @SuppressWarnings("unchecked")
+        OtherParty otherParty = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties")).get(0).getValue();
+        Name otherPartyName = otherParty.getName();
+        assertEquals(OTHER_PARTY_TITLE, otherPartyName.getTitle());
+        assertEquals(OTHER_PARTY_FIRST_NAME, otherPartyName.getFirstName());
+        assertEquals(OTHER_PARTY_LAST_NAME, otherPartyName.getLastName());
+        Address otherPartyAddress = otherParty.getAddress();
+        assertEquals(OTHER_PARTY_ADDRESS_LINE1, otherPartyAddress.getLine1());
+        assertEquals(OTHER_PARTY_ADDRESS_LINE2, otherPartyAddress.getTown());
+        assertEquals(OTHER_PARTY_ADDRESS_LINE3, otherPartyAddress.getCounty());
+        assertEquals(OTHER_PARTY_POSTCODE, otherPartyAddress.getPostcode());
+    }
+
+    @Test
+    public void givenSscs2FormWithoutChildMaintenanceNumberOrOtherPartyNameAndAddress_thenCaseDataValueIsNotSet() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+        assertNull(result.getTransformedCase().get("childMaintenanceNumber"));
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
+        assertNull(otherParties);
+    }
+
+    @Test
+    public void givenSscs2FormWithIncorrectOtherPartyAddressSelection_thenErrorIsThrown() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("other_party_title", OTHER_PARTY_TITLE);
+        pairs.put("other_party_first_name", OTHER_PARTY_FIRST_NAME);
+        pairs.put("other_party_last_name", OTHER_PARTY_LAST_NAME);
+        pairs.put("is_other_party_address_known", "Invalid");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_other_party_address_known has an invalid value. Should be Yes/No or True/False", result.getErrors().get(0));
+        assertTrue(result.getWarnings().isEmpty());
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
+        assertNull(otherParties.get(0).getValue().getAddress());
+    }
+
+    @Test
+    public void givenSscs2FormWithPartyAddressNotSelectedButAddressEntered_thenAddressIsSet() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("other_party_title", OTHER_PARTY_TITLE);
+        pairs.put("other_party_first_name", OTHER_PARTY_FIRST_NAME);
+        pairs.put("other_party_last_name", OTHER_PARTY_LAST_NAME);
+        pairs.put("is_other_party_address_known", null);
+        pairs.put("other_party_address_line1", OTHER_PARTY_ADDRESS_LINE1);
+        pairs.put("other_party_address_line2", OTHER_PARTY_ADDRESS_LINE2);
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+        @SuppressWarnings("unchecked")
+        List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
+        assertNotNull(otherParties.get(0).getValue().getAddress());
+    }
+
+    @Test
+    @Parameters({
+        "true,false,false,,PAYING_PARENT",
+        "false,true,false,,RECEIVING_PARENT",
+        "false,false,true,Guardian,OTHER"
+    })
+    public void givenKeyValuePairsWithPerson1_thenBuildAnAppealWithAppellantAndRole(String payingParent, String receivingParent, String other, String description, AppellantRole appellantRole) {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        pairs.put("person1_nino", APPELLANT_NINO);
+        pairs.put("is_paying_parent", payingParent);
+        pairs.put("is_receiving_parent", receivingParent);
+        pairs.put("is_another_party", other);
+        pairs.put("other_party_details", description);
+
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+
+        Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
+        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
+        Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob("1987-08-12").build();
+        Role role = Role.builder().name(appellantRole.getName()).description(StringUtils.isBlank(description) ? null : description).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").role(role).address(appellantAddress).contact(Contact.builder().build()).build();
+
+        Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
+        assertEquals(expectedAppellant, appellantResult);
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({
+        "true,true,true,any,is_paying_parent\\, is_receiving_parent\\, is_another_party and other_party_details have conflicting values",
+        "true,false,false,any,is_paying_parent and other_party_details have conflicting values",
+        "true,false,true,any,is_paying_parent\\, is_another_party and other_party_details have conflicting values",
+    })
+    public void givenKeyValuePairsWithPerson1AndInvalidAppellantRole_thenReturnAnWarnings(String payingParent, String receivingParent, String other, String description, String errorMessage) {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        pairs.put("person1_nino", APPELLANT_NINO);
+        pairs.put("is_paying_parent", payingParent);
+        pairs.put("is_receiving_parent", receivingParent);
+        pairs.put("is_another_party", other);
+        pairs.put("other_party_details", description);
+
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertFalse(result.getWarnings().isEmpty());
+        assertEquals(errorMessage, result.getWarnings().get(0));
+    }
+
+    @Test
+    @Parameters({"Yes, Yes", "No, No", "true, Yes", "false, No"})
+    public void givenSscs2FormAndConfidentialityRequired_thenCaseDataValueIsSet(String keepHomeAddressConfidential, String expected) {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("keep_home_address_confidential", keepHomeAddressConfidential);
+        pairs.put("is_paying_parent", "true");
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+
+        YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
+        assertThat(appellantConfidentialityRequired.toString(), is(expected));
+    }
+
+    @Test
+    public void givenSscs2FormAndConfidentialityRequiredEmpty_thenCaseDataValueIsNull() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("keep_home_address_confidential", "");
+        pairs.put("is_paying_parent", "true");
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+
+        YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
+        assertThat(appellantConfidentialityRequired, is(nullValue()));
+    }
+
+    @Test
+    public void givenSscs2FormAndNoConfidentiality_thenCaseDataValueIsNull() {
+        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+
+        YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
+        assertThat(appellantConfidentialityRequired, is(nullValue()));
+    }
+
 
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();

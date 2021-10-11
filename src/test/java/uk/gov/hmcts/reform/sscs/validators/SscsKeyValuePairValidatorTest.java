@@ -10,6 +10,7 @@ import java.util.Map;
 import org.junit.Test;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
+import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 
 public class SscsKeyValuePairValidatorTest {
 
@@ -36,7 +37,7 @@ public class SscsKeyValuePairValidatorTest {
         }).toArray(HashMap[]::new));
 
         @SuppressWarnings("unchecked")
-        CaseResponse response = validator.validate(scanOcrData);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS1);
         assertNull(response.getErrors());
     }
 
@@ -50,7 +51,7 @@ public class SscsKeyValuePairValidatorTest {
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
 
-        CaseResponse response = validator.validate(scanOcrData);
+        CaseResponse response = validator.validate(scanOcrData, FormType.UNKNOWN);
         assertNull(response.getErrors());
     }
 
@@ -63,7 +64,7 @@ public class SscsKeyValuePairValidatorTest {
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
 
-        CaseResponse response = validator.validate(scanOcrData);
+        CaseResponse response = validator.validate(scanOcrData, null);
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
     }
 
@@ -80,9 +81,65 @@ public class SscsKeyValuePairValidatorTest {
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap1, valueMap2);
 
-        CaseResponse response = validator.validate(scanOcrData);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS1PE);
         assertEquals(2, response.getErrors().size());
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
         assertEquals("#: extraneous key [invalid_key2] is not permitted", response.getErrors().get(1));
+    }
+
+    @Test
+    public void givenValidChildSupportKeyValuePair_thenReturnAnEmptyCaseResponse() {
+        Map<String, Object> valueMap = new HashMap<>();
+
+        valueMap.put("name", "person1_child_maintenance_number");
+        valueMap.put("value", "Test1234");
+
+        List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
+
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
+        assertNull(response.getErrors());
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAValidSscs1FieldsForSscs2_thenReturnValidCaseResponse() {
+        Map<String, Object> pairs = new HashMap<>();
+        pairs.put("is_benefit_type_pip", true);
+        pairs.put("is_benefit_type_esa", false);
+        pairs.put("is_benefit_type_uc", false);
+        pairs.put("person1_email", "me@example.com");
+        pairs.put("person1_want_sms_notifications", false);
+        pairs.put("representative_email", "me@example.com");
+        pairs.put("representative_mobile", "07770583222");
+        pairs.put("representative_want_sms_notifications", true);
+
+        @SuppressWarnings("unchecked")
+        List scanOcrData = buildScannedValidationOcrData(pairs.entrySet().stream().map(f -> {
+            HashMap<String, Object> valueMap = new HashMap<>();
+            valueMap.put("name", f.getKey());
+            valueMap.put("value", f.getValue());
+            return valueMap;
+        }).toArray(HashMap[]::new));
+
+        @SuppressWarnings("unchecked")
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
+        assertNull(response.getErrors());
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAppellantRoleKeyValuePair_thenReturnAnEmptyCaseResponse() {
+        Map<String, Object> valueMap = new HashMap<>();
+
+        valueMap.put("is_paying_parent", "true");
+        valueMap.put("is_receiving_parent", "false");
+        valueMap.put("is_another_party", "false");
+        valueMap.put("other_party_details", "Step Mother");
+
+        List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
+
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
+        assertNull(response.getErrors());
+        assertEquals(0, response.getWarnings().size());
     }
 }
