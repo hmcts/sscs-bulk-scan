@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.sscs.controllers;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -62,6 +62,23 @@ public class OcrValidationTest  {
     }
 
     @Test
+    public void should_return_200_when_ocr_form_validation_request_data_is_valid_Sscs2() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/valid-ocr-data.json");
+
+        mvc.perform(
+                post("/forms/SSCS1/validate-ocr")
+                    .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
     public void should_return_200_when_ocr_form_for_uc_validation_request_data_is_valid() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -72,6 +89,23 @@ public class OcrValidationTest  {
                 .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
+    public void should_return_200_when_ocr_form_for_uc_validation_request_data_is_valid_Sscs2() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs2-valid-ocr-data.json");
+
+        mvc.perform(
+                post("/forms/SSCS2/validate-ocr")
+                    .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(content))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("SUCCESS"))
             .andExpect(jsonPath("$.warnings", hasSize(0)))
@@ -304,6 +338,90 @@ public class OcrValidationTest  {
             .andExpect(jsonPath("$.errors", hasSize(0)))
             .andExpect(content().json("{\"warnings\":[\"benefit_type_other is invalid\"],\"errors\":[],\"status\":\"WARNINGS\"}"));
     }
+
+    @Test
+    public void should_return_200_with_error_when_ocr_form_with_sscs2_data_is_used_for_sscs1_form() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs2-valid-ocr-data.json");
+
+        mvc.perform(
+            post("/forms/SSCS1/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("ERRORS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(9)))
+            .andExpect(jsonPath("$.errors", containsInAnyOrder("#: extraneous key [person1_child_maintenance_number] is not permitted",
+                "#: extraneous key [other_party_last_name] is not permitted",
+                "#: extraneous key [other_party_first_name] is not permitted",
+                "#: extraneous key [other_party_title] is not permitted",
+                "#: extraneous key [is_paying_parent] is not permitted",
+                "#: extraneous key [other_party_address_line1] is not permitted",
+                "#: extraneous key [other_party_address_line2] is not permitted",
+                "#: extraneous key [other_party_postcode] is not permitted",
+                "#: extraneous key [is_other_party_address_known] is not permitted")));
+    }
+
+    @Test
+    public void should_return_200_when_ocr_form_with_sscs2_form_validation_request_data_is_valid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs2-valid-ocr-data.json");
+
+        mvc.perform(
+            post("/forms/SSCS2/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
+    public void should_return_200_with_warning_when_ocr_form_with_sscs2_form_validation_request_data_is_invalid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs2-invalid-ocr-data.json");
+
+        mvc.perform(
+            post("/forms/SSCS2/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("WARNINGS"))
+            .andExpect(jsonPath("$.errors", hasSize(0)))
+            .andExpect(jsonPath("$.warnings", hasSize(5)))
+            .andExpect(jsonPath("$.warnings", containsInAnyOrder("person1_child_maintenance_number is empty",
+                "is_paying_parent, is_receiving_parent, is_another_party and other_party_details fields are empty",
+                "other_party_first_name is empty",
+                "other_party_address_line1 is empty",
+                "other_party_postcode is empty")));
+    }
+
+    @Test
+    public void should_return_200_with_warning_when_ocr_form_with_sscs2_form_validation_request_appellant_role_invalid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs2-invalid-ocr-data-appellant-role.json");
+
+        mvc.perform(
+            post("/forms/SSCS2/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("WARNINGS"))
+            .andExpect(jsonPath("$.errors", hasSize(0)))
+            .andExpect(jsonPath("$.warnings", hasSize(1)))
+            .andExpect(jsonPath("$.warnings", contains("is_paying_parent, is_receiving_parent, is_another_party and other_party_details have conflicting values")));
+    }
+
 
     private String readResource(final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charsets.UTF_8);

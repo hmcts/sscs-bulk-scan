@@ -64,7 +64,9 @@
           },
           "isAppointee": "No",
           "appointee": null,
-          "isAddressSameAsAppointee": null
+          "confidentialityRequired": null,
+          "isAddressSameAsAppointee": null,
+          "role": null
         },
         "benefitType": {
           "code": "PIP",

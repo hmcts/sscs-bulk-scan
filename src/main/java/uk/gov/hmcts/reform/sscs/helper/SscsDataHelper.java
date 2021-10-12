@@ -44,7 +44,9 @@ public class SscsDataHelper {
         this.postcodeValidator = postcodeValidator;
     }
 
-    public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions, FormType formType) {
+    public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions,
+                                 FormType formType, String childMaintenanceNumber,
+                                 List<CcdValue<OtherParty>> otherParties) {
         appealData.put("appeal", appeal);
         appealData.put("sscsDocument", sscsDocuments);
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
@@ -75,6 +77,13 @@ public class SscsDataHelper {
                 }
             }
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
+        }
+
+        if (formType != null && FormType.SSCS2.equals(formType)) {
+            appealData.put("childMaintenanceNumber", childMaintenanceNumber);
+            if (otherParties != null) {
+                appealData.put("otherParties", otherParties);
+            }
         }
     }
 

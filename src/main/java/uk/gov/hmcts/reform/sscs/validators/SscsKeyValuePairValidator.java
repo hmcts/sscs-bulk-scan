@@ -13,36 +13,56 @@ import org.json.JSONTokener;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
+import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 
 @Component
 public class SscsKeyValuePairValidator {
 
-    private final String schemaResourceLocation = "/schema/sscs-bulk-scan-schema.json";
+    private final String sscs1SchemaResourceLocation = "/schema/sscs-bulk-scan-schema.json";
+    private final String sscs2SchemaResourceLocation = "/schema/sscs2-bulk-scan-schema.json";
 
-    private Schema schema = null;
+    private Schema sscs1Schema = null;
+    private Schema sscs2Schema = null;
 
-    public CaseResponse validate(List<OcrDataField> ocrDataValidationRequest) {
-        tryLoadSchema(schemaResourceLocation);
+    public CaseResponse validate(List<OcrDataField> ocrDataValidationRequest, FormType formType) {
+        if (formType != null && formType.equals(FormType.SSCS2)) {
+            tryLoadSscs2Schema();
+        } else {
+            tryLoadSscs1Schema();
+        }
 
         List<String> errors = null;
 
         try {
-            schema.validate(new JSONObject(build(ocrDataValidationRequest)));
+            if (formType != null && formType.equals(FormType.SSCS2)) {
+                sscs2Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
+            } else {
+                sscs1Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
+            }
         } catch (ValidationException ex) {
             errors = new ArrayList<>();
             for (String message : ex.getAllMessages()) {
                 errors.add(message);
             }
         }
-        return CaseResponse.builder().errors(errors).warnings(new ArrayList<>()).status(getValidationStatus(errors, null)).build();
+        return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
+            .status(getValidationStatus(errors, null)).build();
     }
 
-    private synchronized void tryLoadSchema(String schemaLocation) {
-
-        if (schema != null) {
+    private synchronized void tryLoadSscs1Schema() {
+        if (sscs1Schema != null) {
             return;
         }
-        schema = SchemaLoader.load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(schemaLocation))));
+        sscs1Schema = SchemaLoader
+            .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(sscs1SchemaResourceLocation))));
+    }
+
+    private synchronized void tryLoadSscs2Schema() {
+        if (sscs2Schema != null) {
+            return;
+        }
+        sscs2Schema = SchemaLoader
+            .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(sscs2SchemaResourceLocation))));
     }
 
 }

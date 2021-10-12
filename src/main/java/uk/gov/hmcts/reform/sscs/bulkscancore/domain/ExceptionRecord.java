@@ -24,6 +24,7 @@ public class ExceptionRecord {
     private final Boolean isAutomatedProcess;
     private final String exceptionRecordId;
     private final String exceptionRecordCaseTypeId;
+    private final Boolean ignoreWarnings;
 
     public ExceptionRecord(
         @JsonProperty("id") String id,
@@ -40,7 +41,8 @@ public class ExceptionRecord {
         @JsonProperty("envelope_id") String envelopeId,
         @JsonProperty("is_automated_process") Boolean isAutomatedProcess,
         @JsonProperty("exception_record_id") String exceptionRecordId,
-        @JsonProperty("exception_record_case_type_id") String exceptionRecordCaseTypeId
+        @JsonProperty("exception_record_case_type_id") String exceptionRecordCaseTypeId,
+        @JsonProperty("ignore_warnings") Boolean ignoreWarnings
     ) {
         this.id = id;
         this.caseTypeId = caseTypeId;
@@ -56,5 +58,6 @@ public class ExceptionRecord {
         this.isAutomatedProcess = isAutomatedProcess;
         this.exceptionRecordId = exceptionRecordId;
         this.exceptionRecordCaseTypeId = exceptionRecordCaseTypeId;
+        this.ignoreWarnings = ignoreWarnings;
     }
 }
