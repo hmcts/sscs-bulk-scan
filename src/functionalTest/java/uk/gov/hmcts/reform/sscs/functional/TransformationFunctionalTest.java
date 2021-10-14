@@ -170,4 +170,19 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
 
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
+
+    @Test
+    public void sscs2_transform_appeal_created_case_when_all_fields_entered() throws IOException {
+        String expectedJson = getJson("exception/output/sscs2_expected_all_fields_entered.json");
+        String person1Nino = generateRandomNino();
+
+        expectedJson = expectedJson.replace("{PERSON1_NINO}", person1Nino);
+        expectedJson = replaceMrnDate(expectedJson, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+
+        String jsonRequest = getJson("exception/sscs2_all_fields_entered.json");
+        jsonRequest = jsonRequest.replace("{PERSON1_NINO}", person1Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
+
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
+    }
 }

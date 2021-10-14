@@ -522,7 +522,7 @@ public class CcdCallbackHandlerTest {
 
     private PreSubmitCallbackResponse<SscsCaseData> invokeValidationCallbackHandler(SscsCaseData caseDetails, EventType eventType) {
         uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<SscsCaseData> c = new uk.gov.hmcts.reform.sscs.ccd.domain.CaseDetails<>(123L, "sscs",
-            State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now());
+            State.INTERLOCUTORY_REVIEW_STATE, caseDetails, LocalDateTime.now(), "Benefit");
 
         return ccdCallbackHandler.handleValidationAndUpdate(
             new Callback<>(c, Optional.empty(), eventType, false), idamTokens);

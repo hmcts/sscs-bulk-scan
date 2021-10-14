@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ObjectUtils;
+import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 
 public final class SscsOcrDataUtil {
 
@@ -39,12 +40,14 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
-    public static String getField(Map<String, Object> pairs, String field) {
-        return pairs.containsKey(field) && pairs.get(field) != null ? StringUtils.trim(pairs.get(field).toString()) : null;
+    public static Boolean hasAddress(Map<String, Object> pairs, String person) {
+
+        return findBooleanExists(getField(pairs,person + "_address_line1"), getField(pairs,person + "_address_line2"),
+            getField(pairs,person + "_address_line3"), getField(pairs,person + "_address_line4"), getField(pairs,person + "_postcode"));
     }
 
-    public static boolean isKeyExists(Map<String, Object> pairs, String field) {
-        return pairs.containsKey(field);
+    public static String getField(Map<String, Object> pairs, String field) {
+        return pairs != null && pairs.containsKey(field) && pairs.get(field) != null ? StringUtils.trim(pairs.get(field).toString()) : null;
     }
 
     public static boolean doValuesContradict(Map<String, Object> pairs, Set<String> errors, String value1, String value2) {
@@ -114,7 +117,11 @@ public final class SscsOcrDataUtil {
     }
 
     public static String convertBooleanToYesNoString(boolean value) {
-        return value ? YES : NO;
+        return convertBooleanToYesNo(value).getValue();
+    }
+
+    public static YesNo convertBooleanToYesNo(boolean value) {
+        return value ? YesNo.YES : YesNo.NO;
     }
 
     public static String generateDateForCcd(Map<String, Object> pairs, Set<String> errors, String fieldName) {
