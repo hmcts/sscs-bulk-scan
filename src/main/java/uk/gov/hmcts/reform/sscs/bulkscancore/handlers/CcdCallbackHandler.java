@@ -134,12 +134,16 @@ public class CcdCallbackHandler {
 
         setUnsavedFieldsOnCallback(callback);
 
+        FormType formType = callback.getCaseDetails().getCaseData().getFormType();
         Map<String, Object> appealData = new HashMap<>();
         sscsDataHelper.addSscsDataToMap(appealData,
             callback.getCaseDetails().getCaseData().getAppeal(),
             callback.getCaseDetails().getCaseData().getSscsDocument(),
             callback.getCaseDetails().getCaseData().getSubscriptions(),
-            callback.getCaseDetails().getCaseData().getFormType());
+            formType,
+            callback.getCaseDetails().getCaseData().getChildMaintenanceNumber(),
+            callback.getCaseDetails().getCaseData().getOtherParties()
+        );
 
         boolean ignoreMrnValidation = false;
         if (callback.getEvent() != null && (EventType.DIRECTION_ISSUED.equals(callback.getEvent())

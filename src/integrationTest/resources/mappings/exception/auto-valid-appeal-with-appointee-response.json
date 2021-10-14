@@ -54,6 +54,7 @@
             "nino": "BB000000B"
           },
           "isAppointee": "Yes",
+          "confidentialityRequired": null,
           "appointee": {
             "name": {
               "title": "Mr",
@@ -77,7 +78,8 @@
               "nino": "BB000000B"
             }
           },
-          "isAddressSameAsAppointee": null
+          "isAddressSameAsAppointee": null,
+          "role": null
         },
         "benefitType": {
           "code": "ESA",
