@@ -10,6 +10,8 @@ import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -17,6 +19,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
@@ -74,6 +77,16 @@ public class SscsDataHelper {
                         appeal.getMrnDetails().getDwpIssuingOffice());
                     log.info("DwpHandling handling office set as " + dwpRegionCentre);
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
+                } else if(appeal.getMrnDetails() == null || appeal.getMrnDetails().getDwpIssuingOffice() == null) {
+                    Optional<OfficeMapping> defaultOfficeMapping = dwpAddressLookupService.getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode());
+                    if (defaultOfficeMapping.isPresent()) {
+                        String defaultDwpIssuingOffice = defaultOfficeMapping.get().getMapping().getCcd();
+                        String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
+                            appeal.getBenefitType().getCode(),
+                            defaultDwpIssuingOffice);
+                        log.info("DwpHandling handling office set as " + dwpRegionCentre);
+                        appealData.put("dwpRegionalCentre", dwpRegionCentre);
+                    }
                 }
             }
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
