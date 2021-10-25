@@ -31,6 +31,8 @@ import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 @Slf4j
 public class SscsCaseValidator implements CaseValidator {
 
+    public static final String IS_NOT_A_VALID_POSTCODE = "is not a valid postcode";
+
     @SuppressWarnings("squid:S5843")
     private static final String PHONE_REGEX =
         "^((?:(?:\\(?(?:0(?:0|11)\\)?[\\s-]?\\(?|\\+)\\d{1,4}\\)?[\\s-]?(?:\\(?0\\)?[\\s-]?)?)|(?:\\(?0))(?:"
@@ -53,6 +55,7 @@ public class SscsCaseValidator implements CaseValidator {
     @SuppressWarnings("squid:S5843")
     private static final String COUNTY_REGEX =
         "^\\.$|^[a-zA-ZÀ-ž0-9]{1}[a-zA-ZÀ-ž0-9 \\r\\n\\.“”\",’\\?\\!\\[\\]\\(\\)/£:\\\\_+\\-%&;]{1,}$";
+
     private final RegionalProcessingCenterService regionalProcessingCenterService;
     private final DwpAddressLookupService dwpAddressLookupService;
     private final PostcodeValidator postcodeValidator;
@@ -541,14 +544,15 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
         if (address != null && address.getPostcode() != null) {
-            if (postcodeValidator.isValidPostcodeFormat(address.getPostcode())
-                && postcodeValidator.isValid(address.getPostcode())) {
-                return true;
-            } else {
-                errors.add(getMessageByCallbackType(callbackType, personType,
-                    getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not a valid postcode"));
-                return false;
+            if (postcodeValidator.isValidPostcodeFormat(address.getPostcode())) {
+                boolean isValidPostcode = postcodeValidator.isValid(address.getPostcode());
+                if (!isValidPostcode) {
+                    warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_NOT_A_VALID_POSTCODE));
+                }
+                return isValidPostcode;
             }
+            errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not in a valid format"));
+            return false;
         }
         warnings.add(getMessageByCallbackType(callbackType, personType,
             getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_EMPTY));
