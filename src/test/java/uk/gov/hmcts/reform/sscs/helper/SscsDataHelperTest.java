@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.sscs.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
+import uk.gov.hmcts.reform.sscs.model.dwp.Mapping;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
@@ -123,5 +125,50 @@ public class SscsDataHelperTest {
         Map<String, Object> transformedCase = new HashMap<>();
         caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS1U, "Test1234", null);
         assertNull(transformedCase.get("childMaintenanceNumber"));
+    }
+
+    @Test
+    public void givenCaseResponseWithNoMrnDetails_thenReturnDefaultDwpHandingOffice() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        String expectedPipDwpHandingOffice = "Bellevale";
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).build();
+        Optional<OfficeMapping> officeMapping = Optional.of(OfficeMapping.builder().isDefault(true).mapping(Mapping.builder().ccd("DWP PIP (3)").build()).build());
+        when(dwpAddressLookupService.getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode())).thenReturn(officeMapping);
+        when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), officeMapping.get().getMapping().getCcd())).thenReturn(expectedPipDwpHandingOffice);
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null);
+
+        assertEquals(expectedPipDwpHandingOffice, transformedCase.get("dwpRegionalCentre"));
+        verify(dwpAddressLookupService, times(1)).getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode());
+        verify(dwpAddressLookupService, times(1)).getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), officeMapping.get().getMapping().getCcd());
+    }
+
+    @Test
+    public void givenCaseResponseWithMrnDetailsAndWithoutOffice_thenReturnDefaultDwpHandingOffice() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        String expectedPipDwpHandingOffice = "Bellevale";
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().dwpIssuingOffice(null).build()).build();
+        Optional<OfficeMapping> officeMapping = Optional.of(OfficeMapping.builder().isDefault(true).mapping(Mapping.builder().ccd("DWP PIP (3)").build()).build());
+        when(dwpAddressLookupService.getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode())).thenReturn(officeMapping);
+        when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), officeMapping.get().getMapping().getCcd())).thenReturn(expectedPipDwpHandingOffice);
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null);
+
+        assertEquals(expectedPipDwpHandingOffice, transformedCase.get("dwpRegionalCentre"));
+        verify(dwpAddressLookupService, times(1)).getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode());
+        verify(dwpAddressLookupService, times(1)).getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), officeMapping.get().getMapping().getCcd());
+    }
+
+    @Test
+    public void givenCaseResponseWithMrnDetailsAndWithOffice_thenReturnDwpHandingOffice() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        String expectedPipDwpHandingOffice = "Newcastle";
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().dwpIssuingOffice("DWP PIP (1)").build()).build();
+        when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice())).thenReturn(expectedPipDwpHandingOffice);
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null);
+
+        assertEquals(expectedPipDwpHandingOffice, transformedCase.get("dwpRegionalCentre"));
+        verify(dwpAddressLookupService, times(1)).getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
     }
 }
