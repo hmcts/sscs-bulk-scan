@@ -16,6 +16,8 @@ spring:
     name: SscsBulkScan
   main:
     allow-bean-definition-overriding: true
+  config:
+    import: optional:configtree:/mnt/secrets/sscs-bulk-scan/
 
 ccd:
  case:
