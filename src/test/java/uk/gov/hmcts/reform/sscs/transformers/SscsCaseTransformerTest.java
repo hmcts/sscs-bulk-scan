@@ -617,7 +617,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithoutOffice() {
+    public void givenKeyValuePairsWithUcBenefitTypeAndWrongOfficePopulated_thenBuildAnAppealWithDefaultHandlingOffice() {
         transformer.setUcOfficeFeatureActive(true);
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
 
@@ -626,7 +626,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals(null, result.getTransformedCase().get("dwpRegionalCentre"));
+        assertEquals("Universal Credit", result.getTransformedCase().get("dwpRegionalCentre"));
 
         assertTrue(result.getErrors().isEmpty());
     }

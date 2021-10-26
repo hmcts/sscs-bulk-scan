@@ -1185,7 +1185,27 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord,
             buildMinimumAppealDataWithBenefitType("Bla", buildAppellantWithPostcode("Bla Bla"), true), false);
 
-        assertEquals("person1_postcode is not a valid postcode", response.getErrors().get(0));
+        assertEquals("person1_postcode is not in a valid format", response.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsAnValidPostcodeFormatButNotFound_thenAddWarning() {
+        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
+        given(postcodeValidator.isValid(anyString())).willReturn(false);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellantWithPostcode("W1 1LA"), true), false);
+
+        assertEquals("person1_postcode is not a valid postcode", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenAnAppealContainsAnValidPostcodeFormatButFound_thenNoErrorOrWarnings() {
+        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
+        given(postcodeValidator.isValid(anyString())).willReturn(true);
+        given(regionalProcessingCenterService.getByPostcode(anyString())).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellantWithPostcode("W1 1LA"), true), false);
+
+        assertThat(response.getWarnings().size()).isEqualTo(0);
+        assertThat(response.getErrors().size()).isEqualTo(0);
     }
 
     @Test
