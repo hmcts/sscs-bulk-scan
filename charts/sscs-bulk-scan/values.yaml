@@ -7,11 +7,18 @@ java:
   keyVaults:
     sscs-bulk-scan:
       secrets:
-        - sscs-s2s-secret
-        - idam-sscs-systemupdate-user
-        - idam-sscs-systemupdate-password
-        - idam-sscs-oauth2-client-secret
-        - AppInsightsInstrumentationKey
+        - name: sscs-s2s-secret
+          alias: S2S_SECRET
+        - name: idam-sscs-systemupdate-user
+          alias: IDAM_SSCS_SYSTEMUPDATE_USER
+        - name: idam-sscs-systemupdate-password
+          alias: IDAM_SSCS_SYSTEMUPDATE_PASSWORD
+        - name: idam-sscs-oauth2-client-secret
+          alias: IDAM_OAUTH2_CLIENT_SECRET
+        - name: idam-redirect
+          alias: IDAM_OAUTH2_REDIRECT_URL
+        - name: AppInsightsInstrumentationKey
+          alias: azure.application-insights.instrumentation-key
   environment:
     ROOT_LOGGING_LEVEL: INFO
     LOG_OUTPUT: single
