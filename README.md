@@ -82,6 +82,7 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+
 ## Testing End To End With Excela or Bulk Scan Processor
 
 To test the service fully end to end with Excela or the Bulk Scan Processor service then there are 2 options:
