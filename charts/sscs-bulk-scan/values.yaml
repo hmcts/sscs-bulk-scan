@@ -15,6 +15,11 @@ java:
           alias: IDAM_SSCS_SYSTEMUPDATE_PASSWORD
         - name: idam-sscs-oauth2-client-secret
           alias: IDAM_OAUTH2_CLIENT_SECRET
+<<<<<<< HEAD
+=======
+        - name: idam-redirect
+          alias: IDAM_OAUTH2_REDIRECT_URL
+>>>>>>> 0b4692cf8e964b80418b3972f02dff4feec95600
         - name: AppInsightsInstrumentationKey
           alias: azure.application-insights.instrumentation-key
   environment:
