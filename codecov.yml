@@ -1,2 +1,3 @@
 ignore:
   - "src/main/java/uk/gov/hmcts/reform/sscs/bulkscancore/domain/"  # ignore folders and all its contents
+  - "src/main/java/uk/gov/hmcts/reform/sscs/controllers/RootController"
