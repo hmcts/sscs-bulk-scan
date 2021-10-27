@@ -21,6 +21,16 @@ public class RootController {
     @Value("${idam.oauth2.user.password}")
     private String idamOauth2UserPassword;
 
+    @Value("${idam.client.redirect_uri:}")
+    private String redirectUri;
+    @Value("${idam.client.id:}")
+    private String clientId;
+    @Value("${idam.client.secret:}")
+    private String clientSecret;
+    @Value("${idam.client.scope:openid profile roles}")
+    private String clientScope;
+
+
     @Autowired
     private IdamClient idamClient;
 
@@ -36,6 +46,8 @@ public class RootController {
     @GetMapping
     public ResponseEntity<String> welcome() {
         String accessToken = idamClient.getAccessToken(idamOauth2UserEmail, idamOauth2UserPassword);
-        return ok("Welcome to sscs-bulk-scan - " + accessToken);
+        return ok("Welcome to sscs-bulk-scan - email: " + idamOauth2UserEmail + " | password: " + idamOauth2UserPassword
+            + " | client id: " + clientId + " | secret: " + clientSecret
+            + " | redirect url: " + redirectUri + " | scope: " + clientScope + " | token: " + accessToken);
     }
 }
