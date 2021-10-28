@@ -2,38 +2,15 @@ package uk.gov.hmcts.reform.sscs.controllers;
 
 import static org.springframework.http.ResponseEntity.ok;
 
-import feign.FeignException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 /**
  * Default endpoints per application.
  */
 @RestController
 public class RootController {
-
-    @Value("${idam.oauth2.user.email}")
-    private String idamOauth2UserEmail;
-
-    @Value("${idam.oauth2.user.password}")
-    private String idamOauth2UserPassword;
-
-    @Value("${idam.client.redirect_uri:}")
-    private String redirectUri;
-    @Value("${idam.client.id:}")
-    private String clientId;
-    @Value("${idam.client.secret:}")
-    private String clientSecret;
-    @Value("${idam.client.scope:openid profile roles}")
-    private String clientScope;
-
-
-    @Autowired
-    private IdamClient idamClient;
 
     /**
      * Root GET endpoint.
@@ -46,14 +23,6 @@ public class RootController {
      */
     @GetMapping
     public ResponseEntity<String> welcome() {
-        String accessToken;
-        try {
-            accessToken = idamClient.getAccessToken(idamOauth2UserEmail, idamOauth2UserPassword);
-        } catch (FeignException e) {
-            accessToken = e.getMessage();
-        }
-        return ok("Welcome to sscs-bulk-scan - email: " + idamOauth2UserEmail + " | password: " + idamOauth2UserPassword
-            + " | client id: " + clientId + " | secret: " + clientSecret
-            + " | redirect url: " + redirectUri + " | scope: " + clientScope + " | token: " + accessToken);
+        return ok("Welcome to sscs-bulk-scan");
     }
 }

@@ -158,8 +158,7 @@ sonarqube {
       "src/main/java/uk/gov/hmcts/reform/sscs/bulkscancore/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/BulkScanApplication.java," +
       "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
-      "src/main/java/uk/gov/hmcts/reform/sscs/config/**," +
-      "src/main/java/uk/gov/hmcts/reform/sscs/controllers/RootController.java"
+      "src/main/java/uk/gov/hmcts/reform/sscs/config/**,"
     property "sonar.pitest.mode", "reuseReport"
     property "sonar.pitest.reportsDirectory", "build/reports/pitest"
   }
