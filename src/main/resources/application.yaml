@@ -5,6 +5,8 @@ management:
   endpoint:
     health:
       show-details: "always"
+      probes:
+        enabled: true
   endpoints:
     web:
       base-path: /
@@ -14,6 +16,8 @@ spring:
     name: SscsBulkScan
   main:
     allow-bean-definition-overriding: true
+  config:
+    import: optional:configtree:/mnt/secrets/sscs-bulk-scan/
 
 ccd:
  case:

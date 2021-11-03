@@ -5,7 +5,7 @@ plugins {
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.7.0'
   id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-  id 'org.springframework.boot' version '2.3.5.RELEASE'
+  id 'org.springframework.boot' version '2.5.4'
   id 'uk.gov.hmcts.java' version '0.12.12'
   id 'org.owasp.dependencycheck' version '6.2.2'
   id 'com.github.ben-manes.versions' version '0.39.0'
@@ -311,7 +311,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22118
-    dependencySet(group: 'org.springframework', version: '5.2.15.RELEASE') {
+    dependencySet(group: 'org.springframework', version: '5.3.9') {
       entry 'spring-aop'
       entry 'spring-aspects'
       entry 'spring-beans'
@@ -334,7 +334,7 @@ dependencyManagement {
     }
 
     imports {
-      mavenBom "org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR12"
+      mavenBom "org.springframework.cloud:spring-cloud-dependencies:2020.0.4"
     }
     //CVE-2021-28170
     dependency group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'
