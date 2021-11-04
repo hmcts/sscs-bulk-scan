@@ -249,6 +249,8 @@ dependencies {
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
   testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.31.0', withoutJunit4
   testCompile group: 'com.typesafe', name: 'config', version: '1.4.1'
+  testCompileOnly 'junit:junit:4.12'
+  testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.3.1'
 
   // Added to fix CVE-2021-33037
   testCompile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.54'
