@@ -76,6 +76,9 @@ public class SscsDataHelper {
                 }
             }
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
+            if (FormType.SSCS2.equals(formType) && appeal.getAppellant() != null && YesNo.isYes(appeal.getAppellant().getConfidentialityRequired())) {
+                appealData.put("isConfidentialCase", YesNo.YES.getValue());
+            }
         }
 
         if (formType != null && FormType.SSCS2.equals(formType)) {
