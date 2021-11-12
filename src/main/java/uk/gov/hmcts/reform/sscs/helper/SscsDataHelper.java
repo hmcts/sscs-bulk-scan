@@ -76,9 +76,7 @@ public class SscsDataHelper {
                 }
             }
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
-            if (FormType.SSCS2.equals(formType) && appeal.getAppellant() != null && YesNo.isYes(appeal.getAppellant().getConfidentialityRequired())) {
-                appealData.put("isConfidentialCase", YesNo.YES.getValue());
-            }
+            checkConfidentiality(formType,appealData, appeal)
         }
 
         if (formType != null && FormType.SSCS2.equals(formType)) {
@@ -86,6 +84,12 @@ public class SscsDataHelper {
             if (otherParties != null) {
                 appealData.put("otherParties", otherParties);
             }
+        }
+    }
+
+    private void checkConfidentiality(FormType formType, Map<String, Object> appealData, Appeal appeal) {
+        if (FormType.SSCS2.equals(formType) && appeal.getAppellant() != null && YesNo.isYes(appeal.getAppellant().getConfidentialityRequired())) {
+            appealData.put("isConfidentialCase", YesNo.YES.getValue());
         }
     }
 
