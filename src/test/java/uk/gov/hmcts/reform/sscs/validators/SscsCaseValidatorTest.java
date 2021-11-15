@@ -1700,6 +1700,19 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypeIsSscs2ForSscsCase_thenAddWarning() {
+        Map<String, Object> pairs =
+            buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
+        pairs.put("childMaintenanceNumber", "123456");
+        pairs.put("formType", FormType.SSCS2);
+
+        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        assertEquals(1, response.getWarnings().size());
+        assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated",
+            response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenAnAppealWithAnEmptyHearingSubTypeForSscsCase_thenNoWarning() {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
         pairs.put("formType", FormType.SSCS1);
