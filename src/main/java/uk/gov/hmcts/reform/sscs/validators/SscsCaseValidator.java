@@ -344,16 +344,22 @@ public class SscsCaseValidator implements CaseValidator {
                     IS_INVALID));
         }
 
-        if (!doesFirstNameExist(name)) {
-            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                getWarningMessageName(OTHER_PARTY_VALUE, null) + FIRST_NAME, IS_EMPTY));
+        boolean hasNoName = ! doesFirstNameExist(name) && !doesLastNameExist(name);
+
+        if (!hasNoName) {
+            otherPartyNameValidation(name);
         }
 
-        if (!doesLastNameExist(name)) {
-            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
-        }
+        boolean hasNoAddress = !doesAddressLine1Exist(address)
+            && !doesAddressTownExist(address)
+            && !doesAddressPostcodeExist(address);
 
+        if (!hasNoAddress) {
+            otherPartyAddressValidation(address);
+        }
+    }
+
+    private void otherPartyAddressValidation(Address address) {
         if (!doesAddressLine1Exist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
                 getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE1, IS_EMPTY));
@@ -367,6 +373,18 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesAddressPostcodeExist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
                 getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_POSTCODE, IS_EMPTY));
+        }
+    }
+
+    private void otherPartyNameValidation(Name name) {
+        if (!doesFirstNameExist(name)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + FIRST_NAME, IS_EMPTY));
+        }
+
+        if (!doesLastNameExist(name)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
         }
     }
 

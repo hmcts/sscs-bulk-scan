@@ -1762,7 +1762,7 @@ public class SscsCaseValidatorTest {
         "test1, , , TS1 1ST, other_party_address_line2 is empty, 1",
         "test1, test2, , , other_party_postcode is empty, 1",
         "test1, , , , other_party_address_line2 is empty, 2",
-        ", , , , other_party_address_line1 is empty, 3",
+        ", , , TS1 1ST, other_party_address_line1 is empty, 2",
     })
     public void givenSscs2FormWithoutOtherPartyAddressEntryAndIgnoreWarningsFalse_thenAddAWarning(String line1, String line2, String line3, String postcode, String warning, int size) {
 
@@ -1774,6 +1774,46 @@ public class SscsCaseValidatorTest {
         assertFalse(response.getWarnings().isEmpty());
         assertEquals(size, response.getWarnings().size());
         assertEquals(warning, response.getWarnings().get(0));
+    }
+
+
+    @Test
+    public void givenOtherParty_WithFirstNameLastNamePopulated_WithNoAddress_noWarnings() {
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildCaseWithChildMaintenanceWithOtherPartyNameAddress(CHILD_MAINTENANCE_NUMBER,"", "","", "", buildOtherPartyName()),
+            false);
+        assertTrue(response.getWarnings().isEmpty());
+    }
+
+    @Test
+    public void givenOtherParty_WithNoName_WithNoAddress_noWarnings() {
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildCaseWithChildMaintenanceWithOtherPartyNameAddress(CHILD_MAINTENANCE_NUMBER,"", "","", "", Name.builder().build()),
+            false);
+        assertTrue(response.getWarnings().isEmpty());
+    }
+
+    @Test
+    public void givenOtherParty_NoName_WithAddressPresent_WarningSeen() {
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildCaseWithChildMaintenanceWithOtherPartyNameAddress(CHILD_MAINTENANCE_NUMBER,"line1", "","line3", "W1", Name.builder().build()),
+            false);
+        assertFalse(response.getWarnings().isEmpty());
+    }
+
+    @Test
+    @Parameters({"true", "false"})
+    public void givenOtherParty_WithFirstNameOrLastNameMissing_WarningSeen(boolean isFirstnameBlank) {
+        Name name = Name.builder().firstName(isFirstnameBlank ? "" : "fn").lastName(!isFirstnameBlank ? "" : "ln").build();
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecord,
+            buildCaseWithChildMaintenanceWithOtherPartyNameAddress(CHILD_MAINTENANCE_NUMBER,"line1", "line2","line3", "W1", name),
+            false);
+        assertFalse(response.getWarnings().isEmpty());
+        assertEquals(1, response.getWarnings().size());
     }
 
     @Test
