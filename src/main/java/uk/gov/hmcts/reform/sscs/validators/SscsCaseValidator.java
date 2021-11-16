@@ -85,6 +85,16 @@ public class SscsCaseValidator implements CaseValidator {
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
     }
 
+    private List<String> combineWarnings() {
+        List<String> mergedWarnings = new ArrayList<>();
+
+        mergedWarnings.addAll(warnings);
+        mergedWarnings.addAll(errors);
+        errors.clear();
+
+        return mergedWarnings;
+    }
+
     @Override
     public CaseResponse validateExceptionRecord(CaseResponse transformResponse, ExceptionRecord exceptionRecord,
                                                 Map<String, Object> caseData, boolean combineWarnings) {
@@ -111,16 +121,6 @@ public class SscsCaseValidator implements CaseValidator {
             .build();
     }
 
-    private List<String> combineWarnings() {
-        List<String> mergedWarnings = new ArrayList<>();
-
-        mergedWarnings.addAll(warnings);
-        mergedWarnings.addAll(errors);
-        errors.clear();
-
-        return mergedWarnings;
-    }
-
     @Override
     public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation) {
         warnings = new ArrayList<>();
@@ -145,7 +145,7 @@ public class SscsCaseValidator implements CaseValidator {
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
 
-        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType, ignorePartyRoleValidation);
+        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType, ignorePartyRoleValidation, ignoreWarnings);
         checkRepresentative(appeal, ocrCaseData, caseData);
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation);
 
@@ -189,8 +189,8 @@ public class SscsCaseValidator implements CaseValidator {
             });
 
         sscsDocuments.stream().filter(sscsDocument -> sscsDocument.getValue().getDocumentLink() != null
-            && sscsDocument.getValue().getDocumentLink().getDocumentFilename() != null
-            && sscsDocument.getValue().getDocumentLink().getDocumentFilename().indexOf('.') == -1)
+                && sscsDocument.getValue().getDocumentLink().getDocumentFilename() != null
+                && sscsDocument.getValue().getDocumentLink().getDocumentFilename().indexOf('.') == -1)
             .forEach(sscsDocument -> {
                 errors.add("There is a file attached to the case called "
                     + sscsDocument.getValue().getDocumentLink().getDocumentFilename()
@@ -200,7 +200,7 @@ public class SscsCaseValidator implements CaseValidator {
 
 
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                String personType, FormType formType, boolean ignorePartyRoleValidation) {
+                                String personType, FormType formType, boolean ignorePartyRoleValidation, boolean ignoreWarnings) {
         Appellant appellant = appeal.getAppellant();
 
         if (appellant == null) {
@@ -234,17 +234,17 @@ public class SscsCaseValidator implements CaseValidator {
 
             checkHearingSubtypeDetails(appeal.getHearingSubtype());
             if (!ignorePartyRoleValidation && formType != null && formType.equals(FormType.SSCS2)) {
-                checkAppellantRole(appellant.getRole());
+                checkAppellantRole(appellant.getRole(), ignoreWarnings);
             }
         }
 
     }
 
-    private void checkAppellantRole(Role role) {
-        if (role == null) {
+    private void checkAppellantRole(Role role, boolean ignoreWarnings) {
+        if (role == null && !ignoreWarnings) {
             warnings.add(getMessageByCallbackType(callbackType, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
                 IS_MISSING));
-        } else {
+        } else if (!ignoreWarnings) {
             String name = role.getName();
             String description = role.getDescription();
             if (StringUtils.isEmpty(name)) {
@@ -705,7 +705,7 @@ public class SscsCaseValidator implements CaseValidator {
         HearingSubtype hearingSubType = appeal.getHearingSubtype();
         if (hearingSubType == null
             || !(hearingSubType.isWantsHearingTypeTelephone() || hearingSubType.isWantsHearingTypeVideo()
-                || hearingSubType.isWantsHearingTypeFaceToFace())) {
+            || hearingSubType.isWantsHearingTypeFaceToFace())) {
             isValid = false;
         }
         return isValid;
