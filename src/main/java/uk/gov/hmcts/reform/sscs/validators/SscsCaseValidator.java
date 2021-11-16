@@ -150,7 +150,7 @@ public class SscsCaseValidator implements CaseValidator {
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation);
 
         if (formType != null && formType.equals(FormType.SSCS2)) {
-            checkChildMaintenance((String) caseData.get("childMaintenanceNumber"));
+            checkChildMaintenance(caseData, ignoreWarnings);
 
             checkOtherParty(caseData, ignoreWarnings);
         }
@@ -172,9 +172,12 @@ public class SscsCaseValidator implements CaseValidator {
         return warnings;
     }
 
-    private void checkChildMaintenance(String childMaintenanceNumber) {
-        if (childMaintenanceNumber == null || childMaintenanceNumber.equals("")) {
+    private void checkChildMaintenance(Map<String, Object> caseData, boolean ignoreWarnings) {
+        String childMaintenanceNumber = (String) caseData.get("childMaintenanceNumber");
+        if (!ignoreWarnings && (childMaintenanceNumber == null || childMaintenanceNumber.equals(""))) {
             warnings.add(getMessageByCallbackType(callbackType, "", PERSON_1_CHILD_MAINTENANCE_NUMBER, IS_EMPTY));
+        } else if (ignoreWarnings) {
+            caseData.remove("childMaintenanceNumber");
         }
     }
 
