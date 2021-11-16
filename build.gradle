@@ -224,7 +224,7 @@ dependencies {
   compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.54'
   compile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.12'
 
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.5.13'
+  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.5.19'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -249,7 +249,7 @@ dependencies {
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
   testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.31.0', withoutJunit4
   testCompile group: 'com.typesafe', name: 'config', version: '1.4.1'
-  testCompileOnly 'junit:junit:4.12'
+  testCompileOnly 'junit:junit:4.13.2'
   testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.3.1'
 
   // Added to fix CVE-2021-33037
