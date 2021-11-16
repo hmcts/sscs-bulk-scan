@@ -707,7 +707,8 @@ public class SscsCaseValidator implements CaseValidator {
         String hearingType = appeal.getHearingType();
         FormType formType = (FormType) caseData.get("formType");
         log.info("Bulk-scan form type: {}", formType != null ? formType.toString() : null);
-        if (FormType.SSCS1PEU.equals(formType) && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL)
+        if ((FormType.SSCS1PEU.equals(formType) || FormType.SSCS2.equals(formType))
+            && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL)
             && !isValidHearingSubType(appeal)) {
             warnings.add(
                 getMessageByCallbackType(callbackType, "", HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE_DESCRIPTION,
