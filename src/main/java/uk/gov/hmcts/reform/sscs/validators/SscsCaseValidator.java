@@ -174,7 +174,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkChildMaintenance(Map<String, Object> caseData, boolean ignoreWarnings) {
         String childMaintenanceNumber = (String) caseData.get("childMaintenanceNumber");
-        if (!ignoreWarnings && (childMaintenanceNumber == null || childMaintenanceNumber.equals(""))) {
+        if (!ignoreWarnings && StringUtils.isBlank(childMaintenanceNumber)) {
             warnings.add(getMessageByCallbackType(callbackType, "", PERSON_1_CHILD_MAINTENANCE_NUMBER, IS_EMPTY));
         } else if (ignoreWarnings) {
             caseData.remove("childMaintenanceNumber");
@@ -347,16 +347,22 @@ public class SscsCaseValidator implements CaseValidator {
                     IS_INVALID));
         }
 
-        if (!doesFirstNameExist(name)) {
-            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                getWarningMessageName(OTHER_PARTY_VALUE, null) + FIRST_NAME, IS_EMPTY));
+        boolean hasNoName = ! doesFirstNameExist(name) && !doesLastNameExist(name);
+
+        if (!hasNoName) {
+            otherPartyNameValidation(name);
         }
 
-        if (!doesLastNameExist(name)) {
-            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
-                getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
-        }
+        boolean hasNoAddress = !doesAddressLine1Exist(address)
+            && !doesAddressTownExist(address)
+            && !doesAddressPostcodeExist(address);
 
+        if (!hasNoAddress) {
+            otherPartyAddressValidation(address);
+        }
+    }
+
+    private void otherPartyAddressValidation(Address address) {
         if (!doesAddressLine1Exist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
                 getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_LINE1, IS_EMPTY));
@@ -370,6 +376,18 @@ public class SscsCaseValidator implements CaseValidator {
         if (!doesAddressPostcodeExist(address)) {
             warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
                 getWarningMessageName(OTHER_PARTY_VALUE, null) + ADDRESS_POSTCODE, IS_EMPTY));
+        }
+    }
+
+    private void otherPartyNameValidation(Name name) {
+        if (!doesFirstNameExist(name)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + FIRST_NAME, IS_EMPTY));
+        }
+
+        if (!doesLastNameExist(name)) {
+            warnings.add(getMessageByCallbackType(callbackType, OTHER_PARTY_VALUE,
+                getWarningMessageName(OTHER_PARTY_VALUE, null) + LAST_NAME, IS_EMPTY));
         }
     }
 
@@ -692,7 +710,8 @@ public class SscsCaseValidator implements CaseValidator {
         String hearingType = appeal.getHearingType();
         FormType formType = (FormType) caseData.get("formType");
         log.info("Bulk-scan form type: {}", formType != null ? formType.toString() : null);
-        if (FormType.SSCS1PEU.equals(formType) && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL)
+        if ((FormType.SSCS1PEU.equals(formType) || FormType.SSCS2.equals(formType))
+            && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL)
             && !isValidHearingSubType(appeal)) {
             warnings.add(
                 getMessageByCallbackType(callbackType, "", HEARING_SUB_TYPE_TELEPHONE_OR_VIDEO_FACE_TO_FACE_DESCRIPTION,

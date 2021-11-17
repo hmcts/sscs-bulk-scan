@@ -11,13 +11,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 
 public final class SscsOcrDataUtil {
-
-    private static final String YES = "Yes";
-    private static final String NO = "No";
 
     private SscsOcrDataUtil() {
 
@@ -33,7 +29,7 @@ public final class SscsOcrDataUtil {
 
     public static boolean findBooleanExists(String... values) {
         for (String v : values) {
-            if (!ObjectUtils.isEmpty(v)) {
+            if (StringUtils.isNotBlank(v)) {
                 return true;
             }
         }
@@ -47,7 +43,7 @@ public final class SscsOcrDataUtil {
     }
 
     public static String getField(Map<String, Object> pairs, String field) {
-        return pairs != null && pairs.containsKey(field) && pairs.get(field) != null ? StringUtils.trim(pairs.get(field).toString()) : null;
+        return pairs != null && pairs.containsKey(field) && pairs.get(field) != null ? StringUtils.trimToNull(pairs.get(field).toString()) : null;
     }
 
     public static boolean doValuesContradict(Map<String, Object> pairs, Set<String> errors, String value1, String value2) {
@@ -80,16 +76,19 @@ public final class SscsOcrDataUtil {
     }
 
     public static boolean isExactlyZeroBooleanTrue(Map<String, Object> pairs, Set<String> errors, String... values) {
-        return Stream.of(values).map(value -> extractBooleanValue(pairs, errors, value)).filter(Boolean::booleanValue).count() == 0;
+        return Stream.of(values)
+            .noneMatch(value -> extractBooleanValue(pairs, errors, value));
     }
 
     public static boolean isExactlyOneBooleanTrue(Map<String, Object> pairs, Set<String> errors, String... values) {
-        return Stream.of(values).map(value -> extractBooleanValue(pairs, errors, value)).filter(Boolean::booleanValue).count() == 1;
+        return Stream.of(values)
+            .map(value -> extractBooleanValue(pairs, errors, value))
+            .filter(Boolean::booleanValue).count() == 1;
     }
 
     public static boolean checkBooleanValue(Map<String, Object> pairs, Set<String> errors, String value) {
         if (pairs.get(value) != null) {
-            Boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
+            boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString()) != null;
             if (booleanValue) {
                 return true;
             } else {
@@ -103,7 +102,7 @@ public final class SscsOcrDataUtil {
         if (pairs.get(value) != null) {
             Boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString());
             if (booleanValue != null) {
-                return booleanValue.booleanValue();
+                return booleanValue;
             } else {
                 errors.add(value + " has an invalid value. Should be Yes/No or True/False");
             }
