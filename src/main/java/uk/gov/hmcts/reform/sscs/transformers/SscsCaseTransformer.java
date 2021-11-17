@@ -116,11 +116,13 @@ public class SscsCaseTransformer implements CaseTransformer {
         errors = new HashSet<>();
         warnings = new HashSet<>();
 
+        boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
+
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType, errors);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType, errors, ignoreWarningsValue);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -144,8 +146,8 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token,
-                                              String formType, Set<String> errors) {
-        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType, errors);
+                                              String formType, Set<String> errors, boolean ignoreWarnings) {
+        Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType, errors, ignoreWarnings);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
@@ -205,7 +207,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .wantSmsNotifications(convertBooleanToYesNoString(wantsSms)).tya(generateAppealNumber()).build();
     }
 
-    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType, Set<String> errors) {
+    private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType, Set<String> errors, boolean ignoreWarnings) {
         Appellant appellant = null;
 
         if (pairs != null && pairs.size() != 0) {
@@ -219,10 +221,10 @@ public class SscsCaseTransformer implements CaseTransformer {
                         .identity(buildPersonIdentity(pairs, PERSON1_VALUE))
                         .build();
                 }
-                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, buildPersonContact(pairs, PERSON2_VALUE), formType);
+                appellant = buildAppellant(pairs, PERSON2_VALUE, appointee, buildPersonContact(pairs, PERSON2_VALUE), formType, ignoreWarnings);
 
             } else if (hasPerson(pairs, PERSON1_VALUE)) {
-                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE), formType);
+                appellant = buildAppellant(pairs, PERSON1_VALUE, null, buildPersonContact(pairs, PERSON1_VALUE), formType, ignoreWarnings);
             }
 
             String hearingType = findHearingType(pairs);
@@ -402,7 +404,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee,
-                                     Contact contact, String formType) {
+                                     Contact contact, String formType, boolean ignoreWarnings) {
         return Appellant.builder()
             .name(buildPersonName(pairs, personType))
             .isAppointee(convertBooleanToYesNoString(appointee != null))
@@ -411,7 +413,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .contact(contact)
             .confidentialityRequired(getConfidentialityRequired(pairs, errors))
             .appointee(appointee)
-            .role(buildAppellantRole(pairs, formType))
+            .role(buildAppellantRole(pairs, formType, ignoreWarnings))
             .build();
     }
 
@@ -421,7 +423,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             ? convertBooleanToYesNo(getBoolean(pairs, errors, KEEP_HOME_ADDRESS_CONFIDENTIAL)) : null;
     }
 
-    private Role buildAppellantRole(Map<String, Object> pairs, String formType) {
+    private Role buildAppellantRole(Map<String, Object> pairs, String formType, boolean ignoreWarnings) {
         if (FormType.SSCS2.toString().equalsIgnoreCase(formType)) {
             List<String> validProvidedBooleanValues =
                 extractValuesWhereBooleansValid(pairs, errors, AppellantRoleIndicator.getAllIndicatorStrings());
@@ -430,7 +432,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .collect(Collectors.toList());
             String otherPartyDetails = getField(pairs, OTHER_PARTY_DETAILS);
 
-            if (validateValues(valueIndicatorsWithTrueValue, otherPartyDetails)) {
+            if (validateValues(valueIndicatorsWithTrueValue, otherPartyDetails, ignoreWarnings)) {
                 if (!valueIndicatorsWithTrueValue.isEmpty()) {
                     String selectedValue = valueIndicatorsWithTrueValue.get(0);
                     AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(selectedValue).orElse(null);
@@ -448,31 +450,39 @@ public class SscsCaseTransformer implements CaseTransformer {
         return null;
     }
 
-    private boolean validateValues(List<String> validValues, String otherPartyDetails) {
+    private boolean validateValues(List<String> validValues, String otherPartyDetails, boolean ignoreWarnings) {
         if (validValues.isEmpty() && StringUtils.isEmpty(otherPartyDetails)) {
-            warnings.add(getMessageByCallbackType(EXCEPTION_CALLBACK, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
-                FIELDS_EMPTY));
+            if (!ignoreWarnings) {
+                warnings.add(getMessageByCallbackType(EXCEPTION_CALLBACK, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
+                    FIELDS_EMPTY));
+            }
             return false;
         } else if (!validValues.isEmpty()) {
             if (validValues.size() > 1) {
                 if (StringUtils.isNotEmpty(otherPartyDetails)) {
                     validValues.add(OTHER_PARTY_DETAILS);
                 }
-                warnings.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
-                    .getGramaticallyJoinedStrings(validValues) + " have conflicting values");
+                if (!ignoreWarnings) {
+                    warnings.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
+                        .getGramaticallyJoinedStrings(validValues) + " have conflicting values");
+                }
                 return false;
             }
 
             AppellantRole appellantRole = AppellantRoleIndicator.findByIndicatorString(validValues.get(0)).orElse(null);
 
             if (OTHER.equals(appellantRole) && StringUtils.isEmpty(otherPartyDetails)) {
-                warnings.add(getMessageByCallbackType(EXCEPTION_CALLBACK, "", WarningMessage.APPELLANT_PARTY_DESCRIPTION.toString(),
-                    FIELDS_EMPTY));
+                if (!ignoreWarnings) {
+                    warnings.add(getMessageByCallbackType(EXCEPTION_CALLBACK, "", WarningMessage.APPELLANT_PARTY_DESCRIPTION.toString(),
+                        FIELDS_EMPTY));
+                }
                 return false;
             } else if (StringUtils.isNotEmpty(otherPartyDetails) && !OTHER.equals(appellantRole)) {
-                warnings.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
-                    .getGramaticallyJoinedStrings(List.of(validValues.get(0), OTHER_PARTY_DETAILS))
-                    + " have conflicting values");
+                if (!ignoreWarnings) {
+                    warnings.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
+                        .getGramaticallyJoinedStrings(List.of(validValues.get(0), OTHER_PARTY_DETAILS))
+                        + " have conflicting values");
+                }
                 return false;
             }
         }
@@ -503,16 +513,16 @@ public class SscsCaseTransformer implements CaseTransformer {
             if (doesOtherPartyExist) {
                 if (isOtherPartyAddressValid(pairs)) {
                     return Collections.singletonList(CcdValue.<OtherParty>builder().value(
-                        OtherParty.builder()
-                            .name(buildPersonName(pairs, OTHER_PARTY_VALUE))
-                            .address(buildPersonAddress(pairs, OTHER_PARTY_VALUE))
-                            .build())
+                            OtherParty.builder()
+                                .name(buildPersonName(pairs, OTHER_PARTY_VALUE))
+                                .address(buildPersonAddress(pairs, OTHER_PARTY_VALUE))
+                                .build())
                         .build());
                 }
 
                 return Collections.singletonList(CcdValue.<OtherParty>builder().value(
-                    OtherParty.builder()
-                        .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
+                        OtherParty.builder()
+                            .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
                     .build());
             }
         }

@@ -1901,6 +1901,39 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenSscs2FormWithChildMaintenanceNumberMissingAndIgnoreWarningsTrue_thenNoWarningsShownAndChildMaintenanceNumberRemoved() {
+
+        exceptionRecordSscs2 = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId())
+            .ignoreWarnings(true).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(null,
+                OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,null, OTHER_PARTY_POSTCODE,
+                buildOtherPartyName()), false);
+
+        assertEquals(0, response.getWarnings().size());
+        assertNull(response.getTransformedCase().get("childMaintenanceNumber"));
+    }
+
+    @Test
+    public void givenSscs2FormWithChildMaintenanceNumberMissingAndIgnoreWarningsFalse_thenWarningShown() {
+
+        exceptionRecordSscs2 = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId())
+            .ignoreWarnings(false).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse,
+            exceptionRecordSscs2, buildCaseWithChildMaintenanceWithOtherPartyNameAddress(null,
+                OTHER_PARTY_ADDRESS_LINE1, OTHER_PARTY_ADDRESS_LINE2,null, OTHER_PARTY_POSTCODE,
+                buildOtherPartyName()), false);
+
+        assertEquals(1, response.getWarnings().size());
+        assertEquals("person1_child_maintenance_number is empty", response.getWarnings().get(0));
+    }
+
+
+    @Test
     public void givenSscs2FormWithOtherPartyFirstNameMissingAndIgnoreWarningsTrue_thenNoWarningsShown() {
         Name otherPartyName = buildOtherPartyName();
         otherPartyName.setFirstName(null);
@@ -2119,6 +2152,7 @@ public class SscsCaseValidatorTest {
             .appointee(appointee)
             .role(Role.builder().name("Paying parent").build()).build();
     }
+
 
     private Map<String, Object> buildCaseWithChildMaintenanceWithOtherPartyNameAddress(String childMaintenanceNumber, String line1, String line2, String line3, String postcode, Name otherPartyName) {
         Map<String, Object> datamap = buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(
