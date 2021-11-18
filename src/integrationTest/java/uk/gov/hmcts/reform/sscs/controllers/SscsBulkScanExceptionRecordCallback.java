@@ -401,7 +401,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS2")),
+            sscs2ExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS2"), false),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
@@ -418,7 +418,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithInvalidKey()),
+            sscs2ExceptionCaseData(caseDataWithInvalidKey(), false),
             httpHeaders()
         );
 
@@ -439,7 +439,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress()),
+            sscs2ExceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress(), false),
             httpHeaders()
         );
 
@@ -463,7 +463,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithoutAppellantRole()),
+            sscs2ExceptionCaseData(caseDataWithoutAppellantRole(), false),
             httpHeaders()
         );
 
@@ -478,13 +478,33 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     @Test
+    public void should_return_no_warning_when_sscs2_appellant_role_empty_ignore_warnings() {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            sscs2ExceptionCaseData(caseDataWithoutAppellantRole(), true),
+            httpHeaders()
+        );
+
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().warnings).doesNotContain("is_paying_parent, is_receiving_parent, is_another_party and other_party_details fields are empty");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
     public void should_return_warning_list_populated_when_sscs2_appellant_role_invalid() {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithInvalidAppellantRole()),
+            sscs2ExceptionCaseData(caseDataWithInvalidAppellantRole(), false),
             httpHeaders()
         );
 
@@ -494,6 +514,27 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().warnings)
             .containsOnly("is_paying_parent, is_receiving_parent and is_another_party have conflicting values");
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
+    @Test
+    public void should_return_no_warning_sscs2_appellant_role_invalid_ignore_warning() {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            sscs2ExceptionCaseData(caseDataWithInvalidAppellantRole(), true),
+            httpHeaders()
+        );
+
+        ResponseEntity<ErrorResponse> result =
+            this.restTemplate.postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, ErrorResponse.class);
+
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().warnings)
+            .doesNotContain("is_paying_parent, is_receiving_parent and is_another_party have conflicting values");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -619,7 +660,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     //FIXME: delete after bulk scan auto case creation is switch on
     @SuppressWarnings("unchecked")
-    private ExceptionRecord sscs2ExceptionCaseData(Map<String, Object> caseData) {
+    private ExceptionRecord sscs2ExceptionCaseData(Map<String, Object> caseData, boolean ignoreWarnings) {
         Map<String, Object> scannedData = (HashMap<String, Object>) caseData.get("scanOCRData");
         List<OcrDataField> scanOcrData = getOcrDataFields(scannedData);
 
@@ -629,6 +670,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .jurisdiction("SSCS")
             .formType("SSCS2")
             .journeyClassification(NEW_APPLICATION)
+            .ignoreWarnings(ignoreWarnings)
             .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
             .id("1234567890")
             .openingDate(LocalDateTime.parse("2021-01-11 12:00:00", formatter))

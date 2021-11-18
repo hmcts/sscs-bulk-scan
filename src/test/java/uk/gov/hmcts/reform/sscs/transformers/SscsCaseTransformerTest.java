@@ -472,7 +472,7 @@ public class SscsCaseTransformerTest {
         Address expectedAddress = Address.builder()
             .line1("10 my street")
             .line2("line2 address")
-            .town("")
+            .town(null)
             .county("county")
             .postcode(APPELLANT_POSTCODE)
             .build();
@@ -489,6 +489,8 @@ public class SscsCaseTransformerTest {
         Address actual = personType.equals("representative") ? appeal.getRep().getAddress() :
             personType.equals("person2") ? appeal.getAppellant().getAppointee().getAddress() : appeal.getAppellant().getAddress();
         assertEquals(expectedAddress, actual);
+        assertEquals(0, result.getErrors().size());
+        assertEquals(0, result.getWarnings().size());
     }
 
     @Test
@@ -1992,7 +1994,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({CHILD_MAINTENANCE_NUMBER, ""})
+    @Parameters({CHILD_MAINTENANCE_NUMBER, "001"})
     public void givenSscs2FormWithChildMaintenanceNumber_thenCaseDataValueIsSet(String childMaintenance) {
         pairs.put(BENEFIT_TYPE_OTHER, "Child support");
         pairs.put(PERSON_1_CHILD_MAINTENANCE_NUMBER, childMaintenance);
