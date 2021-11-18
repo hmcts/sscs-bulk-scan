@@ -5,9 +5,9 @@ plugins {
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.7.0'
   id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-  id 'org.springframework.boot' version '2.5.4'
-  id 'uk.gov.hmcts.java' version '0.12.12'
-  id 'org.owasp.dependencycheck' version '6.2.2'
+  id 'org.springframework.boot' version '2.5.6'
+  id 'uk.gov.hmcts.java' version '0.12.16'
+  id 'org.owasp.dependencycheck' version '6.5.0.1'
   id 'com.github.ben-manes.versions' version '0.39.0'
 }
 
@@ -47,8 +47,8 @@ sourceSets {
 }
 
 dependencies {
-  integrationTestCompile(sourceSets.test.output)
-  functionalTestCompile(sourceSets.test.output)
+  integrationTestImplementation(sourceSets.test.output)
+  functionalTestImplementation(sourceSets.test.output)
 }
 
 tasks.withType(JavaCompile) {
@@ -77,7 +77,7 @@ task fortifyScan(type: JavaExec)  {
 }
 
 pmd {
-  toolVersion = "6.5.0"
+  toolVersion = "6.21.0"
   ignoreFailures = true
   sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functionalTest, sourceSets.integrationTest, sourceSets.smokeTest]
   reportsDir = file("$project.buildDir/reports/pmd")
@@ -170,7 +170,7 @@ def versions = [
   reformLogging      : '5.1.7',
   springBoot         : springBoot.class.package.implementationVersion,
   springfoxSwagger   : '2.9.2',
-  lombok             : '1.18.18',
+  lombok             : '1.18.20',
   springCloudWiremock: '2.1.0.RELEASE',
   gradlePitest       : '1.3.0',
   pitest             : '1.4.2',
@@ -198,149 +198,95 @@ dependencies {
     exclude group: 'junit', module: 'junit'
   }
 
-  compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.springBoot
-  compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
-  compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
-  compile group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: versions.springBoot
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.springBoot
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: versions.springBoot
 
   implementation("me.xdrop:fuzzywuzzy:1.3.1")
-  compile group: 'io.rest-assured', name: 'rest-assured', version: versions.restAssured
-  compile group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
-  compile group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
-  compile group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
-  compile group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.0'
-  compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.1'
+  implementation group: 'io.rest-assured', name: 'rest-assured', version: versions.restAssured
+  implementation group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
+  implementation group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
+  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.0.5'
+  implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.0'
+  implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
 
-  compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
-  compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
+  implementation group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
+  implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
 
-  compile group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
-  compile group: 'com.github.hmcts', name: 'java-logging', version: versions.reformLogging
-  compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
+  implementation group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
+  implementation group: 'com.github.hmcts', name: 'java-logging', version: versions.reformLogging
+  implementation group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
 
-  // Added to fix CVE-2021-33037
-  compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.54'
-  compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.54'
-  compile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.12'
+  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '4.5.19'
 
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.5.19'
+  implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
+  implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
 
-  compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
-  compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
-
-  compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
-  testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  testImplementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-  testCompile 'com.github.hmcts:fortify-client:1.2.1:all'
+  testImplementation 'com.github.hmcts:fortify-client:1.2.1:all'
 
-  functionalTestCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  functionalTestImplementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
-  testCompile(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot) {
+  testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot) {
     exclude group: "com.vaadin.external.google", module: "android-json"
   }
 
-  testCompile 'pl.pragmatists:JUnitParams:1.1.1'
-  testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
-  testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.7.0'
-  testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
-  testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.31.0', withoutJunit4
-  testCompile group: 'com.typesafe', name: 'config', version: '1.4.1'
-  testCompileOnly 'junit:junit:4.13.2'
-  testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.3.1'
+  testImplementation 'pl.pragmatists:JUnitParams:1.1.1'
+  testImplementation group: 'org.pitest', name: 'pitest', version: versions.pitest
+  testImplementation 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.7.0'
+  testImplementation 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
+  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.31.0', withoutJunit4
+  testImplementation group: 'com.typesafe', name: 'config', version: '1.4.1'
+  testImplementation 'junit:junit:4.13.2'
+  testImplementation 'org.junit.vintage:junit-vintage-engine:5.3.1'
 
-  // Added to fix CVE-2021-33037
-  testCompile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.54'
-  testCompile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.54'
-  testCompile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.12'
-
-  integrationTestCompile(group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
+  integrationTestImplementation(group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
     exclude group: "com.github.tomakehurst", module: "wiremock-standalone"
   }
 
-  integrationTestCompile sourceSets.main.runtimeClasspath
-  integrationTestCompile sourceSets.test.runtimeClasspath
+  integrationTestImplementation sourceSets.main.runtimeClasspath
+  integrationTestImplementation sourceSets.test.runtimeClasspath
 
-  functionalTestCompile sourceSets.main.runtimeClasspath
-  functionalTestCompile sourceSets.test.runtimeClasspath
+  functionalTestImplementation sourceSets.main.runtimeClasspath
+  functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  smokeTestCompile sourceSets.main.runtimeClasspath
-  smokeTestCompile sourceSets.test.runtimeClasspath
+  smokeTestImplementation sourceSets.main.runtimeClasspath
+  smokeTestImplementation sourceSets.test.runtimeClasspath
 }
 
 dependencyManagement {
   dependencies {
-
+    //CVE-2019-10086
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
-
-    dependency group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
-    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.14.1'
-
+    //CVE-2021-27807, CVE-2021-27906, CVE-2021-31811, CVE-2021-31812
+    dependency group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.24'
     //CVE-2021-40690
-     dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.2.3'
-
-    // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.54') {
-      entry 'tomcat-embed-core'
-      entry 'tomcat-embed-el'
-      entry 'tomcat-embed-websocket'
-    }
-
-    //to remove CVE-2020-8908
-    dependencySet(group: 'com.google.guava', version: '31.0.1-jre') {
-      entry 'guava'
-    }
-
-    //CVE-2021-22112
-    dependencySet(group: 'org.springframework.security', version: '5.5.2') {
-      entry 'spring-security-crypto'
-    }
-
-    //CVE-2021-27807
-    dependencySet(group: 'org.apache.pdfbox', version: '2.0.24') {
-      entry 'pdfbox'
-    }
-
+    dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.3.0'
+    //CVE-2021-35515, CVE-2021-35516, CVE-2021-35517, CVE-2021-36090
+    dependency group: 'org.apache.commons', name: 'commons-compress', version: '1.21'
+    //CVE-2020-11987, CVE-2020-11988
     dependencySet(group: 'org.apache.xmlgraphics', version: '1.14') {
       entry 'batik-all'
     }
-
-    dependencySet(group: 'org.apache.commons', version: '1.21') {
-      entry 'commons-compress'
-    }
-
-    //CVE-2021-22118
-    dependencySet(group: 'org.springframework', version: '5.3.9') {
-      entry 'spring-aop'
-      entry 'spring-aspects'
-      entry 'spring-beans'
-      entry 'spring-context'
-      entry 'spring-context-support'
-      entry 'spring-core'
-      entry 'spring-expression'
-      entry 'spring-jcl'
-      entry 'spring-jdbc'
-      entry 'spring-orm'
-      entry 'spring-tx'
-      entry 'spring-web'
-      entry 'spring-webmvc'
-    }
-
-    //CVE-2021-27568
-    dependencySet(group: 'net.minidev', version: '2.4.7') {
-      entry 'json-smart'
-      entry 'accessors-smart'
-    }
-
-    imports {
-      mavenBom "org.springframework.cloud:spring-cloud-dependencies:2020.0.4"
-    }
-    //CVE-2021-28170
-    dependency group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'
   }
+}
+
+// Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
+rootProject.tasks.named("processFunctionalTestResources") {
+  duplicatesStrategy = 'include'
+}
+rootProject.tasks.named("processIntegrationTestResources") {
+  duplicatesStrategy = 'include'
+}
+rootProject.tasks.named("processSmokeTestResources") {
+  duplicatesStrategy = 'include'
 }
 
 run {
