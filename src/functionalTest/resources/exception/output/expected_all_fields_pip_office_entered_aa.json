@@ -109,6 +109,7 @@
           ]
         },
         "rep": {
+          "id": null,
           "hasRepresentative": "Yes",
           "organisation": "ABC Advisory Services",
           "name": {

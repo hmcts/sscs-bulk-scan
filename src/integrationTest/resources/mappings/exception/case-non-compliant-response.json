@@ -62,6 +62,7 @@
         },
         "appealReasons": null,
         "rep": {
+          "id": null,
           "hasRepresentative": "No",
           "organisation": null,
           "name": null,

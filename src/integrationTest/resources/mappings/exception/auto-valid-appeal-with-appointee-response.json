@@ -56,6 +56,7 @@
           "isAppointee": "Yes",
           "confidentialityRequired": null,
           "appointee": {
+            "id": null,
             "name": {
               "title": "Mr",
               "firstName": "Tyrion",
@@ -102,6 +103,7 @@
         },
         "appealReasons": null,
         "rep": {
+          "id": null,
           "hasRepresentative": "No",
           "organisation": null,
           "name": null,
