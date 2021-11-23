@@ -79,6 +79,7 @@
         },
         "receivedVia": "Paper",
         "rep": {
+          "id": null,
           "address": {
             "county": "Surrey",
             "postcode": "RH1 5BT",
