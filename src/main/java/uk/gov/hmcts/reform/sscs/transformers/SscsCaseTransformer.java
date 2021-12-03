@@ -53,6 +53,7 @@ import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 @Slf4j
 public class SscsCaseTransformer implements CaseTransformer {
 
+    private static final String OTHER_PARTY_ID_ONE = "1";
     private final IdamService idamService;
     private final CcdService ccdService;
     private SscsJsonExtractor sscsJsonExtractor;
@@ -513,16 +514,18 @@ public class SscsCaseTransformer implements CaseTransformer {
             if (doesOtherPartyExist) {
                 if (isOtherPartyAddressValid(pairs)) {
                     return Collections.singletonList(CcdValue.<OtherParty>builder().value(
-                            OtherParty.builder()
-                                .name(buildPersonName(pairs, OTHER_PARTY_VALUE))
-                                .address(buildPersonAddress(pairs, OTHER_PARTY_VALUE))
-                                .build())
+                        OtherParty.builder()
+                            .id(OTHER_PARTY_ID_ONE)
+                            .name(buildPersonName(pairs, OTHER_PARTY_VALUE))
+                            .address(buildPersonAddress(pairs, OTHER_PARTY_VALUE))
+                            .build())
                         .build());
                 }
 
                 return Collections.singletonList(CcdValue.<OtherParty>builder().value(
-                        OtherParty.builder()
-                            .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
+                    OtherParty.builder()
+                        .id(OTHER_PARTY_ID_ONE)
+                        .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
                     .build());
             }
         }

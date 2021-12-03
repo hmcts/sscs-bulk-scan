@@ -2043,6 +2043,7 @@ public class SscsCaseTransformerTest {
 
         @SuppressWarnings("unchecked")
         OtherParty otherParty = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties")).get(0).getValue();
+        assertEquals(OTHER_PARTY_ID_ONE, otherParty.getId());
         Name otherPartyName = otherParty.getName();
         assertEquals(OTHER_PARTY_TITLE, otherPartyName.getTitle());
         assertEquals(OTHER_PARTY_FIRST_NAME, otherPartyName.getFirstName());

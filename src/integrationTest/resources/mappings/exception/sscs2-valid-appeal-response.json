@@ -4,6 +4,7 @@
       "otherParties": [
         {
           "value": {
+            "id": "1",
             "name": {
               "firstName": "Zoe",
               "lastName": "Butler",
