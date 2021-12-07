@@ -171,4 +171,34 @@ public class SscsDataHelperTest {
         assertEquals(expectedPipDwpHandingOffice, transformedCase.get("dwpRegionalCentre"));
         verify(dwpAddressLookupService, times(1)).getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
     }
+
+    @Test
+    public void givenAppellantRequestsConfidentialityOnSscs2_thenIsConfidentialCase() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("childSupport").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.YES).build()).build();
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS2, "", null);
+
+        assertEquals("Yes", transformedCase.get("isConfidentialCase"));
+    }
+
+    @Test
+    public void givenAppellantDoesNotRequestConfidentialityOnSscs2_thenIsConfidentialCase() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("childSupport").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.NO).build()).build();
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS2, "", null);
+
+        assertNull(transformedCase.get("isConfidentialCase"));
+    }
+
+    @Test
+    public void givenAppellantRequestsConfidentialityOnSscs1_thenIsNotConfidentialCase() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("childSupport").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.YES).build()).build();
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1PEU, "", null);
+
+        assertNull(transformedCase.get("isConfidentialCase"));
+    }
 }
