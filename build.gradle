@@ -219,7 +219,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'java-logging', version: versions.reformLogging
   implementation group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
 
-  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '4.6.0'
+  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '4.6.6'
 
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -267,6 +267,10 @@ dependencyManagement {
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
     //CVE-2021-27807, CVE-2021-27906, CVE-2021-31811, CVE-2021-31812
     dependency group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.24'
+
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.15.0'
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.15.0'
+
     //CVE-2021-40690
     dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.3.0'
     //CVE-2021-35515, CVE-2021-35516, CVE-2021-35517, CVE-2021-36090
