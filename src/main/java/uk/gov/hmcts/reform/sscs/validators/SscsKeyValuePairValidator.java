@@ -20,13 +20,17 @@ public class SscsKeyValuePairValidator {
 
     private final String sscs1SchemaResourceLocation = "/schema/sscs-bulk-scan-schema.json";
     private final String sscs2SchemaResourceLocation = "/schema/sscs2-bulk-scan-schema.json";
+    private final String sscs5SchemaResourceLocation = "/schema/sscs5-bulk-scan-schema.json";
 
     private Schema sscs1Schema = null;
     private Schema sscs2Schema = null;
+    private Schema sscs5Schema = null;
 
     public CaseResponse validate(List<OcrDataField> ocrDataValidationRequest, FormType formType) {
         if (formType != null && formType.equals(FormType.SSCS2)) {
             tryLoadSscs2Schema();
+        } else if (formType != null && formType.equals(FormType.SSCS5)) {
+            tryLoadSscs5Schema();
         } else {
             tryLoadSscs1Schema();
         }
@@ -36,6 +40,8 @@ public class SscsKeyValuePairValidator {
         try {
             if (formType != null && formType.equals(FormType.SSCS2)) {
                 sscs2Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
+            } else if (formType != null && formType.equals(FormType.SSCS5)) {
+                sscs5Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             } else {
                 sscs1Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             }
@@ -63,6 +69,14 @@ public class SscsKeyValuePairValidator {
         }
         sscs2Schema = SchemaLoader
             .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(sscs2SchemaResourceLocation))));
+    }
+
+    private synchronized void tryLoadSscs5Schema() {
+        if (sscs5Schema != null) {
+            return;
+        }
+        sscs5Schema = SchemaLoader
+            .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(sscs5SchemaResourceLocation))));
     }
 
 }
