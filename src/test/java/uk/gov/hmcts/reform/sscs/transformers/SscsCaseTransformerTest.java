@@ -9,11 +9,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.BENEFIT_TYPE_DESCRIPTION;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1PEU;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1U;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS2;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
@@ -42,6 +41,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
+import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs5;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -95,6 +95,8 @@ public class SscsCaseTransformerTest {
 
     private ExceptionRecord sscs2ExceptionRecord;
 
+    private ExceptionRecord sscs5ExceptionRecord;
+
     IdamTokens token;
 
     @Before
@@ -131,6 +133,11 @@ public class SscsCaseTransformerTest {
             SSCS2.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs2ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
+        given(keyValuePairValidator.validate(ocrList, SSCS5)).willReturn(CaseResponse.builder().build());
+        sscs5ExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            SSCS5.getId()).build();
+        given(sscsJsonExtractor.extractJson(sscs5ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
     }
 
@@ -160,6 +167,21 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
         assertEquals("is_benefit_type_pip and is_benefit_type_esa have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenInvalidBenefitTypePairingsForSscs5_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_CREDIT.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARDIANS_ALLOWANCE.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_FREE_CHILDCARE.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.HOME_RESPONSIBILITIES_PROTECTION.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.CHILD_BENEFIT.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.THIRTY_HOURS_FREE_CHILDCARE.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARANTEED_MINIMUM_PENSION.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.NATIONAL_INSURANCE_CREDITS.getIndicatorString(), true);
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits have contradicting values", result.getErrors().get(0));
     }
 
     @Test
@@ -264,6 +286,18 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         assertEquals(shortName,  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    @Parameters({"TAX_CREDIT, taxCredit", "GUARDIANS_ALLOWANCE, guardiansAllowance", "TAX_FREE_CHILDCARE, taxFreeChildcare", "HOME_RESPONSIBILITIES_PROTECTION, homeResponsibilitiesProtection",
+        "CHILD_BENEFIT, childBenefit", "THIRTY_HOURS_FREE_CHILDCARE, thirtyHoursFreeChildcare", "GUARANTEED_MINIMUM_PENSION, guaranteedMinimumPension", "NATIONAL_INSURANCE_CREDITS, nationalInsuranceCredits"})
+    public void givenBenefitTypeIsSscs5_thenCorrectCodeIsReturned(BenefitTypeIndicatorSscs5 benefitType, String expectedBenefitCode) {
+        pairs.put(benefitType.getIndicatorString(), true);
+        pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals(expectedBenefitCode,  appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -2288,7 +2322,7 @@ public class SscsCaseTransformerTest {
         hearingSupportArrangements.add("hearingLoop");
 
         return Appeal.builder()
-            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).build())
+            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).description(BENEFIT_TYPE_DESCRIPTION).build())
             .appellant(appellant)
             .appealReasons(AppealReasons.builder().reasons(Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(APPEAL_REASON).build()).build())).build())
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())

@@ -36,10 +36,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Role;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
-import uk.gov.hmcts.reform.sscs.constants.AppellantRoleIndicator;
-import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
-import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
-import uk.gov.hmcts.reform.sscs.constants.WarningMessage;
+import uk.gov.hmcts.reform.sscs.constants.*;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
@@ -242,7 +239,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .code(CHILD_SUPPORT.getShortName())
                     .description(CHILD_SUPPORT.getDescription()).build();
             } else {
-                benefitType = getBenefitType(caseId, pairs);
+                benefitType = getBenefitType(caseId, pairs, FormType.getById(formType));
             }
 
 
@@ -288,12 +285,15 @@ public class SscsCaseTransformer implements CaseTransformer {
         return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
     }
 
-    private BenefitType getBenefitType(String caseId, Map<String, Object> pairs) {
+    private BenefitType getBenefitType(String caseId, Map<String, Object> pairs, FormType formType) {
         String code = getCodeFromField(caseId, pairs, BENEFIT_TYPE_DESCRIPTION);
+        String description = null;
+
+        List<String> benefitList = findBenefitListFromFormType(formType);
 
         // Extract all the provided benefit type booleans, outputting errors for any that are invalid
         List<String> validProvidedBooleanValues =
-            extractValuesWhereBooleansValid(pairs, errors, BenefitTypeIndicator.getAllIndicatorStrings());
+            extractValuesWhereBooleansValid(pairs, errors, benefitList);
 
         // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
         // for conflicting values.
@@ -301,19 +301,33 @@ public class SscsCaseTransformer implements CaseTransformer {
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
             if (isExactlyOneBooleanTrue(pairs, errors,
                 validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
-                String valueIndicatorWithTrueValue =
-                    validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value))
-                        .findFirst().orElse(null);
-                Optional<Benefit> benefit = BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue);
+
+                Optional<Benefit> benefit = findBenefitFromFormType(formType, pairs, validProvidedBooleanValues);
                 if (benefit.isPresent()) {
-                    code = benefit.get().name();
+                    code = benefit.get().getShortName();
+                    description = benefit.get().getDescription();
                 }
             } else {
                 errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
                     .getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
             }
         }
-        return (code != null) ? BenefitType.builder().code(code.toUpperCase()).build() : null;
+        return (code != null) ? BenefitType.builder().code(code).description(description).build() : null;
+    }
+
+    private List<String> findBenefitListFromFormType(FormType formType) {
+        return formType.equals(FormType.SSCS5) ? BenefitTypeIndicatorSscs5.getAllIndicatorStrings() : BenefitTypeIndicator.getAllIndicatorStrings();
+    }
+
+    private Optional<Benefit> findBenefitFromFormType(FormType formType, Map<String, Object> pairs, List<String> validProvidedBooleanValues) {
+        return formType.equals(FormType.SSCS5)
+            ? BenefitTypeIndicatorSscs5.findByIndicatorString(valueIndicatorWithTrueValue(pairs, validProvidedBooleanValues))
+            : BenefitTypeIndicator.findByIndicatorString(valueIndicatorWithTrueValue(pairs, validProvidedBooleanValues));
+    }
+
+    private String valueIndicatorWithTrueValue(Map<String, Object> pairs, List<String> validProvidedBooleanValues) {
+        return validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value))
+            .findFirst().orElse(null);
     }
 
     private BenefitType getBenefitTypeForSscs1U(String caseId, Map<String, Object> pairs) {
@@ -333,9 +347,8 @@ public class SscsCaseTransformer implements CaseTransformer {
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
             if (isExactlyOneBooleanTrue(pairs, errors,
                 validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
-                String valueIndicatorWithTrueValue =
-                    validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value))
-                        .findFirst().orElse(null);
+                String valueIndicatorWithTrueValue = valueIndicatorWithTrueValue(pairs, validProvidedBooleanValues);
+
                 if (!IS_BENEFIT_TYPE_OTHER.equals(valueIndicatorWithTrueValue)) {
                     code = getBenefitCodeFromIndicators(pairs, benefitTypeOther, valueIndicatorWithTrueValue,
                         validProvidedBooleanValues);
