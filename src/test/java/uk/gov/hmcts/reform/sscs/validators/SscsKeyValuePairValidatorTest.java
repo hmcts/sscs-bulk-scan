@@ -142,4 +142,30 @@ public class SscsKeyValuePairValidatorTest {
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
+
+    @Test
+    public void givenAValidBenefitTypesForSscs5_thenReturnValidCaseResponse() {
+        Map<String, Object> pairs = new HashMap<>();
+        pairs.put("is_benefit_type_tax_credit", true);
+        pairs.put("is_benefit_type_guardians_allowance", false);
+        pairs.put("is_benefit_type_tax_free_childcare", false);
+        pairs.put("is_benefit_type_home_responsibilities_protection", false);
+        pairs.put("is_benefit_type_child_benefit", false);
+        pairs.put("is_benefit_type_30_hours_tax_free_childcare", false);
+        pairs.put("is_benefit_type_guaranteed_minimum_pension", false);
+        pairs.put("is_benefit_type_national_insurance_credits", false);
+
+        @SuppressWarnings("unchecked")
+        List scanOcrData = buildScannedValidationOcrData(pairs.entrySet().stream().map(f -> {
+            HashMap<String, Object> valueMap = new HashMap<>();
+            valueMap.put("name", f.getKey());
+            valueMap.put("value", f.getValue());
+            return valueMap;
+        }).toArray(HashMap[]::new));
+
+        @SuppressWarnings("unchecked")
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS5);
+        assertNull(response.getErrors());
+        assertEquals(0, response.getWarnings().size());
+    }
 }
