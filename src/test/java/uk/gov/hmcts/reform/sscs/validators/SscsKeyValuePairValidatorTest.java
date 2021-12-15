@@ -102,16 +102,19 @@ public class SscsKeyValuePairValidatorTest {
     }
 
     @Test
-    public void givenAValidSscs1FieldsForSscs2_thenReturnValidCaseResponse() {
+    public void givenAValidSscs2Fields_thenReturnValidCaseResponse() {
         Map<String, Object> pairs = new HashMap<>();
-        pairs.put("is_benefit_type_pip", true);
-        pairs.put("is_benefit_type_esa", false);
-        pairs.put("is_benefit_type_uc", false);
-        pairs.put("person1_email", "me@example.com");
-        pairs.put("person1_want_sms_notifications", false);
-        pairs.put("representative_email", "me@example.com");
-        pairs.put("representative_mobile", "07770583222");
-        pairs.put("representative_want_sms_notifications", true);
+        pairs.put("is_paying_parent", true);
+        pairs.put("is_receiving_parent", false);
+        pairs.put("is_another_party", false);
+        pairs.put("person1_child_maintenance_number", "123467");
+        pairs.put("other_party_title", "Mr");
+        pairs.put("other_party_first_name", "John");
+        pairs.put("other_party_last_name", "Smith");
+        pairs.put("is_other_party_address_known", "Yes");
+        pairs.put("other_party_address_line1", "123 The Road");
+        pairs.put("other_party_address_line2", "The Town");
+        pairs.put("other_party_postcode", "RM1 1PT");
 
         @SuppressWarnings("unchecked")
         List scanOcrData = buildScannedValidationOcrData(pairs.entrySet().stream().map(f -> {
