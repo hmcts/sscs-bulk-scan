@@ -729,7 +729,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         } else if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
             ocrList.put("is_benefit_type_other", false);
             ocrList.put("benefit_type_other", "Attendance Allowance");
-        } else {
+        } else if (!formType.toLowerCase().equals(FormType.SSCS2.toString())) {
             ocrList.put("is_benefit_type_esa", "true");
         }
 
@@ -738,6 +738,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             ocrList.put("is_paying_parent", "true");
             addOtherParty(ocrList);
         }
+
 
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
@@ -816,7 +817,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
         ocrList.put("office", "Balham DRT");
         ocrList.put("contains_mrn", true);
-        ocrList.put("is_benefit_type_esa", "true");
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
         ocrList.put("hearing_options_exclude_dates", "01/12/2030");
@@ -838,7 +838,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
         ocrList.put("office", "Balham DRT");
         ocrList.put("contains_mrn", true);
-        ocrList.put("is_benefit_type_esa", "true");
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
         ocrList.put("hearing_options_exclude_dates", "01/12/2030");
@@ -859,7 +858,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
         ocrList.put("office", "Balham DRT");
         ocrList.put("contains_mrn", true);
-        ocrList.put("is_benefit_type_esa", "true");
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
         ocrList.put("hearing_options_exclude_dates", "01/12/2030");

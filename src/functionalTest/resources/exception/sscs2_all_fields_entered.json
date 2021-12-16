@@ -36,10 +36,6 @@
       "value": "Balham DRT"
     },
     {
-      "name": "benefit_type_description",
-      "value": "ESA"
-    },
-    {
       "name": "person1_title",
       "value": "Dr"
     },
@@ -222,18 +218,6 @@
     {
       "name": "signature_appeal_date",
       "value": "01/04/2018"
-    },
-    {
-      "name": "is_benefit_type_pip",
-      "value": "no"
-    },
-    {
-      "name": "is_benefit_type_esa",
-      "value": "yes"
-    },
-     {
-      "name": "is_benefit_type_uc",
-      "value": "no"
     },
     {
       "name": "is_another_party",
