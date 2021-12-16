@@ -691,7 +691,7 @@ public class SscsCaseValidator implements CaseValidator {
                     .build());
             }
         } else {
-            if (formType == null || !formType.equals(FormType.SSCS1U)) {
+            if (formType == null || (!formType.equals(FormType.SSCS1U) && !formType.equals(FormType.SSCS5))) {
                 warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, IS_EMPTY));
             }
         }
@@ -710,7 +710,7 @@ public class SscsCaseValidator implements CaseValidator {
         String hearingType = appeal.getHearingType();
         FormType formType = (FormType) caseData.get("formType");
         log.info("Bulk-scan form type: {}", formType != null ? formType.toString() : null);
-        if ((FormType.SSCS1PEU.equals(formType) || FormType.SSCS2.equals(formType))
+        if ((FormType.SSCS1PEU.equals(formType) || FormType.SSCS2.equals(formType) || FormType.SSCS5.equals(formType))
             && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL)
             && !isValidHearingSubType(appeal)) {
             warnings.add(
