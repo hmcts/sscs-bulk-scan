@@ -23,6 +23,7 @@ import me.xdrop.fuzzywuzzy.model.BoundExtractedResult;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsType;
 
 @Service
 @Slf4j
@@ -212,6 +213,7 @@ public class FuzzyMatcherService {
 
     private static Set<Pair<String, Benefit>> getBenefitShortNameAndDescriptionFuzzyChoices() {
         return stream(values())
+            .filter(e -> e.getSscsType().equals(SscsType.SSCS1))
             .flatMap(benefit -> Stream.of(
                 Pair.of(rightPad(benefit.getShortName(), MAX_FUZZY_SEARCH_LENGTH), benefit),
                 Pair.of(rightPad(benefit.getDescription(), MAX_FUZZY_SEARCH_LENGTH), benefit)

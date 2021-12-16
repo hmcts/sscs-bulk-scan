@@ -1,27 +1,4 @@
 {
-  "id": "id",
-  "case_type_id": "case_type_id",
-  "po_box": "po_box",
-  "po_box_jurisdiction": "bulkscan",
-  "form_type": "SSCS2",
-  "journey_classification": "NEW_APPLICATION",
-  "delivery_date": "2019-08-01T01:02:03.456Z",
-  "opening_date": "2019-08-02T02:03:04.567Z",
-  "scanned_documents": [
-    {
-      "type": "Form",
-      "subtype": "XYZ",
-      "url": {
-        "document_url": "url",
-        "document_binary_url": "binary-url",
-        "document_filename": "987654321-123456789.pdf"
-      },
-      "control_number": "987654321",
-      "file_name": "987654321-123456789.pdf",
-      "scanned_date": "2019-08-01T00:01:02.345Z",
-      "delivery_date": "2019-08-01T01:02:03.456Z"
-    }
-  ],
   "ocr_data_fields": [
     {
       "name": "contains_mrn",
@@ -29,15 +6,15 @@
     },
     {
       "name": "mrn_date",
-      "value": "MRN_DATE"
+      "value": "09/12/2019"
     },
     {
       "name": "office",
       "value": "Balham DRT"
     },
     {
-      "name": "benefit_type_description",
-      "value": "ESA"
+      "name": "is_benefit_type_national_insurance_credits",
+      "value": "true"
     },
     {
       "name": "person1_title",
@@ -69,7 +46,7 @@
     },
     {
       "name": "person1_postcode",
-      "value": "CF48 2HY"
+      "value": "CF482HY"
     },
     {
       "name": "person1_phone",
@@ -88,40 +65,44 @@
       "value": "{PERSON1_NINO}"
     },
     {
-      "name": "person1_child_maintenance_number",
-      "value": "Test1234"
-    },
-    {
-      "name": "other_party_title",
+      "name": "person2_title",
       "value": "Mrs"
     },
     {
-      "name": "other_party_first_name",
-      "value": "Zoe"
+      "name": "person2_first_name",
+      "value": "Sarah"
     },
     {
-      "name": "other_party_last_name",
-      "value": "Butler"
+      "name": "person2_last_name",
+      "value": "Smith"
     },
     {
-      "name": "is_other_party_address_known",
-      "value": "true"
+      "name": "person2_address_line1",
+      "value": "109 Drake Close"
     },
     {
-      "name": "other_party_address_line1",
-      "value": "299 Harrow"
+      "name": "person2_address_line2",
+      "value": "Hutton"
     },
     {
-      "name": "other_party_address_line2",
-      "value": "The Avenue"
+      "name": "person2_address_line3",
+      "value": "Brentwood"
     },
     {
-      "name": "other_party_address_line3",
-      "value": "Hatch End"
+      "name": "person2_address_line4",
+      "value": "Essex"
     },
     {
-      "name": "other_party_postcode",
-      "value": "HA5 4QT"
+      "name": "person2_postcode",
+      "value": "SE166RS"
+    },
+    {
+      "name": "person2_dob",
+      "value": "09/12/1979"
+    },
+    {
+      "name": "person2_nino",
+      "value": "{PERSON2_NINO}"
     },
     {
       "name": "representative_company",
@@ -165,11 +146,11 @@
     },
     {
       "name": "appeal_grounds",
-      "value": "see scanned SSCS2 form"
+      "value": "see scanned SSCS1 form"
     },
     {
       "name": "appeal_late_reason",
-      "value": "see scanned SSCS2 form"
+      "value": "see scanned SSCS1 form"
     },
     {
       "name": "is_hearing_type_oral",
@@ -222,14 +203,6 @@
     {
       "name": "signature_appeal_date",
       "value": "01/04/2018"
-    },
-    {
-      "name": "is_another_party",
-      "value": "true"
-    },
-    {
-      "name": "other_party_details",
-      "value": "Papa"
     }
   ]
 }

@@ -79,7 +79,7 @@ public class SscsDataHelper {
             checkConfidentiality(formType,appealData, appeal);
         }
 
-        if (formType != null && FormType.SSCS2.equals(formType)) {
+        if (FormType.SSCS2.equals(formType)) {
             appealData.put("childMaintenanceNumber", childMaintenanceNumber);
             if (otherParties != null) {
                 appealData.put("otherParties", otherParties);
@@ -88,7 +88,7 @@ public class SscsDataHelper {
     }
 
     private void checkConfidentiality(FormType formType, Map<String, Object> appealData, Appeal appeal) {
-        if (FormType.SSCS2.equals(formType) && appeal.getAppellant() != null && YesNo.isYes(appeal.getAppellant().getConfidentialityRequired())) {
+        if ((FormType.SSCS2.equals(formType) || FormType.SSCS5.equals(formType)) && appeal.getAppellant() != null && YesNo.isYes(appeal.getAppellant().getConfidentialityRequired())) {
             appealData.put("isConfidentialCase", YesNo.YES.getValue());
         }
     }
