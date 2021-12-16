@@ -63,6 +63,7 @@ public class SscsCaseValidatorTest {
 
     private ExceptionRecord exceptionRecordSscs1U;
     private ExceptionRecord exceptionRecordSscs2;
+    private ExceptionRecord exceptionRecordSscs5;
 
     @Before
     public void setup() {
@@ -98,8 +99,12 @@ public class SscsCaseValidatorTest {
 
         exceptionRecordSscs2 =
             ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS2.getId()).build();
-        ocrCaseData.put("person1_child_maintenance_number", CHILD_MAINTENANCE_NUMBER);
         given(sscsJsonExtractor.extractJson(exceptionRecordSscs2)).willReturn(scannedData);
+        ocrCaseData.put("person1_child_maintenance_number", CHILD_MAINTENANCE_NUMBER);
+
+        exceptionRecordSscs5 =
+            ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS5.getId()).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecordSscs5)).willReturn(scannedData);
     }
 
     @Test
@@ -993,11 +998,13 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealDoesNotContainABenefitTypeOtherForSscs1UForm_thenDoNotAddAWarning() {
+    @Parameters({"SSCS1U", "SSCS5"})
+    public void givenAnAppealDoesNotContainABenefitTypeOtherForSscs1UOrSscs5Form_thenDoNotAddAWarning(FormType formType) {
         Map<String, Object> caseData = buildMinimumAppealDataWithBenefitType(null, buildAppellant(false), true);
-        caseData.put("formType", FormType.SSCS1U);
+        caseData.put("formType", formType);
+        ExceptionRecord exceptionRecord = formType.equals(FormType.SSCS1U) ? exceptionRecordSscs1U : exceptionRecordSscs5;
         CaseResponse response =
-            validator.validateExceptionRecord(transformResponse, exceptionRecordSscs1U, caseData, false);
+            validator.validateExceptionRecord(transformResponse, exceptionRecord, caseData, false);
 
         assertTrue(response.getWarnings().isEmpty());
     }
@@ -1689,23 +1696,14 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypeIsSscs1peuForSscsCase_thenAddWarning() {
+    @Parameters({"SSCS1PEU", "SSCS2", "SSCS5"})
+    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypeIsSscs1peuForSscsCase_thenAddWarning(FormType formType) {
         Map<String, Object> pairs =
             buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
-        pairs.put("formType", FormType.SSCS1PEU);
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
-        assertEquals(1, response.getWarnings().size());
-        assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated",
-            response.getWarnings().get(0));
-    }
-
-    @Test
-    public void givenAnAppealWithAnEmptyHearingSubTypeAndFormTypeIsSscs2ForSscsCase_thenAddWarning() {
-        Map<String, Object> pairs =
-            buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false);
-        pairs.put("childMaintenanceNumber", "123456");
-        pairs.put("formType", FormType.SSCS2);
-
+        if (formType.equals(FormType.SSCS2)) {
+            pairs.put("childMaintenanceNumber", "123456");
+        }
+        pairs.put("formType", formType);
         CaseResponse response = validator.validateValidationRecord(pairs, true);
         assertEquals(1, response.getWarnings().size());
         assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated",
@@ -1788,7 +1786,6 @@ public class SscsCaseValidatorTest {
         assertEquals(size, response.getWarnings().size());
         assertEquals(warning, response.getWarnings().get(0));
     }
-
 
     @Test
     public void givenOtherParty_WithFirstNameLastNamePopulated_WithNoAddress_noWarnings() {

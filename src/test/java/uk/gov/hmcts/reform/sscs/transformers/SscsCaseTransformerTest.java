@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -2234,9 +2232,11 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"Yes, Yes", "No, No", "true, Yes", "false, No"})
-    public void givenSscs2FormAndConfidentialityRequired_thenCaseDataValueIsSet(String keepHomeAddressConfidential, String expected) {
-        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+    @Parameters({"Yes, Yes, SSCS2", "No, No, SSCS2", "true, Yes, SSCS2", "false, No, SSCS2", "Yes, Yes, SSCS5", "No, No, SSCS5"})
+    public void givenSscs2Or5FormAndConfidentialityRequired_thenCaseDataValueIsSet(String keepHomeAddressConfidential, String expected, FormType formType) {
+        if (formType.equals(SSCS2)) {
+            pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -2249,17 +2249,22 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("keep_home_address_confidential", keepHomeAddressConfidential);
         pairs.put("is_paying_parent", "true");
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+
+        ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired.toString(), is(expected));
+        assertEquals(expected, appellantConfidentialityRequired.toString());
     }
 
     @Test
-    public void givenSscs2FormAndConfidentialityRequiredEmpty_thenCaseDataValueIsNull() {
-        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+    @Parameters({"SSCS2", "SSCS5"})
+    public void givenSscs2Or5FormAndConfidentialityRequiredEmpty_thenCaseDataValueIsNull(FormType formType) {
+        if (formType.equals(SSCS2)) {
+            pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -2272,17 +2277,22 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("keep_home_address_confidential", "");
         pairs.put("is_paying_parent", "true");
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+
+        ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired, is(nullValue()));
+        assertNull(appellantConfidentialityRequired);
     }
 
     @Test
-    public void givenSscs2FormAndNoConfidentiality_thenCaseDataValueIsNull() {
-        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+    @Parameters({"SSCS2", "SSCS5"})
+    public void givenSscs2Or5FormAndNoConfidentiality_thenCaseDataValueIsNull(FormType formType) {
+        if (formType.equals(SSCS2)) {
+            pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -2294,12 +2304,14 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+
+        ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired, is(nullValue()));
+        assertNull(appellantConfidentialityRequired);
     }
 
 
