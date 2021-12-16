@@ -327,8 +327,10 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private String valueIndicatorWithTrueValue(Map<String, Object> pairs, List<String> validProvidedBooleanValues) {
-        return validProvidedBooleanValues.stream().filter(value -> extractBooleanValue(pairs, errors, value))
-            .findFirst().orElse(null);
+        return validProvidedBooleanValues.stream()
+            .filter(value -> extractBooleanValue(pairs, errors, value))
+            .findFirst()
+            .orElse(null);
     }
 
     private BenefitType getBenefitTypeForSscs1U(String caseId, Map<String, Object> pairs) {

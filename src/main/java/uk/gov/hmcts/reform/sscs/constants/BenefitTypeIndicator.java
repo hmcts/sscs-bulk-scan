@@ -1,9 +1,10 @@
 package uk.gov.hmcts.reform.sscs.constants;
 
-import java.util.Arrays;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
 
 public enum BenefitTypeIndicator {
@@ -20,11 +21,16 @@ public enum BenefitTypeIndicator {
     }
 
     public static List<String> getAllIndicatorStrings() {
-        return Arrays.stream(values()).map(BenefitTypeIndicator::getIndicatorString).collect(Collectors.toList());
+        return stream(values())
+            .map(BenefitTypeIndicator::getIndicatorString)
+            .collect(toList());
     }
 
     public static Optional<Benefit> findByIndicatorString(String indicatorString) {
-        return  Arrays.stream(values()).filter(v -> v.getIndicatorString().equals(indicatorString)).map(BenefitTypeIndicator::getBenefit).findFirst();
+        return stream(values())
+            .filter(v -> v.getIndicatorString().equals(indicatorString))
+            .map(BenefitTypeIndicator::getBenefit)
+            .findFirst();
     }
 
     public String getIndicatorString() {
