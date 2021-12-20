@@ -1,6 +1,7 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseName":"Sarah Smith",
       "appeal": {
         "appealReasons": null,
         "appellant": {

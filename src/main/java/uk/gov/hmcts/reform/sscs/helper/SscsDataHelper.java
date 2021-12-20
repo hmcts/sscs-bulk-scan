@@ -48,7 +48,7 @@ public class SscsDataHelper {
 
     public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions,
                                  FormType formType, String childMaintenanceNumber,
-                                 List<CcdValue<OtherParty>> otherParties) {
+                                 List<CcdValue<OtherParty>> otherParties, boolean workAllocationEnabled) {
         appealData.put("appeal", appeal);
         appealData.put("sscsDocument", sscsDocuments);
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
@@ -75,6 +75,13 @@ public class SscsDataHelper {
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
             }
+
+            if (workAllocationEnabled && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
+                && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
+                Name name = appeal.getAppellant().getName();
+                appealData.put("caseName", name.getFullNameNoTitle());
+            }
+
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
             checkConfidentiality(formType,appealData, appeal);
         }

@@ -33,6 +33,7 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Attendance Allowance",
       "bulkScanCaseReference": "id",
+      "caseName":"Frederick Falafel",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "The Pension Service 11",

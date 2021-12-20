@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
@@ -47,18 +48,22 @@ public class CcdCallbackHandler {
 
     private final DwpAddressLookupService dwpAddressLookupService;
 
+    private final boolean workAllocationFeature;
+
     public static final String CASE_TYPE_ID = "Benefit";
 
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         SscsDataHelper sscsDataHelper,
-        DwpAddressLookupService dwpAddressLookupService
+        DwpAddressLookupService dwpAddressLookupService,
+        @Value("${feature.work-allocation.enabled}") boolean workAllocationFeature
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
+        this.workAllocationFeature = workAllocationFeature;
     }
 
     public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
@@ -143,7 +148,8 @@ public class CcdCallbackHandler {
             callback.getCaseDetails().getCaseData().getSubscriptions(),
             formType,
             callback.getCaseDetails().getCaseData().getChildMaintenanceNumber(),
-            callback.getCaseDetails().getCaseData().getOtherParties()
+            callback.getCaseDetails().getCaseData().getOtherParties(),
+            workAllocationFeature
         );
 
         boolean ignoreMrnValidation = false;

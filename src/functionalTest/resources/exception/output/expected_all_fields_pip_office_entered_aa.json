@@ -33,6 +33,7 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Bellevale",
       "bulkScanCaseReference": "id",
+      "caseName":"Frederick Falafel",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "DWP PIP (3)",
