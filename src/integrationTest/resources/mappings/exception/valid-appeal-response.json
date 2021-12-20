@@ -1,6 +1,7 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseName": "John Smith",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Sheffield DRT",

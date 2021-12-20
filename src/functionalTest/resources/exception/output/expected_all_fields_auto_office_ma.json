@@ -33,6 +33,7 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Maternity Allowance",
       "bulkScanCaseReference": "id",
+      "caseName":"Frederick Falafel",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Walsall Benefit Centre",

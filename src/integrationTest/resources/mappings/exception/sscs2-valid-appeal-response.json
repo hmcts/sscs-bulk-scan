@@ -19,6 +19,7 @@
           }
         }
       ],
+      "caseName": "John Smith",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Child Support",

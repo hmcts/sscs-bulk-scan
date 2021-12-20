@@ -33,6 +33,7 @@
       "formType": "sscs1peu",
       "dwpRegionalCentre": "Universal Credit",
       "bulkScanCaseReference": "id",
+      "caseName":"Frederick Falafel",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Universal Credit",
