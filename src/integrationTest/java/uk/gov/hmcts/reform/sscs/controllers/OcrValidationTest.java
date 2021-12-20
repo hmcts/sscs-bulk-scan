@@ -405,25 +405,6 @@ public class OcrValidationTest  {
     }
 
     @Test
-    public void should_return_200_with_warning_when_ocr_form_with_sscs5_form_validation_request_data_is_invalid() throws Throwable {
-        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-
-        String content = readResource("mappings/ocr-validation/sscs5-invalid-ocr-data.json");
-
-        mvc.perform(
-            post("/forms/SSCS5/validate-ocr")
-                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(content))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("WARNINGS"))
-            .andExpect(jsonPath("$.errors", hasSize(0)))
-            .andExpect(jsonPath("$.warnings", hasSize(1)))
-            .andExpect(jsonPath("$.warnings", containsInAnyOrder(
-                "office is invalid")));
-    }
-
-    @Test
     public void should_return_200_with_warning_when_ocr_form_with_sscs2_form_validation_request_appellant_role_invalid() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 

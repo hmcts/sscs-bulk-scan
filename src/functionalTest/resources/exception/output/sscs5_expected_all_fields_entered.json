@@ -73,7 +73,7 @@
         "hearingSubtype": {},
         "hearingType": "paper",
         "mrnDetails": {
-          "dwpIssuingOffice": "Sheffield DRT",
+          "dwpIssuingOffice": "TCO Preston Appeals Team",
           "mrnDate": "MRN_DATE",
           "mrnLateReason": "see scanned SSCS5 form",
           "mrnMissingReason": null
@@ -103,12 +103,12 @@
         },
         "signer": "Sarah Smith"
       },
-      "benefitCode": "000",
+      "benefitCode": "053",
       "bulkScanCaseReference": "id",
-      "caseCode": "000DD",
+      "caseCode": "053DD",
       "caseCreated": "2019-08-02",
       "createdInGapsFrom": "readyToList",
-      "dwpRegionalCentre": "Sheffield DRT",
+      "dwpRegionalCentre": "TCO Preston Appeals Team",
       "evidencePresent": "Yes",
       "formType": "sscs5",
       "isConfidentialCase": "Yes",
