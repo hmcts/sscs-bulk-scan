@@ -1,27 +1,9 @@
 {
   "case_creation_details": {
     "case_data": {
-      "otherParties": [
-        {
-          "value": {
-            "id": "1",
-            "name": {
-              "firstName": "Zoe",
-              "lastName": "Butler",
-              "title": "Mrs"
-            },
-            "address": {
-              "line1": "299 Harrow",
-              "town": "The Avenue",
-              "county": "Hatch End",
-              "postcode": "HA5 4QT"
-            }
-          }
-        }
-      ],
       "appeal": {
         "mrnDetails": {
-          "dwpIssuingOffice": "Child Support",
+          "dwpIssuingOffice": "C.B.O (HMRC)",
           "mrnDate": "MRN_DATE",
           "mrnLateReason": null,
           "mrnMissingReason": null
@@ -52,13 +34,11 @@
           "confidentialityRequired": null,
           "isAppointee": "No",
           "isAddressSameAsAppointee": null,
-          "role": {
-            "name": "Paying parent"
-          }
+          "role": null
         },
         "benefitType": {
-          "code": "childSupport",
-          "description": "Child Support"
+          "code": "taxFreeChildcare",
+          "description": "Tax-Free Childcare"
         },
         "hearingSubtype": {
           "wantsHearingTypeTelephone": "Yes",
@@ -138,18 +118,17 @@
         "faxNumber": "0126 434 7983",
         "email": "SSCS_Bradford@justice.gov.uk"
       },
-      "processingVenue": "Chelmsford",
+      "processingVenue": "Basildon Combined Court",
       "evidencePresent": "Yes",
       "bulkScanCaseReference": "1234567890",
-      "benefitCode": "022",
-      "caseCode": "022DD",
+      "benefitCode": "057",
+      "caseCode": "057DD",
       "caseCreated": "2018-01-11",
       "createdInGapsFrom": "readyToList",
-      "dwpRegionalCentre": "Child Support",
+      "dwpRegionalCentre": "C.B.O (HMRC)",
       "issueCode": "DD",
       "linkedCasesBoolean": "No",
-      "formType": "sscs2",
-      "childMaintenanceNumber": "Test1234"
+      "formType": "sscs5"
     },
     "case_type_id": "Benefit",
     "event_id": "validAppealCreated"
