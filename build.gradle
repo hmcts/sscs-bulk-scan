@@ -280,7 +280,7 @@ dependencyManagement {
     dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.15.0'
 
     //CVE-2021-40690
-     dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.2.3'
+     dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.3.0'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
     dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.54') {
@@ -295,7 +295,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22112
-    dependencySet(group: 'org.springframework.security', version: '5.5.2') {
+    dependencySet(group: 'org.springframework.security', version: '5.6.1') {
       entry 'spring-security-crypto'
     }
 
