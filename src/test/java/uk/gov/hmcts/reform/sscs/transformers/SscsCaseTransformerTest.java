@@ -288,15 +288,18 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"TAX_CREDIT, taxCredit", "GUARDIANS_ALLOWANCE, guardiansAllowance", "TAX_FREE_CHILDCARE, taxFreeChildcare", "HOME_RESPONSIBILITIES_PROTECTION, homeResponsibilitiesProtection",
-        "CHILD_BENEFIT, childBenefit", "THIRTY_HOURS_FREE_CHILDCARE, thirtyHoursFreeChildcare", "GUARANTEED_MINIMUM_PENSION, guaranteedMinimumPension", "NATIONAL_INSURANCE_CREDITS, nationalInsuranceCredits"})
-    public void givenBenefitTypeIsSscs5_thenCorrectCodeIsReturned(BenefitTypeIndicatorSscs5 benefitType, String expectedBenefitCode) {
+    @Parameters({"TAX_CREDIT, taxCredit, Tax Credit Office", "GUARDIANS_ALLOWANCE, guardiansAllowance, Child Benefit Office",
+        "TAX_FREE_CHILDCARE, taxFreeChildcare, Childcare Service HMRC", "HOME_RESPONSIBILITIES_PROTECTION, homeResponsibilitiesProtection, PT Operations North East England",
+        "CHILD_BENEFIT, childBenefit, Child Benefit Office", "THIRTY_HOURS_FREE_CHILDCARE, thirtyHoursFreeChildcare, Childcare Service HMRC",
+        "GUARANTEED_MINIMUM_PENSION, guaranteedMinimumPension, PT Operations North East England", "NATIONAL_INSURANCE_CREDITS, nationalInsuranceCredits, PT Operations North East England"})
+    public void givenBenefitTypeIsSscs5_thenCorrectCodeIsReturned(BenefitTypeIndicatorSscs5 benefitType, String expectedBenefitCode, String issuingOffice) {
         pairs.put(benefitType.getIndicatorString(), true);
         pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
         CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         assertEquals(expectedBenefitCode,  appeal.getBenefitType().getCode());
+        assertEquals(issuingOffice, appeal.getMrnDetails().getDwpIssuingOffice());
     }
 
     @Test

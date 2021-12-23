@@ -599,6 +599,14 @@ public class SscsCaseTransformer implements CaseTransformer {
             case MATERNITY_ALLOWANCE:
             case BEREAVEMENT_SUPPORT_PAYMENT_SCHEME:
             case CHILD_SUPPORT:
+            case TAX_CREDIT:
+            case GUARDIANS_ALLOWANCE:
+            case TAX_FREE_CHILDCARE:
+            case HOME_RESPONSIBILITIES_PROTECTION:
+            case CHILD_BENEFIT:
+            case THIRTY_HOURS_FREE_CHILDCARE:
+            case GUARANTEED_MINIMUM_PENSION:
+            case NATIONAL_INSURANCE_CREDITS:
                 return true;
             default:
                 return false;
