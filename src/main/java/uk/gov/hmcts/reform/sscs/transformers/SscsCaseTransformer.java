@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
@@ -559,7 +560,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             if (Benefit.getBenefitOptionalByCode(benefitType.getCode())
                 .filter(benefit -> isBenefitWithAutoFilledOffice(benefit, dwpIssuingOffice)).isPresent()) {
                 return dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode())
-                    .map(office -> office.getMapping().getCcd())
+                    .map(OfficeMapping::getCode)
                     .orElse(null);
             } else if (dwpIssuingOffice != null) {
                 return dwpAddressLookupService.getDwpMappingByOffice(benefitType.getCode(), dwpIssuingOffice)

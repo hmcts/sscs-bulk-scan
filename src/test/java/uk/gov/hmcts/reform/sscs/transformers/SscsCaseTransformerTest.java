@@ -229,7 +229,8 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = Benefit.CHILD_SUPPORT;
-        assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefit.getShortName(), appeal.getBenefitType().getCode());
+        assertEquals("Child Maintenance Service Group", appeal.getMrnDetails().getDwpIssuingOffice());
     }
 
     @Test
