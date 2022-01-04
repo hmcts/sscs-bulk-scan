@@ -64,7 +64,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     //TODO: Remove when uc-office-feature switched on
     private boolean ucOfficeFeatureActive;
-    private boolean workAllocationFeature;
 
     @Autowired
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
@@ -74,8 +73,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                                DwpAddressLookupService dwpAddressLookupService,
                                IdamService idamService,
                                CcdService ccdService,
-                               @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive,
-                               @Value("${feature.work-allocation.enabled}") boolean workAllocationFeature) {
+                               @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
         this.sscsDataHelper = sscsDataHelper;
@@ -84,7 +82,6 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.idamService = idamService;
         this.ccdService = ccdService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
-        this.workAllocationFeature = workAllocationFeature;
     }
 
     public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
@@ -158,7 +155,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         List<CcdValue<OtherParty>> otherParties = buildOtherParty(scannedData.getOcrCaseData());
 
         sscsDataHelper.addSscsDataToMap(transformed, appeal, sscsDocuments, subscriptions, FormType.getById(formType),
-            getField(scannedData.getOcrCaseData(), PERSON_1_CHILD_MAINTENANCE_NUMBER), otherParties, workAllocationFeature);
+            getField(scannedData.getOcrCaseData(), PERSON_1_CHILD_MAINTENANCE_NUMBER), otherParties);
 
         transformed.put("bulkScanCaseReference", caseId);
         transformed.put("caseCreated", scannedData.getOpeningDate());

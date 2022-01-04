@@ -106,7 +106,7 @@ public class SscsCaseTransformerTest {
         token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
         sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator);
-        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, false, false);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, false);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);

@@ -116,14 +116,14 @@ public class SscsDataHelperTest {
     @Test
     public void givenASscs2CaseResponseWithChildMaintenance_thenReturnSscsDataMapSet() {
         Map<String, Object> transformedCase = new HashMap<>();
-        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS2, "Test1234", null, false);
+        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS2, "Test1234", null);
         assertEquals("Test1234", transformedCase.get("childMaintenanceNumber"));
     }
 
     @Test
     public void givenASscs1CaseResponseWithChildMaintenance_thenReturnSscsDataMapIgnoresValue() {
         Map<String, Object> transformedCase = new HashMap<>();
-        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS1U, "Test1234", null, false);
+        caseDataHelper.addSscsDataToMap(transformedCase, null, null, null, FormType.SSCS1U, "Test1234", null);
         assertNull(transformedCase.get("childMaintenanceNumber"));
     }
 
@@ -136,7 +136,7 @@ public class SscsDataHelperTest {
         when(dwpAddressLookupService.getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode())).thenReturn(officeMapping);
         when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), officeMapping.get().getMapping().getCcd())).thenReturn(expectedPipDwpHandingOffice);
 
-        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null, false);
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null);
 
         assertEquals(expectedPipDwpHandingOffice, transformedCase.get("dwpRegionalCentre"));
         verify(dwpAddressLookupService, times(1)).getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode());
@@ -152,7 +152,7 @@ public class SscsDataHelperTest {
         when(dwpAddressLookupService.getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode())).thenReturn(officeMapping);
         when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), officeMapping.get().getMapping().getCcd())).thenReturn(expectedPipDwpHandingOffice);
 
-        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null, false);
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null);
 
         assertEquals(expectedPipDwpHandingOffice, transformedCase.get("dwpRegionalCentre"));
         verify(dwpAddressLookupService, times(1)).getDefaultDwpMappingByBenefitType(appeal.getBenefitType().getCode());
@@ -166,7 +166,7 @@ public class SscsDataHelperTest {
         Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("PIP").build()).mrnDetails(MrnDetails.builder().dwpIssuingOffice("DWP PIP (1)").build()).build();
         when(dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice())).thenReturn(expectedPipDwpHandingOffice);
 
-        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null, false);
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1U, "", null);
 
         assertEquals(expectedPipDwpHandingOffice, transformedCase.get("dwpRegionalCentre"));
         verify(dwpAddressLookupService, times(1)).getDwpRegionalCenterByBenefitTypeAndOffice(appeal.getBenefitType().getCode(), appeal.getMrnDetails().getDwpIssuingOffice());
@@ -177,7 +177,7 @@ public class SscsDataHelperTest {
         Map<String, Object> transformedCase = new HashMap<>();
         Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("childSupport").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.YES).build()).build();
 
-        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS2, "", null, false);
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS2, "", null);
 
         assertEquals("Yes", transformedCase.get("isConfidentialCase"));
     }
@@ -197,7 +197,7 @@ public class SscsDataHelperTest {
         Map<String, Object> transformedCase = new HashMap<>();
         Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("childSupport").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.NO).build()).build();
 
-        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS2, "", null, false);
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS2, "", null);
 
         assertNull(transformedCase.get("isConfidentialCase"));
     }
@@ -207,7 +207,7 @@ public class SscsDataHelperTest {
         Map<String, Object> transformedCase = new HashMap<>();
         Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("childSupport").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.YES).build()).build();
 
-        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1PEU, "", null, false);
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1PEU, "", null);
 
         assertNull(transformedCase.get("isConfidentialCase"));
     }
@@ -232,7 +232,7 @@ public class SscsDataHelperTest {
         Map<String, Object> transformedCase = new HashMap<>();
         Appeal appeal = Appeal.builder().appellant(Appellant.builder().name(Name.builder().firstName("Harry").lastName("Potter").build()).build()).build();
 
-        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, null, "", null, true);
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, null, "", null);
 
         assertEquals("Harry Potter", transformedCase.get("caseName"));
     }

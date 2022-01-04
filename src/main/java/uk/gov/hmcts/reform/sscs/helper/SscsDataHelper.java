@@ -48,7 +48,7 @@ public class SscsDataHelper {
 
     public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions,
                                  FormType formType, String childMaintenanceNumber,
-                                 List<CcdValue<OtherParty>> otherParties, boolean workAllocationEnabled) {
+                                 List<CcdValue<OtherParty>> otherParties) {
         appealData.put("appeal", appeal);
         appealData.put("sscsDocument", sscsDocuments);
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
@@ -76,7 +76,7 @@ public class SscsDataHelper {
                 }
             }
 
-            if (workAllocationEnabled && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
+            if (appeal.getAppellant() != null && appeal.getAppellant().getName() != null
                 && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
                 Name name = appeal.getAppellant().getName();
                 appealData.put("caseName", name.getFullNameNoTitle());
