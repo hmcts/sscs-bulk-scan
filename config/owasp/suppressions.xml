@@ -38,7 +38,7 @@
     <packageUrl regex="true">^pkg:maven/commons\-io/commons\-io@.*$</packageUrl>
     <cve>CVE-2021-29425</cve>
   </suppress>
-  <suppress until="2022-01-01">
+  <suppress until="2022-03-01">
     <notes><![CDATA[
    file name: spring-core-5.3.9.jar
    ]]></notes>
