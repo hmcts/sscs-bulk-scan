@@ -101,7 +101,7 @@ public class CcdCallbackHandlerTest {
         fooLogger.addAppender(listAppender);
 
         sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService, false);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService);
 
         idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
@@ -282,6 +282,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Springburn");
         assertThat(ccdCallbackResponse.getData().getProcessingVenue()).isEqualTo("Cardiff");
+        assertThat(ccdCallbackResponse.getData().getCaseName()).isEqualTo("Fred Ward");
     }
 
     @Test
@@ -318,6 +319,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertThat(ccdCallbackResponse.getData().getCaseName()).isEqualTo("Fred Ward");
     }
 
     @Test
@@ -356,6 +358,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertThat(ccdCallbackResponse.getData().getCaseName()).isEqualTo("Fred Ward");
     }
 
     @Test
@@ -394,6 +397,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertThat(ccdCallbackResponse.getData().getCaseName()).isEqualTo("Fred Ward");
     }
 
     @Test
@@ -431,6 +435,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertThat(ccdCallbackResponse.getData().getCaseName()).isEqualTo("Fred Ward");
         assertLogContains("Warnings found while validating exception record id 123 - Mrn date is empty");
     }
 
