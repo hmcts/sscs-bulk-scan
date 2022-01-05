@@ -276,8 +276,8 @@ dependencyManagement {
 
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
-    dependency group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.15.0'
-    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.15.0'
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.16.0'
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.16.0'
 
     //CVE-2021-40690
      dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.3.0'
