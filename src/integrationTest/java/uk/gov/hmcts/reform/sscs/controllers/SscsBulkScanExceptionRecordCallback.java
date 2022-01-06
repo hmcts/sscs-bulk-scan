@@ -14,6 +14,8 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification.NEW_APPLICATION;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS2;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS5;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_EXCLUDE_DATES_MISSING;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
 import static uk.gov.hmcts.reform.sscs.helper.TestConstants.FIND_CASE_EVENT_URL;
@@ -456,7 +458,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            exceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress(), "SSCS2", false),
+            exceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress(SSCS2), "SSCS2", false),
             httpHeaders()
         );
 
@@ -480,7 +482,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            exceptionCaseData(caseDataWithoutAppellantRole(), "SSCS2", false),
+            exceptionCaseData(caseDataWithoutAppellantRole(SSCS2), "SSCS2", false),
             httpHeaders()
         );
 
@@ -501,7 +503,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            exceptionCaseData(caseDataWithoutAppellantRole(), "SSCS2", true),
+            exceptionCaseData(caseDataWithoutAppellantRole(SSCS2), "SSCS2", true),
             httpHeaders()
         );
 
@@ -521,7 +523,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            exceptionCaseData(caseDataWithInvalidAppellantRole(), "SSCS2", false),
+            exceptionCaseData(caseDataWithInvalidAppellantRole(SSCS2), "SSCS2", false),
             httpHeaders()
         );
 
@@ -542,7 +544,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            exceptionCaseData(caseDataWithInvalidAppellantRole(), "SSCS2", true),
+            exceptionCaseData(caseDataWithInvalidAppellantRole(SSCS2), "SSCS2", true),
             httpHeaders()
         );
 
@@ -717,7 +719,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("mrn_date", mrnDate);
         if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
             ocrList.put("office", "The Pension Service 11");
-        } else {
+        } else if (!formType.toLowerCase().equals(SSCS2.toString()) && !formType.toLowerCase().equals(SSCS5.toString())) {
             ocrList.put("office", "Balham DRT");
         }
         ocrList.put("contains_mrn", true);
@@ -727,13 +729,13 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         } else if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
             ocrList.put("is_benefit_type_other", false);
             ocrList.put("benefit_type_other", "Attendance Allowance");
-        } else if (formType.toLowerCase().equals(FormType.SSCS5.toString())) {
+        } else if (formType.toLowerCase().equals(SSCS5.toString())) {
             ocrList.put("is_benefit_type_tax_free_childcare", "true");
-        } else if (!formType.toLowerCase().equals(FormType.SSCS2.toString())) {
+        } else if (!formType.toLowerCase().equals(SSCS2.toString())) {
             ocrList.put("is_benefit_type_esa", "true");
         }
 
-        if (formType.toLowerCase().equals(FormType.SSCS2.toString())) {
+        if (formType.toLowerCase().equals(SSCS2.toString())) {
             ocrList.put("person1_child_maintenance_number", "Test1234");
             ocrList.put("is_paying_parent", "true");
             addOtherParty(ocrList);
@@ -804,7 +806,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     }
 
-    private Map<String, Object> caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress() {
+    private Map<String, Object> caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress(FormType formType) {
 
         Map<String, Object> ocrList = new HashMap<>();
         ocrList.put("person1_child_maintenance_number", "");
@@ -815,7 +817,9 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("other_party_address_line3","Hatch End");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
-        ocrList.put("office", "Balham DRT");
+        if (!SSCS2.equals(formType) && !SSCS5.equals(formType)) {
+            ocrList.put("office", "Balham DRT");
+        }
         ocrList.put("contains_mrn", true);
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
@@ -830,13 +834,15 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return exceptionRecord(ocrList, null);
     }
 
-    private Map<String, Object> caseDataWithoutAppellantRole() {
+    private Map<String, Object> caseDataWithoutAppellantRole(FormType formType) {
 
         Map<String, Object> ocrList = new HashMap<>();
         ocrList.put("person1_child_maintenance_number", "12334");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
-        ocrList.put("office", "Balham DRT");
+        if (!SSCS2.equals(formType) && !SSCS5.equals(formType)) {
+            ocrList.put("office", "Balham DRT");
+        }
         ocrList.put("contains_mrn", true);
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
@@ -850,13 +856,15 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return exceptionRecord(ocrList, null);
     }
 
-    private Map<String, Object> caseDataWithInvalidAppellantRole() {
+    private Map<String, Object> caseDataWithInvalidAppellantRole(FormType formType) {
 
         Map<String, Object> ocrList = new HashMap<>();
         ocrList.put("person1_child_maintenance_number", "123");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
-        ocrList.put("office", "Balham DRT");
+        if (!SSCS2.equals(formType) && !SSCS5.equals(formType)) {
+            ocrList.put("office", "Balham DRT");
+        }
         ocrList.put("contains_mrn", true);
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);

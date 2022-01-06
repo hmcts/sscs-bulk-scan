@@ -298,7 +298,9 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         // Of the provided benefit type booleans (if any), check that exactly one is set to true, outputting errors
         // for conflicting values.
-        if (!validProvidedBooleanValues.isEmpty()) {
+        if (validProvidedBooleanValues.isEmpty()) {
+            allBenefitFieldsEmptyError(benefitList);
+        } else {
             // If one is set to true, extract the string indicator value (eg. IS_BENEFIT_TYPE_PIP) and lookup the Benefit type.
             if (isExactlyOneBooleanTrue(pairs, errors,
                 validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
@@ -308,12 +310,26 @@ public class SscsCaseTransformer implements CaseTransformer {
                     code = benefit.get().getShortName();
                     description = benefit.get().getDescription();
                 }
+            } else if (isExactlyZeroBooleanTrue(pairs, errors, validProvidedBooleanValues.toArray(new String[validProvidedBooleanValues.size()]))) {
+                allBenefitFieldsEmptyError(benefitList);
             } else {
-                errors.add(uk.gov.hmcts.reform.sscs.utility.StringUtils
-                    .getGramaticallyJoinedStrings(validProvidedBooleanValues) + " have contradicting values");
+                errors.add(contradictingValuesError(validProvidedBooleanValues, pairs));
             }
         }
         return (code != null) ? BenefitType.builder().code(code).description(description).build() : null;
+    }
+
+    private void allBenefitFieldsEmptyError(List<String> benefitList) {
+        errors.add((uk.gov.hmcts.reform.sscs.utility.StringUtils
+            .getGramaticallyJoinedStrings(benefitList)
+            + " fields are empty or false"));
+    }
+
+    private String contradictingValuesError(List<String> validProvidedBooleanValues, Map<String, Object> pairs) {
+        return uk.gov.hmcts.reform.sscs.utility.StringUtils
+            .getGramaticallyJoinedStrings(validProvidedBooleanValues.stream()
+                .filter(value -> extractBooleanValue(pairs, errors, value)).collect(Collectors.toList()))
+            + " have contradicting values";
     }
 
     private List<String> findBenefitListFromFormType(FormType formType) {
@@ -357,10 +373,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                         validProvidedBooleanValues);
                 }
             } else {
-                String error = uk.gov.hmcts.reform.sscs.utility.StringUtils
-                    .getGramaticallyJoinedStrings(validProvidedBooleanValues.stream()
-                        .filter(value -> extractBooleanValue(pairs, errors, value)).collect(Collectors.toList()))
-                    + " have contradicting values";
+                String error = contradictingValuesError(validProvidedBooleanValues, pairs);
                 if (!StringUtils.isEmpty(benefitTypeOther)) {
                     error = error.replace(IS_BENEFIT_TYPE_OTHER, BENEFIT_TYPE_OTHER);
                 }

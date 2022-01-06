@@ -147,7 +147,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType, ignorePartyRoleValidation, ignoreWarnings);
         checkRepresentative(appeal, ocrCaseData, caseData);
-        checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation);
+        checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation, formType);
 
         if (formType != null && formType.equals(FormType.SSCS2)) {
             checkChildMaintenance(caseData, ignoreWarnings);
@@ -391,7 +391,7 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData, boolean ignoreMrnValidation) {
+    private void checkMrnDetails(Appeal appeal, Map<String, Object> ocrCaseData, boolean ignoreMrnValidation, FormType formType) {
 
         String dwpIssuingOffice = getDwpIssuingOffice(appeal, ocrCaseData);
 
@@ -417,7 +417,7 @@ public class SscsCaseValidator implements CaseValidator {
                 log.info("DwpHandling handling office is not valid");
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
-        } else if (dwpIssuingOffice == null) {
+        } else if (dwpIssuingOffice == null && !FormType.SSCS2.equals(formType) && !FormType.SSCS5.equals(formType)) {
             warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
         }
     }

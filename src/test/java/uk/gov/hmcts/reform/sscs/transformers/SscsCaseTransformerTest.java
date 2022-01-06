@@ -155,7 +155,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(office,  appeal.getMrnDetails().getDwpIssuingOffice());
+        assertEquals(office, appeal.getMrnDetails().getDwpIssuingOffice());
     }
 
     @Test
@@ -180,6 +180,43 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
         assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenTwoSscs5BenefitTypesAreTrue_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_CREDIT.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARDIANS_ALLOWANCE.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_FREE_CHILDCARE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.HOME_RESPONSIBILITIES_PROTECTION.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.CHILD_BENEFIT.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.THIRTY_HOURS_FREE_CHILDCARE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARANTEED_MINIMUM_PENSION.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.NATIONAL_INSURANCE_CREDITS.getIndicatorString(), false);
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_tax_credit and is_benefit_type_guardians_allowance have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAllSscs5BenefitTypesAreFalse_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_CREDIT.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARDIANS_ALLOWANCE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_FREE_CHILDCARE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.HOME_RESPONSIBILITIES_PROTECTION.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.CHILD_BENEFIT.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.THIRTY_HOURS_FREE_CHILDCARE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARANTEED_MINIMUM_PENSION.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.NATIONAL_INSURANCE_CREDITS.getIndicatorString(), false);
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits fields are empty or false", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAllSscs5BenefitTypesAreMissing_thenReturnAnError() {
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits fields are empty or false", result.getErrors().get(0));
     }
 
     @Test
@@ -2239,6 +2276,8 @@ public class SscsCaseTransformerTest {
     public void givenSscs2Or5FormAndConfidentialityRequired_thenCaseDataValueIsSet(String keepHomeAddressConfidential, String expected, FormType formType) {
         if (formType.equals(SSCS2)) {
             pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        } else if (formType.equals(SSCS5)) {
+            pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
         }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -2267,6 +2306,8 @@ public class SscsCaseTransformerTest {
     public void givenSscs2Or5FormAndConfidentialityRequiredEmpty_thenCaseDataValueIsNull(FormType formType) {
         if (formType.equals(SSCS2)) {
             pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        } else if (formType.equals(SSCS5)) {
+            pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
         }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
@@ -2295,6 +2336,8 @@ public class SscsCaseTransformerTest {
     public void givenSscs2Or5FormAndNoConfidentiality_thenCaseDataValueIsNull(FormType formType) {
         if (formType.equals(SSCS2)) {
             pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        } else if (formType.equals(SSCS5)) {
+            pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
         }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);

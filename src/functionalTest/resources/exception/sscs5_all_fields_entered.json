@@ -32,10 +32,6 @@
       "value": "MRN_DATE"
     },
     {
-      "name": "office",
-      "value": "Balham DRT"
-    },
-    {
       "name": "is_benefit_type_tax_credit",
       "value": "true"
     },
