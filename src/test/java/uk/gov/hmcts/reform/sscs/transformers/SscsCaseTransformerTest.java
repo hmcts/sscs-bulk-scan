@@ -1,19 +1,16 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.BENEFIT_TYPE_DESCRIPTION;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1PEU;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1U;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS2;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
@@ -42,6 +39,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
+import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs5;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -95,6 +93,8 @@ public class SscsCaseTransformerTest {
 
     private ExceptionRecord sscs2ExceptionRecord;
 
+    private ExceptionRecord sscs5ExceptionRecord;
+
     IdamTokens token;
 
     @Before
@@ -131,6 +131,11 @@ public class SscsCaseTransformerTest {
             SSCS2.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs2ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
+        given(keyValuePairValidator.validate(ocrList, SSCS5)).willReturn(CaseResponse.builder().build());
+        sscs5ExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            SSCS5.getId()).build();
+        given(sscsJsonExtractor.extractJson(sscs5ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
     }
 
@@ -150,7 +155,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(office,  appeal.getMrnDetails().getDwpIssuingOffice());
+        assertEquals(office, appeal.getMrnDetails().getDwpIssuingOffice());
     }
 
     @Test
@@ -160,6 +165,58 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertFalse(result.getErrors().isEmpty());
         assertEquals("is_benefit_type_pip and is_benefit_type_esa have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenInvalidBenefitTypePairingsForSscs5_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_CREDIT.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARDIANS_ALLOWANCE.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_FREE_CHILDCARE.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.HOME_RESPONSIBILITIES_PROTECTION.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.CHILD_BENEFIT.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.THIRTY_HOURS_FREE_CHILDCARE.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARANTEED_MINIMUM_PENSION.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.NATIONAL_INSURANCE_CREDITS.getIndicatorString(), true);
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenTwoSscs5BenefitTypesAreTrue_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_CREDIT.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARDIANS_ALLOWANCE.getIndicatorString(), true);
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_FREE_CHILDCARE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.HOME_RESPONSIBILITIES_PROTECTION.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.CHILD_BENEFIT.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.THIRTY_HOURS_FREE_CHILDCARE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARANTEED_MINIMUM_PENSION.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.NATIONAL_INSURANCE_CREDITS.getIndicatorString(), false);
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_tax_credit and is_benefit_type_guardians_allowance have contradicting values", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAllSscs5BenefitTypesAreFalse_thenReturnAnError() {
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_CREDIT.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARDIANS_ALLOWANCE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.TAX_FREE_CHILDCARE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.HOME_RESPONSIBILITIES_PROTECTION.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.CHILD_BENEFIT.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.THIRTY_HOURS_FREE_CHILDCARE.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.GUARANTEED_MINIMUM_PENSION.getIndicatorString(), false);
+        pairs.put(BenefitTypeIndicatorSscs5.NATIONAL_INSURANCE_CREDITS.getIndicatorString(), false);
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits fields are empty or false", result.getErrors().get(0));
+    }
+
+    @Test
+    public void givenAllSscs5BenefitTypesAreMissing_thenReturnAnError() {
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits fields are empty or false", result.getErrors().get(0));
     }
 
     @Test
@@ -265,6 +322,21 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         assertEquals(shortName,  appeal.getBenefitType().getCode());
+    }
+
+    @Test
+    @Parameters({"TAX_CREDIT, taxCredit, Tax Credit Office", "GUARDIANS_ALLOWANCE, guardiansAllowance, Child Benefit Office",
+        "TAX_FREE_CHILDCARE, taxFreeChildcare, Childcare Service HMRC", "HOME_RESPONSIBILITIES_PROTECTION, homeResponsibilitiesProtection, PT Operations North East England",
+        "CHILD_BENEFIT, childBenefit, Child Benefit Office", "THIRTY_HOURS_FREE_CHILDCARE, thirtyHoursFreeChildcare, Childcare Service HMRC",
+        "GUARANTEED_MINIMUM_PENSION, guaranteedMinimumPension, PT Operations North East England", "NATIONAL_INSURANCE_CREDITS, nationalInsuranceCredits, PT Operations North East England"})
+    public void givenBenefitTypeIsSscs5_thenCorrectCodeIsReturned(BenefitTypeIndicatorSscs5 benefitType, String expectedBenefitCode, String issuingOffice) {
+        pairs.put(benefitType.getIndicatorString(), true);
+        pairs.remove(BenefitTypeIndicator.PIP.getIndicatorString());
+        CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
+        assertTrue(result.getErrors().isEmpty());
+        Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertEquals(expectedBenefitCode,  appeal.getBenefitType().getCode());
+        assertEquals(issuingOffice, appeal.getMrnDetails().getDwpIssuingOffice());
     }
 
     @Test
@@ -2200,9 +2272,13 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"Yes, Yes", "No, No", "true, Yes", "false, No"})
-    public void givenSscs2FormAndConfidentialityRequired_thenCaseDataValueIsSet(String keepHomeAddressConfidential, String expected) {
-        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+    @Parameters({"Yes, Yes, SSCS2", "No, No, SSCS2", "true, Yes, SSCS2", "false, No, SSCS2", "Yes, Yes, SSCS5", "No, No, SSCS5"})
+    public void givenSscs2Or5FormAndConfidentialityRequired_thenCaseDataValueIsSet(String keepHomeAddressConfidential, String expected, FormType formType) {
+        if (formType.equals(SSCS2)) {
+            pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        } else if (formType.equals(SSCS5)) {
+            pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
+        }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -2215,17 +2291,24 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("keep_home_address_confidential", keepHomeAddressConfidential);
         pairs.put("is_paying_parent", "true");
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+
+        ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired.toString(), is(expected));
+        assertEquals(expected, appellantConfidentialityRequired.toString());
     }
 
     @Test
-    public void givenSscs2FormAndConfidentialityRequiredEmpty_thenCaseDataValueIsNull() {
-        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+    @Parameters({"SSCS2", "SSCS5"})
+    public void givenSscs2Or5FormAndConfidentialityRequiredEmpty_thenCaseDataValueIsNull(FormType formType) {
+        if (formType.equals(SSCS2)) {
+            pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        } else if (formType.equals(SSCS5)) {
+            pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
+        }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -2238,17 +2321,24 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("keep_home_address_confidential", "");
         pairs.put("is_paying_parent", "true");
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+
+        ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired, is(nullValue()));
+        assertNull(appellantConfidentialityRequired);
     }
 
     @Test
-    public void givenSscs2FormAndNoConfidentiality_thenCaseDataValueIsNull() {
-        pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+    @Parameters({"SSCS2", "SSCS5"})
+    public void givenSscs2Or5FormAndNoConfidentiality_thenCaseDataValueIsNull(FormType formType) {
+        if (formType.equals(SSCS2)) {
+            pairs.put(BENEFIT_TYPE_OTHER, "Child support");
+        } else if (formType.equals(SSCS5)) {
+            pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
+        }
         pairs.put("person1_title", APPELLANT_TITLE);
         pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
         pairs.put("person1_last_name", APPELLANT_LAST_NAME);
@@ -2260,12 +2350,14 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
-        CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
+
+        ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
-        assertThat(appellantConfidentialityRequired, is(nullValue()));
+        assertNull(appellantConfidentialityRequired);
     }
 
 
@@ -2289,7 +2381,7 @@ public class SscsCaseTransformerTest {
         hearingSupportArrangements.add("hearingLoop");
 
         return Appeal.builder()
-            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).build())
+            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).description(BENEFIT_TYPE_DESCRIPTION).build())
             .appellant(appellant)
             .appealReasons(AppealReasons.builder().reasons(Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(APPEAL_REASON).build()).build())).build())
             .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())

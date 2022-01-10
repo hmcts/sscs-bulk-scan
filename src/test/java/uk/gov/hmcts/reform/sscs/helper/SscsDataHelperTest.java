@@ -183,6 +183,16 @@ public class SscsDataHelperTest {
     }
 
     @Test
+    public void givenAppellantRequestsConfidentialityOnSscs5_thenIsConfidentialCase() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("taxCredit").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.YES).build()).build();
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS5, "", null);
+
+        assertEquals("Yes", transformedCase.get("isConfidentialCase"));
+    }
+
+    @Test
     public void givenAppellantDoesNotRequestConfidentialityOnSscs2_thenIsConfidentialCase() {
         Map<String, Object> transformedCase = new HashMap<>();
         Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("childSupport").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.NO).build()).build();
@@ -200,5 +210,20 @@ public class SscsDataHelperTest {
         caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1PEU, "", null);
 
         assertNull(transformedCase.get("isConfidentialCase"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void givenOtherPartiesAndChildMaintenanceOnSscs2_thenSetOtherPartiesAndChildMaintenanceOnCase() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("benefit").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.YES).build()).build();
+
+        List<CcdValue<OtherParty>> otherParties = Arrays.asList(CcdValue.<OtherParty>builder().value(OtherParty.builder().id("other_party_1").build()).build());
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS2, "123456", otherParties);
+
+        OtherParty otherParty = ((List<CcdValue<OtherParty>>) transformedCase.get("otherParties")).get(0).getValue();
+        assertEquals("other_party_1", otherParty.getId());
+        assertEquals("123456", transformedCase.get("childMaintenanceNumber"));
     }
 }

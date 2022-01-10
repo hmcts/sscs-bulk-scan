@@ -96,23 +96,6 @@ public class OcrValidationTest  {
     }
 
     @Test
-    public void should_return_200_when_ocr_form_for_uc_validation_request_data_is_valid_Sscs2() throws Throwable {
-        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-
-        String content = readResource("mappings/ocr-validation/sscs2-valid-ocr-data.json");
-
-        mvc.perform(
-                post("/forms/SSCS2/validate-ocr")
-                    .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(content))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("SUCCESS"))
-            .andExpect(jsonPath("$.warnings", hasSize(0)))
-            .andExpect(jsonPath("$.errors", hasSize(0)));
-    }
-
-    @Test
     public void should_return_200_when_ocr_form_with_address_line3_blank_validation_request_data_is_valid() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -383,6 +366,23 @@ public class OcrValidationTest  {
     }
 
     @Test
+    public void should_return_200_when_ocr_form_with_sscs5_form_validation_request_data_is_valid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs5-valid-ocr-data.json");
+
+        mvc.perform(
+            post("/forms/SSCS5/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUCCESS"))
+            .andExpect(jsonPath("$.warnings", hasSize(0)))
+            .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
     public void should_return_200_with_warning_when_ocr_form_with_sscs2_form_validation_request_data_is_invalid() throws Throwable {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
@@ -420,6 +420,25 @@ public class OcrValidationTest  {
             .andExpect(jsonPath("$.errors", hasSize(0)))
             .andExpect(jsonPath("$.warnings", hasSize(1)))
             .andExpect(jsonPath("$.warnings", contains("is_paying_parent, is_receiving_parent, is_another_party and other_party_details have conflicting values")));
+    }
+
+    @Test
+    public void should_return_200_with_error_when_ocr_form_with_sscs5_form_validation_request_benefit_type_invalid() throws Throwable {
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        String content = readResource("mappings/ocr-validation/sscs5-invalid-ocr-data-benefit-type.json");
+
+        mvc.perform(
+            post("/forms/SSCS5/validate-ocr")
+                .header("ServiceAuthorization", SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("WARNINGS"))
+            .andExpect(jsonPath("$.errors", hasSize(0)))
+            .andExpect(jsonPath("$.warnings", hasSize(1)))
+            .andExpect(jsonPath("$.warnings", containsInAnyOrder(
+                "is_benefit_type_guardians_allowance and is_benefit_type_tax_free_childcare have contradicting values")));
     }
 
 

@@ -32,6 +32,7 @@ public final class SscsConstants {
     public static final String BENEFIT_TYPE_DESCRIPTION = "benefit_type_description";
     public static final String BENEFIT_TYPE_OTHER = "benefit_type_other";
     public static final String IS_BENEFIT_TYPE_OTHER = "is_benefit_type_other";
+    public static final String IS_BENEFIT_TYPE_TAX_CREDIT = "is_benefit_type_tax_credit";
     public static final String HEARING_TYPE_DESCRIPTION = "hearing_type";
     public static final String REPRESENTATIVE_NAME_OR_ORGANISATION_DESCRIPTION = "representative_name_or_organisation";
     public static final String TELL_TRIBUNAL_ABOUT_DATES = "tell_tribunal_about_dates";

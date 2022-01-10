@@ -458,6 +458,35 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void should_handle_callback_and_return_caseid_and_state_case_created_for_sscs5_record_data()
+        throws Exception {
+        // Given
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+
+        String validationJson = loadJson("mappings/validation/sscs5-validate-appeal-created-case-request.json");
+
+        HttpEntity<String> request = new HttpEntity<>(validationJson, httpHeaders());
+
+        // When
+        ResponseEntity<AboutToStartOrSubmitCallbackResponse> result =
+            this.restTemplate.postForEntity(baseUrl, request, AboutToStartOrSubmitCallbackResponse.class);
+
+        // Then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
+
+        assertThat(callbackResponse.getErrors()).isEmpty();
+        assertThat(callbackResponse.getWarnings()).isEmpty();
+
+        assertEquals("TCO Preston Appeals Team", callbackResponse.getData().get("dwpRegionalCentre"));
+
+        verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
+    }
+
     private HttpHeaders httpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.set(AUTHORIZATION, USER_AUTH_TOKEN);

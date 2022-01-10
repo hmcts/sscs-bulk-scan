@@ -18,24 +18,18 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 @Component
 public class SscsKeyValuePairValidator {
 
-    private final String sscs1SchemaResourceLocation = "/schema/sscs-bulk-scan-schema.json";
-    private final String sscs2SchemaResourceLocation = "/schema/sscs2-bulk-scan-schema.json";
-
-    private Schema sscs1Schema = null;
-    private Schema sscs2Schema = null;
+    private Schema sscs1Schema = tryLoadSscsSchema("/schema/sscs-bulk-scan-schema.json");
+    private Schema sscs2Schema = tryLoadSscsSchema("/schema/sscs2-bulk-scan-schema.json");
+    private Schema sscs5Schema = tryLoadSscsSchema("/schema/sscs5-bulk-scan-schema.json");
 
     public CaseResponse validate(List<OcrDataField> ocrDataValidationRequest, FormType formType) {
-        if (formType != null && formType.equals(FormType.SSCS2)) {
-            tryLoadSscs2Schema();
-        } else {
-            tryLoadSscs1Schema();
-        }
-
         List<String> errors = null;
 
         try {
             if (formType != null && formType.equals(FormType.SSCS2)) {
                 sscs2Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
+            } else if (formType != null && formType.equals(FormType.SSCS5)) {
+                sscs5Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             } else {
                 sscs1Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             }
@@ -49,20 +43,8 @@ public class SscsKeyValuePairValidator {
             .status(getValidationStatus(errors, null)).build();
     }
 
-    private synchronized void tryLoadSscs1Schema() {
-        if (sscs1Schema != null) {
-            return;
-        }
-        sscs1Schema = SchemaLoader
-            .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(sscs1SchemaResourceLocation))));
+    private synchronized Schema tryLoadSscsSchema(String schemaLocation) {
+        return SchemaLoader
+            .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(schemaLocation))));
     }
-
-    private synchronized void tryLoadSscs2Schema() {
-        if (sscs2Schema != null) {
-            return;
-        }
-        sscs2Schema = SchemaLoader
-            .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(sscs2SchemaResourceLocation))));
-    }
-
 }

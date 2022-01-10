@@ -14,6 +14,8 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification.NEW_APPLICATION;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS2;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS5;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_EXCLUDE_DATES_MISSING;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
 import static uk.gov.hmcts.reform.sscs.helper.TestConstants.FIND_CASE_EVENT_URL;
@@ -401,16 +403,33 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS2"), false),
+            exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS2"), "SSCS2", false),
             httpHeaders());
 
         ResponseEntity<SuccessfulTransformationResponse> result =
             this.restTemplate
                 .postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
 
-        SuccessfulTransformationResponse callbackResponse = result.getBody();
-
         verifyResultData(result, "mappings/exception/sscs2-valid-appeal-response.json", this::getAppellantTya);
+    }
+
+    @Test
+    public void should_handle_sscs5_callback_and_return_caseid_and_state_case_created_in_exception_record_data()
+        throws Exception {
+        checkForLinkedCases(FIND_CASE_EVENT_URL);
+        findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "taxFreeChildcare");
+
+        when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+
+        HttpEntity<ExceptionRecord> request = new HttpEntity<>(
+            exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS5"), "SSCS5", false),
+            httpHeaders());
+
+        ResponseEntity<SuccessfulTransformationResponse> result =
+            this.restTemplate
+                .postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
+
+        verifyResultData(result, "mappings/exception/sscs5-valid-appeal-response.json", this::getAppellantTya);
     }
 
     @Test
@@ -418,7 +437,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithInvalidKey(), false),
+            exceptionCaseData(caseDataWithInvalidKey(), "SSCS2", false),
             httpHeaders()
         );
 
@@ -439,7 +458,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress(), false),
+            exceptionCaseData(caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress(SSCS2), "SSCS2", false),
             httpHeaders()
         );
 
@@ -463,7 +482,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithoutAppellantRole(), false),
+            exceptionCaseData(caseDataWithoutAppellantRole(SSCS2), "SSCS2", false),
             httpHeaders()
         );
 
@@ -484,7 +503,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithoutAppellantRole(), true),
+            exceptionCaseData(caseDataWithoutAppellantRole(SSCS2), "SSCS2", true),
             httpHeaders()
         );
 
@@ -504,7 +523,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithInvalidAppellantRole(), false),
+            exceptionCaseData(caseDataWithInvalidAppellantRole(SSCS2), "SSCS2", false),
             httpHeaders()
         );
 
@@ -525,7 +544,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
-            sscs2ExceptionCaseData(caseDataWithInvalidAppellantRole(), true),
+            exceptionCaseData(caseDataWithInvalidAppellantRole(SSCS2), "SSCS2", true),
             httpHeaders()
         );
 
@@ -615,8 +634,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     //FIXME: delete after bulk scan auto case creation is switch on
-    @SuppressWarnings("unchecked")
     private ExceptionRecord exceptionCaseData(Map<String, Object> caseData) {
+        return exceptionCaseData(caseData, "SSCS1", false);
+    }
+
+    @SuppressWarnings("unchecked")
+    private ExceptionRecord exceptionCaseData(Map<String, Object> caseData, String formType, boolean ignoreWarnings) {
         Map<String, Object> scannedData = (HashMap<String, Object>) caseData.get("scanOCRData");
         List<OcrDataField> scanOcrData = getOcrDataFields(scannedData);
 
@@ -624,9 +647,9 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .ocrDataFields(scanOcrData)
             .poBox("SSCSPO")
             .jurisdiction("SSCS")
-            .formType("SSCS1")
+            .formType(formType)
             .journeyClassification(NEW_APPLICATION)
-            .ignoreWarnings(false)
+            .ignoreWarnings(ignoreWarnings)
             .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
             .id("1234567890")
             .openingDate(LocalDateTime.parse("2018-01-11 12:00:00", formatter))
@@ -655,29 +678,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .envelopeId("envelopeId")
             .isAutomatedProcess(true)
             .exceptionRecordId("1234567891011")
-            .build();
-    }
-
-    //FIXME: delete after bulk scan auto case creation is switch on
-    @SuppressWarnings("unchecked")
-    private ExceptionRecord sscs2ExceptionCaseData(Map<String, Object> caseData, boolean ignoreWarnings) {
-        Map<String, Object> scannedData = (HashMap<String, Object>) caseData.get("scanOCRData");
-        List<OcrDataField> scanOcrData = getOcrDataFields(scannedData);
-
-        return ExceptionRecord.builder()
-            .ocrDataFields(scanOcrData)
-            .poBox("SSCSPO")
-            .jurisdiction("SSCS")
-            .formType("SSCS2")
-            .journeyClassification(NEW_APPLICATION)
-            .ignoreWarnings(ignoreWarnings)
-            .scannedDocuments((List<InputScannedDoc>) caseData.get("scannedDocuments"))
-            .id("1234567890")
-            .openingDate(LocalDateTime.parse("2021-01-11 12:00:00", formatter))
-            .deliveryDate(LocalDateTime.parse("2021-01-11 12:00:00", formatter))
-            .envelopeId("envelopeId")
-            .isAutomatedProcess(false)
-            .exceptionRecordId(null)
             .build();
     }
 
@@ -719,7 +719,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("mrn_date", mrnDate);
         if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
             ocrList.put("office", "The Pension Service 11");
-        } else {
+        } else if (!formType.toLowerCase().equals(SSCS2.toString()) && !formType.toLowerCase().equals(SSCS5.toString())) {
             ocrList.put("office", "Balham DRT");
         }
         ocrList.put("contains_mrn", true);
@@ -729,11 +729,13 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         } else if (formType.toLowerCase().equals(FormType.SSCS1U.toString())) {
             ocrList.put("is_benefit_type_other", false);
             ocrList.put("benefit_type_other", "Attendance Allowance");
-        } else if (!formType.toLowerCase().equals(FormType.SSCS2.toString())) {
+        } else if (formType.toLowerCase().equals(SSCS5.toString())) {
+            ocrList.put("is_benefit_type_tax_free_childcare", "true");
+        } else if (!formType.toLowerCase().equals(SSCS2.toString())) {
             ocrList.put("is_benefit_type_esa", "true");
         }
 
-        if (formType.toLowerCase().equals(FormType.SSCS2.toString())) {
+        if (formType.toLowerCase().equals(SSCS2.toString())) {
             ocrList.put("person1_child_maintenance_number", "Test1234");
             ocrList.put("is_paying_parent", "true");
             addOtherParty(ocrList);
@@ -804,7 +806,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     }
 
-    private Map<String, Object> caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress() {
+    private Map<String, Object> caseDataWithoutChildMaintenanceAndPartiallyMissingOtherPartyNameAddress(FormType formType) {
 
         Map<String, Object> ocrList = new HashMap<>();
         ocrList.put("person1_child_maintenance_number", "");
@@ -815,7 +817,9 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ocrList.put("other_party_address_line3","Hatch End");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
-        ocrList.put("office", "Balham DRT");
+        if (!SSCS2.equals(formType) && !SSCS5.equals(formType)) {
+            ocrList.put("office", "Balham DRT");
+        }
         ocrList.put("contains_mrn", true);
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
@@ -830,13 +834,15 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return exceptionRecord(ocrList, null);
     }
 
-    private Map<String, Object> caseDataWithoutAppellantRole() {
+    private Map<String, Object> caseDataWithoutAppellantRole(FormType formType) {
 
         Map<String, Object> ocrList = new HashMap<>();
         ocrList.put("person1_child_maintenance_number", "12334");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
-        ocrList.put("office", "Balham DRT");
+        if (!SSCS2.equals(formType) && !SSCS5.equals(formType)) {
+            ocrList.put("office", "Balham DRT");
+        }
         ocrList.put("contains_mrn", true);
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
@@ -850,13 +856,15 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         return exceptionRecord(ocrList, null);
     }
 
-    private Map<String, Object> caseDataWithInvalidAppellantRole() {
+    private Map<String, Object> caseDataWithInvalidAppellantRole(FormType formType) {
 
         Map<String, Object> ocrList = new HashMap<>();
         ocrList.put("person1_child_maintenance_number", "123");
         addAppellant(ocrList);
         ocrList.put("mrn_date", MRN_DATE_YESTERDAY_DD_MM_YYYY);
-        ocrList.put("office", "Balham DRT");
+        if (!SSCS2.equals(formType) && !SSCS5.equals(formType)) {
+            ocrList.put("office", "Balham DRT");
+        }
         ocrList.put("contains_mrn", true);
         ocrList.put("is_hearing_type_oral", true);
         ocrList.put("is_hearing_type_paper", false);
