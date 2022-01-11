@@ -8,10 +8,7 @@ import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import static uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator.IS_NOT_A_VALID_POSTCODE;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -207,11 +204,31 @@ public class CcdCallbackHandler {
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
             }
+
+            Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+            if (benefit.isPresent()) {
+                callback.getCaseDetails().getCaseData().setCaseAccessCategory(benefit.get().getDescription());
+
+                DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                callback.getCaseDetails().getCaseData().setCaseManagementCategory(new DynamicList(caseManagementCategory, listItems));
+            }
         }
 
         if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
             && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
-            callback.getCaseDetails().getCaseData().setCaseName(appeal.getAppellant().getName().getFullNameNoTitle());
+            callback.getCaseDetails().getCaseData().setCaseNameHmctsInternal(appeal.getAppellant().getName().getFullNameNoTitle());
+            callback.getCaseDetails().getCaseData().setCaseNameHmctsRestricted(appeal.getAppellant().getName().getFullNameNoTitle());
+            callback.getCaseDetails().getCaseData().setCaseNamePublic(appeal.getAppellant().getName().getFullNameNoTitle());
+        }
+
+        FormType formType = callback.getCaseDetails().getCaseData().getFormType();
+        if (formType != null) {
+            if (formType.equals(FormType.SSCS5)) {
+                callback.getCaseDetails().getCaseData().setOgdType("HMRC");
+            } else {
+                callback.getCaseDetails().getCaseData().setOgdType("DWP");
+            }
         }
 
     }

@@ -8,6 +8,7 @@ import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,12 +75,32 @@ public class SscsDataHelper {
                 if (dwpRegionCentre != null) {
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
+
+                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+                if (benefit.isPresent()) {
+                    appealData.put("caseAccessCategory", benefit.get().getDescription());
+
+                    DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
+                    List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                    appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
+                }
             }
 
             if (appeal.getAppellant() != null && appeal.getAppellant().getName() != null
                 && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
                 Name name = appeal.getAppellant().getName();
-                appealData.put("caseName", name.getFullNameNoTitle());
+                appealData.put("caseNameHmctsInternal", name.getFullNameNoTitle());
+                appealData.put("caseNameHmctsRestricted", name.getFullNameNoTitle());
+                appealData.put("caseNamePublic", name.getFullNameNoTitle());
+            }
+
+
+            if (formType != null) {
+                if (formType.equals(FormType.SSCS5)) {
+                    appealData.put("ogdType", "HMRC");
+                } else {
+                    appealData.put("ogdType", "DWP");
+                }
             }
 
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());

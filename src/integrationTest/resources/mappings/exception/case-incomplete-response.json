@@ -1,6 +1,20 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseAccessCategory": "Employment and Support Allowance",
+      "caseManagementCategory": {
+        "value": {
+          "code": "ESA",
+          "label": "Employment and Support Allowance"
+        },
+        "list_items": [
+          {
+            "code": "ESA",
+            "label": "Employment and Support Allowance"
+          }
+        ]
+      },
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Sheffield DRT",
