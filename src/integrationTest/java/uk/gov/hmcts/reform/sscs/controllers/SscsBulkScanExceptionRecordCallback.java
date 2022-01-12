@@ -339,8 +339,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             this.restTemplate
                 .postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
 
-        SuccessfulTransformationResponse callbackResponse = result.getBody();
-
         verifyResultData(result, "mappings/exception/auto-valid-appeal-with-appointee-response.json",
             this::getAppointeeTya);
     }

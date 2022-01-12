@@ -139,18 +139,18 @@
 
       "linkedCasesBoolean": "No",
       "caseCreated": "2018-01-11",
-      "region": "BRADFORD",
+      "region": "BIRMINGHAM",
       "regionalProcessingCenter": {
         "faxNumber": "0126 434 7983",
-        "address4": "Rushton Avenue",
+        "address4": "PO Box 14620",
         "phoneNumber": "0300 123 1142",
-        "name": "BRADFORD",
+        "name": "BIRMINGHAM",
         "address1": "HM Courts & Tribunals Service",
         "address2": "Social Security & Child Support Appeals",
-        "address3": "Phoenix House",
-        "postcode": "BD3 7BH",
-        "city": "BRADFORD",
-        "email": "SSCS_Bradford@justice.gov.uk"
+        "address3": "Administrative Support Centre",
+        "postcode": "B16 6FR",
+        "city": "BIRMINGHAM",
+        "email": "Birmingham-SYA-Receipts@justice.gov.uk"
       },
       "processingVenue": "Coventry (CMCB)",
       "createdInGapsFrom": "readyToList",

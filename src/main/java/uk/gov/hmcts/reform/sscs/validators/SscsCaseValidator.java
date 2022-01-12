@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCallbackType;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
@@ -231,6 +232,7 @@ public class SscsCaseValidator implements CaseValidator {
                 appellant);
             checkAppellantNino(appellant, personType);
             checkMobileNumber(appellant.getContact(), personType);
+            findRegionalProcessingCenter(appellant, personType, caseData);
 
             checkHearingSubtypeDetails(appeal.getHearingSubtype());
             if (!ignorePartyRoleValidation && formType != null && formType.equals(FormType.SSCS2)) {
@@ -238,6 +240,34 @@ public class SscsCaseValidator implements CaseValidator {
             }
         }
 
+    }
+
+    private void findRegionalProcessingCenter(Appellant appellant, String appellantPersonType, Map<String, Object> caseData) {
+        String postcode = "";
+        String personType = "";
+        if (appellant != null) {
+            Appointee appointee = appellant.getAppointee();
+            if (appointee != null && appointee.getAddress() != null) {
+                postcode = appointee.getAddress().getPostcode();
+                personType = PERSON1_VALUE;
+            } else if (appellant.getAddress() != null) {
+                postcode = appellant.getAddress().getPostcode();
+                personType = appellantPersonType;
+            }
+        }
+
+        if (isNotBlank(postcode)) {
+            RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postcode);
+
+            if (rpc != null) {
+                caseData.put("region", rpc.getName());
+                caseData.put("regionalProcessingCenter", rpc);
+            } else {
+                warnings.add(getMessageByCallbackType(callbackType, personType,
+                    getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE,
+                    "is not a postcode that maps to a regional processing center"));
+            }
+        }
     }
 
     private void checkAppellantRole(Role role, boolean ignoreWarnings) {
@@ -487,20 +517,7 @@ public class SscsCaseValidator implements CaseValidator {
                 getWarningMessageName(personType, appellant) + countyLine, HAS_INVALID_ADDRESS));
         }
 
-        if (isAddressPostcodeValid(address, personType, appellant) && address != null) {
-            if (personType.equals(getPerson1OrPerson2(appellant))) {
-                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
-
-                if (rpc != null) {
-                    caseData.put("region", rpc.getName());
-                    caseData.put("regionalProcessingCenter", rpc);
-                } else {
-                    warnings.add(getMessageByCallbackType(callbackType, personType,
-                        getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE,
-                        "is not a postcode that maps to a regional processing center"));
-                }
-            }
-        }
+        isAddressPostcodeValid(address, personType, appellant);
         if (identity != null) {
             checkDateValidDate(identity.getDob(), getWarningMessageName(personType, appellant) + DOB, personType, true);
         }
@@ -514,7 +531,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private boolean isTitleValid(String title) {
-        if (StringUtils.isNotBlank(title)) {
+        if (isNotBlank(title)) {
             String strippedTitle = title.replaceAll("[-+.^:,'_]", "");
             return titles.stream().anyMatch(strippedTitle::equalsIgnoreCase);
         }

@@ -42,6 +42,7 @@ public class SscsCaseValidatorTest {
 
     private static final String VALID_MOBILE = "07832882849";
     private static final String VALID_POSTCODE = "CM13 0GD";
+    private static final String APPOINTEE_VALID_POSTCODE = "CV3 6GU";
     private final List<String> titles = new ArrayList<>();
     private final Map<String, Object> ocrCaseData = new HashMap<>();
     private final List<OcrDataField> ocrList = new ArrayList<>();
@@ -64,6 +65,8 @@ public class SscsCaseValidatorTest {
     private ExceptionRecord exceptionRecordSscs1U;
     private ExceptionRecord exceptionRecordSscs2;
     private ExceptionRecord exceptionRecordSscs5;
+    private RegionalProcessingCenter appointeeRpc;
+    private RegionalProcessingCenter appellantRpc;
 
     @Before
     public void setup() {
@@ -84,8 +87,13 @@ public class SscsCaseValidatorTest {
         ocrCaseData.put("representative_address_line4", "county");
         ocrCaseData.put("office", "2");
 
+        appellantRpc = RegionalProcessingCenter.builder().name("appellant").address1("Address 1").name("Liverpool").build();
         given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE))
-            .willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
+            .willReturn(appellantRpc);
+
+        appointeeRpc = RegionalProcessingCenter.builder().name("appointee").address1("Address 1").name("Newcastle").build();
+        given(regionalProcessingCenterService.getByPostcode(APPOINTEE_VALID_POSTCODE))
+            .willReturn(appointeeRpc);
 
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PE.getId()).build();
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(scannedData);
@@ -787,18 +795,29 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppointee_thenRegionalProcessingCenterIsAlwaysFromTheAppellantsPostcode() {
-        Appellant appellant = buildAppellant(true);
-        RegionalProcessingCenter rpc = RegionalProcessingCenter.builder().name("person2_postcode").build();
-        given(regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode())).willReturn(rpc);
+    public void givenNoAppointee_thenRegionalProcessingCenterIsFromTheAppellantPostcodeIfValid() {
+        Appellant appellant = buildAppellant(false);
 
         CaseResponse response = validator
             .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS1PE),
                 false);
 
-        assertEquals(rpc, response.getTransformedCase().get("regionalProcessingCenter"));
-        assertEquals(rpc.getName(), response.getTransformedCase().get("region"));
-        assertTrue(response.getWarnings().size() == 0);
+        assertEquals(appellantRpc, response.getTransformedCase().get("regionalProcessingCenter"));
+        assertEquals(appellantRpc.getName(), response.getTransformedCase().get("region"));
+        assertEquals(0, response.getWarnings().size());
+    }
+
+    @Test
+    public void givenAnAppointee_thenRegionalProcessingCenterIsAlwaysFromTheAppointeePostcodeIfValid() {
+        Appellant appellant = buildAppellant(true);
+
+        CaseResponse response = validator
+            .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS1PE),
+                false);
+
+        assertEquals(appointeeRpc, response.getTransformedCase().get("regionalProcessingCenter"));
+        assertEquals(appointeeRpc.getName(), response.getTransformedCase().get("region"));
+        assertEquals(0, response.getWarnings().size());
     }
 
     @Test
@@ -2216,7 +2235,7 @@ public class SscsCaseValidatorTest {
 
         return Appointee.builder()
             .name(Name.builder().title("Mr").firstName("Tim").lastName("Garwood").build())
-            .address(Address.builder().line1("101 My Road").town("Gidea Park").county("Essex").postcode(VALID_POSTCODE)
+            .address(Address.builder().line1("101 My Road").town("Gidea Park").county("Essex").postcode(APPOINTEE_VALID_POSTCODE)
                 .build())
             .identity(Identity.builder().build())
             .contact(Contact.builder().mobile(mobileNumber).build())
