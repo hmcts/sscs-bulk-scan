@@ -33,7 +33,23 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Attendance Allowance",
       "bulkScanCaseReference": "id",
-      "caseName":"Frederick Falafel",
+      "caseAccessCategory": "Employment and Support Allowance",
+      "caseManagementCategory": {
+        "value": {
+          "code": "ESA",
+          "label": "Employment and Support Allowance"
+        },
+        "list_items": [
+          {
+            "code": "ESA",
+            "label": "Employment and Support Allowance"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "John Smith",
+      "caseNameHmctsRestricted": "John Smith",
+      "caseNamePublic": "John Smith",
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "The Pension Service 11",

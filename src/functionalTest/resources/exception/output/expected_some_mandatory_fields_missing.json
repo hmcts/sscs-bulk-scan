@@ -1,43 +1,71 @@
 {
   "case_creation_details": {
+    "case_type_id": "Benefit",
+    "event_id": "incompleteApplicationReceived",
     "case_data": {
-      "caseName":"Frederick Falafel",
+      "evidencePresent": "Yes",
+      "caseCode": "051DD",
+      "subscriptions": {
+        "appellantSubscription": {
+          "wantSmsNotifications": "No",
+          "tya": "TYA_RANDOM_NUMBER_APPELLANT",
+          "email": null,
+          "mobile": "07832882849",
+          "subscribeEmail": "No",
+          "subscribeSms": "No",
+          "reason": null,
+          "lastLoggedIntoMya": null
+        },
+        "supporterSubscription": null,
+        "representativeSubscription": {
+          "wantSmsNotifications": "No",
+          "tya": "TYA_RANDOM_NUMBER_REP",
+          "email": null,
+          "mobile": null,
+          "subscribeEmail": "No",
+          "subscribeSms": "No",
+          "reason": null,
+          "lastLoggedIntoMya": null
+        },
+        "appointeeSubscription": null,
+        "jointPartySubscription": null
+      },
+      "formType": "sscs1",
+      "dwpRegionalCentre": "Sheffield DRT",
+      "bulkScanCaseReference": "id",
+      "ogdType": "DWP",
       "appeal": {
-        "appealReasons": {
-          "reasons": [
-            {
-              "value": {
-                "description": "see scanned SSCS1 form",
-                "reason": null
-              }
-            }
-          ]
+        "mrnDetails": {
+          "dwpIssuingOffice": null,
+          "mrnDate": "2018-12-09",
+          "mrnLateReason": "see scanned SSCS1 form",
+          "mrnMissingReason": null
         },
         "appellant": {
+          "name": {
+            "title": "Dr",
+            "firstName": "Frederick",
+            "lastName": "Falafel"
+          },
           "address": {
-            "county": "Berkshire",
             "line1": "1 New Street",
             "line2": "Smallville",
+            "county": "Berkshire",
             "postcode": "CF48 2HY"
           },
-          "appointee": null,
           "contact": {
             "email": null,
-            "mobile": "07832882849",
-            "phone": "01895733303"
+            "phone": "01895733303",
+            "mobile": "07832882849"
           },
           "identity": {
             "dob": "1976-11-11",
             "nino": "{PERSON1_NINO_INVALID}"
           },
-          "isAddressSameAsAppointee": null,
           "isAppointee": "No",
+          "appointee": null,
+          "isAddressSameAsAppointee": null,
           "confidentialityRequired": null,
-          "name": {
-            "firstName": "Frederick",
-            "lastName": "Falafel",
-            "title": "Dr"
-          },
           "role": null
         },
         "benefitType": {
@@ -45,128 +73,118 @@
           "description": "Employment and Support Allowance"
         },
         "hearingOptions": {
-          "agreeLessNotice": "Yes",
+          "wantsToAttend": "No",
+          "wantsSupport": "Yes",
+          "languageInterpreter": "Yes",
+          "languages": "Spanish",
           "arrangements": [
             "hearingLoop"
           ],
+          "scheduleHearing": "No",
           "excludeDates": [
             {
               "value": {
-                "end": null,
-                "start": "2030-11-01"
+                "start": "2030-11-01",
+                "end": null
               }
             },
             {
               "value": {
-                "end": null,
-                "start": "2030-12-01"
+                "start": "2030-12-01",
+                "end": null
               }
             }
           ],
-          "languageInterpreter": "Yes",
-          "languages": "Spanish",
-          "other": "Wheelchair access",
-          "scheduleHearing": "No",
-          "wantsSupport": "Yes",
-          "wantsToAttend": "No"
+          "agreeLessNotice": "Yes",
+          "other": "Wheelchair access"
         },
-        "hearingSubtype": {},
-        "hearingType": "paper",
-        "mrnDetails": {
-          "dwpIssuingOffice": null,
-          "mrnDate": "2018-12-09",
-          "mrnLateReason": "see scanned SSCS1 form",
-          "mrnMissingReason": null
+        "appealReasons": {
+          "reasons": [
+            {
+              "value": {
+                "reason": null,
+                "description": "see scanned SSCS1 form"
+              }
+            }
+          ]
         },
-        "receivedVia": "Paper",
         "rep": {
           "id": null,
+          "hasRepresentative": "Yes",
+          "organisation": null,
+          "name": {
+            "title": "Mr",
+            "firstName": "Peter",
+            "lastName": "Hyland"
+          },
           "address": {
+            "town": "Redhill",
             "county": "Surrey",
-            "postcode": "RH1 5BT",
-            "town": "Redhill"
+            "postcode": "RH1 5BT"
           },
           "contact": {
             "email": null,
-            "mobile": null,
-            "phone": "02072323231"
-          },
-          "hasRepresentative": "Yes",
-          "name": {
-            "firstName": "Peter",
-            "lastName": "Hyland",
-            "title": "Mr"
-          },
-          "organisation": null
+            "phone": "02072323231",
+            "mobile": null
+          }
         },
-        "signer": "Sarah Smith"
+        "signer": "Sarah Smith",
+        "hearingType": "paper",
+        "hearingSubtype": {
+
+        },
+        "receivedVia": "Paper"
       },
       "benefitCode": "051",
-      "bulkScanCaseReference": "id",
-      "caseCode": "051DD",
-      "caseCreated": "2019-08-02",
-      "createdInGapsFrom": "readyToList",
-      "evidencePresent": "Yes",
-      "formType": "sscs1",
-      "issueCode": "DD",
-      "linkedCasesBoolean": "No",
-      "region": "CARDIFF",
-      "regionalProcessingCenter": {
-        "address1": "HM Courts & Tribunals Service",
-        "address2": "Social Security & Child Support Appeals",
-        "address3": "Eastgate House",
-        "address4": "Newport Road",
-        "city": "CARDIFF",
-        "email": "Cardiff_SYA_Respon@justice.gov.uk",
-        "faxNumber": "0870 739 4438",
-        "name": "CARDIFF",
-        "phoneNumber": "0300 123 1142",
-        "postcode": "CF24 0AB"
-      },
-      "processingVenue": "Cardiff",
+      "caseNameHmctsInternal": "Frederick Falafel",
       "sscsDocument": [
         {
           "value": {
-            "documentDateAdded": "2019-08-01",
+            "documentType": "appellantEvidence",
             "documentFileName": "987654321-123456789.pdf",
+            "documentDateAdded": "2019-08-01",
             "documentLink": {
+              "document_url": "url",
               "document_binary_url": "binary-url",
-              "document_filename": "987654321-123456789.pdf",
-              "document_url": "url"
-            },
-            "documentType": "appellantEvidence"
+              "document_filename": "987654321-123456789.pdf"
+            }
           }
         }
       ],
-      "dwpRegionalCentre":"Sheffield DRT",
-      "subscriptions": {
-        "appellantSubscription": {
-          "email": null,
-          "lastLoggedIntoMya": null,
-          "mobile": "07832882849",
-          "reason": null,
-          "subscribeEmail": "No",
-          "subscribeSms": "No",
-          "tya": "TYA_RANDOM_NUMBER_APPELLANT",
-          "wantSmsNotifications": "No"
+      "processingVenue": "Cardiff",
+      "caseManagementCategory": {
+        "value": {
+          "code": "ESA",
+          "label": "Employment and Support Allowance"
         },
-        "appointeeSubscription": null,
-        "jointPartySubscription": null,
-        "representativeSubscription": {
-          "email": null,
-          "lastLoggedIntoMya": null,
-          "mobile": null,
-          "reason": null,
-          "subscribeEmail": "No",
-          "subscribeSms": "No",
-          "tya": "TYA_RANDOM_NUMBER_REP",
-          "wantSmsNotifications": "No"
-        },
-        "supporterSubscription": null
-      }
-    },
-    "case_type_id": "Benefit",
-    "event_id": "incompleteApplicationReceived"
+        "list_items": [
+          {
+            "code": "ESA",
+            "label": "Employment and Support Allowance"
+          }
+        ]
+      },
+      "caseAccessCategory": "Employment and Support Allowance",
+      "linkedCasesBoolean": "No",
+      "caseCreated": "2019-08-02",
+      "caseNameHmctsRestricted": "Frederick Falafel",
+      "regionalProcessingCenter": {
+        "faxNumber": "0870 739 4438",
+        "address4": "Newport Road",
+        "phoneNumber": "0300 123 1142",
+        "name": "CARDIFF",
+        "address1": "HM Courts & Tribunals Service",
+        "address2": "Social Security & Child Support Appeals",
+        "address3": "Eastgate House",
+        "postcode": "CF24 0AB",
+        "city": "CARDIFF",
+        "email": "Cardiff_SYA_Respon@justice.gov.uk"
+      },
+      "caseNamePublic": "Frederick Falafel",
+      "createdInGapsFrom": "readyToList",
+      "region": "CARDIFF",
+      "issueCode": "DD"
+    }
   },
   "warnings": [
     "person1_address_line3 is empty",
