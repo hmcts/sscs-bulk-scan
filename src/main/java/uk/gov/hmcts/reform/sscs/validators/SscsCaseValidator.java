@@ -256,7 +256,7 @@ public class SscsCaseValidator implements CaseValidator {
             }
         }
 
-        if (isNotBlank(postcode)) {
+        if (isNotBlank(postcode) && isValidPostcode(postcode)) {
             RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postcode);
 
             if (rpc != null) {
@@ -517,7 +517,7 @@ public class SscsCaseValidator implements CaseValidator {
                 getWarningMessageName(personType, appellant) + countyLine, HAS_INVALID_ADDRESS));
         }
 
-        isAddressPostcodeValid(address, personType, appellant);
+        validateAddressPostcode(address, personType, appellant);
         if (identity != null) {
             checkDateValidDate(identity.getDob(), getWarningMessageName(personType, appellant) + DOB, personType, true);
         }
@@ -580,21 +580,25 @@ public class SscsCaseValidator implements CaseValidator {
         return false;
     }
 
-    private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
+    private boolean isValidPostcode(String postcode) {
+        return postcodeValidator.isValidPostcodeFormat(postcode) && postcodeValidator.isValid(postcode);
+    }
+
+    private void validateAddressPostcode(Address address, String personType, Appellant appellant) {
         if (address != null && address.getPostcode() != null) {
             if (postcodeValidator.isValidPostcodeFormat(address.getPostcode())) {
                 boolean isValidPostcode = postcodeValidator.isValid(address.getPostcode());
                 if (!isValidPostcode) {
                     warnings.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_NOT_A_VALID_POSTCODE));
                 }
-                return isValidPostcode;
+                return;
             }
             errors.add(getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, "is not in a valid format"));
-            return false;
+            return;
         }
         warnings.add(getMessageByCallbackType(callbackType, personType,
             getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_EMPTY));
-        return false;
+        return;
     }
 
     private void checkAppellantNino(Appellant appellant, String personType) {
