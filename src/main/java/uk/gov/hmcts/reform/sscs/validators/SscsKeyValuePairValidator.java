@@ -5,6 +5,7 @@ import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 
 @Component
+@Slf4j
 public class SscsKeyValuePairValidator {
 
     private Schema sscs1Schema = tryLoadSscsSchema("/schema/sscs-bulk-scan-schema.json");
@@ -26,6 +28,7 @@ public class SscsKeyValuePairValidator {
         List<String> errors = null;
 
         try {
+            log.info("Validating against formType {}", formType);
             if (formType != null && formType.equals(FormType.SSCS2)) {
                 sscs2Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             } else if (formType != null && formType.equals(FormType.SSCS5)) {
@@ -34,6 +37,7 @@ public class SscsKeyValuePairValidator {
                 sscs1Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             }
         } catch (ValidationException ex) {
+            log.info("Validation failed: {}", ex.getAllMessages());
             errors = new ArrayList<>();
             for (String message : ex.getAllMessages()) {
                 errors.add(message);
