@@ -33,22 +33,22 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Attendance Allowance",
       "bulkScanCaseReference": "id",
-      "caseAccessCategory": "Employment and Support Allowance",
+      "caseAccessCategory": "Attendance Allowance",
       "caseManagementCategory": {
         "value": {
-          "code": "ESA",
-          "label": "Employment and Support Allowance"
+          "code": "attendanceAllowance",
+          "label": "Attendance Allowance"
         },
         "list_items": [
           {
-            "code": "ESA",
-            "label": "Employment and Support Allowance"
+            "code": "attendanceAllowance",
+            "label": "Attendance Allowance"
           }
         ]
       },
-      "caseNameHmctsInternal": "John Smith",
-      "caseNameHmctsRestricted": "John Smith",
-      "caseNamePublic": "John Smith",
+      "caseNameHmctsInternal": "Frederick Falafel",
+      "caseNameHmctsRestricted": "Frederick Falafel",
+      "caseNamePublic": "Frederick Falafel",
       "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {

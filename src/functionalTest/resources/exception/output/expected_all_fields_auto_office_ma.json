@@ -33,22 +33,6 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Maternity Allowance",
       "bulkScanCaseReference": "id",
-      "caseAccessCategory": "Employment and Support Allowance",
-      "caseManagementCategory": {
-        "value": {
-          "code": "ESA",
-          "label": "Employment and Support Allowance"
-        },
-        "list_items": [
-          {
-            "code": "ESA",
-            "label": "Employment and Support Allowance"
-          }
-        ]
-      },
-      "caseNameHmctsInternal": "John Smith",
-      "caseNameHmctsRestricted": "John Smith",
-      "caseNamePublic": "John Smith",
       "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
@@ -153,6 +137,7 @@
         "receivedVia": "Paper"
       },
       "benefitCode": "079",
+      "caseNameHmctsInternal": "Frederick Falafel",
       "sscsDocument": [
         {
           "value": {
@@ -168,8 +153,22 @@
         }
       ],
       "processingVenue": "Cardiff",
+      "caseManagementCategory": {
+        "value": {
+          "code": "maternityAllowance",
+          "label": "Maternity Allowance"
+        },
+        "list_items": [
+          {
+            "code": "maternityAllowance",
+            "label": "Maternity Allowance"
+          }
+        ]
+      },
+      "caseAccessCategory": "Maternity Allowance",
       "linkedCasesBoolean": "No",
       "caseCreated": "2019-08-02",
+      "caseNameHmctsRestricted": "Frederick Falafel",
       "regionalProcessingCenter": {
         "faxNumber": "0870 739 4438",
         "address4": "Newport Road",
@@ -182,6 +181,7 @@
         "city": "CARDIFF",
         "email": "Cardiff_SYA_Respon@justice.gov.uk"
       },
+      "caseNamePublic": "Frederick Falafel",
       "createdInGapsFrom": "readyToList",
       "region": "CARDIFF",
       "issueCode": "DD"

@@ -19,7 +19,23 @@
           }
         }
       ],
-      "caseName":"Frederick Falafel",
+      "caseAccessCategory": "Child Support",
+      "caseManagementCategory": {
+        "value": {
+          "code": "childSupport",
+          "label": "Child Support"
+        },
+        "list_items": [
+          {
+            "code": "childSupport",
+            "label": "Child Support"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "Frederick Falafel",
+      "caseNameHmctsRestricted": "Frederick Falafel",
+      "caseNamePublic": "Frederick Falafel",
+      "ogdType": "DWP",
       "appeal": {
         "appealReasons": {
           "reasons": [
