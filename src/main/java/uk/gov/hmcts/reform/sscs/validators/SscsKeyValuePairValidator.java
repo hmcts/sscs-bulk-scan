@@ -37,7 +37,7 @@ public class SscsKeyValuePairValidator {
                 sscs1Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             }
         } catch (ValidationException ex) {
-            log.info("Validation failed: {}", ex.getAllMessages());
+            log.error("Validation failed: {}", ex.getAllMessages());
             errors = new ArrayList<>();
             for (String message : ex.getAllMessages()) {
                 errors.add(message);
