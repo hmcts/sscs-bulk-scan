@@ -282,15 +282,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Springburn");
         assertThat(ccdCallbackResponse.getData().getProcessingVenue()).isEqualTo("Cardiff");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNamePublic()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getOgdType()).isEqualTo("DWP");
-        assertThat(ccdCallbackResponse.getData().getCaseAccessCategory()).isEqualTo("Personal Independence Payment");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getCode()).isEqualTo("PIP");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Personal Independence Payment");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("PIP");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Personal Independence Payment");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Personal Independence Payment");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("PIP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Personal Independence Payment");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("PIP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Personal Independence Payment");
     }
 
     @Test
@@ -327,15 +327,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNamePublic()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getOgdType()).isEqualTo("DWP");
-        assertThat(ccdCallbackResponse.getData().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
     }
 
     @Test
@@ -374,15 +374,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNamePublic()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getOgdType()).isEqualTo("DWP");
-        assertThat(ccdCallbackResponse.getData().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
     }
 
     @Test
@@ -421,15 +421,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNamePublic()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getOgdType()).isEqualTo("DWP");
-        assertThat(ccdCallbackResponse.getData().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
     }
 
     @Test
@@ -467,15 +467,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getCaseNamePublic()).isEqualTo("Fred Ward");
-        assertThat(ccdCallbackResponse.getData().getOgdType()).isEqualTo("DWP");
-        assertThat(ccdCallbackResponse.getData().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
-        assertThat(ccdCallbackResponse.getData().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
         assertLogContains("Warnings found while validating exception record id 123 - Mrn date is empty");
     }
 

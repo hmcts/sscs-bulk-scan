@@ -207,27 +207,21 @@ public class CcdCallbackHandler {
 
             Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
             if (benefit.isPresent()) {
-                callback.getCaseDetails().getCaseData().setCaseAccessCategory(benefit.get().getDescription());
-
-                DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
-                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-                callback.getCaseDetails().getCaseData().setCaseManagementCategory(new DynamicList(caseManagementCategory, listItems));
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategorys(benefit.get());
             }
         }
 
         if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
             && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
-            callback.getCaseDetails().getCaseData().setCaseNameHmctsInternal(appeal.getAppellant().getName().getFullNameNoTitle());
-            callback.getCaseDetails().getCaseData().setCaseNameHmctsRestricted(appeal.getAppellant().getName().getFullNameNoTitle());
-            callback.getCaseDetails().getCaseData().setCaseNamePublic(appeal.getAppellant().getName().getFullNameNoTitle());
+            callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseNames(appeal.getAppellant().getName().getFullNameNoTitle());
         }
 
         FormType formType = callback.getCaseDetails().getCaseData().getFormType();
         if (formType != null) {
             if (formType.equals(FormType.SSCS5)) {
-                callback.getCaseDetails().getCaseData().setOgdType("HMRC");
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType("HMRC");
             } else {
-                callback.getCaseDetails().getCaseData().setOgdType("DWP");
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType("DWP");
             }
         }
 
