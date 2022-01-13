@@ -1116,6 +1116,7 @@ public class SscsCaseTransformerTest {
 
         assertTrue(result.getErrors().isEmpty());
     }
+
     @Test
     public void givenMultipleExcludedDates_thenBuildAnAppealWithExcludedDatesAndWantToAttendYes() {
 
