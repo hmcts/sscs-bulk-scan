@@ -768,7 +768,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String languageType = isLanguageInterpreterRequired ? findLanguageTypeString(pairs) : null;
 
-        String wantsToAttend = (hearingType.equals(HEARING_TYPE_ORAL)) ? YES_LITERAL : NO_LITERAL;
+        String wantsToAttend = hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) ? YES_LITERAL : NO_LITERAL;
 
         List<String> arrangements = buildArrangements(pairs, isSignLanguageInterpreterRequired);
 
