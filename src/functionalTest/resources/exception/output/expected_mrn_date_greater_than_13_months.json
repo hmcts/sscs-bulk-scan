@@ -137,18 +137,18 @@
       "interlocReferralReason": "over13months",
       "issueCode": "DD",
       "linkedCasesBoolean": "No",
-      "region": "SUTTON",
+      "region": "CARDIFF",
       "regionalProcessingCenter": {
         "address1": "HM Courts & Tribunals Service",
         "address2": "Social Security & Child Support Appeals",
-        "address3": "Copthall House",
-        "address4": "9 The Pavement, Grove Road",
-        "city": "SUTTON",
-        "email": "Sutton_SYA_Respons@justice.gov.uk",
-        "faxNumber": "0870 739 4229",
-        "name": "SUTTON",
+        "address3": "Eastgate House",
+        "address4": "Newport Road",
+        "city": "CARDIFF",
+        "email": "Cardiff_SYA_Respon@justice.gov.uk",
+        "faxNumber": "0870 739 4438",
+        "name": "CARDIFF",
         "phoneNumber": "0300 123 1142",
-        "postcode": "SM1 1DA"
+        "postcode": "CF24 0AB"
       },
       "processingVenue": "Cardiff",
       "sscsDocument": [
