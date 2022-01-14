@@ -39,7 +39,7 @@ public class SscsDataHelperTest {
 
     @Before
     public void setUp() {
-        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), dwpAddressLookupService, airLookupService, postcodeValidator);
+        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), dwpAddressLookupService, airLookupService, postcodeValidator, true);
     }
 
     @Test

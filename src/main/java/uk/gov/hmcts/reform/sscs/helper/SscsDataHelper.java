@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -36,15 +37,18 @@ public class SscsDataHelper {
 
     private final PostcodeValidator postcodeValidator;
 
+    private final boolean workAllocationFeature;
 
     public SscsDataHelper(CaseEvent caseEvent,
                           DwpAddressLookupService dwpAddressLookupService,
                           AirLookupService airLookupService,
-                          PostcodeValidator postcodeValidator) {
+                          PostcodeValidator postcodeValidator,
+                          @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature) {
         this.caseEvent = caseEvent;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.airLookupService = airLookupService;
         this.postcodeValidator = postcodeValidator;
+        this.workAllocationFeature = workAllocationFeature;
     }
 
     public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions,
@@ -76,33 +80,35 @@ public class SscsDataHelper {
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
 
-                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
-                if (benefit.isPresent()) {
-                    appealData.put("caseAccessCategory", benefit.get().getDescription());
+                if (workAllocationFeature) {
+                    Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+                    if (benefit.isPresent()) {
+                        appealData.put("caseAccessCategory", benefit.get().getDescription());
 
-                    DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
-                    List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-                    appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
+                        DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
+                        List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                        appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
+                    }
                 }
             }
 
-            if (appeal.getAppellant() != null && appeal.getAppellant().getName() != null
-                && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
-                Name name = appeal.getAppellant().getName();
-                appealData.put("caseNameHmctsInternal", name.getFullNameNoTitle());
-                appealData.put("caseNameHmctsRestricted", name.getFullNameNoTitle());
-                appealData.put("caseNamePublic", name.getFullNameNoTitle());
-            }
+            if (workAllocationFeature) {
+                if (appeal.getAppellant() != null && appeal.getAppellant().getName() != null
+                    && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
+                    Name name = appeal.getAppellant().getName();
+                    appealData.put("caseNameHmctsInternal", name.getFullNameNoTitle());
+                    appealData.put("caseNameHmctsRestricted", name.getFullNameNoTitle());
+                    appealData.put("caseNamePublic", name.getFullNameNoTitle());
+                }
 
-
-            if (formType != null) {
-                if (formType.equals(FormType.SSCS5)) {
-                    appealData.put("ogdType", "HMRC");
-                } else {
-                    appealData.put("ogdType", "DWP");
+                if (formType != null) {
+                    if (formType.equals(FormType.SSCS5)) {
+                        appealData.put("ogdType", "HMRC");
+                    } else {
+                        appealData.put("ogdType", "DWP");
+                    }
                 }
             }
-
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
             checkConfidentiality(formType,appealData, appeal);
         }
