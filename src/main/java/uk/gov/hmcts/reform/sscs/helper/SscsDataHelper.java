@@ -39,6 +39,8 @@ public class SscsDataHelper {
 
     private final boolean workAllocationFeature;
 
+    private static final String CASE_MANAGEMENT_CATEGORY = "caseManagementCategory";
+
     public SscsDataHelper(CaseEvent caseEvent,
                           DwpAddressLookupService dwpAddressLookupService,
                           AirLookupService airLookupService,
@@ -90,7 +92,7 @@ public class SscsDataHelper {
 
                         DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
                         List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-                        appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
+                        appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
                     }
                 }
             } else {
@@ -98,11 +100,11 @@ public class SscsDataHelper {
                     if (formType.equals(FormType.SSCS5)) {
                         DynamicListItem caseManagementCategory = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
                         List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-                        appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
+                        appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
                     } else {
                         DynamicListItem caseManagementCategory = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
                         List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-                        appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
+                        appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
                     }
                 }
             }

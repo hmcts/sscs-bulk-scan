@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -563,8 +564,8 @@ public class CcdCallbackHandlerTest {
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
-        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode().equals("sscs12Unknown"));
-        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel().equals("SSCS1/2 Unknown"));
+        assertEquals("sscs12Unknown", ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode());
+        assertEquals("SSCS1/2 Unknown", ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel());
     }
 
     @Test
@@ -583,8 +584,8 @@ public class CcdCallbackHandlerTest {
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
-        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode().equals("sscs12Unknown"));
-        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel().equals("SSCS1/2 Unknown"));
+        assertEquals("sscs12Unknown", ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode());
+        assertEquals("SSCS1/2 Unknown", ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel());
     }
 
     @Test
@@ -603,8 +604,8 @@ public class CcdCallbackHandlerTest {
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
-        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode().equals("sscs5Unknown"));
-        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel().equals("SSCS5 Unknown"));
+        assertEquals("sscs5Unknown", ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode());
+        assertEquals("SSCS5 Unknown", ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel());
     }
 
     private void assertLogContains(final String logMessage) {
