@@ -547,6 +547,66 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getWarnings().size()).isZero();
     }
 
+    @Test
+    public void givenBlankBenefitTypeSscs1_shouldReturnUnknownCmc() {
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().formType(FormType.SSCS1).appeal(Appeal.builder().benefitType(BenefitType.builder().code("").build()).build()).benefitCode("").ccdCaseId("123").build())
+            .state("ScannedRecordReceived")
+            .caseId("123")
+            .build();
+
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+            .thenReturn(CaseResponse.builder()
+                .errors(ImmutableList.of("Benefit type is invalid"))
+                .build());
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
+
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode().equals("sscs12Unknown"));
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel().equals("SSCS1/2 Unknown"));
+    }
+
+    @Test
+    public void givenBlankBenefitTypeSscs2_shouldReturnUnknownCmc() {
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().formType(FormType.SSCS2).appeal(Appeal.builder().benefitType(BenefitType.builder().code("").build()).build()).benefitCode("").ccdCaseId("123").build())
+            .state("ScannedRecordReceived")
+            .caseId("123")
+            .build();
+
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+            .thenReturn(CaseResponse.builder()
+                .errors(ImmutableList.of("Benefit type is invalid"))
+                .build());
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
+
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode().equals("sscs12Unknown"));
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel().equals("SSCS1/2 Unknown"));
+    }
+
+    @Test
+    public void givenBlankBenefitTypeSscs5_shouldReturnUnknownCmc() {
+        SscsCaseDetails caseDetails = SscsCaseDetails
+            .builder()
+            .caseData(SscsCaseData.builder().formType(FormType.SSCS5).appeal(Appeal.builder().benefitType(BenefitType.builder().code("").build()).build()).benefitCode("").ccdCaseId("123").build())
+            .state("ScannedRecordReceived")
+            .caseId("123")
+            .build();
+
+        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+            .thenReturn(CaseResponse.builder()
+                .errors(ImmutableList.of("Benefit type is invalid"))
+                .build());
+
+        PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
+
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode().equals("sscs5Unknown"));
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel().equals("SSCS5 Unknown"));
+    }
+
     private void assertLogContains(final String logMessage) {
         assertThat(listAppender.list.stream().map(ILoggingEvent::getFormattedMessage)).contains(logMessage);
     }

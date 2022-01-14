@@ -93,6 +93,18 @@ public class SscsDataHelper {
                         appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
                     }
                 }
+            } else {
+                if (formType != null) {
+                    if (formType.equals(FormType.SSCS5)) {
+                        DynamicListItem caseManagementCategory = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
+                        List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                        appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
+                    } else {
+                        DynamicListItem caseManagementCategory = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
+                        List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                        appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
+                    }
+                }
             }
 
             log.info("2 The workAllocationFeature flag is " + workAllocationFeature);

@@ -221,6 +221,19 @@ public class CcdCallbackHandler {
                     callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
                 }
             }
+        } else {
+            FormType formType = callback.getCaseDetails().getCaseData().getFormType();
+            if (formType != null) {
+                if (formType.equals(FormType.SSCS5)) {
+                    DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
+                    List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
+                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+                } else {
+                    DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
+                    List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
+                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+                }
+            }
         }
 
         if (workAllocationFeature) {
