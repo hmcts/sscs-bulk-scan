@@ -214,7 +214,7 @@ public class CcdCallbackHandler {
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
             }
-            setWorkAllocationCategorys(appeal, callback);
+            setWorkAllocationCategories(appeal, callback);
         } else {
             setUnknownCategory(callback);
         }
@@ -222,11 +222,11 @@ public class CcdCallbackHandler {
         setWorkallocationFields(appeal, callback);
     }
 
-    private void setWorkAllocationCategorys(Appeal appeal, Callback<SscsCaseData> callback) {
+    private void setWorkAllocationCategories(Appeal appeal, Callback<SscsCaseData> callback) {
         if (workAllocationFeature) {
             Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
             if (benefit.isPresent()) {
-                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategorys(benefit.get());
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
             }
         }
     }
