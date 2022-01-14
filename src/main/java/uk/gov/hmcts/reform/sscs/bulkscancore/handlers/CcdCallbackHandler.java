@@ -214,28 +214,39 @@ public class CcdCallbackHandler {
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
             }
-
-            if (workAllocationFeature) {
-                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
-                if (benefit.isPresent()) {
-                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
-                }
-            }
+            setWorkAllocationCategorys(appeal, callback);
         } else {
-            FormType formType = callback.getCaseDetails().getCaseData().getFormType();
-            if (formType != null) {
-                if (formType.equals(FormType.SSCS5)) {
-                    DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
-                    List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
-                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
-                } else {
-                    DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
-                    List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
-                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
-                }
-            }
+            setUnknownCategory(callback);
         }
 
+        setWorkallocationFields(appeal, callback);
+    }
+
+    private void setWorkAllocationCategorys(Appeal appeal, Callback<SscsCaseData> callback) {
+        if (workAllocationFeature) {
+            Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+            if (benefit.isPresent()) {
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategorys(benefit.get());
+            }
+        }
+    }
+
+    private void setUnknownCategory(Callback<SscsCaseData> callback) {
+        FormType formType = callback.getCaseDetails().getCaseData().getFormType();
+        if (formType != null) {
+            if (formType.equals(FormType.SSCS5)) {
+                DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+            } else {
+                DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+            }
+        }
+    }
+
+    private void setWorkallocationFields(Appeal appeal, Callback<SscsCaseData> callback) {
         if (workAllocationFeature) {
             if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
                 && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
@@ -250,7 +261,6 @@ public class CcdCallbackHandler {
                 }
             }
         }
-
     }
 
     private PreSubmitCallbackResponse<SscsCaseData> convertWarningsToErrors(SscsCaseData caseData, CaseResponse caseResponse) {
