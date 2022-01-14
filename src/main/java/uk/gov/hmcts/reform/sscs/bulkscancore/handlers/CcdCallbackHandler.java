@@ -213,7 +213,7 @@ public class CcdCallbackHandler {
             if (workAllocationFeature) {
                 Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
                 if (benefit.isPresent()) {
-                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategorys(benefit.get());
+                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
                 }
             }
         }
