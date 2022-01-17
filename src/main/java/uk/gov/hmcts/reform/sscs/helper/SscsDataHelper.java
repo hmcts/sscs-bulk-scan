@@ -126,14 +126,22 @@ public class SscsDataHelper {
                 appealData.put("caseNamePublic", name.getFullNameNoTitle());
             }
 
-            if (formType != null) {
-                if (formType.equals(FormType.SSCS5)) {
+            if (appeal.getBenefitType() != null) {
+                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+                if (isHmrcBenefit(benefit, formType)) {
                     appealData.put("ogdType", "HMRC");
                 } else {
                     appealData.put("ogdType", "DWP");
                 }
             }
         }
+    }
+
+    private boolean isHmrcBenefit(Optional<Benefit> benefit, FormType formType) {
+        if (benefit.isEmpty()) {
+            return FormType.SSCS5.equals(formType);
+        }
+        return SscsType.SSCS5.equals(benefit.get().getSscsType());
     }
 
     private void setWorkAllocationCategorys(Appeal appeal, Map<String, Object> appealData) {
