@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
@@ -30,7 +31,9 @@ import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
+import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.service.RefDataService;
 
 @Component
 @Slf4j
@@ -49,16 +52,24 @@ public class CcdCallbackHandler {
 
     public static final String CASE_TYPE_ID = "Benefit";
 
+    private final RefDataService refDataService;
+
+    private final boolean workAllocationFeature;
+
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         SscsDataHelper sscsDataHelper,
-        DwpAddressLookupService dwpAddressLookupService
+        DwpAddressLookupService dwpAddressLookupService,
+        RefDataService refDataService,
+        @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
+        this.refDataService = refDataService;
+        this.workAllocationFeature = workAllocationFeature;
     }
 
     public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
@@ -206,6 +217,14 @@ public class CcdCallbackHandler {
             String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
+                if (workAllocationFeature) {
+                    CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
+                    if (courtVenue != null) {
+                        callback.getCaseDetails().getCaseData().setCaseManagementLocation(CaseManagementLocation.builder()
+                            .baseLocation(courtVenue.getEpimsId())
+                            .region(courtVenue.getRegionId()).build());
+                    }
+                }
             }
         }
 

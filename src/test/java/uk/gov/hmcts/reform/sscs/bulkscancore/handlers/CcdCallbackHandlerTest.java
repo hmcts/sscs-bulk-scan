@@ -1,10 +1,13 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.PROCESSING_VENUE;
 import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 
 import ch.qos.logback.classic.Logger;
@@ -47,8 +50,10 @@ import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationRe
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
+import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.service.RefDataService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -77,6 +82,9 @@ public class CcdCallbackHandlerTest {
     @Mock
     private PostcodeValidator postcodeValidator;
 
+    @Mock
+    private RefDataService refDataService;
+
     private SscsDataHelper sscsDataHelper;
 
     @Captor
@@ -101,7 +109,7 @@ public class CcdCallbackHandlerTest {
         fooLogger.addAppender(listAppender);
 
         sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService, refDataService, true);
 
         idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
@@ -111,6 +119,7 @@ public class CcdCallbackHandlerTest {
             .willReturn("Balham");
 
         given(airLookupService.lookupAirVenueNameByPostCode(anyString(), any(BenefitType.class))).willReturn("Cardiff");
+        when(refDataService.getVenueRefData("Cardiff")).thenReturn(CourtVenue.builder().epimsId(EPIMMS_ID).regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
         given(postcodeValidator.isValid(anyString())).willReturn(true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
@@ -282,6 +291,8 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Springburn");
         assertThat(ccdCallbackResponse.getData().getProcessingVenue()).isEqualTo("Cardiff");
+        assertEquals(EPIMMS_ID, ccdCallbackResponse.getData().getCaseManagementLocation().getBaseLocation());
+        assertEquals(REGION_ID, ccdCallbackResponse.getData().getCaseManagementLocation().getRegion());
     }
 
     @Test

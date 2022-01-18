@@ -42,9 +42,11 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
+import uk.gov.hmcts.reform.sscs.service.RefDataService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @Component
@@ -59,11 +61,14 @@ public class SscsCaseTransformer implements CaseTransformer {
     private SscsDataHelper sscsDataHelper;
     private FuzzyMatcherService fuzzyMatcherService;
     private DwpAddressLookupService dwpAddressLookupService;
+    private final RefDataService refDataService;
     private Set<String> errors;
     private Set<String> warnings;
 
     //TODO: Remove when uc-office-feature switched on
     private boolean ucOfficeFeatureActive;
+
+    private final boolean workAllocationFeature;
 
     @Autowired
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
@@ -73,7 +78,9 @@ public class SscsCaseTransformer implements CaseTransformer {
                                DwpAddressLookupService dwpAddressLookupService,
                                IdamService idamService,
                                CcdService ccdService,
-                               @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive) {
+                               RefDataService refDataService,
+                               @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive,
+                               @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
         this.sscsDataHelper = sscsDataHelper;
@@ -81,7 +88,9 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.idamService = idamService;
         this.ccdService = ccdService;
+        this.refDataService = refDataService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
+        this.workAllocationFeature = workAllocationFeature;
     }
 
     public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
@@ -165,6 +174,13 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (StringUtils.isNotEmpty(processingVenue)) {
             log.info("{} - setting venue name to {}", caseId, processingVenue);
             transformed.put("processingVenue", processingVenue);
+            if (workAllocationFeature) {
+                CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
+                if (courtVenue != null) {
+                    transformed.put("caseManagementLocation",
+                        CaseManagementLocation.builder().baseLocation(courtVenue.getEpimsId()).region(courtVenue.getRegionId()).build());
+                }
+            }
         }
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId,
