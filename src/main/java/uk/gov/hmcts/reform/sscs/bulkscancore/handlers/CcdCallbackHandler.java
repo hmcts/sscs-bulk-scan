@@ -61,6 +61,18 @@ public class CcdCallbackHandler {
         this.dwpAddressLookupService = dwpAddressLookupService;
     }
 
+    private Map<String, Object> hmctsServiceIdMap = new HashMap<>() {
+        {
+            put("HMCTSServiceId", "BBA3");
+        }
+    };
+
+    private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>() {
+        {
+            put("$set", hmctsServiceIdMap);
+        }
+    };
+
     public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
 
         log.info("Processing callback for SSCS exception record");
@@ -118,7 +130,8 @@ public class CcdCallbackHandler {
                     eventId,
                     caseValidationResponse.getTransformedCase()
                 ),
-            caseValidationResponse.getWarnings());
+            caseValidationResponse.getWarnings(),
+            supplementaryDataRequestMap);
         }
     }
 
