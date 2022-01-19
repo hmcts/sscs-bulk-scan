@@ -49,6 +49,9 @@ public class CcdCallbackHandler {
 
     public static final String CASE_TYPE_ID = "Benefit";
 
+    private Map<String, Object> hmctsServiceIdMap = new HashMap<>();
+    private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>();
+
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
@@ -59,19 +62,10 @@ public class CcdCallbackHandler {
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
+
+        hmctsServiceIdMap.put("HMCTSServiceId", "BBA3");
+        supplementaryDataRequestMap.put("$set", hmctsServiceIdMap);
     }
-
-    private Map<String, Object> hmctsServiceIdMap = new HashMap<>() {
-        {
-            put("HMCTSServiceId", "BBA3");
-        }
-    };
-
-    private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>() {
-        {
-            put("$set", hmctsServiceIdMap);
-        }
-    };
 
     public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
 
