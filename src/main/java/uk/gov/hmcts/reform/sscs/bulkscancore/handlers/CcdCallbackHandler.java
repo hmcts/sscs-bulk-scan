@@ -28,7 +28,9 @@ import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
+import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.service.RefDataService;
 
 @Component
 @Slf4j
@@ -47,6 +49,8 @@ public class CcdCallbackHandler {
 
     public static final String CASE_TYPE_ID = "Benefit";
 
+    private final RefDataService refDataService;
+
     private final boolean workAllocationFeature;
     private Map<String, Object> hmctsServiceIdMap = new HashMap<>();
     private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>();
@@ -56,12 +60,15 @@ public class CcdCallbackHandler {
         CaseValidator caseValidator,
         SscsDataHelper sscsDataHelper,
         DwpAddressLookupService dwpAddressLookupService,
+        RefDataService refDataService,
         @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
+        this.refDataService = refDataService;
+        this.workAllocationFeature = workAllocationFeature;
         this.workAllocationFeature = workAllocationFeature;
         hmctsServiceIdMap.put("HMCTSServiceId", "BBA3");
         supplementaryDataRequestMap.put("$set", hmctsServiceIdMap);
@@ -213,6 +220,14 @@ public class CcdCallbackHandler {
             String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
+                if (workAllocationFeature) {
+                    CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
+                    if (courtVenue != null) {
+                        callback.getCaseDetails().getCaseData().setCaseManagementLocation(CaseManagementLocation.builder()
+                            .baseLocation(courtVenue.getEpimsId())
+                            .region(courtVenue.getRegionId()).build());
+                    }
+                }
             }
             setWorkAllocationCategories(appeal, callback);
         } else {
