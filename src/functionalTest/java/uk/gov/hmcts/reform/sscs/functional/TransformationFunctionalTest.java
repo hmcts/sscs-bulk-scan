@@ -59,7 +59,6 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
 
-    //FIXME nino
     @Test
     public void transform_incomplete_case_when_missing_mandatory_fields() throws IOException {
         String expectedJson = getJson("exception/output/expected_some_mandatory_fields_missing.json");
