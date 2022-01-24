@@ -59,6 +59,7 @@ public class SscsDataHelper {
         appealData.put("evidencePresent", hasEvidence(sscsDocuments));
         appealData.put("subscriptions", subscriptions);
         appealData.put("formType", formType);
+        log.info("Adding data for the a transformation");
 
         if (appeal != null) {
             if (appeal.getBenefitType() != null && isNotBlank(appeal.getBenefitType().getCode())) {
@@ -80,9 +81,11 @@ public class SscsDataHelper {
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
 
+                log.info("The workAllocationFeature flag is " + workAllocationFeature);
                 if (workAllocationFeature) {
                     Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
                     if (benefit.isPresent()) {
+                        log.info("The benefit type is " + benefit.get().getDescription());
                         appealData.put("caseAccessCategory", benefit.get().getDescription());
 
                         DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
@@ -92,16 +95,20 @@ public class SscsDataHelper {
                 }
             }
 
+            log.info("2 The workAllocationFeature flag is " + workAllocationFeature);
             if (workAllocationFeature) {
                 if (appeal.getAppellant() != null && appeal.getAppellant().getName() != null
                     && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
                     Name name = appeal.getAppellant().getName();
+                    log.info("Setting name to " + name.getFullNameNoTitle());
                     appealData.put("caseNameHmctsInternal", name.getFullNameNoTitle());
                     appealData.put("caseNameHmctsRestricted", name.getFullNameNoTitle());
                     appealData.put("caseNamePublic", name.getFullNameNoTitle());
                 }
 
+                log.info("Formtype is ");
                 if (formType != null) {
+                    log.info("Formtype is " + formType);
                     if (formType.equals(FormType.SSCS5)) {
                         appealData.put("ogdType", "HMRC");
                     } else {
