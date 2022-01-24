@@ -210,5 +210,10 @@
     "case_type_id": "Benefit",
     "event_id": "validAppealCreated"
   },
-  "warnings": []
+  "warnings": [],
+  "supplementary_data": {
+    "$set" : {
+      "HMCTSServiceId": "BBA3"
+    }
+  }
 }

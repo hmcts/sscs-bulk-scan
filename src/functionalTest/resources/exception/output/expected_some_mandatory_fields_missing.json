@@ -189,5 +189,10 @@
     "person1_nino is invalid",
     "representative_address_line1 is empty",
     "office is empty"
-  ]
+  ],
+  "supplementary_data": {
+    "$set" : {
+      "HMCTSServiceId": "BBA3"
+    }
+  }
 }

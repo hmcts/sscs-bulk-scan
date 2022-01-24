@@ -48,6 +48,8 @@ public class CcdCallbackHandler {
     public static final String CASE_TYPE_ID = "Benefit";
 
     private final boolean workAllocationFeature;
+    private Map<String, Object> hmctsServiceIdMap = new HashMap<>();
+    private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>();
 
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
@@ -61,6 +63,8 @@ public class CcdCallbackHandler {
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.workAllocationFeature = workAllocationFeature;
+        hmctsServiceIdMap.put("HMCTSServiceId", "BBA3");
+        supplementaryDataRequestMap.put("$set", hmctsServiceIdMap);
     }
 
     public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
@@ -120,7 +124,8 @@ public class CcdCallbackHandler {
                     eventId,
                     caseValidationResponse.getTransformedCase()
                 ),
-            caseValidationResponse.getWarnings());
+            caseValidationResponse.getWarnings(),
+            supplementaryDataRequestMap);
         }
     }
 
