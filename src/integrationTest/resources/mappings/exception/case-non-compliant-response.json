@@ -130,5 +130,10 @@
     "case_type_id": "Benefit",
     "event_id": "nonCompliant"
   },
-  "warnings": []
+  "warnings": [],
+  "supplementary_data": {
+    "$set" : {
+      "HMCTSServiceId": "BBA3"
+    }
+  }
 }

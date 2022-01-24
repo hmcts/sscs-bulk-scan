@@ -53,6 +53,18 @@ public class TransformationControllerTest {
         Mockito.reset(authService);
     }
 
+    private Map<String, Object> hmctsServiceIdMap = new HashMap<>() {
+        {
+            put("HMCTSServiceId", "BBA3");
+        }
+    };
+
+    private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>() {
+        {
+            put("$set", hmctsServiceIdMap);
+        }
+    };
+
     //FIXME: update after bulk scan auto case creation is switch on
     @ParameterizedTest
     @ValueSource(strings = {"/transform-exception-record", "/transform-scanned-data"})
@@ -73,7 +85,8 @@ public class TransformationControllerTest {
                 asList(
                     "warning-1",
                     "warning-2"
-                )
+                ),
+                supplementaryDataRequestMap
             );
 
         given(ccdCallbackHandler.handle(any())).willReturn(transformationResult);
