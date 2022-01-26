@@ -1,6 +1,23 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseAccessCategory": "Tax Credit",
+      "caseManagementCategory": {
+        "value": {
+          "code": "taxCredit",
+          "label": "Tax Credit"
+        },
+        "list_items": [
+          {
+            "code": "taxCredit",
+            "label": "Tax Credit"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "Frederick Falafel",
+      "caseNameHmctsRestricted": "Frederick Falafel",
+      "caseNamePublic": "Frederick Falafel",
+      "ogdType": "HMRC",
       "appeal": {
         "appealReasons": {
           "reasons": [

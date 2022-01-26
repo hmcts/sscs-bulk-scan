@@ -1,6 +1,23 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseAccessCategory": "Attendance Allowance",
+      "caseManagementCategory": {
+        "value": {
+          "code": "attendanceAllowance",
+          "label": "Attendance Allowance"
+        },
+        "list_items": [
+          {
+            "code": "attendanceAllowance",
+            "label": "Attendance Allowance"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "John Smith",
+      "caseNameHmctsRestricted": "John Smith",
+      "caseNamePublic": "John Smith",
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "The Pension Service 11",

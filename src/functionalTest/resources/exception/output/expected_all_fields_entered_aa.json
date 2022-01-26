@@ -33,6 +33,23 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Attendance Allowance",
       "bulkScanCaseReference": "id",
+      "caseAccessCategory": "Attendance Allowance",
+      "caseManagementCategory": {
+        "value": {
+          "code": "attendanceAllowance",
+          "label": "Attendance Allowance"
+        },
+        "list_items": [
+          {
+            "code": "attendanceAllowance",
+            "label": "Attendance Allowance"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "Frederick Falafel",
+      "caseNameHmctsRestricted": "Frederick Falafel",
+      "caseNamePublic": "Frederick Falafel",
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "The Pension Service 11",

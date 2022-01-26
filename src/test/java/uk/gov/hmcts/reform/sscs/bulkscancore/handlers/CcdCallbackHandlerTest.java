@@ -100,8 +100,8 @@ public class CcdCallbackHandlerTest {
         // add the appender to the logger
         fooLogger.addAppender(listAppender);
 
-        sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService);
+        sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator, true);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService, true);
 
         idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
@@ -261,7 +261,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -282,6 +282,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("002DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Springburn");
         assertThat(ccdCallbackResponse.getData().getProcessingVenue()).isEqualTo("Cardiff");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Personal Independence Payment");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("PIP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Personal Independence Payment");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("PIP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Personal Independence Payment");
     }
 
     @Test
@@ -298,7 +307,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -318,6 +327,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
     }
 
     @Test
@@ -335,7 +353,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -356,6 +374,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
     }
 
     @Test
@@ -373,7 +400,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").build())
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -394,6 +421,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
     }
 
     @Test
@@ -410,7 +446,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().ccdCaseId("123").appeal(appeal).interlocReviewState("something").build())
+            .caseData(SscsCaseData.builder().ccdCaseId("123").appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("123")
             .build();
@@ -431,6 +467,15 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getIssueCode()).isEqualTo("DD");
         assertThat(ccdCallbackResponse.getData().getCaseCode()).isEqualTo("051DD");
         assertThat(ccdCallbackResponse.getData().getDwpRegionalCentre()).isEqualTo("Balham");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsInternal()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNameHmctsRestricted()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseNamePublic()).isEqualTo("Fred Ward");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getOgdType()).isEqualTo("DWP");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseAccessCategory()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Employment and Support Allowance");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("ESA");
+        assertThat(ccdCallbackResponse.getData().getWorkAllocationFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Employment and Support Allowance");
         assertLogContains("Warnings found while validating exception record id 123 - Mrn date is empty");
     }
 

@@ -33,6 +33,23 @@
       "formType": "sscs1peu",
       "dwpRegionalCentre": "Universal Credit",
       "bulkScanCaseReference": "id",
+      "caseAccessCategory": "Universal Credit",
+      "caseManagementCategory": {
+        "value": {
+          "code": "UC",
+          "label": "Universal Credit"
+        },
+        "list_items": [
+          {
+            "code": "UC",
+            "label": "Universal Credit"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "Frederick Falafel",
+      "caseNameHmctsRestricted": "Frederick Falafel",
+      "caseNamePublic": "Frederick Falafel",
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Universal Credit",

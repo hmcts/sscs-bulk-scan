@@ -8,14 +8,12 @@ import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import static uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator.IS_NOT_A_VALID_POSTCODE;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
@@ -49,6 +47,7 @@ public class CcdCallbackHandler {
 
     public static final String CASE_TYPE_ID = "Benefit";
 
+    private final boolean workAllocationFeature;
     private Map<String, Object> hmctsServiceIdMap = new HashMap<>();
     private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>();
 
@@ -56,13 +55,14 @@ public class CcdCallbackHandler {
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         SscsDataHelper sscsDataHelper,
-        DwpAddressLookupService dwpAddressLookupService
+        DwpAddressLookupService dwpAddressLookupService,
+        @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
-
+        this.workAllocationFeature = workAllocationFeature;
         hmctsServiceIdMap.put("HMCTSServiceId", "BBA3");
         supplementaryDataRequestMap.put("$set", hmctsServiceIdMap);
     }
@@ -213,6 +213,28 @@ public class CcdCallbackHandler {
             String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
+            }
+
+            if (workAllocationFeature) {
+                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+                if (benefit.isPresent()) {
+                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
+                }
+            }
+        }
+
+        if (workAllocationFeature) {
+            if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
+                && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseNames(appeal.getAppellant().getName().getFullNameNoTitle());
+            }
+            FormType formType = callback.getCaseDetails().getCaseData().getFormType();
+            if (formType != null) {
+                if (formType.equals(FormType.SSCS5)) {
+                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType("HMRC");
+                } else {
+                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType("DWP");
+                }
             }
         }
 

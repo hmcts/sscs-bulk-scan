@@ -33,6 +33,23 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Bellevale",
       "bulkScanCaseReference": "id",
+      "caseAccessCategory": "Personal Independence Payment",
+      "caseManagementCategory": {
+        "value": {
+          "code": "PIP",
+          "label": "Personal Independence Payment"
+        },
+        "list_items": [
+          {
+            "code": "PIP",
+            "label": "Personal Independence Payment"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "Frederick Falafel",
+      "caseNameHmctsRestricted": "Frederick Falafel",
+      "caseNamePublic": "Frederick Falafel",
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "DWP PIP (3)",

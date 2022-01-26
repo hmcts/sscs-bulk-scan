@@ -39,7 +39,7 @@ public class SscsDataHelperTest {
 
     @Before
     public void setUp() {
-        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), dwpAddressLookupService, airLookupService, postcodeValidator);
+        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), dwpAddressLookupService, airLookupService, postcodeValidator, true);
     }
 
     @Test
@@ -225,5 +225,26 @@ public class SscsDataHelperTest {
         OtherParty otherParty = ((List<CcdValue<OtherParty>>) transformedCase.get("otherParties")).get(0).getValue();
         assertEquals("other_party_1", otherParty.getId());
         assertEquals("123456", transformedCase.get("childMaintenanceNumber"));
+    }
+
+    @Test
+    public void givenAppellantExistAndWorkAllocationIsTrue_thenWorkAllocationFieldsAreSet() {
+        Map<String, Object> transformedCase = new HashMap<>();
+        Appeal appeal = Appeal.builder()
+            .appellant(Appellant.builder().name(Name.builder().firstName("Harry").lastName("Potter").build()).build())
+            .benefitType(BenefitType.builder().code("PIP").description("Personal Independence Payment").build())
+            .build();
+
+        caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS1PEU, "", null);
+
+        assertEquals("Harry Potter", transformedCase.get("caseNameHmctsInternal"));
+        assertEquals("Harry Potter", transformedCase.get("caseNameHmctsRestricted"));
+        assertEquals("Harry Potter", transformedCase.get("caseNamePublic"));
+        assertEquals("Personal Independence Payment", transformedCase.get("caseAccessCategory"));
+        DynamicListItem caseManagementCategory = new DynamicListItem("PIP", "Personal Independence Payment");
+        List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+        assertEquals(new DynamicList(caseManagementCategory, listItems),
+            transformedCase.get("caseManagementCategory"));
+        assertEquals("DWP", transformedCase.get("ogdType"));
     }
 }
