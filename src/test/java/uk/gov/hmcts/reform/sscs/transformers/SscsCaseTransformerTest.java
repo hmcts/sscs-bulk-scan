@@ -1558,8 +1558,8 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"SSCS1", "SSCS1PE"})
-    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes(String sscs1Type) {
+    @Parameters({"SSCS1, sscs1", "SSCS1PE, sscs1", "SSCS2, sscs2", "SSCS5, sscs5", "bla, appellantEvidence"})
+    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes(String sscs1Type, String documentType) {
         List<InputScannedDoc> records = new ArrayList<>();
         InputScannedDoc scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build(), sscs1Type);
         InputScannedDoc scannedRecord2 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test2.com").build(), "My subtype");
@@ -1575,7 +1575,7 @@ public class SscsCaseTransformerTest {
         assertEquals(LocalDateTime.now().toLocalDate().toString(), docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord1.getFileName(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord1.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
-        assertEquals("sscs1", docs.get(0).getValue().getDocumentType());
+        assertEquals(documentType, docs.get(0).getValue().getDocumentType());
         assertEquals(LocalDateTime.now().toLocalDate().toString(), docs.get(1).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord2.getFileName(), docs.get(1).getValue().getDocumentFileName());
         assertEquals(scannedRecord2.getUrl().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
