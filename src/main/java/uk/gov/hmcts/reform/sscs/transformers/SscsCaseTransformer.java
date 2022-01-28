@@ -697,13 +697,11 @@ public class SscsCaseTransformer implements CaseTransformer {
         checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL);
         checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL);
         if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_ORAL_LITERAL)
-            && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null
-            || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
+            && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null || pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).equals("null"))) {
             pairs.put(IS_HEARING_TYPE_PAPER_LITERAL,
                 !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).toString()));
         } else if (checkBooleanValue(pairs, errors, IS_HEARING_TYPE_PAPER_LITERAL)
-            && (pairs.get(IS_HEARING_TYPE_ORAL_LITERAL) == null
-            || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
+            && (pairs.get(IS_HEARING_TYPE_PAPER_LITERAL) == null || pairs.get(IS_HEARING_TYPE_ORAL_LITERAL).equals("null"))) {
             pairs.put(IS_HEARING_TYPE_ORAL_LITERAL,
                 !Boolean.parseBoolean(pairs.get(IS_HEARING_TYPE_PAPER_LITERAL).toString()));
         }
@@ -787,7 +785,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         List<ExcludeDate> excludedDates =
             extractExcludedDates(pairs, getField(pairs, HEARING_OPTIONS_EXCLUDE_DATES_LITERAL));
-        ;
 
         String agreeLessNotice = checkBooleanValue(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)
             ? convertBooleanToYesNoString(getBoolean(pairs, errors, AGREE_LESS_HEARING_NOTICE_LITERAL)) : null;

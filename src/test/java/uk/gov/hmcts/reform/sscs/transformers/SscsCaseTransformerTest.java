@@ -1105,6 +1105,36 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenSingleExcludedDate_thenBuildAnAppealWithExcludedStartDateAndWantToAttendYes() {
+
+        pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenMultipleExcludedDates_thenBuildAnAppealWithExcludedDatesAndWantToAttendYes() {
+
+        pairs.put("hearing_options_exclude_dates", "01/12/2030, 15/12/2030-31/12/2030");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        List<ExcludeDate> excludeDateList = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+
+        assertEquals("2030-12-01", excludeDateList.get(0).getValue().getStart());
+        assertEquals("2030-12-15", excludeDateList.get(1).getValue().getStart());
+        assertEquals("2030-12-31", excludeDateList.get(1).getValue().getEnd());
+        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     public void givenNoExcludedDate_thenBuildAnAppealWithExcludedStartDateAndScheduleHearingNo() {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
