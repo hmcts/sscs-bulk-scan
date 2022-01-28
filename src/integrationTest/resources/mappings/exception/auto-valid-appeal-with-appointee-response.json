@@ -24,6 +24,23 @@
       "formType": "sscs1peu",
       "dwpRegionalCentre": "Sheffield DRT",
       "bulkScanCaseReference": "1234567891011",
+      "caseAccessCategory": "Employment and Support Allowance",
+      "caseManagementCategory": {
+        "value": {
+          "code": "ESA",
+          "label": "Employment and Support Allowance"
+        },
+        "list_items": [
+          {
+            "code": "ESA",
+            "label": "Employment and Support Allowance"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "John Smith",
+      "caseNameHmctsRestricted": "John Smith",
+      "caseNamePublic": "John Smith",
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Sheffield DRT",
@@ -157,5 +174,10 @@
       "issueCode": "DD"
     }
   },
-  "warnings": []
+  "warnings": [],
+  "supplementary_data": {
+    "$set" : {
+      "HMCTSServiceId": "BBA3"
+    }
+  }
 }

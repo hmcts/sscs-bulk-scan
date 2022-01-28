@@ -1,6 +1,23 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseAccessCategory": "Tax-Free Childcare",
+      "caseManagementCategory": {
+        "value": {
+          "code": "taxFreeChildcare",
+          "label": "Tax-Free Childcare"
+        },
+        "list_items": [
+          {
+            "code": "taxFreeChildcare",
+            "label": "Tax-Free Childcare"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "John Smith",
+      "caseNameHmctsRestricted": "John Smith",
+      "caseNamePublic": "John Smith",
+      "ogdType": "HMRC",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Childcare Service HMRC",
@@ -133,5 +150,10 @@
     "case_type_id": "Benefit",
     "event_id": "validAppealCreated"
   },
-  "warnings": []
+  "warnings": [],
+  "supplementary_data": {
+    "$set" : {
+      "HMCTSServiceId": "BBA3"
+    }
+  }
 }

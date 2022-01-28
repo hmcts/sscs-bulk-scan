@@ -63,6 +63,10 @@
     {
       "name": "hearing_type_video",
       "value": "true"
+    },
+    {
+      "name": "hearing_type_telephone",
+      "value": "true"
     }
   ]
 }

@@ -23,6 +23,8 @@ import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.isExactlyOneBooleanT
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.isExactlyZeroBooleanTrue;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -171,6 +173,13 @@ public class SscsCaseTransformer implements CaseTransformer {
             scannedData.getOpeningDate());
 
         transformed = checkForMatches(transformed, token);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            log.info("Transformed data is " + objectMapper.writeValueAsString(transformed));
+        } catch (JsonProcessingException e) {
+            log.error("JSON problem ", e);
+        }
 
         return transformed;
     }
@@ -898,9 +907,6 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (records != null) {
             for (InputScannedDoc record : records) {
 
-                String documentType =
-                    StringUtils.startsWithIgnoreCase(record.getSubtype(), "sscs1") ? "sscs1" : "appellantEvidence";
-
                 checkFileExtensionValid(record.getFileName());
 
                 String scannedDate =
@@ -910,11 +916,22 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .documentLink(record.getUrl())
                     .documentDateAdded(scannedDate)
                     .documentFileName(record.getFileName())
-                    .documentType(documentType).build();
+                    .documentType(findDocumentType(record.getSubtype())).build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
             }
         }
         return documentDetails;
+    }
+
+    private String findDocumentType(String formType) {
+        if (StringUtils.startsWithIgnoreCase(formType, "sscs1")) {
+            return "sscs1";
+        } else if (StringUtils.startsWithIgnoreCase(formType, "sscs2")) {
+            return "sscs2";
+        } else if (StringUtils.startsWithIgnoreCase(formType, "sscs5")) {
+            return "sscs5";
+        }
+        return "appellantEvidence";
     }
 
     private void checkFileExtensionValid(String fileName) {
