@@ -214,30 +214,59 @@ public class CcdCallbackHandler {
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
             }
-
-            if (workAllocationFeature) {
-                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
-                if (benefit.isPresent()) {
-                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
-                }
-            }
+            setWorkAllocationCategories(appeal, callback);
+        } else {
+            setUnknownCategory(callback);
         }
 
+        setWorkallocationFields(appeal, callback);
+    }
+
+    private void setWorkAllocationCategories(Appeal appeal, Callback<SscsCaseData> callback) {
+        if (workAllocationFeature) {
+            Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+            if (benefit.isPresent()) {
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
+            }
+        }
+    }
+
+    private void setUnknownCategory(Callback<SscsCaseData> callback) {
+        FormType formType = callback.getCaseDetails().getCaseData().getFormType();
+        if (formType != null) {
+            if (formType.equals(FormType.SSCS5)) {
+                DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+            } else {
+                DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+            }
+        }
+    }
+
+    private void setWorkallocationFields(Appeal appeal, Callback<SscsCaseData> callback) {
         if (workAllocationFeature) {
             if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
                 && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
                 callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseNames(appeal.getAppellant().getName().getFullNameNoTitle());
             }
-            FormType formType = callback.getCaseDetails().getCaseData().getFormType();
-            if (formType != null) {
-                if (formType.equals(FormType.SSCS5)) {
-                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType("HMRC");
-                } else {
-                    callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType("DWP");
-                }
+            if (appeal != null && appeal.getBenefitType() != null) {
+                FormType formType = callback.getCaseDetails().getCaseData().getFormType();
+                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+
+                String ogdType = isHmrcBenefit(benefit, formType) ? "HMRC" : "DWP";
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType(ogdType);
             }
         }
+    }
 
+    private boolean isHmrcBenefit(Optional<Benefit> benefit, FormType formType) {
+        if (benefit.isEmpty()) {
+            return FormType.SSCS5.equals(formType);
+        }
+        return SscsType.SSCS5.equals(benefit.get().getSscsType());
     }
 
     private PreSubmitCallbackResponse<SscsCaseData> convertWarningsToErrors(SscsCaseData caseData, CaseResponse caseResponse) {

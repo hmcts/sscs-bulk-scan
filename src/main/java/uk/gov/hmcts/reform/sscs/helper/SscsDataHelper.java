@@ -39,6 +39,8 @@ public class SscsDataHelper {
 
     private final boolean workAllocationFeature;
 
+    private static final String CASE_MANAGEMENT_CATEGORY = "caseManagementCategory";
+
     public SscsDataHelper(CaseEvent caseEvent,
                           DwpAddressLookupService dwpAddressLookupService,
                           AirLookupService airLookupService,
@@ -81,41 +83,13 @@ public class SscsDataHelper {
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
 
-                log.info("The workAllocationFeature flag is " + workAllocationFeature);
-                if (workAllocationFeature) {
-                    Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
-                    if (benefit.isPresent()) {
-                        log.info("The benefit type is " + benefit.get().getDescription());
-                        appealData.put("caseAccessCategory", benefit.get().getDescription());
-
-                        DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
-                        List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-                        appealData.put("caseManagementCategory", new DynamicList(caseManagementCategory, listItems));
-                    }
-                }
+                setWorkAllocationCategorys(appeal, appealData);
+            } else {
+                setCasemanagementCategory(formType, appealData);
             }
 
-            log.info("2 The workAllocationFeature flag is " + workAllocationFeature);
-            if (workAllocationFeature) {
-                if (appeal.getAppellant() != null && appeal.getAppellant().getName() != null
-                    && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
-                    Name name = appeal.getAppellant().getName();
-                    log.info("Setting name to " + name.getFullNameNoTitle());
-                    appealData.put("caseNameHmctsInternal", name.getFullNameNoTitle());
-                    appealData.put("caseNameHmctsRestricted", name.getFullNameNoTitle());
-                    appealData.put("caseNamePublic", name.getFullNameNoTitle());
-                }
+            setWorkAllocationNames(appeal, appealData, formType);
 
-                log.info("Formtype is ");
-                if (formType != null) {
-                    log.info("Formtype is " + formType);
-                    if (formType.equals(FormType.SSCS5)) {
-                        appealData.put("ogdType", "HMRC");
-                    } else {
-                        appealData.put("ogdType", "DWP");
-                    }
-                }
-            }
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
             checkConfidentiality(formType,appealData, appeal);
         }
@@ -124,6 +98,61 @@ public class SscsDataHelper {
             appealData.put("childMaintenanceNumber", childMaintenanceNumber);
             if (otherParties != null) {
                 appealData.put("otherParties", otherParties);
+            }
+        }
+    }
+
+    private void setCasemanagementCategory(FormType formType, Map<String, Object> appealData) {
+        if (formType != null && workAllocationFeature) {
+            if (formType.equals(FormType.SSCS5)) {
+                DynamicListItem caseManagementCategory = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
+            } else {
+                DynamicListItem caseManagementCategory = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
+            }
+        }
+    }
+
+    private void setWorkAllocationNames(Appeal appeal, Map<String, Object> appealData, FormType formType) {
+        if (workAllocationFeature) {
+            if (appeal.getAppellant() != null && appeal.getAppellant().getName() != null
+                && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
+                Name name = appeal.getAppellant().getName();
+                appealData.put("caseNameHmctsInternal", name.getFullNameNoTitle());
+                appealData.put("caseNameHmctsRestricted", name.getFullNameNoTitle());
+                appealData.put("caseNamePublic", name.getFullNameNoTitle());
+            }
+
+            if (appeal.getBenefitType() != null) {
+                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+                if (isHmrcBenefit(benefit, formType)) {
+                    appealData.put("ogdType", "HMRC");
+                } else {
+                    appealData.put("ogdType", "DWP");
+                }
+            }
+        }
+    }
+
+    private boolean isHmrcBenefit(Optional<Benefit> benefit, FormType formType) {
+        if (benefit.isEmpty()) {
+            return FormType.SSCS5.equals(formType);
+        }
+        return SscsType.SSCS5.equals(benefit.get().getSscsType());
+    }
+
+    private void setWorkAllocationCategorys(Appeal appeal, Map<String, Object> appealData) {
+        if (workAllocationFeature) {
+            Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+            if (benefit.isPresent()) {
+                appealData.put("caseAccessCategory", benefit.get().getDescription());
+
+                DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
             }
         }
     }
