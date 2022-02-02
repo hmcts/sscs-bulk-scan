@@ -1,6 +1,23 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseAccessCategory": "Employment and Support Allowance",
+      "caseManagementCategory": {
+        "value": {
+          "code": "ESA",
+          "label": "Employment and Support Allowance"
+        },
+        "list_items": [
+          {
+            "code": "ESA",
+            "label": "Employment and Support Allowance"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "John Smith",
+      "caseNameHmctsRestricted": "John Smith",
+      "caseNamePublic": "John Smith",
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Sheffield DRT",
@@ -118,7 +135,7 @@
         "faxNumber": "0126 434 7983",
         "email": "SSCS_Bradford@justice.gov.uk"
       },
-      "processingVenue": "Basildon Combined Court",
+      "processingVenue": "Basildon CC",
       "evidencePresent": "Yes",
       "bulkScanCaseReference": "1234567890",
       "benefitCode": "051",
@@ -133,5 +150,10 @@
     "case_type_id": "Benefit",
     "event_id": "validAppealCreated"
   },
-  "warnings": []
+  "warnings": [],
+  "supplementary_data": {
+    "$set" : {
+      "HMCTSServiceId": "BBA3"
+    }
+  }
 }

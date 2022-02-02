@@ -1,6 +1,23 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseAccessCategory": "Tax Credit",
+      "caseManagementCategory": {
+        "value": {
+          "code": "taxCredit",
+          "label": "Tax Credit"
+        },
+        "list_items": [
+          {
+            "code": "taxCredit",
+            "label": "Tax Credit"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "Frederick Falafel",
+      "caseNameHmctsRestricted": "Frederick Falafel",
+      "caseNamePublic": "Frederick Falafel",
+      "ogdType": "HMRC",
       "appeal": {
         "appealReasons": {
           "reasons": [
@@ -171,5 +188,10 @@
     "case_type_id": "Benefit",
     "event_id": "validAppealCreated"
   },
-  "warnings": []
+  "warnings": [],
+  "supplementary_data": {
+    "$set" : {
+      "HMCTSServiceId": "BBA3"
+    }
+  }
 }
