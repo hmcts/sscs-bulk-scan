@@ -19,6 +19,23 @@
           }
         }
       ],
+      "caseAccessCategory": "Child Support",
+      "caseManagementCategory": {
+        "value": {
+          "code": "childSupport",
+          "label": "Child Support"
+        },
+        "list_items": [
+          {
+            "code": "childSupport",
+            "label": "Child Support"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "John Smith",
+      "caseNameHmctsRestricted": "John Smith",
+      "caseNamePublic": "John Smith",
+      "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Child Maintenance Service Group",

@@ -8,14 +8,12 @@ import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 import static uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator.IS_NOT_A_VALID_POSTCODE;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
@@ -49,6 +47,7 @@ public class CcdCallbackHandler {
 
     public static final String CASE_TYPE_ID = "Benefit";
 
+    private final boolean workAllocationFeature;
     private Map<String, Object> hmctsServiceIdMap = new HashMap<>();
     private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>();
 
@@ -56,13 +55,14 @@ public class CcdCallbackHandler {
         CaseTransformer caseTransformer,
         CaseValidator caseValidator,
         SscsDataHelper sscsDataHelper,
-        DwpAddressLookupService dwpAddressLookupService
+        DwpAddressLookupService dwpAddressLookupService,
+        @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
-
+        this.workAllocationFeature = workAllocationFeature;
         hmctsServiceIdMap.put("HMCTSServiceId", "BBA3");
         supplementaryDataRequestMap.put("$set", hmctsServiceIdMap);
     }
@@ -214,8 +214,59 @@ public class CcdCallbackHandler {
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
             }
+            setWorkAllocationCategories(appeal, callback);
+        } else {
+            setUnknownCategory(callback);
         }
 
+        setWorkallocationFields(appeal, callback);
+    }
+
+    private void setWorkAllocationCategories(Appeal appeal, Callback<SscsCaseData> callback) {
+        if (workAllocationFeature) {
+            Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+            if (benefit.isPresent()) {
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
+            }
+        }
+    }
+
+    private void setUnknownCategory(Callback<SscsCaseData> callback) {
+        FormType formType = callback.getCaseDetails().getCaseData().getFormType();
+        if (formType != null) {
+            if (formType.equals(FormType.SSCS5)) {
+                DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+            } else {
+                DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
+                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+            }
+        }
+    }
+
+    private void setWorkallocationFields(Appeal appeal, Callback<SscsCaseData> callback) {
+        if (workAllocationFeature) {
+            if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
+                && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseNames(appeal.getAppellant().getName().getFullNameNoTitle());
+            }
+            if (appeal != null && appeal.getBenefitType() != null) {
+                FormType formType = callback.getCaseDetails().getCaseData().getFormType();
+                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
+
+                String ogdType = isHmrcBenefit(benefit, formType) ? "HMRC" : "DWP";
+                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType(ogdType);
+            }
+        }
+    }
+
+    private boolean isHmrcBenefit(Optional<Benefit> benefit, FormType formType) {
+        if (benefit.isEmpty()) {
+            return FormType.SSCS5.equals(formType);
+        }
+        return SscsType.SSCS5.equals(benefit.get().getSscsType());
     }
 
     private PreSubmitCallbackResponse<SscsCaseData> convertWarningsToErrors(SscsCaseData caseData, CaseResponse caseResponse) {

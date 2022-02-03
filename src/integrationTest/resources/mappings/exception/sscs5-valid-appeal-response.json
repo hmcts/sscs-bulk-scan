@@ -1,6 +1,23 @@
 {
   "case_creation_details": {
     "case_data": {
+      "caseAccessCategory": "Tax-Free Childcare",
+      "caseManagementCategory": {
+        "value": {
+          "code": "taxFreeChildcare",
+          "label": "Tax-Free Childcare"
+        },
+        "list_items": [
+          {
+            "code": "taxFreeChildcare",
+            "label": "Tax-Free Childcare"
+          }
+        ]
+      },
+      "caseNameHmctsInternal": "John Smith",
+      "caseNameHmctsRestricted": "John Smith",
+      "caseNamePublic": "John Smith",
+      "ogdType": "HMRC",
       "appeal": {
         "mrnDetails": {
           "dwpIssuingOffice": "Childcare Service HMRC",
@@ -118,7 +135,7 @@
         "faxNumber": "0126 434 7983",
         "email": "SSCS_Bradford@justice.gov.uk"
       },
-      "processingVenue": "Basildon Combined Court",
+      "processingVenue": "Basildon CC",
       "evidencePresent": "Yes",
       "bulkScanCaseReference": "1234567890",
       "benefitCode": "057",

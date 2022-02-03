@@ -105,7 +105,7 @@ public class SscsCaseTransformerTest {
 
         token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
-        sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator);
+        sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator, true);
         transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, false);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
@@ -1105,6 +1105,36 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenSingleExcludedDate_thenBuildAnAppealWithExcludedStartDateAndWantToAttendYes() {
+
+        pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenMultipleExcludedDates_thenBuildAnAppealWithExcludedDatesAndWantToAttendYes() {
+
+        pairs.put("hearing_options_exclude_dates", "01/12/2030, 15/12/2030-31/12/2030");
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        List<ExcludeDate> excludeDateList = ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates();
+
+        assertEquals("2030-12-01", excludeDateList.get(0).getValue().getStart());
+        assertEquals("2030-12-15", excludeDateList.get(1).getValue().getStart());
+        assertEquals("2030-12-31", excludeDateList.get(1).getValue().getEnd());
+        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
     public void givenNoExcludedDate_thenBuildAnAppealWithExcludedStartDateAndScheduleHearingNo() {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
@@ -1558,8 +1588,8 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"SSCS1", "SSCS1PE"})
-    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes(String sscs1Type) {
+    @Parameters({"SSCS1, sscs1", "SSCS1PE, sscs1", "SSCS2, sscs2", "SSCS5, sscs5", "bla, appellantEvidence"})
+    public void givenOneSscs1FormAndOneEvidence_thenBuildACaseWithCorrectDocumentTypes(String sscs1Type, String documentType) {
         List<InputScannedDoc> records = new ArrayList<>();
         InputScannedDoc scannedRecord1 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test1.com").build(), sscs1Type);
         InputScannedDoc scannedRecord2 = buildTestScannedRecord(DocumentLink.builder().documentUrl("http://www.test2.com").build(), "My subtype");
@@ -1575,7 +1605,7 @@ public class SscsCaseTransformerTest {
         assertEquals(LocalDateTime.now().toLocalDate().toString(), docs.get(0).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord1.getFileName(), docs.get(0).getValue().getDocumentFileName());
         assertEquals(scannedRecord1.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
-        assertEquals("sscs1", docs.get(0).getValue().getDocumentType());
+        assertEquals(documentType, docs.get(0).getValue().getDocumentType());
         assertEquals(LocalDateTime.now().toLocalDate().toString(), docs.get(1).getValue().getDocumentDateAdded());
         assertEquals(scannedRecord2.getFileName(), docs.get(1).getValue().getDocumentFileName());
         assertEquals(scannedRecord2.getUrl().getDocumentUrl(), docs.get(1).getValue().getDocumentLink().getDocumentUrl());
