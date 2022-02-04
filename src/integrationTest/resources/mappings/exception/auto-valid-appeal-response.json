@@ -1,7 +1,7 @@
 {
   "case_creation_details": {
     "case_data": {
-      "caseAccessCategory": "Employment and Support Allowance",
+      "caseAccessCategory": "EmploymentAndSupportAllowance",
       "caseManagementCategory": {
         "value": {
           "code": "ESA",
