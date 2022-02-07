@@ -33,7 +33,7 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Bellevale",
       "bulkScanCaseReference": "id",
-      "caseAccessCategory": "Personal Independence Payment",
+      "caseAccessCategory": "personalIndependencePayment",
       "caseManagementCategory": {
         "value": {
           "code": "PIP",
