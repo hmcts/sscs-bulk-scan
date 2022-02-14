@@ -45,4 +45,41 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-core@.*$</packageUrl>
     <cve>CVE-2021-22096</cve>
   </suppress>
+  <suppress until="2022-03-15">
+    <notes><![CDATA[
+   file name: log4j-to-slf4j-2.16.0.jar
+   ]]></notes>
+    <cve>CVE-2021-44832</cve>
+    <cve>CVE-2021-45105</cve>
+  </suppress>
+  <suppress until="2022-03-15">
+    <notes><![CDATA[
+   file name: logback-classic-1.2.5.jar
+   ]]></notes>
+    <cve>CVE-2021-42550</cve>
+  </suppress>
+  <suppress until="2022-03-15">
+    <notes><![CDATA[
+   file name: logback-core-1.2.5.jar
+   ]]></notes>
+    <cve>CVE-2021-42550</cve>
+  </suppress>
+  <suppress until="2022-03-15">
+    <notes><![CDATA[
+   file name: spring-core-5.3.9.jar
+   ]]></notes>
+    <cve>CVE-2021-22060</cve>
+  </suppress>
+  <suppress until="2022-03-15">
+    <notes><![CDATA[
+   file name: tomcat-embed-core-9.0.54.jar
+   ]]></notes>
+    <cve>CVE-2022-23181</cve>
+  </suppress>
+  <suppress until="2022-03-15">
+    <notes><![CDATA[
+   file name: tomcat-embed-websocket-9.0.54.jar
+   ]]></notes>
+    <cve>CVE-2022-23181</cve>
+  </suppress>
 </suppressions>
