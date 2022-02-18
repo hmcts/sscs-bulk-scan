@@ -19,7 +19,7 @@
           }
         }
       ],
-      "caseAccessCategory": "Child Support",
+      "caseAccessCategory": "childSupport",
       "caseManagementCategory": {
         "value": {
           "code": "childSupport",

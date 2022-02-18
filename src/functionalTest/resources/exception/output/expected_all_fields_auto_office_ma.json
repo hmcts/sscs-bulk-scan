@@ -165,7 +165,7 @@
           }
         ]
       },
-      "caseAccessCategory": "Maternity Allowance",
+      "caseAccessCategory": "maternityAllowance",
       "linkedCasesBoolean": "No",
       "caseCreated": "2019-08-02",
       "caseNameHmctsRestricted": "Frederick Falafel",

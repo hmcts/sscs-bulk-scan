@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -148,7 +149,7 @@ public class SscsDataHelper {
         if (workAllocationFeature) {
             Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
             if (benefit.isPresent()) {
-                appealData.put("caseAccessCategory", benefit.get().getDescription());
+                appealData.put("caseAccessCategory", CaseUtils.toCamelCase(benefit.get().getDescription(), false, ' '));
 
                 DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
                 List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
