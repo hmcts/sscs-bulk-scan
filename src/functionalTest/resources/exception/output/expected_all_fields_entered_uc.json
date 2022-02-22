@@ -33,7 +33,7 @@
       "formType": "sscs1peu",
       "dwpRegionalCentre": "Universal Credit",
       "bulkScanCaseReference": "id",
-      "caseAccessCategory": "Universal Credit",
+      "caseAccessCategory": "universalCredit",
       "caseManagementCategory": {
         "value": {
           "code": "UC",
