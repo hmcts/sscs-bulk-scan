@@ -240,7 +240,7 @@ public class SscsDataHelperTest {
         assertEquals("Harry Potter", transformedCase.get("caseNameHmctsInternal"));
         assertEquals("Harry Potter", transformedCase.get("caseNameHmctsRestricted"));
         assertEquals("Harry Potter", transformedCase.get("caseNamePublic"));
-        assertEquals("Personal Independence Payment", transformedCase.get("caseAccessCategory"));
+        assertEquals("personalIndependencePayment", transformedCase.get("caseAccessCategory"));
         DynamicListItem caseManagementCategory = new DynamicListItem("PIP", "Personal Independence Payment");
         List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
         assertEquals(new DynamicList(caseManagementCategory, listItems),
