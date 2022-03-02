@@ -69,7 +69,6 @@ public class CcdCallbackHandler {
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.refDataService = refDataService;
         this.workAllocationFeature = workAllocationFeature;
-        this.workAllocationFeature = workAllocationFeature;
         hmctsServiceIdMap.put("HMCTSServiceId", "BBA3");
         supplementaryDataRequestMap.put("$set", hmctsServiceIdMap);
     }
