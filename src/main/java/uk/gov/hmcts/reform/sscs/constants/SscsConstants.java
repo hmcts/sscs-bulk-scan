@@ -38,8 +38,6 @@ public final class SscsConstants {
     public static final String TELL_TRIBUNAL_ABOUT_DATES = "tell_tribunal_about_dates";
     public static final String MRN_DATE = "mrn_date";
     public static final String ISSUING_OFFICE = "office";
-    public static final String YES_LITERAL = "Yes";
-    public static final String NO_LITERAL = "No";
     public static final String TITLE = "_title";
     public static final String FIRST_NAME = "_first_name";
     public static final String LAST_NAME = "_last_name";

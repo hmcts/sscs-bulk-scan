@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 
 public final class SscsOcrDataUtil {
 
@@ -113,14 +112,6 @@ public final class SscsOcrDataUtil {
 
     public static boolean getBoolean(Map<String, Object> pairs, Set<String> errors, String value) {
         return checkBooleanValue(pairs, errors, value) && BooleanUtils.toBoolean(pairs.get(value).toString());
-    }
-
-    public static String convertBooleanToYesNoString(boolean value) {
-        return convertBooleanToYesNo(value).getValue();
-    }
-
-    public static YesNo convertBooleanToYesNo(boolean value) {
-        return value ? YesNo.YES : YesNo.NO;
     }
 
     public static String generateDateForCcd(Map<String, Object> pairs, Set<String> errors, String fieldName) {

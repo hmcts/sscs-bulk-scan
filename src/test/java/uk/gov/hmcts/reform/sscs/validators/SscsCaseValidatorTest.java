@@ -13,6 +13,8 @@ import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LIN
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE3;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_POSTCODE;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.NO;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.YES;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import java.util.*;
@@ -506,7 +508,7 @@ public class SscsCaseValidatorTest {
             .benefitType(BenefitType.builder().code(PIP.name()).build())
             .mrnDetails(defaultMrnDetails)
             .hearingType(HEARING_TYPE_ORAL)
-            .hearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build()).build());
+            .hearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace(YES).build()).build());
         pairs.put("bulkScanCaseReference", 123);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
@@ -1639,7 +1641,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppealWithAnInvalidHearingPhoneNumberForSscsCase_thenAddWarning() {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(
-            HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber("01222").build(),
+            HearingSubtype.builder().wantsHearingTypeTelephone(YES).hearingTelephoneNumber("01222").build(),
             buildAppellant(false), false, FormType.SSCS1PE);
 
         CaseResponse response = validator.validateValidationRecord(pairs, true);
@@ -1653,7 +1655,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppealWithAHearingTypeTelephoneSelectedButNoTelephoneEntered_thenAddWarning() {
         HearingSubtype hearingSubtype =
-            HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build();
+            HearingSubtype.builder().wantsHearingTypeTelephone(YES).hearingTelephoneNumber(null).build();
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord,
             buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true, FormType.SSCS1PE), false);
@@ -1666,7 +1668,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppealWithAHearingTypeTelephoneSelectedButNoTelephoneEnteredForSscsCase_thenAddWarning() {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(
-            HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build(),
+            HearingSubtype.builder().wantsHearingTypeTelephone(YES).hearingTelephoneNumber(null).build(),
             buildAppellant(false), false, FormType.SSCS1PE);
 
         CaseResponse response = validator.validateValidationRecord(pairs, true);
@@ -1679,7 +1681,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppealWithAHearingTypeVideoSelectedButNoVideoEmailEntered_thenAddWarning() {
         HearingSubtype hearingSubtype =
-            HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build();
+            HearingSubtype.builder().wantsHearingTypeVideo(YES).hearingVideoEmail(null).build();
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord,
             buildMinimumAppealDataWithHearingSubtype(hearingSubtype, buildAppellant(false), true, FormType.SSCS1PE), false);
@@ -1692,7 +1694,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppealWithAHearingTypeVideoSelectedButNoVideoEmailEnteredForSscsCase_thenAddWarning() {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(
-            HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build(),
+            HearingSubtype.builder().wantsHearingTypeVideo(YES).hearingVideoEmail(null).build(),
             buildAppellant(false), false, FormType.SSCS1PE);
 
         CaseResponse response = validator.validateValidationRecord(pairs, true);
@@ -1745,7 +1747,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppealWithAnHearingSubTypeVideoForSscsCase_thenNoWarning() {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(
-            HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail("m@m.com").build(),
+            HearingSubtype.builder().wantsHearingTypeVideo(YES).hearingVideoEmail("m@m.com").build(),
             buildAppellant(false), false, FormType.SSCS1PE);
         CaseResponse response = validator.validateValidationRecord(pairs, true);
         assertEquals(0, response.getWarnings().size());
@@ -1754,7 +1756,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppealWithAnHearingSubTypeFaceForSscsCase_thenNoWarning() {
         Map<String, Object> pairs =
-            buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
+            buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace(YES).build(),
                 buildAppellant(false), false, FormType.SSCS1PE);
         CaseResponse response = validator.validateValidationRecord(pairs, true);
         assertEquals(0, response.getWarnings().size());
@@ -2042,7 +2044,7 @@ public class SscsCaseValidatorTest {
                                                        FormType formType) {
         return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant,
             buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL,
-            HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
+            HearingSubtype.builder().wantsHearingTypeFaceToFace(YES).build(), formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrn(MrnDetails mrn, Appellant appellant,
@@ -2057,7 +2059,7 @@ public class SscsCaseValidatorTest {
                                                                       FormType formType) {
         return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant,
             buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL,
-            HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
+            HearingSubtype.builder().wantsHearingTypeFaceToFace(YES).build(), formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithRepresentative(Appellant appellant,
@@ -2066,7 +2068,7 @@ public class SscsCaseValidatorTest {
                                                                          FormType formType) {
         return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, representative,
             null, exceptionCaseType, HEARING_TYPE_ORAL,
-            HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
+            HearingSubtype.builder().wantsHearingTypeFaceToFace(YES).build(), formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithExcludedDate(String excludedDate, Appellant appellant,
@@ -2092,7 +2094,7 @@ public class SscsCaseValidatorTest {
     }
 
     private Representative buildMinimumRep() {
-        return Representative.builder().hasRepresentative(NO_LITERAL).build();
+        return Representative.builder().hasRepresentative(NO).build();
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitTypeAndFormType(String benefitCode,
@@ -2101,7 +2103,7 @@ public class SscsCaseValidatorTest {
                                                                                  FormType formType) {
         return buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(defaultMrnDetails, benefitCode, appellant,
             buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL,
-            HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
+            HearingSubtype.builder().wantsHearingTypeFaceToFace(YES).build(), formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(MrnDetails mrn, String benefitCode,
@@ -2187,7 +2189,7 @@ public class SscsCaseValidatorTest {
             null,
             true,
             HEARING_TYPE_ORAL,
-            HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
+            HearingSubtype.builder().wantsHearingTypeFaceToFace(YES).build(),
             FormType.SSCS2);
         datamap.put("childMaintenanceNumber", childMaintenanceNumber);
         datamap.put("otherParties", Collections.singletonList(CcdValue.<OtherParty>builder().value(
@@ -2226,7 +2228,7 @@ public class SscsCaseValidatorTest {
     private Representative buildRepresentative() {
 
         return Representative.builder()
-            .hasRepresentative("Yes")
+            .hasRepresentative(YES)
             .organisation("Bob the builders Ltd")
             .name(Name.builder().title("Mr").firstName("Bob").lastName("Smith").build())
             .address(

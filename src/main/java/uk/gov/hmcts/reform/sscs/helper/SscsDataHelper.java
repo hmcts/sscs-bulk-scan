@@ -6,8 +6,13 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
-import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
-import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.isYesOrNo;
+import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.ERRORS;
+import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.SUCCESS;
+import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.WARNINGS;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateBenefitCode;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateCaseCode;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateIssueCode;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,7 +23,20 @@ import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
+import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.CcdValue;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DynamicList;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DynamicListItem;
+import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Name;
+import uk.gov.hmcts.reform.sscs.ccd.domain.OtherParty;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
+import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
@@ -194,8 +212,8 @@ public class SscsDataHelper {
         return null;
     }
 
-    public String hasEvidence(List<SscsDocument> sscsDocuments) {
-        return (null == sscsDocuments || sscsDocuments.isEmpty()) ? "No" : "Yes";
+    public YesNo hasEvidence(List<SscsDocument> sscsDocuments) {
+        return isYesOrNo(nonNull(sscsDocuments) && !sscsDocuments.isEmpty());
     }
 
     public static ValidationStatus getValidationStatus(List<String> errors, List<String> warnings) {

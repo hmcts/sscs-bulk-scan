@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.sscs.util;
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.*;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
 
 import java.util.*;
@@ -337,12 +338,12 @@ public class SscsOcrDataUtilTest {
 
     @Test
     public void givenTrue_thenReturnYes() {
-        assertEquals("Yes", convertBooleanToYesNoString(true));
+        assertEquals(YES, isYesOrNo(true));
     }
 
     @Test
     public void givenFalse_thenReturnNo() {
-        assertEquals("No", convertBooleanToYesNoString(false));
+        assertEquals(NO, isYesOrNo(false));
     }
 
     @Test

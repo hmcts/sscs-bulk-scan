@@ -6,16 +6,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.BENEFIT_TYPE_DESCRIPTION;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.*;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS1PEU;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS2;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS5;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.NO;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.YES;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.isYes;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.isYesOrNo;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
@@ -26,7 +32,14 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.assertj.core.api.Assertions;
@@ -38,8 +51,45 @@ import org.junit.platform.commons.util.StringUtils;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.util.Assert;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
-import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.TestDataConstants;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.InputScannedDoc;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReason;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasonDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppealReasons;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
+import uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appointee;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
+import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.CaseLink;
+import uk.gov.hmcts.reform.sscs.ccd.domain.CaseManagementLocation;
+import uk.gov.hmcts.reform.sscs.ccd.domain.CcdValue;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Contact;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DateRange;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
+import uk.gov.hmcts.reform.sscs.ccd.domain.ExcludeDate;
+import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.HearingOptions;
+import uk.gov.hmcts.reform.sscs.ccd.domain.HearingSubtype;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Identity;
+import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Name;
+import uk.gov.hmcts.reform.sscs.ccd.domain.OtherParty;
+import uk.gov.hmcts.reform.sscs.ccd.domain.RegionalProcessingCenter;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Representative;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Role;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocument;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsDocumentDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Subscription;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Subscriptions;
+import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
@@ -448,11 +498,11 @@ public class SscsCaseTransformerTest {
     @Parameters({"Yes", "No"})
     public void givenBenefitTypeIsDefinedWithYesNo_thenCheckCorrectCodeIsReturned(String isPip) {
         pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), isPip);
-        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), isPip.equals("Yes") ? "No" : "Yes");
+        pairs.put(BenefitTypeIndicator.ESA.getIndicatorString(), isYesOrNo(!isYes(isPip)).getValue());
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        Benefit expectedBenefit = isPip.equals("Yes") ? PIP : ESA;
+        Benefit expectedBenefit = isYes(isPip) ? PIP : ESA;
         assertEquals(expectedBenefit.name(), appeal.getBenefitType().getCode());
     }
 
@@ -612,7 +662,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
 
-        pairs.put("person1_want_sms_notifications", subscribeSms.equals("Yes"));
+        pairs.put("person1_want_sms_notifications", isYes(subscribeSms));
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
 
@@ -620,11 +670,11 @@ public class SscsCaseTransformerTest {
         Subscriptions subscriptions = (Subscriptions) result.getTransformedCase().get("subscriptions");
 
         Subscription expectedSubscription = Subscription.builder()
-            .wantSmsNotifications(subscribeSms)
-            .subscribeSms(subscribeSms)
+            .wantSmsNotifications(isYesOrNo(subscribeSms))
+            .subscribeSms(isYesOrNo(subscribeSms))
             .mobile(APPELLANT_MOBILE)
             .email(APPELLANT_EMAIL)
-            .subscribeEmail(YES_LITERAL)
+            .subscribeEmail(YES)
             .tya(subscriptions.getAppellantSubscription().getTya())
             .build();
 
@@ -644,17 +694,17 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
 
-        pairs.put("person1_want_sms_notifications", subscribeSms.equals("Yes"));
+        pairs.put("person1_want_sms_notifications", isYes(subscribeSms));
         pairs.put("person1_mobile", APPELLANT_MOBILE);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         Subscriptions subscriptions = (Subscriptions) result.getTransformedCase().get("subscriptions");
 
         Subscription expectedSubscription = Subscription.builder()
-            .wantSmsNotifications(subscribeSms)
-            .subscribeSms(subscribeSms)
+            .wantSmsNotifications(isYesOrNo(subscribeSms))
+            .subscribeSms(isYesOrNo(subscribeSms))
             .mobile(APPELLANT_MOBILE)
-            .subscribeEmail(NO_LITERAL)
+            .subscribeEmail(NO)
             .tya(subscriptions.getAppellantSubscription().getTya())
             .build();
 
@@ -826,7 +876,7 @@ public class SscsCaseTransformerTest {
         Contact appointeeContact = Contact.builder().phone(APPOINTEE_PHONE).mobile(APPOINTEE_MOBILE).build();
         Appointee appointee = Appointee.builder().name(appointeeName).address(appointeeAddress).contact(appointeeContact).identity(appointeeIdentity).build();
 
-        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("Yes").address(appellantAddress).appointee(appointee).contact(Contact.builder().build()).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee(YES).address(appellantAddress).appointee(appointee).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
         assertThat(appellantResult)
@@ -857,7 +907,7 @@ public class SscsCaseTransformerTest {
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob("1987-08-12").build();
 
-        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(Contact.builder().build()).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee(NO).address(appellantAddress).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
         assertThat(appellantResult)
@@ -907,7 +957,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(HEARING_TYPE_ORAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
-        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -921,7 +971,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(HEARING_TYPE_PAPER, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
-        assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+        assertEquals(NO, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -931,12 +981,12 @@ public class SscsCaseTransformerTest {
     public void givenHearingTypeYesNo_thenCorrectlyBuildAnAppealWithWantsToAttendValue(String isOral) {
 
         pairs.put(IS_HEARING_TYPE_ORAL_LITERAL, isOral);
-        pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, isOral.equals("Yes") ? "No" : "Yes");
+        pairs.put(IS_HEARING_TYPE_PAPER_LITERAL, isYesOrNo(!isYes(isOral)).getValue());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        String expectedHearingType = isOral.equals("Yes") ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
-        String attendingHearing = isOral.equals("Yes") ? YES_LITERAL : NO_LITERAL;
+        String expectedHearingType = isYes(isOral) ? HEARING_TYPE_ORAL : HEARING_TYPE_PAPER;
+        YesNo attendingHearing = isYesOrNo(isOral);
 
         assertEquals(expectedHearingType, ((Appeal) result.getTransformedCase().get("appeal")).getHearingType());
         assertEquals(attendingHearing, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
@@ -1066,7 +1116,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("hearingLoop", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
-        assertEquals("Yes", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsSupport());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsSupport());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1076,7 +1126,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsSupport());
+        assertEquals(NO, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsSupport());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1141,7 +1191,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
-        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1154,7 +1204,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
-        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1171,7 +1221,7 @@ public class SscsCaseTransformerTest {
         assertEquals("2030-12-01", excludeDateList.get(0).getValue().getStart());
         assertEquals("2030-12-15", excludeDateList.get(1).getValue().getStart());
         assertEquals("2030-12-31", excludeDateList.get(1).getValue().getEnd());
-        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1182,7 +1232,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates());
-        assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
+        assertEquals(NO, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1197,7 +1247,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
-        assertEquals(NO_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
+        assertEquals(NO, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getScheduleHearing());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1329,7 +1379,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
-        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1343,7 +1393,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
-        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1356,7 +1406,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
-        assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1411,7 +1461,7 @@ public class SscsCaseTransformerTest {
 
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
-        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
+        assertEquals(NO, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1448,7 +1498,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals("No", result.getTransformedCase().get("linkedCasesBoolean"));
+        assertEquals(NO.getValue(), result.getTransformedCase().get("linkedCasesBoolean"));
     }
 
     @Test
@@ -1462,7 +1512,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals("Yes", result.getTransformedCase().get("linkedCasesBoolean"));
+        assertEquals(YES.getValue(), result.getTransformedCase().get("linkedCasesBoolean"));
 
         assertEquals("123", ((CaseLink)((List<?>) result.getTransformedCase().get("associatedCase")).get(0)).getValue().getCaseReference());
     }
@@ -1473,7 +1523,7 @@ public class SscsCaseTransformerTest {
 
         pairs.put(PERSON1_VALUE + NINO, APPELLANT_NINO);
         pairs.put(MRN_DATE, MRN_DATE_VALUE);
-        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), YES_LITERAL);
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), YES);
 
         SscsCaseDetails caseDetails = SscsCaseDetails.builder().id(123L).build();
 
@@ -1555,7 +1605,7 @@ public class SscsCaseTransformerTest {
         assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
 
-        assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
+        assertEquals(YES, transformedCase.get("evidencePresent"));
 
         org.joda.time.format.DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
         String expectedCreatedDate = dtfOut.print(new DateTime());
@@ -1582,7 +1632,7 @@ public class SscsCaseTransformerTest {
         assertEquals(scannedRecord.getUrl().getDocumentUrl(), docs.get(0).getValue().getDocumentLink().getDocumentUrl());
         assertEquals("appellantEvidence", docs.get(0).getValue().getDocumentType());
 
-        assertEquals(YES_LITERAL, transformedCase.get("evidencePresent"));
+        assertEquals(YES, transformedCase.get("evidencePresent"));
 
         org.joda.time.format.DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd");
         String expectedCreatedDate = dtfOut.print(new DateTime().minusYears(3));
@@ -1723,7 +1773,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         Map<String, Object> transformedCase = result.getTransformedCase();
-        assertEquals(NO_LITERAL, transformedCase.get("evidencePresent"));
+        assertEquals(NO, transformedCase.get("evidencePresent"));
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1819,7 +1869,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals("Yes", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
+        assertEquals(YES, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1832,7 +1882,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals("No", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
+        assertEquals(NO, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getAgreeLessNotice());
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1942,7 +1992,7 @@ public class SscsCaseTransformerTest {
         pairs.put(HEARING_TYPE_VIDEO_LITERAL, hearingSubtypeFlag);
         pairs.put(HEARING_VIDEO_EMAIL_LITERAL, HEARING_VIDEO_EMAIL);
         pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
-        String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+        YesNo expectedResult = isYesOrNo(hearingSubtypeFlag.equals("true") || isYes(hearingSubtypeFlag));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
@@ -1960,7 +2010,7 @@ public class SscsCaseTransformerTest {
         pairs.put(HEARING_TYPE_VIDEO_LITERAL, hearingSubtypeFlag);
         pairs.put(HEARING_VIDEO_EMAIL_LITERAL, HEARING_VIDEO_EMAIL);
         pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
-        String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+        YesNo expectedResult = isYesOrNo(hearingSubtypeFlag.equals("true") || isYes(hearingSubtypeFlag));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
@@ -1977,7 +2027,7 @@ public class SscsCaseTransformerTest {
         pairs.put(HEARING_TYPE_VIDEO_LITERAL, hearingSubtypeFlag);
         pairs.put(HEARING_VIDEO_EMAIL_LITERAL, HEARING_VIDEO_EMAIL);
         pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
-        String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+        YesNo expectedResult = isYesOrNo(hearingSubtypeFlag.equals("true") || isYes(hearingSubtypeFlag));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
@@ -1993,13 +2043,13 @@ public class SscsCaseTransformerTest {
 
         pairs.put(HEARING_VIDEO_EMAIL_LITERAL, HEARING_VIDEO_EMAIL);
         pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
-        String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+        YesNo expectedResult = isYesOrNo(hearingSubtypeFlag.equals("true") || isYes(hearingSubtypeFlag));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
-        assertNull(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
+        assertNull(expectedResult.getValue(), ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeVideo());
         assertEquals(HEARING_VIDEO_EMAIL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingVideoEmail());
         assertEquals(expectedResult, ((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeFaceToFace());
     }
@@ -2009,7 +2059,7 @@ public class SscsCaseTransformerTest {
     public void givenHearingSubtypeDetailsAreProvided_WithOnlyHearingTypeFaceToFace_thenBuildAnAppealHearingSubtypeDetails(String hearingSubtypeFlag) {
 
         pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, hearingSubtypeFlag);
-        final String expectedResult = hearingSubtypeFlag.equals("true") || hearingSubtypeFlag.equals("Yes") ? "Yes" : "No";
+        final YesNo expectedResult = isYesOrNo(hearingSubtypeFlag.equals("true") || isYes(hearingSubtypeFlag));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
@@ -2323,7 +2373,7 @@ public class SscsCaseTransformerTest {
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob("1987-08-12").build();
         Role role = Role.builder().name(appellantRole.getName()).description(StringUtils.isBlank(description) ? null : description).build();
-        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").role(role).address(appellantAddress).contact(Contact.builder().build()).build();
+        Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee(NO).role(role).address(appellantAddress).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
         assertThat(appellantResult)
@@ -2654,7 +2704,7 @@ public class SscsCaseTransformerTest {
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob(formatDate(APPELLANT_DATE_OF_BIRTH)).build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).email(APPELLANT_EMAIL).build();
-        Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(appellantContact).build();
+        Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee(NO).address(appellantAddress).contact(appellantContact).build();
         HearingSubtype hearingSubtype = HearingSubtype.builder().build();
 
         Name repName = Name.builder().title(REPRESENTATIVE_PERSON_TITLE).firstName(REPRESENTATIVE_PERSON_FIRST_NAME).lastName(REPRESENTATIVE_PERSON_LAST_NAME).build();
@@ -2669,22 +2719,22 @@ public class SscsCaseTransformerTest {
         hearingSupportArrangements.add("hearingLoop");
 
         return Appeal.builder()
-            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).description(BENEFIT_TYPE_DESCRIPTION).build())
+            .benefitType(BenefitType.builder().code(BENEFIT_TYPE).description(TestDataConstants.BENEFIT_TYPE_DESCRIPTION).build())
             .appellant(appellant)
             .appealReasons(AppealReasons.builder().reasons(Collections.singletonList(AppealReason.builder().value(AppealReasonDetails.builder().description(APPEAL_REASON).build()).build())).build())
-            .rep(Representative.builder().hasRepresentative(YES_LITERAL).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
+            .rep(Representative.builder().hasRepresentative(YES).name(repName).address(repAddress).contact(repContact).organisation(REPRESENTATIVE_NAME).build())
             .mrnDetails(MrnDetails.builder().mrnDate(formatDate(MRN_DATE_VALUE)).dwpIssuingOffice("DWP PIP (5)").mrnLateReason(APPEAL_LATE_REASON).build())
             .hearingType(HEARING_TYPE_ORAL)
             .hearingSubtype(hearingSubtype)
             .hearingOptions(HearingOptions.builder()
-                .scheduleHearing(YES_LITERAL)
+                .scheduleHearing(YES)
                 .excludeDates(excludedDates)
-                .agreeLessNotice(YES_LITERAL)
+                .agreeLessNotice(YES)
                 .arrangements(hearingSupportArrangements)
-                .languageInterpreter(YES_LITERAL)
+                .languageInterpreter(YES)
                 .languages(HEARING_OPTIONS_LANGUAGE_TYPE)
-                .wantsToAttend(YES_LITERAL)
-                .wantsSupport(YES_LITERAL).build())
+                .wantsToAttend(YES)
+                .wantsSupport(YES).build())
             .signer(SIGNATURE_NAME)
             .receivedVia("Paper")
             .build();

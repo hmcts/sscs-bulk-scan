@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static java.util.Objects.isNull;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.YesNo.isYes;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCallbackType;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
@@ -259,7 +261,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkHearingSubtypeDetails(HearingSubtype hearingSubtype) {
         if (hearingSubtype != null) {
-            if (YES_LITERAL.equals(hearingSubtype.getWantsHearingTypeTelephone())
+            if (isYes(hearingSubtype.getWantsHearingTypeTelephone())
                 && hearingSubtype.getHearingTelephoneNumber() == null) {
 
                 warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_TELEPHONE_LITERAL,
@@ -272,7 +274,7 @@ public class SscsCaseValidator implements CaseValidator {
                     .add(getMessageByCallbackType(callbackType, "", HEARING_TELEPHONE_NUMBER_MULTIPLE_LITERAL, null));
             }
 
-            if (YES_LITERAL.equals(hearingSubtype.getWantsHearingTypeVideo())
+            if (isYes(hearingSubtype.getWantsHearingTypeVideo())
                 && hearingSubtype.getHearingVideoEmail() == null) {
 
                 warnings.add(getMessageByCallbackType(callbackType, "", HEARING_TYPE_VIDEO_LITERAL,
@@ -291,10 +293,10 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
-        if (appeal.getRep() == null || StringUtils.isBlank(appeal.getRep().getHasRepresentative())) {
+        if (appeal.getRep() == null || isNull(appeal.getRep().getHasRepresentative())) {
             errors.add(HAS_REPRESENTATIVE_FIELD_MISSING);
         }
-        if (appeal.getRep() != null && StringUtils.equals(appeal.getRep().getHasRepresentative(), YES_LITERAL)) {
+        if (appeal.getRep() != null && isYes(appeal.getRep().getHasRepresentative())) {
             final Contact repsContact = appeal.getRep().getContact();
             checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData,
                 appeal.getAppellant());
