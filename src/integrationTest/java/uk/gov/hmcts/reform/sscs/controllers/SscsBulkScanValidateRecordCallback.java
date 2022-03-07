@@ -409,7 +409,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getErrors().size()).isEqualTo(0);
         assertThat(result.getBody().getWarnings())
-            .containsOnly("Appellant postcode is not a valid postcode");
+            .containsOnly("Appellant postcode is not a postcode that maps to a regional processing center");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }

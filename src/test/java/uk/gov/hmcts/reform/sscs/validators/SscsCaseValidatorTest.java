@@ -1235,7 +1235,7 @@ public class SscsCaseValidatorTest {
         given(postcodeValidator.isValid(anyString())).willReturn(false);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS1PE), false);
 
-        assertEquals("person1_postcode is not a valid postcode", response.getWarnings().get(0));
+        assertEquals("person1_postcode is not a postcode that maps to a regional processing center", response.getWarnings().get(0));
     }
 
     @Test

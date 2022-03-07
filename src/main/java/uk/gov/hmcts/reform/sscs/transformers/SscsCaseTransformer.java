@@ -23,8 +23,6 @@ import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.isExactlyOneBooleanT
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.isExactlyZeroBooleanTrue;
 import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateAppealNumber;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -173,13 +171,6 @@ public class SscsCaseTransformer implements CaseTransformer {
             scannedData.getOpeningDate());
 
         transformed = checkForMatches(transformed, token);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            log.info("Transformed data is " + objectMapper.writeValueAsString(transformed));
-        } catch (JsonProcessingException e) {
-            log.error("JSON problem ", e);
-        }
 
         return transformed;
     }

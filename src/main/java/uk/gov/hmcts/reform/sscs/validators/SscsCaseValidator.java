@@ -32,7 +32,7 @@ import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 @Slf4j
 public class SscsCaseValidator implements CaseValidator {
 
-    public static final String IS_NOT_A_VALID_POSTCODE = "is not a valid postcode";
+    public static final String IS_NOT_A_VALID_POSTCODE = "is not a postcode that maps to a regional processing center";
 
     @SuppressWarnings("squid:S5843")
     private static final String PHONE_REGEX =
@@ -265,7 +265,7 @@ public class SscsCaseValidator implements CaseValidator {
             } else {
                 warnings.add(getMessageByCallbackType(callbackType, personType,
                     getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE,
-                    "is not a postcode that maps to a regional processing center"));
+                    IS_NOT_A_VALID_POSTCODE));
             }
         }
     }
