@@ -10,6 +10,9 @@ import static uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator.IS_NOT_A_VAL
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -221,6 +224,14 @@ public class CcdCallbackHandler {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
                 if (workAllocationFeature) {
                     CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        log.info("courtVenue data is " + objectMapper.writeValueAsString(courtVenue));
+                    } catch (JsonProcessingException e) {
+                        log.error("JSON problem ", e);
+                    }
+
                     if (courtVenue != null) {
                         callback.getCaseDetails().getCaseData().setCaseManagementLocation(CaseManagementLocation.builder()
                             .baseLocation(courtVenue.getEpimsId())

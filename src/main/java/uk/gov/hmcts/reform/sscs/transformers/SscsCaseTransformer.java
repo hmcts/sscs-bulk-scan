@@ -190,13 +190,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         transformed = checkForMatches(transformed, token);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            log.info("Transformed data is " + objectMapper.writeValueAsString(transformed));
-        } catch (JsonProcessingException e) {
-            log.error("JSON problem ", e);
-        }
-
         return transformed;
     }
 
