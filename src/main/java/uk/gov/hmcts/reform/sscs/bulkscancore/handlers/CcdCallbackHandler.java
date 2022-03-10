@@ -224,13 +224,6 @@ public class CcdCallbackHandler {
                 if (workAllocationFeature) {
                     CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
 
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    try {
-                        log.info("courtVenue data is " + objectMapper.writeValueAsString(courtVenue));
-                    } catch (JsonProcessingException e) {
-                        log.error("JSON problem ", e);
-                    }
-
                     if (courtVenue != null) {
                         callback.getCaseDetails().getCaseData().setCaseManagementLocation(CaseManagementLocation.builder()
                             .baseLocation(courtVenue.getEpimsId())
