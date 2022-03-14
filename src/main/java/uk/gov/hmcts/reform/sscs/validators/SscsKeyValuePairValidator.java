@@ -29,11 +29,13 @@ public class SscsKeyValuePairValidator {
 
         try {
             log.info("Validating against formType {}", formType);
+
             if (formType != null && formType.equals(FormType.SSCS2)) {
                 sscs2Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             } else if (formType != null && formType.equals(FormType.SSCS5)) {
                 sscs5Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
-            } else {
+            } else if (formType != null && (formType.equals(FormType.SSCS1U) || formType.equals(FormType.SSCS1)
+                || formType.equals(FormType.SSCS1PE) || formType.equals(FormType.SSCS1PEU))) {
                 sscs1Schema.validate(new JSONObject(build(ocrDataValidationRequest)));
             }
         } catch (ValidationException ex) {
@@ -51,4 +53,5 @@ public class SscsKeyValuePairValidator {
         return SchemaLoader
             .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(schemaLocation))));
     }
+
 }

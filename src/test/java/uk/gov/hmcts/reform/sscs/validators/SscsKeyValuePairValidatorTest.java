@@ -64,7 +64,7 @@ public class SscsKeyValuePairValidatorTest {
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
 
-        CaseResponse response = validator.validate(scanOcrData, null);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS1PEU);
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
     }
 

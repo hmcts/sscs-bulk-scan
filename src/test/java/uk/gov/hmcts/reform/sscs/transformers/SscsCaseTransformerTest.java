@@ -2390,6 +2390,18 @@ public class SscsCaseTransformerTest {
         assertNull(appellantConfidentialityRequired);
     }
 
+    @Test
+    @Parameters({"SSCS2", "SSCS5", "SSCS1", "SSCS1U", "SSCS1PE", "SSCS1PEU"})
+    public void notAValidFormFalse(String formType) {
+        assertFalse(transformer.notAValidFormType(formType));
+    }
+
+    @Test
+    @Parameters({"SSCS", "SSCS55", "SSCS11"})
+    public void notAValidFormTrue(String formType) {
+        assertTrue(transformer.notAValidFormType(formType));
+    }
+
 
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();

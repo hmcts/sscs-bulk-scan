@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import static java.util.Arrays.stream;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCallbackType;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -103,6 +106,20 @@ public class SscsCaseTransformer implements CaseTransformer {
         log.info("Validating exception record against schema caseId {}", caseId);
 
         String formType = exceptionRecord.getFormType();
+        if (formType == null || notAValidFormType(formType)) {
+            JSONObject jsonObject = new JSONObject(build(exceptionRecord.getOcrDataFields()));
+            if (jsonObject.optString("form_type", null) == null || notAValidFormType(jsonObject.get("form_type").toString())) {
+                List<String> errors = new ArrayList<>();
+                errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
+                log.info("No valid form type was found while transforming exception record caseId {}",
+                    caseId);
+                return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
+                    .status(getValidationStatus(errors, null)).build();
+            } else {
+                formType = jsonObject.get("form_type").toString();
+            }
+        }
+
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields(),
             FormType.getById(formType));
 
@@ -1018,5 +1035,13 @@ public class SscsCaseTransformer implements CaseTransformer {
                 errors.add("Duplicate case already exists - please reject this exception record");
             }
         }
+    }
+
+    private boolean notAValidFormType(FormType formType) {
+        return notAValidFormType(formType.getId());
+    }
+
+    protected boolean notAValidFormType(String formType) {
+        return !stream(FormType.values()).anyMatch(formType1 -> formType1.getId().equalsIgnoreCase(formType));
     }
 }

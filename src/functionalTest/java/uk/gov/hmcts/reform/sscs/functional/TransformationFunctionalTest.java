@@ -199,4 +199,95 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
 
         verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
     }
+
+    @Test
+    public void transform_appeal_created_case_when_all_fields_entered_no_form_type() throws IOException {
+        String person1Nino = generateRandomNino();
+        String person2Nino = generateRandomNino();
+
+        String jsonRequest = getJson("exception/all_fields_entered_no_form_type.json");
+        jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
+
+        Response response = transformExceptionRequest(jsonRequest, UNPROCESSABLE_ENTITY.value());
+
+        assertThat(response.getStatusCode()).isEqualTo(UNPROCESSABLE_ENTITY.value());
+
+        JsonPath errorResponse = response.getBody().jsonPath();
+
+        assertThat(errorResponse.getList("errors"))
+            .hasSize(1)
+            .containsOnly("No valid form type was found, need to add form_type with valid form type to OCR data");
+        assertThat(errorResponse.getList("warnings")).isEmpty();
+        assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
+    }
+
+    @Test
+    public void transform_appeal_created_case_when_all_fields_entered_invalid_form_type() throws IOException {
+        String person1Nino = generateRandomNino();
+        String person2Nino = generateRandomNino();
+
+        String jsonRequest = getJson("exception/all_fields_entered_invalid_form_type.json");
+        jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
+
+        Response response = transformExceptionRequest(jsonRequest, UNPROCESSABLE_ENTITY.value());
+
+        assertThat(response.getStatusCode()).isEqualTo(UNPROCESSABLE_ENTITY.value());
+
+        JsonPath errorResponse = response.getBody().jsonPath();
+
+        assertThat(errorResponse.getList("errors"))
+            .hasSize(1)
+            .containsOnly("No valid form type was found, need to add form_type with valid form type to OCR data");
+        assertThat(errorResponse.getList("warnings")).isEmpty();
+        assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
+    }
+
+    @Test
+    public void sscs1_transform_appeal_created_case_when_all_fields_entered_ocr_form_type() throws IOException {
+        String person1Nino = generateRandomNino();
+        String person2Nino = generateRandomNino();
+
+        String expectedJson = getJson("exception/output/expected_all_fields_entered.json");
+
+        expectedJson = replaceNino(expectedJson, person1Nino, person2Nino);
+        expectedJson = replaceMrnDate(expectedJson, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+
+        String jsonRequest = getJson("exception/all_fields_entered_ocr_form_type.json");
+        jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
+
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
+    }
+
+    @Test
+    public void sscs2_transform_appeal_created_case_when_all_fields_entered_ocr_form_type() throws IOException {
+        String expectedJson = getJson("exception/output/sscs2_expected_all_fields_entered.json");
+        String person1Nino = generateRandomNino();
+
+        expectedJson = expectedJson.replace("{PERSON1_NINO}", person1Nino);
+        expectedJson = replaceMrnDate(expectedJson, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+
+        String jsonRequest = getJson("exception/sscs2_all_fields_entered.json");
+        jsonRequest = jsonRequest.replace("{PERSON1_NINO}", person1Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
+
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
+    }
+
+    @Test
+    public void sscs5_transform_appeal_created_case_when_all_fields_entered_ocr_form_type() throws IOException {
+        String expectedJson = getJson("exception/output/sscs5_expected_all_fields_entered.json");
+        String person1Nino = generateRandomNino();
+
+        expectedJson = expectedJson.replace("{PERSON1_NINO}", person1Nino);
+        expectedJson = replaceMrnDate(expectedJson, MRN_DATE_YESTERDAY_YYYY_MM_DD);
+
+        String jsonRequest = getJson("exception/sscs5_all_fields_entered.json");
+        jsonRequest = jsonRequest.replace("{PERSON1_NINO}", person1Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
+
+        verifyResponseIsExpected(expectedJson, transformExceptionRequest(jsonRequest, OK.value()));
+    }
 }
