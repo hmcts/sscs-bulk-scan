@@ -107,8 +107,10 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String formType = exceptionRecord.getFormType();
         if (formType == null || notAValidFormType(formType)) {
-            JSONObject jsonObject = new JSONObject(build(exceptionRecord.getOcrDataFields()));
-            if (jsonObject.optString("form_type", null) == null || notAValidFormType(jsonObject.get("form_type").toString())) {
+            ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
+            //JSONObject jsonObject = new JSONObject(build(exceptionRecord.getOcrDataFields()));
+            String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+            if (ocrFormType == null || notAValidFormType(ocrFormType)) {
                 List<String> errors = new ArrayList<>();
                 errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
                 log.info("No valid form type was found while transforming exception record caseId {}",
@@ -116,7 +118,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
                     .status(getValidationStatus(errors, null)).build();
             } else {
-                formType = jsonObject.get("form_type").toString();
+                formType = ocrFormType;
             }
         }
 
@@ -1035,10 +1037,6 @@ public class SscsCaseTransformer implements CaseTransformer {
                 errors.add("Duplicate case already exists - please reject this exception record");
             }
         }
-    }
-
-    private boolean notAValidFormType(FormType formType) {
-        return notAValidFormType(formType.getId());
     }
 
     protected boolean notAValidFormType(String formType) {
