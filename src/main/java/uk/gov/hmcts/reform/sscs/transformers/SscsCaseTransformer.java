@@ -106,8 +106,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         String formType = exceptionRecord.getFormType();
         if (formType == null || notAValidFormType(formType)) {
             ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
-            //JSONObject jsonObject = new JSONObject(build(exceptionRecord.getOcrDataFields()));
             String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+            
             if (ocrFormType == null || notAValidFormType(ocrFormType)) {
                 List<String> errors = new ArrayList<>();
                 errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
