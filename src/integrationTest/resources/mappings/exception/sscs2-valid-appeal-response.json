@@ -155,6 +155,10 @@
         "faxNumber": "0126 434 7983",
         "email": "SSCS_Bradford@justice.gov.uk"
       },
+      "caseManagementLocation": {
+        "baseLocation": "1",
+        "region": "1"
+      },
       "processingVenue": "Chelmsford",
       "evidencePresent": "Yes",
       "bulkScanCaseReference": "1234567890",

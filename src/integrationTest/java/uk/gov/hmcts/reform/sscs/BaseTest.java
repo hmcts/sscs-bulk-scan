@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsQueryBuilder;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
+import uk.gov.hmcts.reform.sscs.service.RefDataService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -46,6 +47,9 @@ public abstract class BaseTest {
 
     @MockBean
     protected IdamService idamService;
+
+    @MockBean
+    protected RefDataService refDataService;
 
     @Rule
     public WireMockRule ccdServer;
