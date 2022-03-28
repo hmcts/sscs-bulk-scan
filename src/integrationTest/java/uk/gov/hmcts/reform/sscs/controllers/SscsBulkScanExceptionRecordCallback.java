@@ -59,6 +59,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsQueryBuilder;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
+import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SscsBulkScanExceptionRecordCallback extends BaseTest {
@@ -330,6 +331,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        when(refDataService.getVenueRefData("Coventry (CMCB)")).thenReturn(CourtVenue.builder().regionId("1").epimsId("1").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(
             caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU"), "SSCS1PEU"),
@@ -399,6 +401,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        when(refDataService.getVenueRefData("Chelmsford")).thenReturn(CourtVenue.builder().regionId("1").epimsId("1").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
             exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS2"), "SSCS2", false),
@@ -418,6 +421,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "taxFreeChildcare");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
+        when(refDataService.getVenueRefData("Basildon CC")).thenReturn(CourtVenue.builder().regionId("1").epimsId("1").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
             exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS5"), "SSCS5", false),

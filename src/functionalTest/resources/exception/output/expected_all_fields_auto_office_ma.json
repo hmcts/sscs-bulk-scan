@@ -33,6 +33,10 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Maternity Allowance",
       "bulkScanCaseReference": "id",
+      "caseManagementLocation":{
+        "region":"8",
+        "baseLocation":"372653"
+      },
       "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {

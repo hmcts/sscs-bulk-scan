@@ -169,6 +169,10 @@
         "city": "BIRMINGHAM",
         "email": "Birmingham-SYA-Receipts@justice.gov.uk"
       },
+      "caseManagementLocation": {
+        "baseLocation": "1",
+        "region": "1"
+      },
       "processingVenue": "Coventry (CMCB)",
       "createdInGapsFrom": "readyToList",
       "issueCode": "DD"
