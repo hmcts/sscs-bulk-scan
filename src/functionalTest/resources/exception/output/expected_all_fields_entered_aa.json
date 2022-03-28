@@ -33,6 +33,10 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Attendance Allowance",
       "bulkScanCaseReference": "id",
+      "caseManagementLocation":{
+        "region":"8",
+        "baseLocation":"372653"
+      },
       "caseAccessCategory": "attendanceAllowance",
       "caseManagementCategory": {
         "value": {
