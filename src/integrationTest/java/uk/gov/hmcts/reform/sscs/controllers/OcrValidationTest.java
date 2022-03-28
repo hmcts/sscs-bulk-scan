@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
+import uk.gov.hmcts.reform.sscs.service.RefDataService;
 
 @AutoConfigureMockMvc
 @ContextConfiguration
@@ -43,6 +44,9 @@ public class OcrValidationTest  {
 
     @MockBean
     protected CcdService ccdService;
+
+    @MockBean
+    private RefDataService refDataService;
 
     @Test
     public void should_return_200_when_ocr_form_validation_request_data_is_valid() throws Throwable {
