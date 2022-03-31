@@ -104,10 +104,11 @@ public class SscsCaseTransformer implements CaseTransformer {
         log.info("Validating exception record against schema caseId {}", caseId);
 
         String formType = exceptionRecord.getFormType();
+        log.info("formtype for case {} is {}", caseId, formType);
         if (formType == null || notAValidFormType(formType)) {
             ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
             String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
-            
+
             if (ocrFormType == null || notAValidFormType(ocrFormType)) {
                 List<String> errors = new ArrayList<>();
                 errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
@@ -190,13 +191,6 @@ public class SscsCaseTransformer implements CaseTransformer {
             scannedData.getOpeningDate());
 
         transformed = checkForMatches(transformed, token);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            log.info("Transformed data is " + objectMapper.writeValueAsString(transformed));
-        } catch (JsonProcessingException e) {
-            log.error("JSON problem ", e);
-        }
 
         return transformed;
     }

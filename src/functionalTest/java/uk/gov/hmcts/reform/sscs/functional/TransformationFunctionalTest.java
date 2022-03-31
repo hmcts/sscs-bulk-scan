@@ -223,6 +223,28 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
     }
 
     @Test
+    public void transform_appeal_created_case_when_all_fields_entered_form_type_other() throws IOException {
+        String person1Nino = generateRandomNino();
+        String person2Nino = generateRandomNino();
+
+        String jsonRequest = getJson("exception/all_fields_entered_form_type_other.json");
+        jsonRequest = replaceNino(jsonRequest, person1Nino, person2Nino);
+        jsonRequest = replaceMrnDate(jsonRequest, MRN_DATE_YESTERDAY_DD_MM_YYYY);
+
+        Response response = transformExceptionRequest(jsonRequest, UNPROCESSABLE_ENTITY.value());
+
+        assertThat(response.getStatusCode()).isEqualTo(UNPROCESSABLE_ENTITY.value());
+
+        JsonPath errorResponse = response.getBody().jsonPath();
+
+        assertThat(errorResponse.getList("errors"))
+            .hasSize(1)
+            .containsOnly("No valid form type was found, need to add form_type with valid form type to OCR data");
+        assertThat(errorResponse.getList("warnings")).isEmpty();
+        assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
+    }
+
+    @Test
     public void transform_appeal_created_case_when_all_fields_entered_invalid_form_type() throws IOException {
         String person1Nino = generateRandomNino();
         String person2Nino = generateRandomNino();
