@@ -167,7 +167,8 @@
         "address3": "Phoenix House",
         "postcode": "BD3 7BH",
         "city": "BRADFORD",
-        "email": "SSCS_Bradford@justice.gov.uk"
+        "email": "SSCS_Bradford@justice.gov.uk",
+        "hearingRoute":  "gaps"
       },
       "caseManagementLocation": {
         "baseLocation": "1",
