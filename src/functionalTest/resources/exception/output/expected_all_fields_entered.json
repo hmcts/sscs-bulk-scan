@@ -168,7 +168,8 @@
         "faxNumber": "0870 739 4229",
         "name": "SUTTON",
         "phoneNumber": "0300 123 1142",
-        "postcode": "SM1 1DA"
+        "postcode": "SM1 1DA",
+        "hearingRoute": "gaps"
       },
       "processingVenue": "Cardiff",
       "sscsDocument": [

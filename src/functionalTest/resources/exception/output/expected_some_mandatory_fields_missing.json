@@ -141,7 +141,8 @@
         "faxNumber": "0870 739 4438",
         "name": "CARDIFF",
         "phoneNumber": "0300 123 1142",
-        "postcode": "CF24 0AB"
+        "postcode": "CF24 0AB",
+        "hearingRoute":  "gaps"
       },
       "processingVenue": "Cardiff",
       "sscsDocument": [

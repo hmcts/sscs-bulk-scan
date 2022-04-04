@@ -59,5 +59,6 @@
    file name: jackson-databind-2.11.0.jar
    ]]></notes>
     <cve>CVE-2020-36518</cve>
+    <cve>CVE-2021-22096</cve>
   </suppress>
 </suppressions>
