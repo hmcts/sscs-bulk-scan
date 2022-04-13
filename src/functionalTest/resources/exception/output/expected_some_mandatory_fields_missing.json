@@ -119,10 +119,6 @@
       },
       "benefitCode": "051",
       "bulkScanCaseReference": "id",
-      "caseManagementLocation": {
-        "region":"8",
-        "baseLocation":"372653"
-      },
       "caseCode": "051DD",
       "caseCreated": "2019-08-02",
       "createdInGapsFrom": "readyToList",
