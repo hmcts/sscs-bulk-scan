@@ -51,7 +51,7 @@ withNightlyPipeline(type, product, component) {
   env.DOCUMENT_MANAGEMENT_URL = 'http://dm-store-aat.service.core-compute-aat.internal'
   env.IDAM_OAUTH2_CLIENT_ID = "sscs"
   env.IDAM_S2S_AUTH_MICROSERVICE = "sscs_bulkscan"
-  env.WORK_ALLOCATION_FEATURE = "true"
+  env.WORK_ALLOCATION_FEATURE = true
 
   enableFortifyScan()
   enableMutationTest()
