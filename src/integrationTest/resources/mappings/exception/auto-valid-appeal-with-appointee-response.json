@@ -66,6 +66,8 @@
             "phone": null,
             "mobile": null
           },
+          "organisation": null,
+          "id": null,
           "identity": {
             "dob": "1976-11-11",
             "nino": "BB000000B"
@@ -91,6 +93,7 @@
               "phone": "01234567899",
               "mobile": "07411222222"
             },
+            "organisation": null,
             "identity": {
               "dob": "1976-11-11",
               "nino": "BB000000B"
@@ -121,6 +124,7 @@
         "appealReasons": null,
         "rep": {
           "id": null,
+          "identity": null,
           "hasRepresentative": "No",
           "organisation": null,
           "name": null,
