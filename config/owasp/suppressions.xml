@@ -31,6 +31,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-core@.*$</packageUrl>
     <cve>CVE-2021-22096</cve>
     <cve>CVE-2022-22968</cve>
+    <cve>CVE-2021-22060</cve>
   </suppress>
   <suppress until="2022-06-01">
     <notes><![CDATA[
@@ -43,12 +44,6 @@
    file name: logback-core-1.2.5.jar
    ]]></notes>
     <cve>CVE-2021-42550</cve>
-  </suppress>
-  <suppress until="2022-06-15">
-    <notes><![CDATA[
-   file name: spring-core-5.3.9.jar
-   ]]></notes>
-    <cve>CVE-2021-22060</cve>
   </suppress>
   <suppress until="2022-06-15">
     <notes><![CDATA[
