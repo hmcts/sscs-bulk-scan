@@ -32,13 +32,13 @@
     <cve>CVE-2021-22096</cve>
     <cve>CVE-2022-22968</cve>
   </suppress>
-  <suppress until="2022-06-15">
+  <suppress until="2022-06-01">
     <notes><![CDATA[
    file name: logback-classic-1.2.5.jar
    ]]></notes>
     <cve>CVE-2021-42550</cve>
   </suppress>
-  <suppress until="2022-06-15">
+  <suppress until="2022-06-01">
     <notes><![CDATA[
    file name: logback-core-1.2.5.jar
    ]]></notes>
@@ -56,13 +56,13 @@
    ]]></notes>
     <cve>CVE-2022-23181</cve>
   </suppress>
-  <suppress until="2022-06-15">
+  <suppress until="2022-06-01">
     <notes><![CDATA[
    file name: tomcat-embed-websocket-9.0.54.jar
    ]]></notes>
     <cve>CVE-2022-23181</cve>
   </suppress>
-  <suppress until="2022-06-15">
+  <suppress until="2022-06-01">
     <notes><![CDATA[
    file name: jackson-databind-2.11.0.jar
    ]]></notes>

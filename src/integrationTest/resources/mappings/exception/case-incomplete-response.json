@@ -34,6 +34,8 @@
             "phone": null,
             "mobile": null
           },
+          "organisation": null,
+          "id": null,
           "identity": {
             "dob": null,
             "nino": null
@@ -59,6 +61,7 @@
         "appealReasons": null,
         "rep": {
           "id": null,
+          "identity": null,
           "hasRepresentative": "No",
           "organisation": null,
           "name": null,

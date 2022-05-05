@@ -179,7 +179,7 @@ def versions = [
   pitest             : '1.4.2',
   sonarPitest        : '0.5',
   restAssured        : '4.3.3',
-  sscsCommon     	 : '4.8.6',
+  sscsCommon     	 : '4.8.8',
 ]
 
 configurations.all {
@@ -316,7 +316,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22118
-    dependencySet(group: 'org.springframework', version: '5.3.18') {
+    dependencySet(group: 'org.springframework', version: '5.3.19') {
       entry 'spring-aop'
       entry 'spring-aspects'
       entry 'spring-beans'

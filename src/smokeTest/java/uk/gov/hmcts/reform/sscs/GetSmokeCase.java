@@ -9,24 +9,28 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 
 @SpringBootTest
+@TestPropertySource(locations = "classpath:application_smoke.yaml")
 @RunWith(SpringRunner.class)
 public class GetSmokeCase {
 
-    private final String appUrl = System.getenv("TEST_URL");
+    @Value("${test-url}")
+    private String testUrl;
 
     @Autowired
     private IdamService idamService;
 
     @Test
     public void givenASmokeCase_thenValidate() throws IOException {
-        RestAssured.baseURI = appUrl;
+        RestAssured.baseURI = testUrl;
         RestAssured.useRelaxedHTTPSValidation();
 
         IdamTokens idamTokens = idamService.getIdamTokens();
