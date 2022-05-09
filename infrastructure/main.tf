@@ -7,6 +7,10 @@ provider "azurerm" {
 resource "azurerm_resource_group" "rg" {
   name     = "${var.product}-${var.component}-${var.env}"
   location = var.location_app
+
+  tags = (merge(var.common_tags,
+    map("lastUpdated", "${timestamp()}")
+  ))
 }
 
 data "azurerm_user_assigned_identity" "sscs-identity" {
@@ -16,20 +20,22 @@ data "azurerm_user_assigned_identity" "sscs-identity" {
 
 locals {
   vaultName = "sscs-bulk-scan-${var.env}"
-  sscsRg   = "sscs-${var.env}"
+  sscsRg    = "sscs-${var.env}"
 }
 
 module "sscs-bulk-scan-vault" {
-  source                  = "git@github.com:hmcts/cnp-module-key-vault?ref=master"
-  name                    = local.vaultName
-  product                 = var.product
-  env                     = var.env
-  tenant_id               = var.tenant_id
-  object_id               = var.jenkins_AAD_objectId
-  resource_group_name     = azurerm_resource_group.rg.name
-  product_group_object_id = "70de400b-4f47-4f25-a4f0-45e1ee4e4ae3"
-  common_tags             = var.common_tags
+  source                      = "git@github.com:hmcts/cnp-module-key-vault?ref=master"
+  name                        = local.vaultName
+  product                     = var.product
+  env                         = var.env
+  tenant_id                   = var.tenant_id
+  object_id                   = var.jenkins_AAD_objectId
+  resource_group_name         = azurerm_resource_group.rg.name
+  product_group_object_id     = "70de400b-4f47-4f25-a4f0-45e1ee4e4ae3"
   managed_identity_object_ids = ["${data.azurerm_user_assigned_identity.sscs-identity.principal_id}"]
+  common_tags = (merge(var.common_tags,
+    map("lastUpdated", "${timestamp()}")
+  ))
 }
 
 data "azurerm_application_insights" "sscsappinsights" {
@@ -41,6 +47,10 @@ resource "azurerm_key_vault_secret" "app_insights_key" {
   name         = "AppInsightsInstrumentationKey"
   value        = data.azurerm_application_insights.sscsappinsights.instrumentation_key
   key_vault_id = module.sscs-bulk-scan-vault.key_vault_id
+
+  tags = (merge(var.common_tags,
+    map("lastUpdated", "${timestamp()}")
+  ))
 }
 
 output "appInsightsInstrumentationKey" {
