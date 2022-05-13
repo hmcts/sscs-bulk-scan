@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 @RunWith(SpringRunner.class)
 public class SscsDataHelperTest {
 
-    private SscsDataHelper caseDataHelper;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Mock
     private DwpAddressLookupService dwpAddressLookupService;
@@ -35,11 +35,19 @@ public class SscsDataHelperTest {
     @Mock
     private PostcodeValidator postcodeValidator;
 
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private SscsDataHelper caseDataHelper;
 
     @Before
     public void setUp() {
-        caseDataHelper = new SscsDataHelper(new CaseEvent("appealCreated", "validAppealCreated", "incompleteApplicationReceived", "nonCompliant"), dwpAddressLookupService, airLookupService, postcodeValidator, true);
+        caseDataHelper = new SscsDataHelper(new CaseEvent(
+            "appealCreated",
+            "validAppealCreated",
+            "incompleteApplicationReceived",
+            "nonCompliant"),
+            dwpAddressLookupService,
+            airLookupService,
+            postcodeValidator,
+            true);
     }
 
     @Test
@@ -52,7 +60,11 @@ public class SscsDataHelperTest {
 
         List<String> warnings = new ArrayList<>();
         warnings.add("Warnings");
-        assertEquals("incompleteApplicationReceived", caseDataHelper.findEventToCreateCase(CaseResponse.builder().transformedCase(transformedCase).warnings(warnings).build()));
+        assertEquals("incompleteApplicationReceived",
+            caseDataHelper.findEventToCreateCase(CaseResponse.builder()
+                .transformedCase(transformedCase)
+                .warnings(warnings)
+                .build()));
     }
 
     @Test

@@ -33,8 +33,8 @@ test.url: ${TEST_URL:http://localhost:8090}
 feature:
   uc-office-feature:
     enabled: ${UC_OFFICE_FEATURE:false}
-  work-allocation:
-    enabled: ${WORK_ALLOCATION_FEATURE:true}
+  case-access-management:
+    enabled: ${CASE_ACCESS_MANAGEMENT_FEATURE:true}
 
 core_case_data:
   jurisdictionId: ${CORE_CASE_DATA_JURISDICTION_ID:SSCS}

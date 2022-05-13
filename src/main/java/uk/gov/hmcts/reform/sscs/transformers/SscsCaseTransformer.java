@@ -54,23 +54,21 @@ import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 public class SscsCaseTransformer implements CaseTransformer {
 
     private static final String OTHER_PARTY_ID_ONE = "1";
+
     private final IdamService idamService;
     private final CcdService ccdService;
-    private SscsJsonExtractor sscsJsonExtractor;
-    private SscsKeyValuePairValidator keyValuePairValidator;
-    private SscsDataHelper sscsDataHelper;
-    private FuzzyMatcherService fuzzyMatcherService;
-    private DwpAddressLookupService dwpAddressLookupService;
+    private final SscsJsonExtractor sscsJsonExtractor;
+    private final SscsKeyValuePairValidator keyValuePairValidator;
+    private final SscsDataHelper sscsDataHelper;
+    private final FuzzyMatcherService fuzzyMatcherService;
+    private final DwpAddressLookupService dwpAddressLookupService;
     private final RefDataService refDataService;
     private Set<String> errors;
     private Set<String> warnings;
 
-    //TODO: Remove when uc-office-feature switched on
     private boolean ucOfficeFeatureActive;
+    private final boolean caseAccessManagementFeature;
 
-    private final boolean workAllocationFeature;
-
-    @Autowired
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
                                SscsKeyValuePairValidator keyValuePairValidator,
                                SscsDataHelper sscsDataHelper,
@@ -80,7 +78,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                                CcdService ccdService,
                                RefDataService refDataService,
                                @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive,
-                               @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature) {
+                               @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
         this.sscsDataHelper = sscsDataHelper;
@@ -90,7 +88,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.ccdService = ccdService;
         this.refDataService = refDataService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
-        this.workAllocationFeature = workAllocationFeature;
+        this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
     public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
@@ -174,11 +172,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (StringUtils.isNotEmpty(processingVenue)) {
             log.info("{} - setting venue name to {}", caseId, processingVenue);
             transformed.put("processingVenue", processingVenue);
-            if (workAllocationFeature) {
+            if (caseAccessManagementFeature) {
                 CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
                 if (courtVenue != null) {
                     transformed.put("caseManagementLocation",
-                        CaseManagementLocation.builder().baseLocation(courtVenue.getEpimsId()).region(courtVenue.getRegionId()).build());
+                        CaseManagementLocation.builder()
+                            .baseLocation(courtVenue.getEpimsId())
+                            .region(courtVenue.getRegionId())
+                            .build());
                 }
             }
         }

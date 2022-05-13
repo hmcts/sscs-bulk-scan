@@ -51,9 +51,7 @@ public class CcdCallbackHandler {
 
     private final RefDataService refDataService;
 
-    private final boolean workAllocationFeature;
-    private Map<String, Object> hmctsServiceIdMap = new HashMap<>();
-    private Map<String, Map<String, Object>> supplementaryDataRequestMap = new HashMap<>();
+    private final boolean caseAccessManagementFeature;
 
     public CcdCallbackHandler(
         CaseTransformer caseTransformer,
@@ -61,16 +59,14 @@ public class CcdCallbackHandler {
         SscsDataHelper sscsDataHelper,
         DwpAddressLookupService dwpAddressLookupService,
         RefDataService refDataService,
-        @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature
+        @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature
     ) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.refDataService = refDataService;
-        this.workAllocationFeature = workAllocationFeature;
-        hmctsServiceIdMap.put("HMCTSServiceId", "BBA3");
-        supplementaryDataRequestMap.put("$set", hmctsServiceIdMap);
+        this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
     public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
@@ -79,7 +75,7 @@ public class CcdCallbackHandler {
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, true);
 
-        if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
+        if (caseTransformationResponse.getErrors() != null && !caseTransformationResponse.getErrors().isEmpty()) {
             log.info("Errors found during validation");
             return caseTransformationResponse;
         }
@@ -99,7 +95,7 @@ public class CcdCallbackHandler {
 
         CaseResponse caseTransformationResponse = caseTransformer.transformExceptionRecord(exceptionRecord, false);
 
-        if (caseTransformationResponse.getErrors() != null && caseTransformationResponse.getErrors().size() > 0) {
+        if (caseTransformationResponse.getErrors() != null && !caseTransformationResponse.getErrors().isEmpty()) {
             log.info("Errors found while transforming exception record id {} - {}", exceptionRecordId, stringJoin(caseTransformationResponse.getErrors()));
             throw new InvalidExceptionRecordException(caseTransformationResponse.getErrors());
         }
@@ -130,8 +126,7 @@ public class CcdCallbackHandler {
                     eventId,
                     caseValidationResponse.getTransformedCase()
                 ),
-            caseValidationResponse.getWarnings(),
-            supplementaryDataRequestMap);
+            caseValidationResponse.getWarnings(), Map.of("$set", Map.of("HMCTSServiceId", "BBA3")));
         }
     }
 
@@ -193,12 +188,11 @@ public class CcdCallbackHandler {
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
         if (appeal != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
-            String benefitCode = null;
             String addressName = null;
             if (appeal.getMrnDetails() != null) {
                 addressName = appeal.getMrnDetails().getDwpIssuingOffice();
             }
-            benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode(), addressName).orElse(EMPTY);
+            String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode(), addressName).orElse(EMPTY);
 
             String issueCode = generateIssueCode();
 
@@ -219,7 +213,7 @@ public class CcdCallbackHandler {
             String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
-                if (workAllocationFeature) {
+                if (caseAccessManagementFeature) {
                     CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
 
                     if (courtVenue != null) {
@@ -238,11 +232,10 @@ public class CcdCallbackHandler {
     }
 
     private void setWorkAllocationCategories(Appeal appeal, Callback<SscsCaseData> callback) {
-        if (workAllocationFeature) {
+        if (caseAccessManagementFeature) {
             Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
-            if (benefit.isPresent()) {
-                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCategories(benefit.get());
-            }
+            benefit.ifPresent(
+                value -> callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setCategories(value));
         }
     }
 
@@ -251,28 +244,28 @@ public class CcdCallbackHandler {
         if (formType != null) {
             if (formType.equals(FormType.SSCS5)) {
                 DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
-                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
-                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+                List<DynamicListItem> listItems = List.of(caseManagementCategoryItem);
+                callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
             } else {
                 DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
-                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategoryItem);
-                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
+                List<DynamicListItem> listItems = List.of(caseManagementCategoryItem);
+                callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
             }
         }
     }
 
     private void setWorkallocationFields(Appeal appeal, Callback<SscsCaseData> callback) {
-        if (workAllocationFeature) {
+        if (caseAccessManagementFeature) {
             if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
                 && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
-                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setCaseNames(appeal.getAppellant().getName().getFullNameNoTitle());
+                callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setCaseNames(appeal.getAppellant().getName().getFullNameNoTitle());
             }
             if (appeal != null && appeal.getBenefitType() != null) {
                 FormType formType = callback.getCaseDetails().getCaseData().getFormType();
                 Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
 
                 String ogdType = isHmrcBenefit(benefit, formType) ? "HMRC" : "DWP";
-                callback.getCaseDetails().getCaseData().getWorkAllocationFields().setOgdType(ogdType);
+                callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setOgdType(ogdType);
             }
         }
     }
