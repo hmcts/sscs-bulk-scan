@@ -160,7 +160,8 @@
         "address3": "Eastgate House",
         "postcode": "CF24 0AB",
         "city": "CARDIFF",
-        "email": "Cardiff_SYA_Respon@justice.gov.uk"
+        "email": "Cardiff_SYA_Respon@justice.gov.uk",
+        "hearingRoute": "gaps"
       },
       "createdInGapsFrom": "readyToList",
       "region": "CARDIFF",
