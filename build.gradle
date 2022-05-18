@@ -226,7 +226,7 @@ dependencies {
   // Added to fix CVE-2021-33037
   compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.54'
   compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.54'
-  compile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.14'
+  compile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.21'
   compile group: 'com.github.hmcts', name: 'sscs-common', version: versions.sscsCommon
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
@@ -258,7 +258,7 @@ dependencies {
   // Added to fix CVE-2021-33037
   testCompile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.54'
   testCompile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.54'
-  testCompile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.12'
+  testCompile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.21'
 
   integrationTestCompile(group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
     exclude group: "com.github.tomakehurst", module: "wiremock-standalone"
