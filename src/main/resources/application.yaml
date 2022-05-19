@@ -34,7 +34,7 @@ feature:
   uc-office-feature:
     enabled: ${UC_OFFICE_FEATURE:false}
   case-access-management:
-    enabled: ${CASE_ACCESS_MANAGEMENT_FEATURE:true}
+    enabled: ${CASE_ACCESS_MANAGEMENT_FEATURE:false}
 
 core_case_data:
   jurisdictionId: ${CORE_CASE_DATA_JURISDICTION_ID:SSCS}
