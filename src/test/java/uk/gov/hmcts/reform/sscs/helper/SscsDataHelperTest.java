@@ -230,7 +230,8 @@ public class SscsDataHelperTest {
         Map<String, Object> transformedCase = new HashMap<>();
         Appeal appeal = Appeal.builder().benefitType(BenefitType.builder().code("benefit").build()).appellant(Appellant.builder().confidentialityRequired(YesNo.YES).build()).build();
 
-        List<CcdValue<OtherParty>> otherParties = Arrays.asList(CcdValue.<OtherParty>builder().value(OtherParty.builder().id("other_party_1").build()).build());
+        List<CcdValue<OtherParty>> otherParties =
+            List.of(CcdValue.<OtherParty>builder().value(OtherParty.builder().id("other_party_1").build()).build());
 
         caseDataHelper.addSscsDataToMap(transformedCase, appeal, null, null, FormType.SSCS2, "123456", otherParties);
 
@@ -240,7 +241,7 @@ public class SscsDataHelperTest {
     }
 
     @Test
-    public void givenAppellantExistAndWorkAllocationIsTrue_thenWorkAllocationFieldsAreSet() {
+    public void givenAppellantExistsAndCaseAccessManagementFeatureIsTrue_thenCaseAccessManagementFieldsAreSet() {
         Map<String, Object> transformedCase = new HashMap<>();
         Appeal appeal = Appeal.builder()
             .appellant(Appellant.builder().name(Name.builder().firstName("Harry").lastName("Potter").build()).build())
@@ -254,9 +255,7 @@ public class SscsDataHelperTest {
         assertEquals("Harry Potter", transformedCase.get("caseNamePublic"));
         assertEquals("personalIndependencePayment", transformedCase.get("caseAccessCategory"));
         DynamicListItem caseManagementCategory = new DynamicListItem("PIP", "Personal Independence Payment");
-        List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-        assertEquals(new DynamicList(caseManagementCategory, listItems),
-            transformedCase.get("caseManagementCategory"));
+        assertEquals(new DynamicList(caseManagementCategory, List.of(caseManagementCategory)), transformedCase.get("caseManagementCategory"));
         assertEquals("DWP", transformedCase.get("ogdType"));
     }
 
