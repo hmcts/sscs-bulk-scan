@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
+import uk.gov.hmcts.reform.sscs.service.VenueService;
 
 @Component
 @Slf4j
@@ -38,6 +39,7 @@ public class CcdCallbackHandler {
 
     private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {} - {}";
     private static final String LOGSTR_VALIDATION_WARNING = "Warnings found while validating exception record id {} - {}";
+    private static final String CASE_TYPE_ID = "Benefit";
 
     private final CaseTransformer caseTransformer;
 
@@ -47,9 +49,9 @@ public class CcdCallbackHandler {
 
     private final DwpAddressLookupService dwpAddressLookupService;
 
-    public static final String CASE_TYPE_ID = "Benefit";
-
     private final RefDataService refDataService;
+
+    private final VenueService venueService;
 
     private final boolean caseAccessManagementFeature;
 
@@ -58,12 +60,14 @@ public class CcdCallbackHandler {
                               SscsDataHelper sscsDataHelper,
                               DwpAddressLookupService dwpAddressLookupService,
                               RefDataService refDataService,
+                              VenueService venueService,
                               @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.refDataService = refDataService;
+        this.venueService = venueService;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
@@ -215,10 +219,13 @@ public class CcdCallbackHandler {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
                 if (caseAccessManagementFeature) {
                     CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
+                    String epimsId = venueService.getEpimsIdForVenue(processingVenue).orElse(null);
 
-                    if (courtVenue != null) {
+                    if (courtVenue != null
+                        && courtVenue.getRegionId() != null
+                        && epimsId != null) {
                         callback.getCaseDetails().getCaseData().setCaseManagementLocation(CaseManagementLocation.builder()
-                            .baseLocation(courtVenue.getEpimsId())
+                            .baseLocation(epimsId)
                             .region(courtVenue.getRegionId()).build());
                     }
                 }

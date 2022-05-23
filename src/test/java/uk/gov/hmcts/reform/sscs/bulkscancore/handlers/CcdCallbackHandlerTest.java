@@ -54,6 +54,7 @@ import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
+import uk.gov.hmcts.reform.sscs.service.VenueService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -87,6 +88,9 @@ public class CcdCallbackHandlerTest {
     @Mock
     private RefDataService refDataService;
 
+    @Mock
+    private VenueService venueService;
+
     @Captor
     private ArgumentCaptor<CaseResponse> warningCaptor;
 
@@ -107,7 +111,7 @@ public class CcdCallbackHandlerTest {
         fooLogger.addAppender(listAppender);
 
         SscsDataHelper sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator, true);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService, refDataService, true);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService, refDataService, venueService, true);
 
         idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
@@ -118,6 +122,7 @@ public class CcdCallbackHandlerTest {
 
         given(airLookupService.lookupAirVenueNameByPostCode(anyString(), any(BenefitType.class))).willReturn("Cardiff");
         when(refDataService.getVenueRefData("Cardiff")).thenReturn(CourtVenue.builder().epimsId(EPIMMS_ID).regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
+        when(venueService.getEpimsIdForVenue("Cardiff")).thenReturn(Optional.of(EPIMMS_ID));
         given(postcodeValidator.isValid(anyString())).willReturn(true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
