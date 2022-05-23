@@ -224,9 +224,6 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
 
   // Added to fix CVE-2021-33037
-  compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.54'
-  compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.54'
-  compile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.14'
   compile group: 'com.github.hmcts', name: 'sscs-common', version: versions.sscsCommon
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
@@ -255,11 +252,6 @@ dependencies {
   testCompileOnly 'junit:junit:4.13.2'
   testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.8.2'
 
-  // Added to fix CVE-2021-33037
-  testCompile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.54'
-  testCompile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.54'
-  testCompile group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '10.0.12'
-
   integrationTestCompile(group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: versions.springCloudWiremock) {
     exclude group: "com.github.tomakehurst", module: "wiremock-standalone"
   }
@@ -286,7 +278,7 @@ dependencyManagement {
      dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.3.0'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.54') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.63') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
