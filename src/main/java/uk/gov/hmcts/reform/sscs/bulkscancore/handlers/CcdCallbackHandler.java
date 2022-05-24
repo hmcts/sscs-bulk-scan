@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
+import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.VenueService;
 
 @Component
@@ -51,6 +52,8 @@ public class CcdCallbackHandler {
 
     private final RefDataService refDataService;
 
+    private final RegionalProcessingCenterService regionalProcessingCenterService;
+
     private final VenueService venueService;
 
     private final boolean caseAccessManagementFeature;
@@ -60,6 +63,7 @@ public class CcdCallbackHandler {
                               SscsDataHelper sscsDataHelper,
                               DwpAddressLookupService dwpAddressLookupService,
                               RefDataService refDataService,
+                              RegionalProcessingCenterService regionalProcessingCenterService,
                               VenueService venueService,
                               @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.caseTransformer = caseTransformer;
@@ -67,6 +71,7 @@ public class CcdCallbackHandler {
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.refDataService = refDataService;
+        this.regionalProcessingCenterService = regionalProcessingCenterService;
         this.venueService = venueService;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
@@ -219,14 +224,16 @@ public class CcdCallbackHandler {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
                 if (caseAccessManagementFeature) {
                     CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
-                    String epimsId = venueService.getEpimsIdForVenue(processingVenue).orElse(null);
+                    if (courtVenue != null) {
+                        RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(courtVenue.getPostcode());
+                        String epimsId = venueService.getEpimsIdForVenue(rpc.getName()).orElse(null);
 
-                    if (courtVenue != null
-                        && courtVenue.getRegionId() != null
-                        && epimsId != null) {
-                        callback.getCaseDetails().getCaseData().setCaseManagementLocation(CaseManagementLocation.builder()
-                            .baseLocation(epimsId)
-                            .region(courtVenue.getRegionId()).build());
+                        if (epimsId != null
+                            && courtVenue.getRegionId() != null) {
+                            callback.getCaseDetails().getCaseData().setCaseManagementLocation(CaseManagementLocation.builder()
+                                .baseLocation(epimsId)
+                                .region(courtVenue.getRegionId()).build());
+                        }
                     }
                 }
             }
