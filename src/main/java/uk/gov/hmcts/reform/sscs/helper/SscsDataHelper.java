@@ -30,13 +30,9 @@ import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 public class SscsDataHelper {
 
     private final CaseEvent caseEvent;
-
     private final DwpAddressLookupService dwpAddressLookupService;
-
     private final AirLookupService airLookupService;
-
     private final PostcodeValidator postcodeValidator;
-
     private final boolean caseAccessManagementFeature;
 
     private static final String CASE_MANAGEMENT_CATEGORY = "caseManagementCategory";
@@ -104,15 +100,12 @@ public class SscsDataHelper {
 
     private void setCaseManagementCategory(FormType formType, Map<String, Object> appealData) {
         if (caseAccessManagementFeature && formType != null) {
-            if (formType.equals(FormType.SSCS5)) {
-                DynamicListItem caseManagementCategory = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
-                List<DynamicListItem> listItems = List.of(caseManagementCategory);
-                appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
-            } else {
-                DynamicListItem caseManagementCategory = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
-                List<DynamicListItem> listItems = List.of(caseManagementCategory);
-                appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
-            }
+            DynamicListItem caseManagementCategory = new DynamicListItem(
+                formType.equals(FormType.SSCS5) ? "sscs5Unknown" : "sscs12Unknown",
+                formType.equals(FormType.SSCS5) ? "SSCS5 Unknown" : "SSCS1/2 Unknown");
+            appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(
+                caseManagementCategory,
+                List.of(caseManagementCategory)));
         }
     }
 
