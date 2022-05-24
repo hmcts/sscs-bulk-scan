@@ -53,14 +53,12 @@ public class CcdCallbackHandler {
 
     private final boolean caseAccessManagementFeature;
 
-    public CcdCallbackHandler(
-        CaseTransformer caseTransformer,
-        CaseValidator caseValidator,
-        SscsDataHelper sscsDataHelper,
-        DwpAddressLookupService dwpAddressLookupService,
-        RefDataService refDataService,
-        @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature
-    ) {
+    public CcdCallbackHandler(CaseTransformer caseTransformer,
+                              CaseValidator caseValidator,
+                              SscsDataHelper sscsDataHelper,
+                              DwpAddressLookupService dwpAddressLookupService,
+                              RefDataService refDataService,
+                              @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
@@ -158,7 +156,8 @@ public class CcdCallbackHandler {
         if (callback.getEvent() != null && (EventType.DIRECTION_ISSUED.equals(callback.getEvent())
             || EventType.DIRECTION_ISSUED_WELSH.equals(callback.getEvent()))
             && callback.getCaseDetails().getCaseData().getDirectionTypeDl() != null) {
-            ignoreMrnValidation = StringUtils.equals(DirectionType.APPEAL_TO_PROCEED.toString(), callback.getCaseDetails().getCaseData().getDirectionTypeDl().getValue().getCode());
+            ignoreMrnValidation = StringUtils.equals(DirectionType.APPEAL_TO_PROCEED.toString(),
+                callback.getCaseDetails().getCaseData().getDirectionTypeDl().getValue().getCode());
         }
         CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData, ignoreMrnValidation);
 
@@ -187,7 +186,8 @@ public class CcdCallbackHandler {
         callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(READY_TO_LIST.getId());
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
 
-        if (appeal != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
+        if (appeal != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null
+            && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
             String addressName = null;
             if (appeal.getMrnDetails() != null) {
                 addressName = appeal.getMrnDetails().getDwpIssuingOffice();
@@ -223,38 +223,37 @@ public class CcdCallbackHandler {
                     }
                 }
             }
-            setWorkAllocationCategories(appeal, callback);
+            setCaseAccessManagementCategories(appeal, callback);
         } else {
             setUnknownCategory(callback);
         }
 
-        setWorkallocationFields(appeal, callback);
+        setCaseAccessManagementFields(appeal, callback);
     }
 
-    private void setWorkAllocationCategories(Appeal appeal, Callback<SscsCaseData> callback) {
+    private void setCaseAccessManagementCategories(Appeal appeal, Callback<SscsCaseData> callback) {
         if (caseAccessManagementFeature) {
             Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
             benefit.ifPresent(
-                value -> callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setCategories(value));
+                value -> callback.getCaseDetails().getCaseData().getCaseAccessManagementFields()
+                    .setCategories(value));
         }
     }
 
     private void setUnknownCategory(Callback<SscsCaseData> callback) {
         FormType formType = callback.getCaseDetails().getCaseData().getFormType();
         if (formType != null) {
-            if (formType.equals(FormType.SSCS5)) {
-                DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
-                List<DynamicListItem> listItems = List.of(caseManagementCategoryItem);
-                callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
-            } else {
-                DynamicListItem caseManagementCategoryItem = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
-                List<DynamicListItem> listItems = List.of(caseManagementCategoryItem);
-                callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setCaseManagementCategory(new DynamicList(caseManagementCategoryItem, listItems));
-            }
+            DynamicListItem caseManagementCategoryItem = formType.equals(FormType.SSCS5)
+                ? new DynamicListItem("sscs5Unknown", "SSCS5 Unknown")
+                : new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
+            callback.getCaseDetails().getCaseData().getCaseAccessManagementFields()
+                .setCaseManagementCategory(new DynamicList(
+                    caseManagementCategoryItem,
+                    List.of(caseManagementCategoryItem)));
         }
     }
 
-    private void setWorkallocationFields(Appeal appeal, Callback<SscsCaseData> callback) {
+    private void setCaseAccessManagementFields(Appeal appeal, Callback<SscsCaseData> callback) {
         if (caseAccessManagementFeature) {
             if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
                 && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
@@ -263,7 +262,6 @@ public class CcdCallbackHandler {
             if (appeal != null && appeal.getBenefitType() != null) {
                 FormType formType = callback.getCaseDetails().getCaseData().getFormType();
                 Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
-
                 String ogdType = isHmrcBenefit(benefit, formType) ? "HMRC" : "DWP";
                 callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setOgdType(ogdType);
             }
