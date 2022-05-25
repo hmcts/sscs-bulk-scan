@@ -109,9 +109,7 @@ public class CcdCallbackHandlerTest {
         Logger fooLogger = (Logger) LoggerFactory.getLogger(CcdCallbackHandler.class);
 
         listAppender = new ListAppender<>();
-        // create and start a ListAppender
         listAppender.start();
-        // add the appender to the logger
         fooLogger.addAppender(listAppender);
 
         SscsDataHelper sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator, true);
@@ -285,6 +283,8 @@ public class CcdCallbackHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
+        when(regionalProcessingCenterService.getByPostcode("CV35 2TD")).thenReturn(RegionalProcessingCenter.builder().postcode("rpcPostcode").build());
+        when(venueService.getEpimsIdForActiveVenueByPostcode("rpcPostcode")).thenReturn(Optional.of("rpcEpimsId"));
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -308,7 +308,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData().getCaseAccessManagementFields().getCaseManagementCategory().getValue().getLabel()).isEqualTo("Personal Independence Payment");
         assertThat(ccdCallbackResponse.getData().getCaseAccessManagementFields().getCaseManagementCategory().getListItems().get(0).getCode()).isEqualTo("PIP");
         assertThat(ccdCallbackResponse.getData().getCaseAccessManagementFields().getCaseManagementCategory().getListItems().get(0).getLabel()).isEqualTo("Personal Independence Payment");
-        assertEquals(EPIMMS_ID, ccdCallbackResponse.getData().getCaseManagementLocation().getBaseLocation());
+        assertEquals("rpcEpimsId", ccdCallbackResponse.getData().getCaseManagementLocation().getBaseLocation());
         assertEquals(REGION_ID, ccdCallbackResponse.getData().getCaseManagementLocation().getRegion());
     }
 

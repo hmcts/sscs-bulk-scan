@@ -58,6 +58,7 @@ public class CcdCallbackHandler {
 
     private final boolean caseAccessManagementFeature;
 
+    @SuppressWarnings("squid:S107")
     public CcdCallbackHandler(CaseTransformer caseTransformer,
                               CaseValidator caseValidator,
                               SscsDataHelper sscsDataHelper,
@@ -220,19 +221,23 @@ public class CcdCallbackHandler {
             }
 
             String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
+
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
                 if (caseAccessManagementFeature) {
                     CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
                     if (courtVenue != null) {
-                        RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(courtVenue.getPostcode());
-                        String epimsId = venueService.getEpimsIdForVenue(rpc.getName()).orElse(null);
+                        String appellantPostcode = resolvePostcode(appeal.getAppellant());
+                        RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(appellantPostcode);
+                        String rpcEpimsId = venueService.getEpimsIdForActiveVenueByPostcode(rpc.getPostcode()).orElse(null);
 
-                        if (epimsId != null
+                        if (rpcEpimsId != null
                             && courtVenue.getRegionId() != null) {
-                            callback.getCaseDetails().getCaseData().setCaseManagementLocation(CaseManagementLocation.builder()
-                                .baseLocation(epimsId)
-                                .region(courtVenue.getRegionId()).build());
+                            callback.getCaseDetails().getCaseData()
+                                .setCaseManagementLocation(CaseManagementLocation.builder()
+                                    .baseLocation(rpcEpimsId)
+                                    .region(courtVenue.getRegionId())
+                                    .build());
                         }
                     }
                 }
@@ -350,5 +355,13 @@ public class CcdCallbackHandler {
             && appeal.getAppealReasons().getReasons().get(0).getValue() != null
             && (StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getReason())
             || StringUtils.isNotBlank(appeal.getAppealReasons().getReasons().get(0).getValue().getDescription()));
+    }
+
+    private String resolvePostcode(Appellant appellant) {
+        return Optional.ofNullable(appellant.getAppointee())
+            .map(Appointee::getAddress)
+            .map(Address::getPostcode)
+            .filter(StringUtils::isNotBlank)
+            .orElse(appellant.getAddress().getPostcode());
     }
 }
