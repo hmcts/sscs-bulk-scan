@@ -26,14 +26,12 @@ import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
-import uk.gov.hmcts.reform.sscs.helper.RpcVenueHelper;
+import uk.gov.hmcts.reform.sscs.service.RpcVenueService;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
-import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
-import uk.gov.hmcts.reform.sscs.service.VenueService;
 
 @Component
 @Slf4j
@@ -53,7 +51,7 @@ public class CcdCallbackHandler {
 
     private final RefDataService refDataService;
 
-    private final RpcVenueHelper rpcVenueHelper;
+    private final RpcVenueService rpcVenueService;
 
     private final boolean caseAccessManagementFeature;
 
@@ -62,14 +60,14 @@ public class CcdCallbackHandler {
                               SscsDataHelper sscsDataHelper,
                               DwpAddressLookupService dwpAddressLookupService,
                               RefDataService refDataService,
-                              RpcVenueHelper rpcVenueHelper,
+                              RpcVenueService rpcVenueService,
                               @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.refDataService = refDataService;
-        this.rpcVenueHelper = rpcVenueHelper;
+        this.rpcVenueService = rpcVenueService;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
@@ -223,7 +221,7 @@ public class CcdCallbackHandler {
                 if (caseAccessManagementFeature) {
                     CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
                     if (courtVenue != null) {
-                        String rpcEpimsId = rpcVenueHelper.retrieveRpcEpimsIdForAppellant(appeal.getAppellant());
+                        String rpcEpimsId = rpcVenueService.retrieveRpcEpimsIdForAppellant(appeal.getAppellant());
 
                         if (rpcEpimsId != null
                             && courtVenue.getRegionId() != null) {

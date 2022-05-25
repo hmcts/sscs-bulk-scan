@@ -40,7 +40,7 @@ import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs5;
 import uk.gov.hmcts.reform.sscs.helper.AppellantPostcodeHelper;
-import uk.gov.hmcts.reform.sscs.helper.RpcVenueHelper;
+import uk.gov.hmcts.reform.sscs.service.RpcVenueService;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -79,7 +79,7 @@ public class SscsCaseTransformerTest {
     private RefDataService refDataService;
 
     @Mock
-    private RpcVenueHelper rpcVenueHelper;
+    private RpcVenueService rpcVenueService;
 
     private SscsCaseTransformer transformer;
 
@@ -114,7 +114,7 @@ public class SscsCaseTransformerTest {
             idamService,
             ccdService,
             refDataService,
-            rpcVenueHelper,
+            rpcVenueService,
             false,
             true);
 
@@ -2074,7 +2074,7 @@ public class SscsCaseTransformerTest {
         when(appellantPostcodeHelper.resolvePostcode(any())).thenReturn(APPOINTEE_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPOINTEE_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
         when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
-        when(rpcVenueHelper.retrieveRpcEpimsIdForAppellant(any())).thenReturn("rpcEpimsId");
+        when(rpcVenueService.retrieveRpcEpimsIdForAppellant(any())).thenReturn("rpcEpimsId");
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -2098,7 +2098,7 @@ public class SscsCaseTransformerTest {
         when(appellantPostcodeHelper.resolvePostcode(any())).thenReturn(APPELLANT_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
         when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
-        when(rpcVenueHelper.retrieveRpcEpimsIdForAppellant(any())).thenReturn("rpcEpimsId");
+        when(rpcVenueService.retrieveRpcEpimsIdForAppellant(any())).thenReturn("rpcEpimsId");
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 

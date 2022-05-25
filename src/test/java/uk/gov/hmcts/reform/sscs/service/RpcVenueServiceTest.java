@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.sscs.helper;
+package uk.gov.hmcts.reform.sscs.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -13,11 +13,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 import uk.gov.hmcts.reform.sscs.ccd.domain.RegionalProcessingCenter;
-import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
-import uk.gov.hmcts.reform.sscs.service.VenueService;
+import uk.gov.hmcts.reform.sscs.helper.AppellantPostcodeHelper;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RpcVenueHelperTest {
+public class RpcVenueServiceTest {
 
     @Mock
     private AppellantPostcodeHelper appellantPostcodeHelper;
@@ -29,7 +28,7 @@ public class RpcVenueHelperTest {
     private VenueService venueService;
 
     @InjectMocks
-    private RpcVenueHelper rpcVenueHelper;
+    private RpcVenueService rpcVenueService;
 
     @Test
     public void shouldGetEpimsId_givenValidAppellant() {
@@ -37,7 +36,7 @@ public class RpcVenueHelperTest {
         when(regionalProcessingCenterService.getByPostcode("appellantPostcode")).thenReturn(RegionalProcessingCenter.builder().postcode("rpcPostcode").build());
         when(venueService.getEpimsIdForActiveVenueByPostcode("rpcPostcode")).thenReturn(Optional.of("rpcEpimsId"));
 
-        String actualPostcode = rpcVenueHelper.retrieveRpcEpimsIdForAppellant(Appellant.builder()
+        String actualPostcode = rpcVenueService.retrieveRpcEpimsIdForAppellant(Appellant.builder()
             .address(Address.builder()
                 .postcode("appellantPostcode")
                 .build())

@@ -37,7 +37,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Role;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.*;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
-import uk.gov.hmcts.reform.sscs.helper.RpcVenueHelper;
+import uk.gov.hmcts.reform.sscs.service.RpcVenueService;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -63,7 +63,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private final FuzzyMatcherService fuzzyMatcherService;
     private final DwpAddressLookupService dwpAddressLookupService;
     private final RefDataService refDataService;
-    private final RpcVenueHelper rpcVenueHelper;
+    private final RpcVenueService rpcVenueService;
     private boolean ucOfficeFeatureActive;
     private final boolean caseAccessManagementFeature;
 
@@ -79,7 +79,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                                IdamService idamService,
                                CcdService ccdService,
                                RefDataService refDataService,
-                               RpcVenueHelper rpcVenueHelper,
+                               RpcVenueService rpcVenueService,
                                @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive,
                                @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.sscsJsonExtractor = sscsJsonExtractor;
@@ -90,7 +90,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.idamService = idamService;
         this.ccdService = ccdService;
         this.refDataService = refDataService;
-        this.rpcVenueHelper = rpcVenueHelper;
+        this.rpcVenueService = rpcVenueService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
@@ -182,7 +182,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             transformed.put("processingVenue", processingVenue);
             if (caseAccessManagementFeature) {
                 CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
-                String rpcEpimsId = rpcVenueHelper.retrieveRpcEpimsIdForAppellant(appeal.getAppellant());
+                String rpcEpimsId = rpcVenueService.retrieveRpcEpimsIdForAppellant(appeal.getAppellant());
 
                 if (courtVenue != null) {
                     transformed.put("caseManagementLocation",

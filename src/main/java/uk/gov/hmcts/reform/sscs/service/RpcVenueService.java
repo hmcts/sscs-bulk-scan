@@ -1,15 +1,14 @@
-package uk.gov.hmcts.reform.sscs.helper;
+package uk.gov.hmcts.reform.sscs.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 import uk.gov.hmcts.reform.sscs.ccd.domain.RegionalProcessingCenter;
-import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
-import uk.gov.hmcts.reform.sscs.service.VenueService;
+import uk.gov.hmcts.reform.sscs.helper.AppellantPostcodeHelper;
 
-@Component
+@Service
 @RequiredArgsConstructor
-public class RpcVenueHelper {
+public class RpcVenueService {
 
     private final AppellantPostcodeHelper appellantPostcodeHelper;
     private final RegionalProcessingCenterService regionalProcessingCenterService;
