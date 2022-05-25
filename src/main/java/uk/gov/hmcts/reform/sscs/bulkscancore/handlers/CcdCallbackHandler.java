@@ -26,7 +26,7 @@ import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
-import uk.gov.hmcts.reform.sscs.helper.AppellantPostcodeHelper;
+import uk.gov.hmcts.reform.sscs.helper.RpcVenueHelper;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.model.CourtVenue;
@@ -47,38 +47,29 @@ public class CcdCallbackHandler {
 
     private final CaseValidator caseValidator;
 
-    private final AppellantPostcodeHelper appellantPostcodeHelper;
-
     private final SscsDataHelper sscsDataHelper;
 
     private final DwpAddressLookupService dwpAddressLookupService;
 
     private final RefDataService refDataService;
 
-    private final RegionalProcessingCenterService regionalProcessingCenterService;
-
-    private final VenueService venueService;
+    private final RpcVenueHelper rpcVenueHelper;
 
     private final boolean caseAccessManagementFeature;
 
-    @SuppressWarnings("squid:S107")
     public CcdCallbackHandler(CaseTransformer caseTransformer,
                               CaseValidator caseValidator,
-                              AppellantPostcodeHelper appellantPostcodeHelper,
                               SscsDataHelper sscsDataHelper,
                               DwpAddressLookupService dwpAddressLookupService,
                               RefDataService refDataService,
-                              RegionalProcessingCenterService regionalProcessingCenterService,
-                              VenueService venueService,
+                              RpcVenueHelper rpcVenueHelper,
                               @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.caseTransformer = caseTransformer;
         this.caseValidator = caseValidator;
-        this.appellantPostcodeHelper = appellantPostcodeHelper;
         this.sscsDataHelper = sscsDataHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.refDataService = refDataService;
-        this.regionalProcessingCenterService = regionalProcessingCenterService;
-        this.venueService = venueService;
+        this.rpcVenueHelper = rpcVenueHelper;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
@@ -232,9 +223,7 @@ public class CcdCallbackHandler {
                 if (caseAccessManagementFeature) {
                     CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
                     if (courtVenue != null) {
-                        String appellantPostcode = appellantPostcodeHelper.resolvePostcode(appeal.getAppellant());
-                        RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(appellantPostcode);
-                        String rpcEpimsId = venueService.getEpimsIdForActiveVenueByPostcode(rpc.getPostcode()).orElse(null);
+                        String rpcEpimsId = rpcVenueHelper.retrieveRpcEpimsIdForAppellant(appeal.getAppellant());
 
                         if (rpcEpimsId != null
                             && courtVenue.getRegionId() != null) {
