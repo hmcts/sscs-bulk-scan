@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.BENEFIT_TYPE_DESCRIPTION;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.ESA;
@@ -13,7 +13,6 @@ import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.PIP;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.*;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
-import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import com.google.common.collect.ImmutableList;
@@ -40,6 +39,7 @@ import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs5;
+import uk.gov.hmcts.reform.sscs.helper.AppellantPostcodeHelper;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -49,7 +49,8 @@ import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
-import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
+import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
+import uk.gov.hmcts.reform.sscs.service.VenueService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -58,60 +59,70 @@ public class SscsCaseTransformerTest {
     private static final String UNIVERSAL_CREDIT = "Universal Credit";
 
     @Mock
-    SscsJsonExtractor sscsJsonExtractor;
+    private SscsJsonExtractor sscsJsonExtractor;
 
     @Mock
-    SscsKeyValuePairValidator keyValuePairValidator;
-
-    DwpAddressLookupService dwpAddressLookupService;
+    private SscsKeyValuePairValidator keyValuePairValidator;
 
     @Mock
-    IdamService idamService;
+    private IdamService idamService;
 
     @Mock
-    CcdService ccdService;
-
-    FuzzyMatcherService fuzzyMatcherService = new FuzzyMatcherService();
+    private CcdService ccdService;
 
     @Mock
     private AirLookupService airLookupService;
 
     @Mock
-    private PostcodeValidator postcodeValidator;
+    private AppellantPostcodeHelper appellantPostcodeHelper;
 
     @Mock
     private RefDataService refDataService;
 
-    SscsDataHelper sscsDataHelper;
+    @Mock
+    private RegionalProcessingCenterService regionalProcessingCenterService;
 
-    SscsCaseTransformer transformer;
+    @Mock
+    private VenueService venueService;
 
-    List<OcrDataField> ocrList = new ArrayList<>();
+    private SscsCaseTransformer transformer;
 
-    Map<String, Object> pairs = new HashMap<>();
+    private final List<OcrDataField> ocrList = new ArrayList<>();
 
-    ExceptionRecord exceptionRecord;
+    private final Map<String, Object> pairs = new HashMap<>();
 
-    ExceptionRecord sscs1UExceptionRecord;
+    private ExceptionRecord exceptionRecord;
 
-    ExceptionRecord nullFormExceptionRecord;
+    private ExceptionRecord sscs1UExceptionRecord;
+
+    private ExceptionRecord nullFormExceptionRecord;
 
     private ExceptionRecord sscs2ExceptionRecord;
 
     private ExceptionRecord sscs5ExceptionRecord;
 
-    IdamTokens token;
-
     @Before
     public void setup() {
-        initMocks(this);
+        openMocks(this);
 
-        dwpAddressLookupService = new DwpAddressLookupService();
+        DwpAddressLookupService dwpAddressLookupService = new DwpAddressLookupService();
 
-        token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
+        SscsDataHelper sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, appellantPostcodeHelper, true);
 
-        sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator, true);
-        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, refDataService, false, true);
+        transformer = new SscsCaseTransformer(
+            sscsJsonExtractor,
+            keyValuePairValidator,
+            appellantPostcodeHelper,
+            sscsDataHelper,
+            new FuzzyMatcherService(),
+            dwpAddressLookupService,
+            idamService,
+            ccdService,
+            refDataService,
+            regionalProcessingCenterService,
+            venueService,
+            false,
+            true);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -121,8 +132,6 @@ public class SscsCaseTransformerTest {
             SSCS1PEU.getId()).build();
         given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-        given(postcodeValidator.isValid(anyString())).willReturn(true);
-        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
         sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -198,7 +207,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs5.GUARANTEED_MINIMUM_PENSION.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs5.NATIONAL_INSURANCE_CREDITS.getIndicatorString(), false);
         CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_tax_credit and is_benefit_type_guardians_allowance have contradicting values", result.getErrors().get(0));
     }
 
@@ -213,14 +222,14 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs5.GUARANTEED_MINIMUM_PENSION.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs5.NATIONAL_INSURANCE_CREDITS.getIndicatorString(), false);
         CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits fields are empty or false", result.getErrors().get(0));
     }
 
     @Test
     public void givenAllSscs5BenefitTypesAreMissing_thenReturnAnError() {
         CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_tax_credit, is_benefit_type_guardians_allowance, is_benefit_type_tax_free_childcare, is_benefit_type_home_responsibilities_protection, is_benefit_type_child_benefit, is_benefit_type_30_hours_tax_free_childcare, is_benefit_type_guaranteed_minimum_pension and is_benefit_type_national_insurance_credits fields are empty or false", result.getErrors().get(0));
     }
 
@@ -231,7 +240,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and benefit_type_other fields are empty", result.getErrors().get(0));
     }
 
@@ -243,7 +252,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_pip, is_benefit_type_esa, is_benefit_type_uc and benefit_type_other fields are empty", result.getErrors().get(0));
     }
 
@@ -254,7 +263,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
         CaseResponse result = transformer.transformExceptionRecord(nullFormExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 0);
+        assertEquals(0, result.getErrors().size());
     }
 
     @Test
@@ -377,7 +386,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.OTHER.getIndicatorString(), false);
 
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_pip and benefit_type_other have contradicting values", result.getErrors().get(0));
     }
 
@@ -388,7 +397,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), false);
         pairs.put(BENEFIT_TYPE_OTHER, "Attendance Allowance");
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_pip and benefit_type_other have contradicting values", result.getErrors().get(0));
     }
 
@@ -400,7 +409,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), "Yes");
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), "Yes");
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_esa, is_benefit_type_uc and is_benefit_type_other have contradicting values", result.getErrors().get(0));
     }
 
@@ -412,7 +421,7 @@ public class SscsCaseTransformerTest {
         pairs.put(BenefitTypeIndicatorSscs1U.ESA.getIndicatorString(), true);
         pairs.put(BenefitTypeIndicatorSscs1U.UC.getIndicatorString(), true);
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
+        assertEquals(1, result.getErrors().size());
         assertEquals("is_benefit_type_esa, is_benefit_type_uc and is_benefit_type_other have contradicting values", result.getErrors().get(0));
     }
 
@@ -1426,7 +1435,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("Yes", result.getTransformedCase().get("linkedCasesBoolean"));
-        assertEquals("123", ((CaseLink)((List) result.getTransformedCase().get("associatedCase")).get(0)).getValue().getCaseReference());
+        assertEquals("123", ((CaseLink)((List<?>) result.getTransformedCase().get("associatedCase")).get(0)).getValue().getCaseReference());
     }
 
     @Test
@@ -1552,13 +1561,8 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    //FIXME: Probably delete this test now
-    public void should_handle_datetimes_with_and_without_milliseconds() {
+    public void should_handle_date_times_with_and_without_milliseconds() {
         // given
-        List<InputScannedDoc> records = new ArrayList<>();
-        InputScannedDoc scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "My subtype");
-        records.add(scannedRecord);
-
         List<InputScannedDoc> scannedRecords = Arrays.asList(
             InputScannedDoc.builder()
                 .scannedDate(LocalDateTime.now().minusDays(1)) // no millis
@@ -1984,9 +1988,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    @Parameters({"true", "Yes", "false", "No"})
-    public void givenHearingSubtypeDetailsAreProvided_WithNoPairs_thenBuildAnAppealHearingSubtypeDetails(String hearingSubtypeFlag) {
-
+    public void givenHearingSubtypeDetailsAreProvided_WithNoPairs_thenBuildAnAppealHearingSubtypeDetails() {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getWantsHearingTypeTelephone());
         assertNull(((Appeal) result.getTransformedCase().get("appeal")).getHearingSubtype().getHearingTelephoneNumber());
@@ -1997,7 +1999,6 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenInvalidHearingSubtypeDetailsAreProvided_thenShowWarnings() {
-
         pairs.put(HEARING_TYPE_TELEPHONE_LITERAL, "test");
         pairs.put(HEARING_TYPE_VIDEO_LITERAL, "test");
         pairs.put(HEARING_TYPE_FACE_TO_FACE_LITERAL, "test");
@@ -2066,7 +2067,6 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void setProcessingVenue_withGivingPriorityToAppointeeOverAppellant() {
-
         pairs.put("benefit_type_description", BENEFIT_TYPE);
         for (String person : Arrays.asList("person1", "person2")) {
             pairs.put(person + "_address_line1", "10 my street");
@@ -2077,22 +2077,24 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_postcode", APPOINTEE_POSTCODE);
         pairs.put("person2_postcode", APPELLANT_POSTCODE);
 
+        when(appellantPostcodeHelper.resolvePostcode(any())).thenReturn(APPOINTEE_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPOINTEE_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
-        when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().epimsId(EPIMMS_ID).regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
+        when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
+        when(regionalProcessingCenterService.getByPostcode(APPOINTEE_POSTCODE)).thenReturn(RegionalProcessingCenter.builder().postcode("rpcPostcode").build());
+        when(venueService.getEpimsIdForActiveVenueByPostcode("rpcPostcode")).thenReturn(Optional.of("rpcEpimsId"));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
 
-        CaseManagementLocation cmLocation = (CaseManagementLocation) result.getTransformedCase().get("caseManagementLocation");
-        assertNotNull(cmLocation);
-        assertEquals(EPIMMS_ID, cmLocation.getBaseLocation());
-        assertEquals(REGION_ID, cmLocation.getRegion());
+        CaseManagementLocation caseManagementLocation = (CaseManagementLocation) result.getTransformedCase().get("caseManagementLocation");
+        assertNotNull(caseManagementLocation);
+        assertEquals("rpcEpimsId", caseManagementLocation.getBaseLocation());
+        assertEquals(REGION_ID, caseManagementLocation.getRegion());
     }
 
     @Test
     public void setProcessingVenue_fromAppellantAddress() {
-
         pairs.put("benefit_type_description", BENEFIT_TYPE);
         pairs.put("person1_address_line1", "10 my street");
         pairs.put("person1_address_line2", "line2 address");
@@ -2100,17 +2102,20 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_address_line4", "county");
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
 
+        when(appellantPostcodeHelper.resolvePostcode(any())).thenReturn(APPELLANT_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
-        when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().epimsId(EPIMMS_ID).regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
+        when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
+        when(regionalProcessingCenterService.getByPostcode(APPELLANT_POSTCODE)).thenReturn(RegionalProcessingCenter.builder().postcode("rpcPostcode").build());
+        when(venueService.getEpimsIdForActiveVenueByPostcode("rpcPostcode")).thenReturn(Optional.of("rpcEpimsId"));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
 
-        CaseManagementLocation cmLocation = (CaseManagementLocation) result.getTransformedCase().get("caseManagementLocation");
-        assertNotNull(cmLocation);
-        assertEquals(EPIMMS_ID, cmLocation.getBaseLocation());
-        assertEquals(REGION_ID, cmLocation.getRegion());
+        CaseManagementLocation caseManagementLocation = (CaseManagementLocation) result.getTransformedCase().get("caseManagementLocation");
+        assertNotNull(caseManagementLocation);
+        assertEquals("rpcEpimsId", caseManagementLocation.getBaseLocation());
+        assertEquals(REGION_ID, caseManagementLocation.getRegion());
     }
 
     @Test

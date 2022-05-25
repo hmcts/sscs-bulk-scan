@@ -48,6 +48,7 @@ import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
+import uk.gov.hmcts.reform.sscs.helper.AppellantPostcodeHelper;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.model.CourtVenue;
@@ -56,7 +57,6 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.service.VenueService;
-import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @RunWith(JUnitParamsRunner.class)
 public class CcdCallbackHandlerTest {
@@ -84,7 +84,7 @@ public class CcdCallbackHandlerTest {
     private AirLookupService airLookupService;
 
     @Mock
-    private PostcodeValidator postcodeValidator;
+    private AppellantPostcodeHelper appellantPostcodeHelper;
 
     @Mock
     private RefDataService refDataService;
@@ -112,8 +112,8 @@ public class CcdCallbackHandlerTest {
         listAppender.start();
         fooLogger.addAppender(listAppender);
 
-        SscsDataHelper sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, postcodeValidator, true);
-        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, sscsDataHelper, dwpAddressLookupService, refDataService, regionalProcessingCenterService, venueService, true);
+        SscsDataHelper sscsDataHelper = new SscsDataHelper(new CaseEvent(null, "validAppealCreated", null, null), dwpAddressLookupService, airLookupService, appellantPostcodeHelper, true);
+        ccdCallbackHandler = new CcdCallbackHandler(caseTransformer, caseValidator, appellantPostcodeHelper, sscsDataHelper, dwpAddressLookupService, refDataService, regionalProcessingCenterService, venueService, true);
 
         idamTokens = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
@@ -126,8 +126,6 @@ public class CcdCallbackHandlerTest {
         when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().epimsId(EPIMMS_ID).regionId(REGION_ID).venueName(PROCESSING_VENUE).postcode(VENUE_POSTCODE).build());
         when(regionalProcessingCenterService.getByPostcode(VENUE_POSTCODE)).thenReturn(RegionalProcessingCenter.builder().name(PROCESSING_VENUE).build());
         when(venueService.getEpimsIdForVenue(PROCESSING_VENUE)).thenReturn(Optional.of(EPIMMS_ID));
-        given(postcodeValidator.isValid(anyString())).willReturn(true);
-        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
         LocalDate localDate = LocalDate.now();
 
@@ -263,7 +261,6 @@ public class CcdCallbackHandlerTest {
 
     @Test
     public void should_return_no_warnings_or_errors_or_data_when_validation_endpoint_is_successful_for_pip_case() {
-
         Appeal appeal = Appeal.builder()
             .appellant(Appellant.builder()
                 .name(Name.builder().firstName("Fred").lastName("Ward").build())
@@ -283,6 +280,7 @@ public class CcdCallbackHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
+        when(appellantPostcodeHelper.resolvePostcode(appeal.getAppellant())).thenReturn("CV35 2TD");
         when(regionalProcessingCenterService.getByPostcode("CV35 2TD")).thenReturn(RegionalProcessingCenter.builder().postcode("rpcPostcode").build());
         when(venueService.getEpimsIdForActiveVenueByPostcode("rpcPostcode")).thenReturn(Optional.of("rpcEpimsId"));
 

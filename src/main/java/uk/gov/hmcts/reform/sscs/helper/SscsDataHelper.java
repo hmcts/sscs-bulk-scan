@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
-import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @Component
 @Slf4j
@@ -32,7 +31,7 @@ public class SscsDataHelper {
     private final CaseEvent caseEvent;
     private final DwpAddressLookupService dwpAddressLookupService;
     private final AirLookupService airLookupService;
-    private final PostcodeValidator postcodeValidator;
+    private final AppellantPostcodeHelper appellantPostcodeHelper;
     private final boolean caseAccessManagementFeature;
 
     private static final String CASE_MANAGEMENT_CATEGORY = "caseManagementCategory";
@@ -40,12 +39,12 @@ public class SscsDataHelper {
     public SscsDataHelper(CaseEvent caseEvent,
                           DwpAddressLookupService dwpAddressLookupService,
                           AirLookupService airLookupService,
-                          PostcodeValidator postcodeValidator,
+                          AppellantPostcodeHelper appellantPostcodeHelper,
                           @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.caseEvent = caseEvent;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.airLookupService = airLookupService;
-        this.postcodeValidator = postcodeValidator;
+        this.appellantPostcodeHelper = appellantPostcodeHelper;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
@@ -212,24 +211,17 @@ public class SscsDataHelper {
     }
 
     public String findProcessingVenue(Appellant appellant, BenefitType benefitType) {
-        if (appellant != null && benefitType != null && isNotBlank(benefitType.getCode())) {
-            Appointee appointee = appellant.getAppointee();
-            String postcode = "";
-            if (appointee != null && appointee.getAddress() != null && isValidPostcode(appointee.getAddress().getPostcode())) {
-                postcode = appointee.getAddress().getPostcode();
-            } else if (appellant.getAddress() != null && isValidPostcode(appellant.getAddress().getPostcode())) {
-                postcode = appellant.getAddress().getPostcode();
-            }
+        if (appellant != null
+            && benefitType != null
+            && isNotBlank(benefitType.getCode())) {
+
+            String postcode = appellantPostcodeHelper.resolvePostcode(appellant);
 
             if (isNotBlank(postcode)) {
                 return airLookupService.lookupAirVenueNameByPostCode(postcode, benefitType);
             }
         }
         return null;
-    }
-
-    private boolean isValidPostcode(String postcode) {
-        return postcodeValidator.isValidPostcodeFormat(postcode) && postcodeValidator.isValid(postcode);
     }
 
 }

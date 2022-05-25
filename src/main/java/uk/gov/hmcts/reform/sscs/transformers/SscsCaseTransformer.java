@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Role;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.*;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
+import uk.gov.hmcts.reform.sscs.helper.AppellantPostcodeHelper;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
@@ -46,6 +47,8 @@ import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
+import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
+import uk.gov.hmcts.reform.sscs.service.VenueService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @Component
@@ -58,34 +61,44 @@ public class SscsCaseTransformer implements CaseTransformer {
     private final CcdService ccdService;
     private final SscsJsonExtractor sscsJsonExtractor;
     private final SscsKeyValuePairValidator keyValuePairValidator;
+    private final AppellantPostcodeHelper appellantPostcodeHelper;
     private final SscsDataHelper sscsDataHelper;
     private final FuzzyMatcherService fuzzyMatcherService;
     private final DwpAddressLookupService dwpAddressLookupService;
     private final RefDataService refDataService;
-    private Set<String> errors;
-    private Set<String> warnings;
-
+    private final RegionalProcessingCenterService regionalProcessingCenterService;
+    private final VenueService venueService;
     private boolean ucOfficeFeatureActive;
     private final boolean caseAccessManagementFeature;
 
+    private Set<String> errors;
+    private Set<String> warnings;
+
+    @SuppressWarnings("squid:S107")
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
                                SscsKeyValuePairValidator keyValuePairValidator,
+                               AppellantPostcodeHelper appellantPostcodeHelper,
                                SscsDataHelper sscsDataHelper,
                                FuzzyMatcherService fuzzyMatcherService,
                                DwpAddressLookupService dwpAddressLookupService,
                                IdamService idamService,
                                CcdService ccdService,
                                RefDataService refDataService,
+                               RegionalProcessingCenterService regionalProcessingCenterService,
+                               VenueService venueService,
                                @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive,
                                @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.keyValuePairValidator = keyValuePairValidator;
+        this.appellantPostcodeHelper = appellantPostcodeHelper;
         this.sscsDataHelper = sscsDataHelper;
         this.fuzzyMatcherService = fuzzyMatcherService;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.idamService = idamService;
         this.ccdService = ccdService;
         this.refDataService = refDataService;
+        this.regionalProcessingCenterService = regionalProcessingCenterService;
+        this.venueService = venueService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
@@ -121,7 +134,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         errors = new HashSet<>();
         warnings = new HashSet<>();
 
-        boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
+        boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null && exceptionRecord.getIgnoreWarnings();
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
 
@@ -150,8 +163,12 @@ public class SscsCaseTransformer implements CaseTransformer {
         return mergedWarnings;
     }
 
-    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token,
-                                              String formType, Set<String> errors, boolean ignoreWarnings) {
+    private Map<String, Object> transformData(String caseId,
+                                              ScannedData scannedData,
+                                              IdamTokens token,
+                                              String formType,
+                                              Set<String> errors,
+                                              boolean ignoreWarnings) {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType, errors, ignoreWarnings);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
@@ -173,10 +190,15 @@ public class SscsCaseTransformer implements CaseTransformer {
             transformed.put("processingVenue", processingVenue);
             if (caseAccessManagementFeature) {
                 CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
+
+                String appellantPostcode = appellantPostcodeHelper.resolvePostcode(appeal.getAppellant());
+                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(appellantPostcode);
+                String rpcEpimsId = venueService.getEpimsIdForActiveVenueByPostcode(rpc.getPostcode()).orElse(null);
+
                 if (courtVenue != null) {
                     transformed.put("caseManagementLocation",
                         CaseManagementLocation.builder()
-                            .baseLocation(courtVenue.getEpimsId())
+                            .baseLocation(rpcEpimsId)
                             .region(courtVenue.getRegionId())
                             .build());
                 }
@@ -186,9 +208,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId,
             scannedData.getOpeningDate());
 
-        transformed = checkForMatches(transformed, token);
-
-        return transformed;
+        return checkForMatches(transformed, token);
     }
 
     private Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {
