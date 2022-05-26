@@ -31,7 +31,7 @@ public class OcrFormValidationFunctionalTest extends BaseFunctionalTest {
         Response response = validateOcrEndpointRequest(json, formType, OK.value());
 
         OcrValidationResponse validationResponse = response.getBody()
-            .as(OcrValidationResponse.class, ObjectMapperType.GSON);
+            .as(OcrValidationResponse.class, ObjectMapperType.JACKSON_2);
 
         assertThat(validationResponse.status).isEqualTo(ValidationStatus.SUCCESS);
         assertThat(validationResponse.errors).isEmpty();
@@ -46,7 +46,7 @@ public class OcrFormValidationFunctionalTest extends BaseFunctionalTest {
         Response response = validateOcrEndpointRequest(json, "SSCS2", OK.value());
 
         OcrValidationResponse validationResponse = response.getBody()
-            .as(OcrValidationResponse.class, ObjectMapperType.GSON);
+            .as(OcrValidationResponse.class, ObjectMapperType.JACKSON_2);
 
         assertThat(validationResponse.status).isEqualTo(ValidationStatus.SUCCESS);
         assertThat(validationResponse.errors).isEmpty();
@@ -61,7 +61,7 @@ public class OcrFormValidationFunctionalTest extends BaseFunctionalTest {
         Response response = validateOcrEndpointRequest(json, "SSCS5", OK.value());
 
         OcrValidationResponse validationResponse = response.getBody()
-            .as(OcrValidationResponse.class, ObjectMapperType.GSON);
+            .as(OcrValidationResponse.class, ObjectMapperType.JACKSON_2);
 
         assertThat(validationResponse.status).isEqualTo(ValidationStatus.SUCCESS);
         assertThat(validationResponse.errors).isEmpty();
