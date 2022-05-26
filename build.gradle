@@ -179,7 +179,7 @@ def versions = [
   pitest             : '1.4.2',
   sonarPitest        : '0.5',
   restAssured        : '4.3.3',
-  sscsCommon     	 : '4.9.4-RC-SSCS-10138',
+  sscsCommon     	 : '4.9.6-RC-SSCS-10138',
 ]
 
 configurations.all {
