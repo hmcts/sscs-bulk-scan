@@ -218,20 +218,18 @@ public class CcdCallbackHandler {
 
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
-                if (caseAccessManagementFeature) {
-                    CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
-                    if (courtVenue != null) {
-                        String rpcEpimsId = rpcVenueService.retrieveRpcEpimsIdForAppellant(appeal.getAppellant());
+                CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
+                String rpcEpimsId = rpcVenueService.retrieveRpcEpimsIdForAppellant(appeal.getAppellant());
 
-                        if (rpcEpimsId != null
-                            && courtVenue.getRegionId() != null) {
-                            callback.getCaseDetails().getCaseData()
-                                .setCaseManagementLocation(CaseManagementLocation.builder()
-                                    .baseLocation(rpcEpimsId)
-                                    .region(courtVenue.getRegionId())
-                                    .build());
-                        }
-                    }
+                if (caseAccessManagementFeature
+                    && courtVenue != null
+                    && courtVenue.getRegionId() != null
+                    && rpcEpimsId != null) {
+                        callback.getCaseDetails().getCaseData()
+                            .setCaseManagementLocation(CaseManagementLocation.builder()
+                                .baseLocation(rpcEpimsId)
+                                .region(courtVenue.getRegionId())
+                                .build());
                 }
             }
             setCaseAccessManagementCategories(appeal, callback);
