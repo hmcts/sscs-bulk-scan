@@ -33,6 +33,10 @@
       "formType": "sscs1u",
       "dwpRegionalCentre": "Maternity Allowance",
       "bulkScanCaseReference": "id",
+      "caseManagementLocation":{
+        "region":"8",
+        "baseLocation":"372653"
+      },
       "ogdType": "DWP",
       "appeal": {
         "mrnDetails": {
@@ -59,6 +63,8 @@
             "phone": "01895733303",
             "mobile": "07832882849"
           },
+          "organisation": null,
+          "id": null,
           "identity": {
             "dob": "1976-11-11",
             "nino": "{PERSON1_NINO}"
@@ -111,6 +117,7 @@
         },
         "rep": {
           "id": null,
+          "identity": null,
           "hasRepresentative": "Yes",
           "organisation": "ABC Advisory Services",
           "name": {
@@ -179,7 +186,8 @@
         "address3": "Eastgate House",
         "postcode": "CF24 0AB",
         "city": "CARDIFF",
-        "email": "Cardiff_SYA_Respon@justice.gov.uk"
+        "email": "Cardiff_SYA_Respon@justice.gov.uk",
+        "hearingRoute": "gaps"
       },
       "caseNamePublic": "Frederick Falafel",
       "createdInGapsFrom": "readyToList",

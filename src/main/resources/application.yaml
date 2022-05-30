@@ -33,8 +33,8 @@ test.url: ${TEST_URL:http://localhost:8090}
 feature:
   uc-office-feature:
     enabled: ${UC_OFFICE_FEATURE:false}
-  work-allocation:
-      enabled: ${WORK_ALLOCATION_FEATURE:true}
+  case-access-management:
+    enabled: ${CASE_ACCESS_MANAGEMENT_FEATURE:true}
 
 core_case_data:
   jurisdictionId: ${CORE_CASE_DATA_JURISDICTION_ID:SSCS}
@@ -69,6 +69,9 @@ allowed-services-for-callback : ccd_data,sscs_bulkscan,bulk_scan_processor,bulk_
 document_management.url: ${DOCUMENT_MANAGEMENT_URL:http://dm-store:5005}
 
 schema.location: /schema/sscs-bulk-scan-schema.json
+
+location_ref.enabled: true
+location_ref.api.url: ${RD_LOCATION_REF_API_URL:http://localhost:5555}
 
 validation:
   titles: Cllr,Count,DC,Dr,DS,Insp,Lady,Lord,Miss,Mr & Mrs,Mr,Mrs,Ms,PC,Rev,S/M,Sgt

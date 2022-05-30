@@ -8,7 +8,6 @@ import static uk.gov.hmcts.reform.sscs.domain.validation.ValidationStatus.*;
 import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,14 +30,10 @@ import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 public class SscsDataHelper {
 
     private final CaseEvent caseEvent;
-
     private final DwpAddressLookupService dwpAddressLookupService;
-
     private final AirLookupService airLookupService;
-
     private final PostcodeValidator postcodeValidator;
-
-    private final boolean workAllocationFeature;
+    private final boolean caseAccessManagementFeature;
 
     private static final String CASE_MANAGEMENT_CATEGORY = "caseManagementCategory";
 
@@ -46,12 +41,12 @@ public class SscsDataHelper {
                           DwpAddressLookupService dwpAddressLookupService,
                           AirLookupService airLookupService,
                           PostcodeValidator postcodeValidator,
-                          @Value("${feature.work-allocation.enabled}")  boolean workAllocationFeature) {
+                          @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.caseEvent = caseEvent;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.airLookupService = airLookupService;
         this.postcodeValidator = postcodeValidator;
-        this.workAllocationFeature = workAllocationFeature;
+        this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
     public void addSscsDataToMap(Map<String, Object> appealData, Appeal appeal, List<SscsDocument> sscsDocuments, Subscriptions subscriptions,
@@ -79,17 +74,17 @@ public class SscsDataHelper {
                 appealData.put("issueCode", issueCode);
                 appealData.put("caseCode", generateCaseCode(benefitCode, issueCode));
 
-                String dwpRegionCentre = setDwpRegionalCenter(appealData, appeal);
+                String dwpRegionCentre = setDwpRegionalCenter(appeal);
                 if (dwpRegionCentre != null) {
                     appealData.put("dwpRegionalCentre", dwpRegionCentre);
                 }
 
-                setWorkAllocationCategorys(appeal, appealData);
+                setCaseAccessManagementCategories(appeal, appealData);
             } else {
-                setCasemanagementCategory(formType, appealData);
+                setCaseManagementCategory(formType, appealData);
             }
 
-            setWorkAllocationNames(appeal, appealData, formType);
+            setCaseAccessManagementNames(appeal, appealData, formType);
 
             appealData.put("createdInGapsFrom", READY_TO_LIST.getId());
             checkConfidentiality(formType,appealData, appeal);
@@ -103,24 +98,23 @@ public class SscsDataHelper {
         }
     }
 
-    private void setCasemanagementCategory(FormType formType, Map<String, Object> appealData) {
-        if (formType != null && workAllocationFeature) {
-            if (formType.equals(FormType.SSCS5)) {
-                DynamicListItem caseManagementCategory = new DynamicListItem("sscs5Unknown", "SSCS5 Unknown");
-                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-                appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
-            } else {
-                DynamicListItem caseManagementCategory = new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
-                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
-                appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
-            }
+    private void setCaseManagementCategory(FormType formType, Map<String, Object> appealData) {
+        if (caseAccessManagementFeature && formType != null) {
+            DynamicListItem caseManagementCategory = new DynamicListItem(
+                formType.equals(FormType.SSCS5) ? "sscs5Unknown" : "sscs12Unknown",
+                formType.equals(FormType.SSCS5) ? "SSCS5 Unknown" : "SSCS1/2 Unknown");
+            appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(
+                caseManagementCategory,
+                List.of(caseManagementCategory)));
         }
     }
 
-    private void setWorkAllocationNames(Appeal appeal, Map<String, Object> appealData, FormType formType) {
-        if (workAllocationFeature) {
-            if (appeal.getAppellant() != null && appeal.getAppellant().getName() != null
-                && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
+    private void setCaseAccessManagementNames(Appeal appeal, Map<String, Object> appealData, FormType formType) {
+        if (caseAccessManagementFeature) {
+            if (appeal.getAppellant() != null
+                && appeal.getAppellant().getName() != null
+                && appeal.getAppellant().getName().getFirstName() != null
+                && appeal.getAppellant().getName().getLastName() != null) {
                 Name name = appeal.getAppellant().getName();
                 appealData.put("caseNameHmctsInternal", name.getFullNameNoTitle());
                 appealData.put("caseNameHmctsRestricted", name.getFullNameNoTitle());
@@ -145,14 +139,13 @@ public class SscsDataHelper {
         return SscsType.SSCS5.equals(benefit.get().getSscsType());
     }
 
-    private void setWorkAllocationCategorys(Appeal appeal, Map<String, Object> appealData) {
-        if (workAllocationFeature) {
+    private void setCaseAccessManagementCategories(Appeal appeal, Map<String, Object> appealData) {
+        if (caseAccessManagementFeature) {
             Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
             if (benefit.isPresent()) {
                 appealData.put("caseAccessCategory", CaseUtils.toCamelCase(benefit.get().getDescription(), false, ' '));
-
                 DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
-                List<DynamicListItem> listItems = Arrays.asList(caseManagementCategory);
+                List<DynamicListItem> listItems = List.of(caseManagementCategory);
                 appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
             }
         }
@@ -164,7 +157,7 @@ public class SscsDataHelper {
         }
     }
 
-    private String setDwpRegionalCenter(Map<String, Object> appealData, Appeal appeal) {
+    private String setDwpRegionalCenter(Appeal appeal) {
         String dwpRegionCentre = null;
         if (appeal.getMrnDetails() != null && appeal.getMrnDetails().getDwpIssuingOffice() != null) {
             dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(

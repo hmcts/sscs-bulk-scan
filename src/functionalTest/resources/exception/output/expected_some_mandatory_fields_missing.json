@@ -42,6 +42,8 @@
             "mobile": "07832882849",
             "phone": "01895733303"
           },
+          "organisation": null,
+          "id": null,
           "identity": {
             "dob": "1976-11-11",
             "nino": "{PERSON1_NINO_INVALID}"
@@ -97,6 +99,7 @@
         "receivedVia": "Paper",
         "rep": {
           "id": null,
+          "identity":null,
           "address": {
             "county": "Surrey",
             "postcode": "RH1 5BT",
@@ -119,6 +122,10 @@
       },
       "benefitCode": "051",
       "bulkScanCaseReference": "id",
+      "caseManagementLocation": {
+        "region":"8",
+        "baseLocation":"372653"
+      },
       "caseCode": "051DD",
       "caseCreated": "2019-08-02",
       "createdInGapsFrom": "readyToList",
@@ -137,7 +144,8 @@
         "faxNumber": "0870 739 4438",
         "name": "CARDIFF",
         "phoneNumber": "0300 123 1142",
-        "postcode": "CF24 0AB"
+        "postcode": "CF24 0AB",
+        "hearingRoute":  "gaps"
       },
       "processingVenue": "Cardiff",
       "sscsDocument": [

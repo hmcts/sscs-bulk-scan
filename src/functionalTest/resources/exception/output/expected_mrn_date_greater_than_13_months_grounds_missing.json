@@ -42,6 +42,7 @@
               "mobile": "07832882849",
               "phone": "01895733303"
             },
+            "organisation": null,
             "identity": {
               "dob": "1976-11-11",
               "nino": "{PERSON1_NINO}"
@@ -57,6 +58,8 @@
             "mobile": null,
             "phone": null
           },
+          "organisation": null,
+          "id": null,
           "identity": {
             "dob": "1979-12-09",
             "nino": "{PERSON2_NINO}"
@@ -112,6 +115,7 @@
         "receivedVia": "Paper",
         "rep": {
           "id": null,
+          "identity":null,
           "address": {
             "county": "Surrey",
             "line1": "63 Grove Hill Road",
@@ -136,6 +140,10 @@
       },
       "benefitCode": "051",
       "bulkScanCaseReference": "id",
+      "caseManagementLocation": {
+        "region":"8",
+        "baseLocation":"372653"
+      },
       "caseCode": "051DD",
       "caseCreated": "2019-08-02",
       "createdInGapsFrom": "readyToList",
@@ -156,7 +164,8 @@
         "faxNumber": "0870 739 4229",
         "name": "SUTTON",
         "phoneNumber": "0300 123 1142",
-        "postcode": "SM1 1DA"
+        "postcode": "SM1 1DA",
+        "hearingRoute": "gaps"
       },
       "processingVenue": "Cardiff",
       "sscsDocument": [

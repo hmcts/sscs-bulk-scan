@@ -75,4 +75,6 @@ public class TestDataConstants {
     public static final String HEARING_VIDEO_EMAIL = "my@email.com";
     public static final String PROCESSING_VENUE = "Cardiff";
     public static final String OTHER_PARTY_ID_ONE = "1";
+    public static final String EPIMMS_ID = "1";
+    public static final String REGION_ID = "100";
 }

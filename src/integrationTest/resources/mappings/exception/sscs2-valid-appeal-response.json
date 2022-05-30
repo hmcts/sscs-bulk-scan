@@ -61,6 +61,8 @@
             "phone": "01234567899",
             "mobile": "07411222222"
           },
+          "organisation": null,
+          "id": null,
           "identity": {
             "dob": "1976-11-11",
             "nino": "BB000000B"
@@ -102,6 +104,7 @@
         "appealReasons": null,
         "rep": {
           "id": null,
+          "identity": null,
           "hasRepresentative": "No",
           "organisation": null,
           "name": null,
@@ -153,7 +156,12 @@
         "postcode": "BD3 7BH",
         "phoneNumber": "0300 123 1142",
         "faxNumber": "0126 434 7983",
-        "email": "SSCS_Bradford@justice.gov.uk"
+        "email": "SSCS_Bradford@justice.gov.uk",
+        "hearingRoute":  "gaps"
+      },
+      "caseManagementLocation": {
+        "baseLocation": "1",
+        "region": "1"
       },
       "processingVenue": "Chelmsford",
       "evidencePresent": "Yes",

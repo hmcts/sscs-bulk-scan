@@ -44,9 +44,11 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
+import uk.gov.hmcts.reform.sscs.service.RefDataService;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
@@ -77,6 +79,9 @@ public class SscsCaseTransformerTest {
     @Mock
     private PostcodeValidator postcodeValidator;
 
+    @Mock
+    private RefDataService refDataService;
+
     SscsDataHelper sscsDataHelper;
 
     SscsCaseTransformer transformer;
@@ -106,7 +111,7 @@ public class SscsCaseTransformerTest {
         token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
         sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator, true);
-        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, false);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, refDataService, false, true);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -2073,10 +2078,16 @@ public class SscsCaseTransformerTest {
         pairs.put("person2_postcode", APPELLANT_POSTCODE);
 
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPOINTEE_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
+        when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().epimsId(EPIMMS_ID).regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
+
+        CaseManagementLocation cmLocation = (CaseManagementLocation) result.getTransformedCase().get("caseManagementLocation");
+        assertNotNull(cmLocation);
+        assertEquals(EPIMMS_ID, cmLocation.getBaseLocation());
+        assertEquals(REGION_ID, cmLocation.getRegion());
     }
 
     @Test
@@ -2090,10 +2101,16 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
 
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
+        when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().epimsId(EPIMMS_ID).regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
+
+        CaseManagementLocation cmLocation = (CaseManagementLocation) result.getTransformedCase().get("caseManagementLocation");
+        assertNotNull(cmLocation);
+        assertEquals(EPIMMS_ID, cmLocation.getBaseLocation());
+        assertEquals(REGION_ID, cmLocation.getRegion());
     }
 
     @Test

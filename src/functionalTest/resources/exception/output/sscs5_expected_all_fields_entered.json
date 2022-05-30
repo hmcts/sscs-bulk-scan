@@ -42,6 +42,8 @@
             "mobile": "07832882849",
             "phone": "01895733303"
           },
+          "organisation": null,
+          "id": null,
           "identity": {
             "dob": "1976-11-11",
             "nino": "{PERSON1_NINO}"
@@ -98,6 +100,7 @@
         "receivedVia": "Paper",
         "rep": {
           "id": null,
+          "identity":null,
           "address": {
             "county": "Surrey",
             "line1": "63 Grove Hill Road",
@@ -122,6 +125,10 @@
       },
       "benefitCode": "053",
       "bulkScanCaseReference": "id",
+      "caseManagementLocation":{
+        "region":"8",
+        "baseLocation":"372653"
+      },
       "caseCode": "053DD",
       "caseCreated": "2019-08-02",
       "createdInGapsFrom": "readyToList",
@@ -142,7 +149,8 @@
         "address3": "Eastgate House",
         "postcode": "CF24 0AB",
         "city": "CARDIFF",
-        "email": "Cardiff_SYA_Respon@justice.gov.uk"
+        "email": "Cardiff_SYA_Respon@justice.gov.uk",
+        "hearingRoute": "gaps"
       },
       "processingVenue": "Cardiff",
       "sscsDocument": [
