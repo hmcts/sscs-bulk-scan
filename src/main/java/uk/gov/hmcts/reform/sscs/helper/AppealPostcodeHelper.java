@@ -20,7 +20,10 @@ public class AppealPostcodeHelper {
             .map(Appointee::getAddress)
             .map(Address::getPostcode)
             .filter(this::isValidPostcode)
-            .orElse(appellant.getAddress().getPostcode());
+            .orElse(Optional.ofNullable(appellant.getAddress())
+                .map(Address::getPostcode)
+                .filter(this::isValidPostcode)
+                .orElse(""));
     }
 
     private boolean isValidPostcode(String postcode) {
