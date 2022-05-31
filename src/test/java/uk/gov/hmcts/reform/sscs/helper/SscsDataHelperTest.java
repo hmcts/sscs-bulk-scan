@@ -31,21 +31,18 @@ public class SscsDataHelperTest {
     @Mock
     private AirLookupService airLookupService;
 
-    @Mock
-    private AppellantPostcodeHelper appellantPostcodeHelper;
-
     private SscsDataHelper sscsDataHelper;
 
     @Before
     public void setUp() {
-        sscsDataHelper = new SscsDataHelper(new CaseEvent(
-            "appealCreated",
-            "validAppealCreated",
-            "incompleteApplicationReceived",
-            "nonCompliant"),
-            dwpAddressLookupService,
+        sscsDataHelper = new SscsDataHelper(
+            new CaseEvent(
+                "appealCreated",
+                "validAppealCreated",
+                "incompleteApplicationReceived",
+                "nonCompliant"),
             airLookupService,
-            appellantPostcodeHelper,
+            dwpAddressLookupService,
             true);
     }
 
@@ -105,13 +102,10 @@ public class SscsDataHelperTest {
 
     @Test
     public void givenAppellantExists_andBenefitTypeCodeIsValid_thenReturnProcessingVenue() {
-        Appellant testAppellant = Appellant.builder().build();
         BenefitType testBenefitType = BenefitType.builder().code("PIP").build();
-
-        when(appellantPostcodeHelper.resolvePostcode(testAppellant)).thenReturn("CR2 8YY");
         when(airLookupService.lookupAirVenueNameByPostCode("CR2 8YY", testBenefitType)).thenReturn("Cardiff");
 
-        String result = sscsDataHelper.findProcessingVenue(testAppellant, testBenefitType);
+        String result = sscsDataHelper.findProcessingVenue("CR2 8YY", testBenefitType);
 
         assertEquals("Cardiff", result);
     }

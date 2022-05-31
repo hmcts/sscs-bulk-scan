@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -15,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
@@ -28,23 +29,20 @@ import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 @Slf4j
 public class SscsDataHelper {
 
-    private final CaseEvent caseEvent;
-    private final DwpAddressLookupService dwpAddressLookupService;
-    private final AirLookupService airLookupService;
-    private final AppellantPostcodeHelper appellantPostcodeHelper;
-    private final boolean caseAccessManagementFeature;
-
     private static final String CASE_MANAGEMENT_CATEGORY = "caseManagementCategory";
 
+    private final CaseEvent caseEvent;
+    private final AirLookupService airLookupService;
+    private final DwpAddressLookupService dwpAddressLookupService;
+    private final boolean caseAccessManagementFeature;
+
     public SscsDataHelper(CaseEvent caseEvent,
-                          DwpAddressLookupService dwpAddressLookupService,
                           AirLookupService airLookupService,
-                          AppellantPostcodeHelper appellantPostcodeHelper,
+                          DwpAddressLookupService dwpAddressLookupService,
                           @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.caseEvent = caseEvent;
-        this.dwpAddressLookupService = dwpAddressLookupService;
         this.airLookupService = airLookupService;
-        this.appellantPostcodeHelper = appellantPostcodeHelper;
+        this.dwpAddressLookupService = dwpAddressLookupService;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
@@ -201,25 +199,20 @@ public class SscsDataHelper {
     }
 
     public static ValidationStatus getValidationStatus(List<String> errors, List<String> warnings) {
-        if (!ObjectUtils.isEmpty(errors)) {
+        if (isNotEmpty(errors)) {
             return ERRORS;
         }
-        if (!ObjectUtils.isEmpty(warnings)) {
+        if (isNotEmpty(warnings)) {
             return WARNINGS;
         }
         return SUCCESS;
     }
 
-    public String findProcessingVenue(Appellant appellant, BenefitType benefitType) {
-        if (appellant != null
-            && benefitType != null
+    public String findProcessingVenue(String postcode, BenefitType benefitType) {
+        if (isNotBlank(postcode)
+            && nonNull(benefitType)
             && isNotBlank(benefitType.getCode())) {
-
-            String postcode = appellantPostcodeHelper.resolvePostcode(appellant);
-
-            if (isNotBlank(postcode)) {
-                return airLookupService.lookupAirVenueNameByPostCode(postcode, benefitType);
-            }
+            return airLookupService.lookupAirVenueNameByPostCode(postcode, benefitType);
         }
         return null;
     }

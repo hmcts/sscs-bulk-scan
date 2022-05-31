@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.helper;
 
 import java.util.Optional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
@@ -10,11 +11,11 @@ import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @Component
 @RequiredArgsConstructor
-public class AppellantPostcodeHelper {
+public class AppealPostcodeHelper {
 
     private final PostcodeValidator postcodeValidator;
 
-    public String resolvePostcode(Appellant appellant) {
+    public String resolvePostcode(@NonNull Appellant appellant) {
         return Optional.ofNullable(appellant.getAppointee())
             .map(Appointee::getAddress)
             .map(Address::getPostcode)

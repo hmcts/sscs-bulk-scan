@@ -39,17 +39,15 @@ import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicator;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs1U;
 import uk.gov.hmcts.reform.sscs.constants.BenefitTypeIndicatorSscs5;
-import uk.gov.hmcts.reform.sscs.helper.AppellantPostcodeHelper;
-import uk.gov.hmcts.reform.sscs.service.RpcVenueService;
+import uk.gov.hmcts.reform.sscs.helper.AppealPostcodeHelper;
+import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
-import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
-import uk.gov.hmcts.reform.sscs.service.RefDataService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -73,13 +71,10 @@ public class SscsCaseTransformerTest {
     private AirLookupService airLookupService;
 
     @Mock
-    private AppellantPostcodeHelper appellantPostcodeHelper;
+    private AppealPostcodeHelper appealPostcodeHelper;
 
     @Mock
-    private RefDataService refDataService;
-
-    @Mock
-    private RpcVenueService rpcVenueService;
+    private CaseManagementLocationService caseManagementLocationService;
 
     private SscsCaseTransformer transformer;
 
@@ -103,20 +98,23 @@ public class SscsCaseTransformerTest {
 
         DwpAddressLookupService dwpAddressLookupService = new DwpAddressLookupService();
 
-        SscsDataHelper sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, appellantPostcodeHelper, true);
+        SscsDataHelper sscsDataHelper = new SscsDataHelper(
+            null,
+            airLookupService,
+            dwpAddressLookupService,
+            true);
 
         transformer = new SscsCaseTransformer(
-            sscsJsonExtractor,
-            keyValuePairValidator,
-            sscsDataHelper,
-            new FuzzyMatcherService(),
-            dwpAddressLookupService,
-            idamService,
             ccdService,
-            refDataService,
-            rpcVenueService,
-            false,
-            true);
+            idamService,
+            sscsDataHelper,
+            sscsJsonExtractor,
+            new FuzzyMatcherService(),
+            appealPostcodeHelper,
+            keyValuePairValidator,
+            dwpAddressLookupService,
+            caseManagementLocationService,
+            false);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -1506,7 +1504,8 @@ public class SscsCaseTransformerTest {
         InputScannedDoc scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "My subtype");
         records.add(scannedRecord);
 
-        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).records(records).openingDate(LocalDateTime.now().toLocalDate().toString()).build());
+        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(
+            ScannedData.builder().ocrCaseData(pairs).records(records).openingDate(LocalDateTime.now().toLocalDate().toString()).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -2071,10 +2070,10 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_postcode", APPOINTEE_POSTCODE);
         pairs.put("person2_postcode", APPELLANT_POSTCODE);
 
-        when(appellantPostcodeHelper.resolvePostcode(any())).thenReturn(APPOINTEE_POSTCODE);
+        when(appealPostcodeHelper.resolvePostcode(any())).thenReturn(APPOINTEE_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPOINTEE_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
-        when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
-        when(rpcVenueService.retrieveRpcEpimsIdForAppellant(any())).thenReturn("rpcEpimsId");
+        when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, APPOINTEE_POSTCODE)).thenReturn(
+            Optional.of(CaseManagementLocation.builder().baseLocation("rpcEpimsId").region(REGION_ID).build()));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -2095,10 +2094,10 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_address_line4", "county");
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
 
-        when(appellantPostcodeHelper.resolvePostcode(any())).thenReturn(APPELLANT_POSTCODE);
+        when(appealPostcodeHelper.resolvePostcode(any())).thenReturn(APPELLANT_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
-        when(refDataService.getVenueRefData(PROCESSING_VENUE)).thenReturn(CourtVenue.builder().regionId(REGION_ID).venueName(PROCESSING_VENUE).build());
-        when(rpcVenueService.retrieveRpcEpimsIdForAppellant(any())).thenReturn("rpcEpimsId");
+        when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, APPELLANT_POSTCODE)).thenReturn(
+            Optional.of(CaseManagementLocation.builder().baseLocation("rpcEpimsId").region(REGION_ID).build()));
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 

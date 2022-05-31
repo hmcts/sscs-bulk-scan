@@ -14,13 +14,13 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Appointee;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AppellantPostcodeHelperTest {
+public class AppealPostcodeHelperTest {
 
     @Mock
     private PostcodeValidator postcodeValidator;
 
     @InjectMocks
-    private AppellantPostcodeHelper appellantPostcodeHelper;
+    private AppealPostcodeHelper appealPostcodeHelper;
 
     @Test
     public void shouldReturnAppointeePostcode_givenAppointeeAddressExists_andAppointeePostcodeIsValid() {
@@ -37,7 +37,7 @@ public class AppellantPostcodeHelperTest {
                 .build())
             .build();
 
-        String actualPostcode = appellantPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
 
         assertEquals("CR2 8YY", actualPostcode);
     }
@@ -54,7 +54,7 @@ public class AppellantPostcodeHelperTest {
                 .build())
             .build();
 
-        String actualPostcode = appellantPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
 
         assertEquals("TS3 6NM", actualPostcode);
     }
@@ -67,7 +67,7 @@ public class AppellantPostcodeHelperTest {
             .appointee(Appointee.builder().build())
             .build();
 
-        String actualPostcode = appellantPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
 
         assertEquals("TS3 6NM", actualPostcode);
     }

@@ -26,48 +26,41 @@ import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
-import uk.gov.hmcts.reform.sscs.service.RpcVenueService;
+import uk.gov.hmcts.reform.sscs.helper.AppealPostcodeHelper;
+import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
-import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
-import uk.gov.hmcts.reform.sscs.service.RefDataService;
 
-@Component
 @Slf4j
+@Component
 public class CcdCallbackHandler {
 
     private static final String LOGSTR_VALIDATION_ERRORS = "Errors found while validating exception record id {} - {}";
     private static final String LOGSTR_VALIDATION_WARNING = "Warnings found while validating exception record id {} - {}";
     private static final String CASE_TYPE_ID = "Benefit";
 
-    private final CaseTransformer caseTransformer;
-
     private final CaseValidator caseValidator;
-
     private final SscsDataHelper sscsDataHelper;
-
+    private final CaseTransformer caseTransformer;
+    private final AppealPostcodeHelper appealPostcodeHelper;
     private final DwpAddressLookupService dwpAddressLookupService;
-
-    private final RefDataService refDataService;
-
-    private final RpcVenueService rpcVenueService;
-
+    private final CaseManagementLocationService caseManagementLocationService;
     private final boolean caseAccessManagementFeature;
 
-    public CcdCallbackHandler(CaseTransformer caseTransformer,
-                              CaseValidator caseValidator,
+    public CcdCallbackHandler(CaseValidator caseValidator,
                               SscsDataHelper sscsDataHelper,
+                              CaseTransformer caseTransformer,
+                              AppealPostcodeHelper appealPostcodeHelper,
                               DwpAddressLookupService dwpAddressLookupService,
-                              RefDataService refDataService,
-                              RpcVenueService rpcVenueService,
-                              @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
-        this.caseTransformer = caseTransformer;
+                              CaseManagementLocationService caseManagementLocationService,
+                              @Value("${feature.case-access-management.enabled}") boolean caseAccessManagementFeature) {
         this.caseValidator = caseValidator;
         this.sscsDataHelper = sscsDataHelper;
+        this.caseTransformer = caseTransformer;
+        this.appealPostcodeHelper = appealPostcodeHelper;
         this.dwpAddressLookupService = dwpAddressLookupService;
-        this.refDataService = refDataService;
-        this.rpcVenueService = rpcVenueService;
+        this.caseManagementLocationService = caseManagementLocationService;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
@@ -214,23 +207,17 @@ public class CcdCallbackHandler {
                 callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
             }
 
-            String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
+            String postcode = appealPostcodeHelper.resolvePostcode(appeal.getAppellant());
+            String processingVenue = sscsDataHelper.findProcessingVenue(postcode, appeal.getBenefitType());
 
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
-                CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
-                String rpcEpimsId = rpcVenueService.retrieveRpcEpimsIdForAppellant(appeal.getAppellant());
+                Optional<CaseManagementLocation> caseManagementLocationOptional = caseManagementLocationService
+                    .retrieveCaseManagementLocation(processingVenue, postcode);
 
-                if (caseAccessManagementFeature
-                    && courtVenue != null
-                    && courtVenue.getRegionId() != null
-                    && rpcEpimsId != null) {
-                        callback.getCaseDetails().getCaseData()
-                            .setCaseManagementLocation(CaseManagementLocation.builder()
-                                .baseLocation(rpcEpimsId)
-                                .region(courtVenue.getRegionId())
-                                .build());
-                }
+                caseManagementLocationOptional.ifPresent(caseManagementLocation ->
+                    callback.getCaseDetails().getCaseData()
+                        .setCaseManagementLocation(caseManagementLocation));
             }
             setCaseAccessManagementCategories(appeal, callback);
         } else {
