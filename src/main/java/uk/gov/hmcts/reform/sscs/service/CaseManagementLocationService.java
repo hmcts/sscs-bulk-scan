@@ -41,7 +41,6 @@ public class CaseManagementLocationService {
                     .build());
             }
         }
-
         return Optional.empty();
     }
 
