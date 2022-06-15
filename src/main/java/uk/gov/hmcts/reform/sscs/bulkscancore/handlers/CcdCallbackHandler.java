@@ -27,9 +27,9 @@ import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationRe
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.AppealPostcodeHelper;
-import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
+import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 
 @Slf4j
