@@ -47,6 +47,7 @@ import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
+import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @Slf4j
@@ -64,6 +65,8 @@ public class SscsCaseTransformer implements CaseTransformer {
     private final SscsKeyValuePairValidator keyValuePairValidator;
     private final DwpAddressLookupService dwpAddressLookupService;
     private final CaseManagementLocationService caseManagementLocationService;
+
+    private final RegionalProcessingCenterService regionalProcessingCenterService;
     private boolean ucOfficeFeatureActive;
 
     private Set<String> errors;
@@ -78,6 +81,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                                SscsKeyValuePairValidator keyValuePairValidator,
                                DwpAddressLookupService dwpAddressLookupService,
                                CaseManagementLocationService caseManagementLocationService,
+                               RegionalProcessingCenterService regionalProcessingCenterService,
                                @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive) {
         this.ccdService = ccdService;
         this.idamService = idamService;
@@ -89,6 +93,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.caseManagementLocationService = caseManagementLocationService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
+        this.regionalProcessingCenterService = regionalProcessingCenterService;
     }
 
     public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
@@ -174,11 +179,13 @@ public class SscsCaseTransformer implements CaseTransformer {
         String postcode = appealPostcodeHelper.resolvePostcode(appeal.getAppellant());
         String processingVenue = sscsDataHelper.findProcessingVenue(postcode, appeal.getBenefitType());
 
+        RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postcode);
+
         if (isNotBlank(processingVenue)) {
             log.info("{} - setting venue name to {}", caseId, processingVenue);
             transformed.put("processingVenue", processingVenue);
             Optional<CaseManagementLocation> caseManagementLocationOptional = caseManagementLocationService
-                .retrieveCaseManagementLocation(processingVenue, postcode);
+                .retrieveCaseManagementLocation(processingVenue, rpc);
 
             caseManagementLocationOptional.ifPresent(caseManagementLocation ->
                 transformed.put("caseManagementLocation", caseManagementLocation));

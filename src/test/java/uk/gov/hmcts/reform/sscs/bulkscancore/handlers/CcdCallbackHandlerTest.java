@@ -261,6 +261,8 @@ public class CcdCallbackHandlerTest {
 
     @Test
     public void should_return_no_warnings_or_errors_or_data_when_validation_endpoint_is_successful_for_pip_case() {
+        RegionalProcessingCenter rpc = RegionalProcessingCenter.builder()
+            .epimsId("rpcEpimsId").build();
         Appeal appeal = Appeal.builder()
             .appellant(Appellant.builder()
                 .name(Name.builder().firstName("Fred").lastName("Ward").build())
@@ -273,7 +275,8 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
+            .caseData(SscsCaseData.builder().regionalProcessingCenter(rpc)
+                .appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -281,7 +284,8 @@ public class CcdCallbackHandlerTest {
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
         when(appealPostcodeHelper.resolvePostcode(appeal.getAppellant())).thenReturn("CV35 2TD");
-        when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, "CV35 2TD")).thenReturn(
+
+        when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, rpc)).thenReturn(
             Optional.of(CaseManagementLocation.builder().baseLocation("rpcEpimsId").region(REGION_ID).build()));
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());

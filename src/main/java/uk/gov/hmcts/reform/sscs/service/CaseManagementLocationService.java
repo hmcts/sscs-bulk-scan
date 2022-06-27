@@ -7,36 +7,33 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.sscs.ccd.domain.CaseManagementLocation;
+import uk.gov.hmcts.reform.sscs.ccd.domain.RegionalProcessingCenter;
 import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 
 @Service
 public class CaseManagementLocationService {
 
     private final RefDataService refDataService;
-    private final RpcVenueService rpcVenueService;
     private final boolean caseAccessManagementFeature;
 
     public CaseManagementLocationService(RefDataService refDataService,
-                                         RpcVenueService rpcVenueService,
                                          @Value("${feature.case-access-management.enabled}") boolean caseAccessManagementFeature) {
         this.refDataService = refDataService;
-        this.rpcVenueService = rpcVenueService;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
-    public Optional<CaseManagementLocation> retrieveCaseManagementLocation(String processingVenue, String postcode) {
+    public Optional<CaseManagementLocation> retrieveCaseManagementLocation(String processingVenue, RegionalProcessingCenter
+            regionalProcessingCenter) {
         if (caseAccessManagementFeature
             && isNotBlank(processingVenue)
-            && isNotBlank(postcode)) {
+            && nonNull(regionalProcessingCenter)) {
 
             CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
-            String rpcEpimsId = rpcVenueService.retrieveRpcEpimsIdForPostcode(postcode);
 
             if (nonNull(courtVenue)
-                && isNotBlank(courtVenue.getRegionId())
-                && isNotBlank(rpcEpimsId)) {
+                && isNotBlank(courtVenue.getRegionId())) {
                 return Optional.of(CaseManagementLocation.builder()
-                    .baseLocation(rpcEpimsId)
+                    .baseLocation(regionalProcessingCenter.getEpimsId())
                     .region(courtVenue.getRegionId())
                     .build());
             }

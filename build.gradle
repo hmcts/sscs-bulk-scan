@@ -5,7 +5,7 @@ plugins {
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.7.0'
   id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-  id 'org.springframework.boot' version '2.5.4'
+  id 'org.springframework.boot' version '2.5.14'
   id 'uk.gov.hmcts.java' version '0.12.12'
   id 'org.owasp.dependencycheck' version '6.2.2'
   id 'com.github.ben-manes.versions' version '0.39.0'
@@ -179,14 +179,14 @@ def versions = [
   pitest             : '1.4.2',
   sonarPitest        : '0.5',
   restAssured        : '4.3.3',
-  sscsCommon     	 : '4.11.1',
+  sscsCommon     	 : '4.13.0-RC-SSCS-10517'
 ]
 
 configurations.all {
   resolutionStrategy {
     eachDependency { DependencyResolveDetails details ->
       if (details.requested.group in ['com.fasterxml.jackson.core', 'com.fasterxml.jackson.module', 'com.fasterxml.jackson.datatype']) {
-        details.useVersion '2.11.0'
+        details.useVersion '2.13.0'
       }
       // CVE-2020-17521
       if (details.requested.group == 'org.codehaus.groovy') {
@@ -308,7 +308,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22118
-    dependencySet(group: 'org.springframework', version: '5.3.20') {
+    dependencySet(group: 'org.springframework', version: '5.3.21') {
       entry 'spring-aop'
       entry 'spring-aspects'
       entry 'spring-beans'

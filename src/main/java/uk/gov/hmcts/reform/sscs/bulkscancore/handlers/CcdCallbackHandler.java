@@ -213,7 +213,7 @@ public class CcdCallbackHandler {
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
                 Optional<CaseManagementLocation> caseManagementLocationOptional = caseManagementLocationService
-                    .retrieveCaseManagementLocation(processingVenue, postcode);
+                    .retrieveCaseManagementLocation(processingVenue, callback.getCaseDetails().getCaseData().getRegionalProcessingCenter());
 
                 caseManagementLocationOptional.ifPresent(caseManagementLocation ->
                     callback.getCaseDetails().getCaseData()

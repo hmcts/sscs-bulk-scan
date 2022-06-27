@@ -32,7 +32,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -330,6 +329,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             this.restTemplate
                 .postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
 
+        //Epims ID on this expectation is wrong due to a mismatch in how the rpc is resolved when an appointee exists.
+        //Will be fixed in SSCS-10704
         verifyResultData(result, "mappings/exception/auto-valid-appeal-with-appointee-response.json",
             this::getAppointeeTya);
     }

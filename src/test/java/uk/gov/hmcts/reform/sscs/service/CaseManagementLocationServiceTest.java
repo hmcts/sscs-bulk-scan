@@ -5,13 +5,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.sscs.ccd.domain.CaseManagementLocation;
+import uk.gov.hmcts.reform.sscs.ccd.domain.RegionalProcessingCenter;
 import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -20,83 +19,86 @@ public class CaseManagementLocationServiceTest {
     @Mock
     private RefDataService refDataService;
 
-    @Mock
-    private RpcVenueService rpcVenueService;
-
     private CaseManagementLocationService caseManagementLocationService;
 
-    @Before
-    public void setup() {
+    public void setupCaseManagementLocationService(boolean feature) {
         caseManagementLocationService = new CaseManagementLocationService(
-            refDataService,
-            rpcVenueService,
-            true);
+            refDataService, feature);
     }
 
     @Test
     public void shouldNotRetrieveCaseManagementLocation_givenCaseAccessManagementFeatureIsDisabled() {
-        ReflectionTestUtils.setField(caseManagementLocationService, "caseAccessManagementFeature", false);
+        setupCaseManagementLocationService(false);
+        RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().build();
 
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation("venue", "postcode");
+            caseManagementLocationService.retrieveCaseManagementLocation("venue",
+                regionalProcessingCentre);
 
         assertTrue(caseManagementLocation.isEmpty());
     }
 
     @Test
     public void shouldNotRetrieveCaseManagementLocation_givenBlankProcessingVenue() {
+        setupCaseManagementLocationService(true);
+
+        RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().build();
+
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation("", "postcode");
+            caseManagementLocationService.retrieveCaseManagementLocation("", regionalProcessingCentre);
 
         assertTrue(caseManagementLocation.isEmpty());
     }
 
     @Test
     public void shouldNotRetrieveCaseManagementLocation_givenBlankPostcode() {
+        setupCaseManagementLocationService(true);
+
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation("venue", "");
+            caseManagementLocationService.retrieveCaseManagementLocation("venue", null);
 
         assertTrue(caseManagementLocation.isEmpty());
     }
 
     @Test
     public void shouldNotRetrieveCaseManagementLocation_givenInvalidProcessingVenue() {
+        setupCaseManagementLocationService(true);
+
+        RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().build();
+
         when(refDataService.getVenueRefData("Bradford")).thenReturn(null);
 
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation("Bradford", "BD1 1RX");
+            caseManagementLocationService.retrieveCaseManagementLocation("Bradford",
+                regionalProcessingCentre);
 
         assertTrue(caseManagementLocation.isEmpty());
     }
 
     @Test
     public void shouldNotRetrieveCaseManagementLocation_givenInvalidCourtVenue() {
+        setupCaseManagementLocationService(true);
+
+        RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().build();
+
         when(refDataService.getVenueRefData("Bradford")).thenReturn(CourtVenue.builder().build());
 
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation("Bradford", "BD1 1RX");
-
-        assertTrue(caseManagementLocation.isEmpty());
-    }
-
-    @Test
-    public void shouldNotRetrieveCaseManagementLocation_givenInvalidPostcode() {
-        when(refDataService.getVenueRefData("Bradford")).thenReturn(CourtVenue.builder().regionId("regionId").build());
-        when(rpcVenueService.retrieveRpcEpimsIdForPostcode("BD1 1RX")).thenReturn(null);
-
-        Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation("Bradford", "BD1 1RX");
+            caseManagementLocationService.retrieveCaseManagementLocation("Bradford",
+                regionalProcessingCentre);
 
         assertTrue(caseManagementLocation.isEmpty());
     }
 
     @Test
     public void shouldRetrieveCaseManagementLocation_givenValidProcessingVenue_andPostcode() {
+        setupCaseManagementLocationService(true);
+
+        RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().epimsId("rpcEpimsId").build();
         when(refDataService.getVenueRefData("Bradford")).thenReturn(CourtVenue.builder().regionId("regionId").build());
-        when(rpcVenueService.retrieveRpcEpimsIdForPostcode("BD1 1RX")).thenReturn("rpcEpimsId");
 
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation("Bradford", "BD1 1RX");
+            caseManagementLocationService.retrieveCaseManagementLocation("Bradford", regionalProcessingCentre);
 
         assertTrue(caseManagementLocation.isPresent());
         CaseManagementLocation result = caseManagementLocation.get();
