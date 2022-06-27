@@ -57,14 +57,6 @@
    ]]></notes>
     <cve>CVE-2022-23181</cve>
   </suppress>
-  <suppress until="2022-06-25">
-    <notes><![CDATA[
-   file name: jackson-databind-2.11.0.jar
-   ]]></notes>
-    <cve>CVE-2020-36518</cve>
-    <cve>CVE-2021-22096</cve>
-    <cve>CVE-2022-23708</cve>
-  </suppress>
   <suppress until="2022-05-25">
     <notes><![CDATA[
    file name: gson-2.8.6.jar
@@ -72,9 +64,9 @@
     <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
     <cve>CVE-2022-25647</cve>
   </suppress>
-  <suppress until="2022-06-25">
+  <suppress until="2022-07-25">
     <notes><![CDATA[
-   file name: spring-core-5.3.19.jar
+   file name: spring-core-5.3.21.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org.springframework/spring-core@.*$</packageUrl>
     <cve>CVE-2016-1000027</cve>
