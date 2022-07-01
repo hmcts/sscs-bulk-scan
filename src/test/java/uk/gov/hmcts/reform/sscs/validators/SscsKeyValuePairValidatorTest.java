@@ -58,7 +58,7 @@ public class SscsKeyValuePairValidatorTest {
         valueMap.put("value", "Bob");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.UNKNOWN.toString()).build();
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS1.toString()).build();
 
         CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertNull(response.getErrors());
@@ -72,10 +72,10 @@ public class SscsKeyValuePairValidatorTest {
         valueMap.put("value", "test");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS1PEU.toString()).build();
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType("invalid_key").build();
 
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
-        assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
+        CaseResponse response = validator.validate("123456", exceptionRecord);
+        assertEquals("No valid form type was found, need to add form_type with valid form type to OCR data", response.getErrors().get(0));
     }
 
     @Test

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
-import static java.util.Arrays.stream;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.FORM_TYPE;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
@@ -39,39 +38,42 @@ public class SscsKeyValuePairValidator {
     public CaseResponse validate(String caseId, ExceptionRecord exceptionRecord) {
         List<String> errors = null;
 
-        String formType = getFormType(caseId, exceptionRecord);
+        String formTypeData = getFormType(caseId, exceptionRecord);
 
-        if (formType == null) {
+        if (formTypeData == null) {
             errors = new ArrayList<>();
             errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
             log.info("No valid form type was found while transforming exception record caseId {}",
                 caseId);
-            return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
-                .status(getValidationStatus(errors, null)).build();
+
+        } else {
+
+            try {
+                FormType formType = FormType.getById(formTypeData);
+
+                log.info("Validating against formType {}", formType);
+
+                if (formType != null && formType.equals(FormType.SSCS2)) {
+                    sscs2Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
+                } else if (formType != null && formType.equals(FormType.SSCS5)) {
+                    sscs5Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
+                } else if (formType != null && (formType.equals(FormType.SSCS1U) || formType.equals(FormType.SSCS1)
+                    || formType.equals(FormType.SSCS1PE) || formType.equals(FormType.SSCS1PEU))) {
+
+
+                    sscs1Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
+                }
+            } catch (ValidationException ex) {
+                log.error("Validation failed: {}", ex.getAllMessages());
+                if (errors == null) {
+                    errors = new ArrayList<>();
+                }
+
+                for (String message : ex.getAllMessages()) {
+                    errors.add(message);
+                }
+            }
         }
-
-        try {
-            log.info("Validating against formType {}", formType);
-
-            if (formType != null && formType.equals(FormType.SSCS2)) {
-                sscs2Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
-            } else if (formType != null && formType.equals(FormType.SSCS5)) {
-                sscs5Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
-            } else if (formType != null && (formType.equals(FormType.SSCS1U) || formType.equals(FormType.SSCS1)
-                || formType.equals(FormType.SSCS1PE) || formType.equals(FormType.SSCS1PEU))) {
-                sscs1Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
-            }
-        } catch (ValidationException ex) {
-            log.error("Validation failed: {}", ex.getAllMessages());
-            if (errors == null) {
-                errors = new ArrayList<>();
-            }
-
-            for (String message : ex.getAllMessages()) {
-                errors.add(message);
-            }
-        }
-
         return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
             .status(getValidationStatus(errors, null)).build();
     }
@@ -99,12 +101,7 @@ public class SscsKeyValuePairValidator {
         return formType;
     }
 
-
     public boolean notAValidFormType(String formType) {
-        if (stream(FormType.values()).anyMatch(formType1 -> formType1.getId().equalsIgnoreCase(formType))) {
-            return FormType.UNKNOWN.getId().equals(formType);
-        }
-
-        return true;
+        return FormType.UNKNOWN.equals(FormType.getById(formType));
     }
 }

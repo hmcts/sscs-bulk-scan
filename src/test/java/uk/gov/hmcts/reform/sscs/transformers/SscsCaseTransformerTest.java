@@ -63,6 +63,8 @@ public class SscsCaseTransformerTest {
     @Mock
     SscsKeyValuePairValidator keyValuePairValidator;
 
+    SscsKeyValuePairValidator keyValuePairValidator2;
+
     DwpAddressLookupService dwpAddressLookupService;
 
     @Mock
@@ -74,6 +76,7 @@ public class SscsCaseTransformerTest {
     FuzzyMatcherService fuzzyMatcherService = new FuzzyMatcherService();
     SscsDataHelper sscsDataHelper;
     SscsCaseTransformer transformer;
+    SscsCaseTransformer transformer2;
     List<OcrDataField> ocrList = new ArrayList<>();
     Map<String, Object> pairs = new HashMap<>();
     ExceptionRecord exceptionRecord;
@@ -98,7 +101,10 @@ public class SscsCaseTransformerTest {
         token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
         sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator, true);
+        keyValuePairValidator2 = new SscsKeyValuePairValidator(sscsJsonExtractor);
+
         transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, refDataService, false, true);
+        transformer2 = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator2, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, refDataService, false, true);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -113,7 +119,6 @@ public class SscsCaseTransformerTest {
 
         sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-
         given(keyValuePairValidator.validate(sscs1UExceptionRecord.getExceptionRecordId(), sscs1UExceptionRecord)).willReturn(CaseResponse.builder().build());
         nullFormExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
@@ -124,8 +129,9 @@ public class SscsCaseTransformerTest {
         given(sscsJsonExtractor.extractJson(sscs2ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         given(keyValuePairValidator.validate(sscs2ExceptionRecord.getExceptionRecordId(), sscs2ExceptionRecord)).willReturn(CaseResponse.builder().build());
-        sscs5ExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+        sscs5ExceptionRecord = ExceptionRecord.builder().id("null").exceptionRecordId("123456").ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             SSCS5.getId()).build();
+        given(keyValuePairValidator.validate(sscs5ExceptionRecord.getExceptionRecordId(), sscs5ExceptionRecord)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(sscs5ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
@@ -1461,7 +1467,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenACaseWithFailedSchemaValidation_thenAddErrorToList() {
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PEU.toString()).build();
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().id("123456").ocrDataFields(ocrList).formType(FormType.SSCS1PEU.toString()).build();
 
         given(keyValuePairValidator.validate("123456", exceptionRecord)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
@@ -1877,7 +1883,7 @@ public class SscsCaseTransformerTest {
     public void givenATransformForValidationRequestFailsSchemaValidation_thenReturnErrors() {
         pairs.put("bla", "12/99/1987");
 
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PEU.toString()).build();
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().id("123456").ocrDataFields(ocrList).formType(FormType.SSCS1PEU.toString()).build();
 
         given(keyValuePairValidator.validate("123456", exceptionRecord)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
@@ -2400,13 +2406,13 @@ public class SscsCaseTransformerTest {
     @Test
     @Parameters({"SSCS2", "SSCS5", "SSCS1", "SSCS1U", "SSCS1PE", "SSCS1PEU"})
     public void notAValidFormFalse(String formType) {
-        assertFalse(keyValuePairValidator.notAValidFormType(formType));
+        assertFalse(keyValuePairValidator2.notAValidFormType(formType));
     }
 
     @Test
-    @Parameters({"SSCS", "SSCS55", "SSCS11"})
+    @Parameters({"SSCS", "SSCS55", "SSCS11", "UNKNOWN"})
     public void notAValidFormTrue(String formType) {
-        assertTrue(keyValuePairValidator.notAValidFormType(formType));
+        assertTrue(keyValuePairValidator2.notAValidFormType(formType));
     }
 
     @Test
@@ -2427,9 +2433,8 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             null).build();
-        ;
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().size() == 1);
         assertTrue(result.getWarnings().isEmpty());
     }
@@ -2453,9 +2458,10 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             null).build();
-        ;
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+
         assertTrue(result.getErrors().size() == 1);
         assertTrue(result.getWarnings().isEmpty());
     }
@@ -2480,7 +2486,8 @@ public class SscsCaseTransformerTest {
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             null).build();
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
     }
