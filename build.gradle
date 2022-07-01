@@ -180,7 +180,7 @@ def versions = [
   pitest             : '1.4.2',
   sonarPitest        : '0.5',
   restAssured        : '4.3.3',
-  sscsCommon     	 : '4.13.0-RC-SSCS-10517'
+  sscsCommon     	 : '4.13.0-RC-SSCS-10517-2'
 ]
 
 configurations.all {
@@ -246,6 +246,7 @@ dependencies {
 
   testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit', version: versions.jsonUnit
   testCompile 'pl.pragmatists:JUnitParams:1.1.1'
+  testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit', version: versions.jsonUnit
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
   testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.7.0'
   testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
