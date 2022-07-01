@@ -1,5 +1,9 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,9 +14,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
+
 
 public class SscsKeyValuePairValidatorTest {
 

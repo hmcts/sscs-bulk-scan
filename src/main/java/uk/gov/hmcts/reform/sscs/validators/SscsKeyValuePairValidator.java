@@ -1,5 +1,11 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static java.util.Arrays.stream;
+import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.FORM_TYPE;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
+import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
+import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -15,11 +21,7 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
-import static java.util.Arrays.stream;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.FORM_TYPE;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
-import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
-import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
+
 
 @Component
 @Slf4j

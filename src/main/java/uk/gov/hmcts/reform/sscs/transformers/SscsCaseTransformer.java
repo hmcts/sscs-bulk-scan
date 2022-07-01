@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
-import static java.util.Arrays.stream;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
@@ -110,7 +109,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseId, exceptionRecord);
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
-        String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+        final String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
 
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
