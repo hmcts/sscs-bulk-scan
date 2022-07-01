@@ -3,7 +3,7 @@
   "case_type_id": "case_type_id",
   "po_box": "po_box",
   "po_box_jurisdiction": "bulkscan",
-  "form_type": null,
+  "form_type": "sscs1",
   "journey_classification": "NEW_APPLICATION",
   "delivery_date": "2019-08-01T01:02:03.456Z",
   "opening_date": "2019-08-02T02:03:04.567Z",
