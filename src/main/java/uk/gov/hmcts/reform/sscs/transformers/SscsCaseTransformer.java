@@ -107,26 +107,11 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
         log.info("Validating exception record against schema caseId {}", caseId);
 
-        String formType = exceptionRecord.getFormType();
-        log.info("formtype for case {} is {}", caseId, formType);
-        if (formType == null || notAValidFormType(formType)) {
-            ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
-            String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseId, exceptionRecord);
 
-            if (ocrFormType == null || notAValidFormType(ocrFormType)) {
-                List<String> errors = new ArrayList<>();
-                errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
-                log.info("No valid form type was found while transforming exception record caseId {}",
-                    caseId);
-                return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
-                    .status(getValidationStatus(errors, null)).build();
-            } else {
-                formType = ocrFormType;
-            }
-        }
+        ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
+        String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
 
-        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields(),
-            FormType.getById(formType));
 
         if (keyValuePairValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record caseId {}",
@@ -140,8 +125,6 @@ public class SscsCaseTransformer implements CaseTransformer {
         warnings = new HashSet<>();
 
         boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
-
-        ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
 
         IdamTokens token = idamService.getIdamTokens();
 
@@ -1045,7 +1028,4 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
     }
 
-    protected boolean notAValidFormType(String formType) {
-        return !stream(FormType.values()).anyMatch(formType1 -> formType1.getId().equalsIgnoreCase(formType));
-    }
 }

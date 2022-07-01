@@ -1,20 +1,24 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
+import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
+import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
 
 public class SscsKeyValuePairValidatorTest {
 
-    SscsKeyValuePairValidator validator = new SscsKeyValuePairValidator();
+
+    SscsJsonExtractor sscsJsonExtractor = new SscsJsonExtractor();
+    SscsKeyValuePairValidator validator = new SscsKeyValuePairValidator(sscsJsonExtractor);
 
     @Test
     public void givenNewFieldsInV2OfTheForm_thenNoErrorsAreGiven() {
@@ -37,7 +41,9 @@ public class SscsKeyValuePairValidatorTest {
         }).toArray(HashMap[]::new));
 
         @SuppressWarnings("unchecked")
-        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS1);
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS1PEU.toString()).build();
+
+        CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertNull(response.getErrors());
     }
 
@@ -50,8 +56,9 @@ public class SscsKeyValuePairValidatorTest {
         valueMap.put("value", "Bob");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.UNKNOWN.toString()).build();
 
-        CaseResponse response = validator.validate(scanOcrData, FormType.UNKNOWN);
+        CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertNull(response.getErrors());
     }
 
@@ -63,8 +70,9 @@ public class SscsKeyValuePairValidatorTest {
         valueMap.put("value", "test");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS1PEU.toString()).build();
 
-        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS1PEU);
+        CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
     }
 
@@ -80,8 +88,9 @@ public class SscsKeyValuePairValidatorTest {
         valueMap2.put("value", "test");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap1, valueMap2);
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS1PE.toString()).build();
 
-        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS1PE);
+        CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertEquals(2, response.getErrors().size());
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
         assertEquals("#: extraneous key [invalid_key2] is not permitted", response.getErrors().get(1));
@@ -95,8 +104,9 @@ public class SscsKeyValuePairValidatorTest {
         valueMap.put("value", "Test1234");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS2.toString()).build();
 
-        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
+        CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
@@ -125,7 +135,9 @@ public class SscsKeyValuePairValidatorTest {
         }).toArray(HashMap[]::new));
 
         @SuppressWarnings("unchecked")
-        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS2.toString()).build();
+
+        CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
@@ -141,7 +153,9 @@ public class SscsKeyValuePairValidatorTest {
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
 
-        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS2.toString()).build();
+
+        CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
@@ -167,7 +181,9 @@ public class SscsKeyValuePairValidatorTest {
         }).toArray(HashMap[]::new));
 
         @SuppressWarnings("unchecked")
-        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS5);
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS5.toString()).build();
+
+        CaseResponse response = validator.validate("caseId", exceptionRecord);
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
