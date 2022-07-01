@@ -108,10 +108,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseId, exceptionRecord);
 
-        ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
-        final String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
-
-
         if (keyValuePairValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record caseId {}",
                 caseId);
@@ -127,7 +123,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType, errors, ignoreWarningsValue);
+        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, exceptionRecord.getFormType(), errors, ignoreWarningsValue);
 
         duplicateCaseCheck(caseId, transformed, token);
 
