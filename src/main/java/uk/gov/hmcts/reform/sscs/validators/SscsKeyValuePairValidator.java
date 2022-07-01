@@ -39,23 +39,15 @@ public class SscsKeyValuePairValidator {
     public CaseResponse validate(String caseId, ExceptionRecord exceptionRecord) {
         List<String> errors = null;
 
-        String formType = exceptionRecord.getFormType();
-        log.info("formtype for case {} is {}", caseId, formType);
+        String formType = getFormType(caseId, exceptionRecord);
 
-        if (formType == null || notAValidFormType(formType)) {
-            ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
-            String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
-
-            if (ocrFormType == null || notAValidFormType(ocrFormType)) {
-                errors = new ArrayList<>();
-                errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
-                log.info("No valid form type was found while transforming exception record caseId {}",
-                    caseId);
-                return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
-                    .status(getValidationStatus(errors, null)).build();
-            } else {
-                formType = ocrFormType;
-            }
+        if (formType == null) {
+            errors = new ArrayList<>();
+            errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
+            log.info("No valid form type was found while transforming exception record caseId {}",
+                caseId);
+            return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
+                .status(getValidationStatus(errors, null)).build();
         }
 
         try {
@@ -79,6 +71,7 @@ public class SscsKeyValuePairValidator {
                 errors.add(message);
             }
         }
+
         return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
             .status(getValidationStatus(errors, null)).build();
     }
@@ -86,6 +79,24 @@ public class SscsKeyValuePairValidator {
     private synchronized Schema tryLoadSscsSchema(String schemaLocation) {
         return SchemaLoader
             .load(new JSONObject(new JSONTokener(getClass().getResourceAsStream(schemaLocation))));
+    }
+
+    public String getFormType(String caseId, ExceptionRecord exceptionRecord) {
+        String formType = exceptionRecord.getFormType();
+        log.info("formtype for case {} is {}", caseId, formType);
+
+        if (formType == null || notAValidFormType(formType)) {
+            ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
+            String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+
+            if (ocrFormType == null || notAValidFormType(ocrFormType)) {
+                return null;
+            } else {
+                formType = ocrFormType;
+            }
+        }
+
+        return formType;
     }
 
 
