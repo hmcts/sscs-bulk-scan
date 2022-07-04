@@ -42,38 +42,40 @@ public class FormTypeValidator {
 
         if (formTypeData == null) {
             errors = new ArrayList<>();
-            errors.add("No valid form type was found, need to add form_type with valid form type to OCR data");
+            errors.add("No valid form type was found. There needs to be a valid form_type on the OCR data or on the exception record.");
             log.info("No valid form type was found while transforming exception record caseId {}",
                 caseId);
 
-        } else {
+            return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
+                .status(getValidationStatus(errors, null)).build();
+        }
 
-            try {
-                FormType formType = FormType.getById(formTypeData);
+        try {
+            FormType formType = FormType.getById(formTypeData);
 
-                log.info("Validating against formType {}", formType);
+            log.info("Validating against formType {}", formType);
 
-                if (formType != null && formType.equals(FormType.SSCS2)) {
-                    sscs2Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
-                } else if (formType != null && formType.equals(FormType.SSCS5)) {
-                    sscs5Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
-                } else if (formType != null && (formType.equals(FormType.SSCS1U) || formType.equals(FormType.SSCS1)
-                    || formType.equals(FormType.SSCS1PE) || formType.equals(FormType.SSCS1PEU))) {
+            if (formType != null && formType.equals(FormType.SSCS2)) {
+                sscs2Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
+            } else if (formType != null && formType.equals(FormType.SSCS5)) {
+                sscs5Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
+            } else if (formType != null && (formType.equals(FormType.SSCS1U) || formType.equals(FormType.SSCS1)
+                || formType.equals(FormType.SSCS1PE) || formType.equals(FormType.SSCS1PEU))) {
 
 
-                    sscs1Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
-                }
-            } catch (ValidationException ex) {
-                log.error("Validation failed: {}", ex.getAllMessages());
-                if (errors == null) {
-                    errors = new ArrayList<>();
-                }
+                sscs1Schema.validate(new JSONObject(build(exceptionRecord.getOcrDataFields())));
+            }
+        } catch (ValidationException ex) {
+            log.error("Validation failed: {}", ex.getAllMessages());
+            if (errors == null) {
+                errors = new ArrayList<>();
+            }
 
-                for (String message : ex.getAllMessages()) {
-                    errors.add(message);
-                }
+            for (String message : ex.getAllMessages()) {
+                errors.add(message);
             }
         }
+
         return CaseResponse.builder().errors(errors).warnings(new ArrayList<>())
             .status(getValidationStatus(errors, null)).build();
     }

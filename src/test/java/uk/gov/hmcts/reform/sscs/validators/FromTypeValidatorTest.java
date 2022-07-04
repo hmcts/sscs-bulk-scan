@@ -75,7 +75,7 @@ public class FromTypeValidatorTest {
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType("invalid_key").build();
 
         CaseResponse response = validator.validate("123456", exceptionRecord);
-        assertEquals("No valid form type was found, need to add form_type with valid form type to OCR data", response.getErrors().get(0));
+        assertEquals("No valid form type was found. There needs to be a valid form_type on the OCR data or on the exception record.", response.getErrors().get(0));
     }
 
     @Test
