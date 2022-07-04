@@ -123,7 +123,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, exceptionRecord.getFormType(), errors, ignoreWarningsValue);
+        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, keyValuePairValidator.getFormType(caseId, exceptionRecord), errors, ignoreWarningsValue);
 
         duplicateCaseCheck(caseId, transformed, token);
 
