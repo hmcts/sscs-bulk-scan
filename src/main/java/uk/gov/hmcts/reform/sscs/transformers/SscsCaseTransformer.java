@@ -46,7 +46,7 @@ import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
-import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
+import uk.gov.hmcts.reform.sscs.validators.FormTypeValidator;
 
 @Component
 @Slf4j
@@ -57,7 +57,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private final IdamService idamService;
     private final CcdService ccdService;
     private final SscsJsonExtractor sscsJsonExtractor;
-    private final SscsKeyValuePairValidator keyValuePairValidator;
+    private final FormTypeValidator formTypeValidator;
     private final SscsDataHelper sscsDataHelper;
     private final FuzzyMatcherService fuzzyMatcherService;
     private final DwpAddressLookupService dwpAddressLookupService;
@@ -69,7 +69,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private final boolean caseAccessManagementFeature;
 
     public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
-                               SscsKeyValuePairValidator keyValuePairValidator,
+                               FormTypeValidator formTypeValidator,
                                SscsDataHelper sscsDataHelper,
                                FuzzyMatcherService fuzzyMatcherService,
                                DwpAddressLookupService dwpAddressLookupService,
@@ -79,7 +79,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                                @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive,
                                @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
         this.sscsJsonExtractor = sscsJsonExtractor;
-        this.keyValuePairValidator = keyValuePairValidator;
+        this.formTypeValidator = formTypeValidator;
         this.sscsDataHelper = sscsDataHelper;
         this.fuzzyMatcherService = fuzzyMatcherService;
         this.dwpAddressLookupService = dwpAddressLookupService;
@@ -106,12 +106,12 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
         log.info("Validating exception record against schema caseId {}", caseId);
 
-        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(caseId, exceptionRecord);
+        CaseResponse formTypeValidatorResponse = formTypeValidator.validate(caseId, exceptionRecord);
 
-        if (keyValuePairValidatorResponse.getErrors() != null) {
+        if (formTypeValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record caseId {}",
                 caseId);
-            return keyValuePairValidatorResponse;
+            return formTypeValidatorResponse;
         }
 
         log.info("Extracting and transforming exception record caseId {}", caseId);
@@ -123,7 +123,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, keyValuePairValidator.getFormType(caseId, exceptionRecord), errors, ignoreWarningsValue);
+        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, exceptionRecord.getFormType(), errors, ignoreWarningsValue);
 
         duplicateCaseCheck(caseId, transformed, token);
 

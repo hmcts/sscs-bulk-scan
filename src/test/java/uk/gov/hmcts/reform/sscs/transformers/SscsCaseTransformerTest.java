@@ -49,8 +49,9 @@ import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
+import uk.gov.hmcts.reform.sscs.validators.FormTypeValidator;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
-import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
+
 
 @RunWith(JUnitParamsRunner.class)
 public class SscsCaseTransformerTest {
@@ -61,9 +62,9 @@ public class SscsCaseTransformerTest {
     SscsJsonExtractor sscsJsonExtractor;
 
     @Mock
-    SscsKeyValuePairValidator keyValuePairValidator;
+    FormTypeValidator formTypeValidator;
 
-    SscsKeyValuePairValidator keyValuePairValidator2;
+    FormTypeValidator formTypeValidator2;
 
     DwpAddressLookupService dwpAddressLookupService;
 
@@ -101,10 +102,10 @@ public class SscsCaseTransformerTest {
         token = IdamTokens.builder().idamOauth2Token(TEST_USER_AUTH_TOKEN).serviceAuthorization(TEST_SERVICE_AUTH_TOKEN).userId(TEST_USER_ID).build();
 
         sscsDataHelper = new SscsDataHelper(null, dwpAddressLookupService, airLookupService, postcodeValidator, true);
-        keyValuePairValidator2 = new SscsKeyValuePairValidator(sscsJsonExtractor);
+        formTypeValidator2 = new FormTypeValidator(sscsJsonExtractor);
 
-        transformer = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, refDataService, false, true);
-        transformer2 = new SscsCaseTransformer(sscsJsonExtractor, keyValuePairValidator2, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, refDataService, false, true);
+        transformer = new SscsCaseTransformer(sscsJsonExtractor, formTypeValidator, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, refDataService, false, true);
+        transformer2 = new SscsCaseTransformer(sscsJsonExtractor, formTypeValidator2, sscsDataHelper, fuzzyMatcherService, dwpAddressLookupService, idamService, ccdService, refDataService, false, true);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
         pairs.put("is_hearing_type_paper", IS_HEARING_TYPE_PAPER);
@@ -112,26 +113,26 @@ public class SscsCaseTransformerTest {
 
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             SSCS1PEU.getId()).build();
-        given(keyValuePairValidator.validate(exceptionRecord.getExceptionRecordId(), exceptionRecord)).willReturn(CaseResponse.builder().build());
+        given(formTypeValidator.validate(exceptionRecord.getExceptionRecordId(), exceptionRecord)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
         given(postcodeValidator.isValid(anyString())).willReturn(true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
         sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-        given(keyValuePairValidator.validate(sscs1UExceptionRecord.getExceptionRecordId(), sscs1UExceptionRecord)).willReturn(CaseResponse.builder().build());
+        given(formTypeValidator.validate(sscs1UExceptionRecord.getExceptionRecordId(), sscs1UExceptionRecord)).willReturn(CaseResponse.builder().build());
         nullFormExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
-        given(keyValuePairValidator.validate(nullFormExceptionRecord.getExceptionRecordId(), nullFormExceptionRecord)).willReturn(CaseResponse.builder().build());
+        given(formTypeValidator.validate(nullFormExceptionRecord.getExceptionRecordId(), nullFormExceptionRecord)).willReturn(CaseResponse.builder().build());
         sscs2ExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             SSCS2.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs2ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
-        given(keyValuePairValidator.validate(sscs2ExceptionRecord.getExceptionRecordId(), sscs2ExceptionRecord)).willReturn(CaseResponse.builder().build());
+        given(formTypeValidator.validate(sscs2ExceptionRecord.getExceptionRecordId(), sscs2ExceptionRecord)).willReturn(CaseResponse.builder().build());
         sscs5ExceptionRecord = ExceptionRecord.builder().id("null").exceptionRecordId("123456").ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             SSCS5.getId()).build();
-        given(keyValuePairValidator.validate(sscs5ExceptionRecord.getExceptionRecordId(), sscs5ExceptionRecord)).willReturn(CaseResponse.builder().build());
+        given(formTypeValidator.validate(sscs5ExceptionRecord.getExceptionRecordId(), sscs5ExceptionRecord)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(sscs5ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
@@ -1469,7 +1470,7 @@ public class SscsCaseTransformerTest {
     public void givenACaseWithFailedSchemaValidation_thenAddErrorToList() {
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().id("123456").ocrDataFields(ocrList).formType(FormType.SSCS1PEU.toString()).build();
 
-        given(keyValuePairValidator.validate("123456", exceptionRecord)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        given(formTypeValidator.validate("123456", exceptionRecord)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1885,7 +1886,7 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().id("123456").ocrDataFields(ocrList).formType(FormType.SSCS1PEU.toString()).build();
 
-        given(keyValuePairValidator.validate("123456", exceptionRecord)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        given(formTypeValidator.validate("123456", exceptionRecord)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, true);
 
@@ -2406,13 +2407,13 @@ public class SscsCaseTransformerTest {
     @Test
     @Parameters({"SSCS2", "SSCS5", "SSCS1", "SSCS1U", "SSCS1PE", "SSCS1PEU"})
     public void notAValidFormFalse(String formType) {
-        assertFalse(keyValuePairValidator2.notAValidFormType(formType));
+        assertFalse(formTypeValidator2.notAValidFormType(formType));
     }
 
     @Test
     @Parameters({"SSCS", "SSCS55", "SSCS11", "UNKNOWN"})
     public void notAValidFormTrue(String formType) {
-        assertTrue(keyValuePairValidator2.notAValidFormType(formType));
+        assertTrue(formTypeValidator2.notAValidFormType(formType));
     }
 
     @Test

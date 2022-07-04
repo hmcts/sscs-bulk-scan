@@ -16,11 +16,11 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
 
 
-public class SscsKeyValuePairValidatorTest {
+public class FromTypeValidatorTest {
 
 
     SscsJsonExtractor sscsJsonExtractor = new SscsJsonExtractor();
-    SscsKeyValuePairValidator validator = new SscsKeyValuePairValidator(sscsJsonExtractor);
+    FormTypeValidator validator = new FormTypeValidator(sscsJsonExtractor);
 
     @Test
     public void givenNewFieldsInV2OfTheForm_thenNoErrorsAreGiven() {

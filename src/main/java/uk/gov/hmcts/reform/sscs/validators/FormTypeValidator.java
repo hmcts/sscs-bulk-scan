@@ -24,14 +24,14 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
 @Component
 @Slf4j
-public class SscsKeyValuePairValidator {
+public class FormTypeValidator {
 
     private final SscsJsonExtractor sscsJsonExtractor;
     private final Schema sscs1Schema = tryLoadSscsSchema("/schema/sscs-bulk-scan-schema.json");
     private final Schema sscs2Schema = tryLoadSscsSchema("/schema/sscs2-bulk-scan-schema.json");
     private final Schema sscs5Schema = tryLoadSscsSchema("/schema/sscs5-bulk-scan-schema.json");
 
-    public SscsKeyValuePairValidator(SscsJsonExtractor sscsJsonExtractor) {
+    public FormTypeValidator(SscsJsonExtractor sscsJsonExtractor) {
         this.sscsJsonExtractor = sscsJsonExtractor;
     }
 
