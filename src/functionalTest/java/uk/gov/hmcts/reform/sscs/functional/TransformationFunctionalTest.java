@@ -217,7 +217,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
 
         assertThat(errorResponse.getList("errors"))
             .hasSize(1)
-            .containsOnly("No valid form type was found, need to add form_type with valid form type to OCR data");
+            .containsOnly("No valid form type was found. There needs to be a valid form_type on the OCR data or on the exception record.");
         assertThat(errorResponse.getList("warnings")).isEmpty();
         assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
     }
@@ -239,7 +239,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
 
         assertThat(errorResponse.getList("errors"))
             .hasSize(1)
-            .containsOnly("No valid form type was found, need to add form_type with valid form type to OCR data");
+            .containsOnly("No valid form type was found. There needs to be a valid form_type on the OCR data or on the exception record.");
         assertThat(errorResponse.getList("warnings")).isEmpty();
         assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
     }
@@ -261,7 +261,7 @@ public class TransformationFunctionalTest extends BaseFunctionalTest {
 
         assertThat(errorResponse.getList("errors"))
             .hasSize(1)
-            .containsOnly("No valid form type was found, need to add form_type with valid form type to OCR data");
+            .containsOnly("No valid form type was found. There needs to be a valid form_type on the OCR data or on the exception record.");
         assertThat(errorResponse.getList("warnings")).isEmpty();
         assertThat(errorResponse.getMap("")).containsOnlyKeys("errors", "warnings");
     }
