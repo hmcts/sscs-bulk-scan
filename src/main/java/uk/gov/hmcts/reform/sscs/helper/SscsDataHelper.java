@@ -143,7 +143,7 @@ public class SscsDataHelper {
         if (caseAccessManagementFeature) {
             Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
             if (benefit.isPresent()) {
-                appealData.put("caseAccessCategory", CaseUtils.toCamelCase(benefit.get().getDescription(), false, ' '));
+                appealData.put("CaseAccessCategory", CaseUtils.toCamelCase(benefit.get().getDescription(), false, ' '));
                 DynamicListItem caseManagementCategory = new DynamicListItem(benefit.get().getShortName(), benefit.get().getDescription());
                 List<DynamicListItem> listItems = List.of(caseManagementCategory);
                 appealData.put(CASE_MANAGEMENT_CATEGORY, new DynamicList(caseManagementCategory, listItems));
