@@ -108,6 +108,12 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         CaseResponse formTypeValidatorResponse = formTypeValidator.validate(caseId, exceptionRecord);
 
+        if (formTypeValidatorResponse.getErrors() != null) {
+            log.info("Errors found while validating key value pairs while transforming exception record caseId {}",
+                caseId);
+            return formTypeValidatorResponse;
+        }
+
         String formType = exceptionRecord.getFormType();
         log.info("formtype for case {} is {}", caseId, formType);
 
@@ -115,17 +121,9 @@ public class SscsCaseTransformer implements CaseTransformer {
             ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
             String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
 
-            if (ocrFormType == null || notAValidFormType(ocrFormType)) {
-                return null;
-            } else {
+            if (!notAValidFormType(ocrFormType)) {
                 formType = ocrFormType;
             }
-        }
-
-        if (formTypeValidatorResponse.getErrors() != null) {
-            log.info("Errors found while validating key value pairs while transforming exception record caseId {}",
-                caseId);
-            return formTypeValidatorResponse;
         }
 
         log.info("Extracting and transforming exception record caseId {}", caseId);
