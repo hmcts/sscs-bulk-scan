@@ -3,9 +3,6 @@
   "title": "SSCS5 BulkScan",
   "type": "object",
   "properties": {
-    "is_benefit_type_pip":  {"type": "string"},
-    "is_benefit_type_esa":  {"type": "string"},
-    "is_benefit_type_uc":  {"type": "string"},
     "is_benefit_type_tax_credit":  {"type": "string"},
     "is_benefit_type_guardians_allowance":  {"type": "string"},
     "is_benefit_type_tax_free_childcare":  {"type": "string"},

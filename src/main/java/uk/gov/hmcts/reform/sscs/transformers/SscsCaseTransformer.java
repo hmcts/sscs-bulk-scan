@@ -108,6 +108,20 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         CaseResponse formTypeValidatorResponse = formTypeValidator.validate(caseId, exceptionRecord);
 
+        String formType = exceptionRecord.getFormType();
+        log.info("formtype for case {} is {}", caseId, formType);
+
+        if (formType == null || notAValidFormType(formType)) {
+            ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
+            String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+
+            if (ocrFormType == null || notAValidFormType(ocrFormType)) {
+                return null;
+            } else {
+                formType = ocrFormType;
+            }
+        }
+
         if (formTypeValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record caseId {}",
                 caseId);
@@ -123,7 +137,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, exceptionRecord.getFormType(), errors, ignoreWarningsValue);
+        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, formType, errors, ignoreWarningsValue);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -185,6 +199,10 @@ public class SscsCaseTransformer implements CaseTransformer {
         transformed = checkForMatches(transformed, token);
 
         return transformed;
+    }
+
+    private boolean notAValidFormType(String formType) {
+        return FormType.UNKNOWN.equals(FormType.getById(formType));
     }
 
     private Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {

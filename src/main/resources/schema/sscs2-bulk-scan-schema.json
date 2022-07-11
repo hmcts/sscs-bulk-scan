@@ -3,9 +3,6 @@
   "title": "SSCS2 BulkScan",
   "type": "object",
   "properties": {
-    "is_benefit_type_pip":  {"type": "string"},
-    "is_benefit_type_esa":  {"type": "string"},
-    "is_benefit_type_uc":  {"type": "string"},
     "contains_mrn": {"type": "string"},
     "mrn_date": {"type": "string"},
     "person1_title": {"type": "string"},
