@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
@@ -37,57 +38,62 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.Role;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
 import uk.gov.hmcts.reform.sscs.constants.*;
 import uk.gov.hmcts.reform.sscs.exception.UnknownFileTypeException;
+import uk.gov.hmcts.reform.sscs.helper.AppealPostcodeHelper;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
-import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
-import uk.gov.hmcts.reform.sscs.service.RefDataService;
+import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
-@Component
 @Slf4j
+@Component
 public class SscsCaseTransformer implements CaseTransformer {
 
     private static final String OTHER_PARTY_ID_ONE = "1";
 
-    private final IdamService idamService;
     private final CcdService ccdService;
-    private final SscsJsonExtractor sscsJsonExtractor;
-    private final SscsKeyValuePairValidator keyValuePairValidator;
+    private final IdamService idamService;
     private final SscsDataHelper sscsDataHelper;
+    private final SscsJsonExtractor sscsJsonExtractor;
     private final FuzzyMatcherService fuzzyMatcherService;
+    private final AppealPostcodeHelper appealPostcodeHelper;
+    private final SscsKeyValuePairValidator keyValuePairValidator;
     private final DwpAddressLookupService dwpAddressLookupService;
-    private final RefDataService refDataService;
+    private final CaseManagementLocationService caseManagementLocationService;
+
+    private final RegionalProcessingCenterService regionalProcessingCenterService;
+    private boolean ucOfficeFeatureActive;
+
     private Set<String> errors;
     private Set<String> warnings;
 
-    private boolean ucOfficeFeatureActive;
-    private final boolean caseAccessManagementFeature;
-
-    public SscsCaseTransformer(SscsJsonExtractor sscsJsonExtractor,
-                               SscsKeyValuePairValidator keyValuePairValidator,
-                               SscsDataHelper sscsDataHelper,
-                               FuzzyMatcherService fuzzyMatcherService,
-                               DwpAddressLookupService dwpAddressLookupService,
+    public SscsCaseTransformer(CcdService ccdService,
                                IdamService idamService,
-                               CcdService ccdService,
-                               RefDataService refDataService,
-                               @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive,
-                               @Value("${feature.case-access-management.enabled}")  boolean caseAccessManagementFeature) {
-        this.sscsJsonExtractor = sscsJsonExtractor;
-        this.keyValuePairValidator = keyValuePairValidator;
-        this.sscsDataHelper = sscsDataHelper;
-        this.fuzzyMatcherService = fuzzyMatcherService;
-        this.dwpAddressLookupService = dwpAddressLookupService;
-        this.idamService = idamService;
+                               SscsDataHelper sscsDataHelper,
+                               SscsJsonExtractor sscsJsonExtractor,
+                               FuzzyMatcherService fuzzyMatcherService,
+                               AppealPostcodeHelper appealPostcodeHelper,
+                               SscsKeyValuePairValidator keyValuePairValidator,
+                               DwpAddressLookupService dwpAddressLookupService,
+                               CaseManagementLocationService caseManagementLocationService,
+                               RegionalProcessingCenterService regionalProcessingCenterService,
+                               @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive) {
         this.ccdService = ccdService;
-        this.refDataService = refDataService;
+        this.idamService = idamService;
+        this.sscsDataHelper = sscsDataHelper;
+        this.sscsJsonExtractor = sscsJsonExtractor;
+        this.fuzzyMatcherService = fuzzyMatcherService;
+        this.appealPostcodeHelper = appealPostcodeHelper;
+        this.keyValuePairValidator = keyValuePairValidator;
+        this.dwpAddressLookupService = dwpAddressLookupService;
+        this.caseManagementLocationService = caseManagementLocationService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
-        this.caseAccessManagementFeature = caseAccessManagementFeature;
+        this.regionalProcessingCenterService = regionalProcessingCenterService;
     }
 
     public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
@@ -121,7 +127,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         errors = new HashSet<>();
         warnings = new HashSet<>();
 
-        boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
+        boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null && exceptionRecord.getIgnoreWarnings();
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
 
@@ -150,8 +156,12 @@ public class SscsCaseTransformer implements CaseTransformer {
         return mergedWarnings;
     }
 
-    private Map<String, Object> transformData(String caseId, ScannedData scannedData, IdamTokens token,
-                                              String formType, Set<String> errors, boolean ignoreWarnings) {
+    private Map<String, Object> transformData(String caseId,
+                                              ScannedData scannedData,
+                                              IdamTokens token,
+                                              String formType,
+                                              Set<String> errors,
+                                              boolean ignoreWarnings) {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType, errors, ignoreWarnings);
         List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
@@ -166,29 +176,25 @@ public class SscsCaseTransformer implements CaseTransformer {
         transformed.put("bulkScanCaseReference", caseId);
         transformed.put("caseCreated", scannedData.getOpeningDate());
 
-        String processingVenue = sscsDataHelper.findProcessingVenue(appeal.getAppellant(), appeal.getBenefitType());
+        String postcode = appealPostcodeHelper.resolvePostcode(appeal.getAppellant());
+        String processingVenue = sscsDataHelper.findProcessingVenue(postcode, appeal.getBenefitType());
 
-        if (StringUtils.isNotEmpty(processingVenue)) {
+        RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postcode);
+
+        if (isNotBlank(processingVenue)) {
             log.info("{} - setting venue name to {}", caseId, processingVenue);
             transformed.put("processingVenue", processingVenue);
-            if (caseAccessManagementFeature) {
-                CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
-                if (courtVenue != null) {
-                    transformed.put("caseManagementLocation",
-                        CaseManagementLocation.builder()
-                            .baseLocation(courtVenue.getEpimsId())
-                            .region(courtVenue.getRegionId())
-                            .build());
-                }
-            }
+            Optional<CaseManagementLocation> caseManagementLocationOptional = caseManagementLocationService
+                .retrieveCaseManagementLocation(processingVenue, rpc);
+
+            caseManagementLocationOptional.ifPresent(caseManagementLocation ->
+                transformed.put("caseManagementLocation", caseManagementLocation));
         }
 
         log.info("Transformation complete for exception record id {}, caseCreated field set to {}", caseId,
             scannedData.getOpeningDate());
 
-        transformed = checkForMatches(transformed, token);
-
-        return transformed;
+        return checkForMatches(transformed, token);
     }
 
     private Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {
@@ -213,7 +219,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         boolean wantEmailNotifications = false;
         if ((PERSON1_VALUE.equals(personType) || REPRESENTATIVE_VALUE.equals(personType))
-            && StringUtils.isNotBlank(email)) {
+            && isNotBlank(email)) {
             wantEmailNotifications = true;
         }
 
@@ -465,7 +471,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private YesNo getConfidentialityRequired(Map<String, Object> pairs, Set<String> errors) {
         String keepHomeAddressConfidential = (String) pairs.get(KEEP_HOME_ADDRESS_CONFIDENTIAL);
-        return keepHomeAddressConfidential != null && StringUtils.isNotBlank(keepHomeAddressConfidential)
+        return keepHomeAddressConfidential != null && isNotBlank(keepHomeAddressConfidential)
             ? convertBooleanToYesNo(getBoolean(pairs, errors, KEEP_HOME_ADDRESS_CONFIDENTIAL)) : null;
     }
 
@@ -840,7 +846,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (fromOldVersionForm.isPresent()) {
             return fromOldVersionForm.get();
         }
-        return StringUtils.isNotBlank(getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL));
+        return isNotBlank(getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL));
     }
 
     private String findSignLanguageType(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
