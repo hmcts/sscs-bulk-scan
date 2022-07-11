@@ -172,10 +172,11 @@
         "postcode": "BD3 7BH",
         "city": "BRADFORD",
         "email": "SSCS_Bradford@justice.gov.uk",
-        "hearingRoute":  "gaps"
+        "hearingRoute":  "gaps",
+        "epimsId": "698118"
       },
       "caseManagementLocation": {
-        "baseLocation": "1",
+        "baseLocation": "815833",
         "region": "1"
       },
       "processingVenue": "Coventry (CMCB)",

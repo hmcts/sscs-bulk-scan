@@ -90,7 +90,7 @@
   </suppress>
   <suppress until="2022-08-01">
     <notes><![CDATA[
-   file name: spring-core-5.3.19.jar
+   file name: spring-core-5.3.21.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org.springframework/spring-core@.*$</packageUrl>
     <cve>CVE-2016-1000027</cve>

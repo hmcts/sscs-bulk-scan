@@ -133,7 +133,8 @@
         "phoneNumber" : "0300 123 1142",
         "faxNumber" : "0126 434 7983",
         "email" : "SSCS_Bradford@justice.gov.uk",
-        "hearingRoute":  "gaps"
+        "hearingRoute":  "gaps",
+        "epimsId": "698118"
       },
       "processingVenue": "Basildon CC",
       "interlocReferralReason": "over13MonthsAndGroundsMissing",

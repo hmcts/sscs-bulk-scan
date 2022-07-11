@@ -180,7 +180,7 @@ def versions = [
   pitest             : '1.4.2',
   sonarPitest        : '0.5',
   restAssured        : '4.3.3',
-  sscsCommon     	 : '4.13.1',
+  sscsCommon     	 : '4.13.1'
 ]
 
 configurations.all {
@@ -244,6 +244,7 @@ dependencies {
     exclude group: "com.vaadin.external.google", module: "android-json"
   }
 
+  testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit', version: versions.jsonUnit
   testCompile 'pl.pragmatists:JUnitParams:1.1.1'
   testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit', version: versions.jsonUnit
   testCompile group: 'org.pitest', name: 'pitest', version: versions.pitest
@@ -310,7 +311,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22118
-    dependencySet(group: 'org.springframework', version: '5.3.20') {
+    dependencySet(group: 'org.springframework', version: '5.3.21') {
       entry 'spring-aop'
       entry 'spring-aspects'
       entry 'spring-beans'
