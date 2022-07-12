@@ -103,7 +103,7 @@ public class SscsCaseTransformerTest {
         openMocks(this);
 
         DwpAddressLookupService dwpAddressLookupService = new DwpAddressLookupService();
-      
+
         formTypeValidator2 = new FormTypeValidator(sscsJsonExtractor);
 
         SscsDataHelper sscsDataHelper = new SscsDataHelper(
@@ -119,12 +119,12 @@ public class SscsCaseTransformerTest {
             sscsJsonExtractor,
             new FuzzyMatcherService(),
             appealPostcodeHelper,
-            transformer,
+            formTypeValidator,
             dwpAddressLookupService,
             caseManagementLocationService,
             regionalProcessingCenterService,
             false);
-      
+
         transformer2 = new SscsCaseTransformer(
             ccdService,
             idamService,
@@ -132,7 +132,7 @@ public class SscsCaseTransformerTest {
             sscsJsonExtractor,
             new FuzzyMatcherService(),
             appealPostcodeHelper,
-            transformer2,
+            formTypeValidator2,
             dwpAddressLookupService,
             caseManagementLocationService,
             regionalProcessingCenterService,
