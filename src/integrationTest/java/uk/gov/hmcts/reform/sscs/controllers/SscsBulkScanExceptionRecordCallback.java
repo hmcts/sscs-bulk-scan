@@ -32,7 +32,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,15 +69,10 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     public static final String MRN_DATE_YESTERDAY_DD_MM_YYYY =
         LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private String newBaseUrl;
 
     private static String loadJson(String fileName) throws IOException {
         URL url = getResource(fileName);
         return Resources.toString(url, Charsets.toCharset("UTF-8"));
-    }
-
-    private static <K, V> Map.Entry<K, V> entry(K key, V value) {
-        return new AbstractMap.SimpleImmutableEntry<>(key, value);
     }
 
     @Before
@@ -102,8 +96,6 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ResponseEntity<SuccessfulTransformationResponse> result =
             this.restTemplate
                 .postForEntity(baseUrl + TRANSFORM_EXCEPTION_RECORD, request, SuccessfulTransformationResponse.class);
-
-        SuccessfulTransformationResponse callbackResponse = result.getBody();
 
         verifyResultData(result, "mappings/exception/valid-appeal-response.json", this::getAppellantTya);
     }
@@ -195,8 +187,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
     //FIXME: delete after bulk scan auto case creation is switch on
     @Test
-    public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benefit_code_case_exists()
-        throws Exception {
+    public void should_not_create_duplicate_non_compliant_case_when_mrndate_nino_benefit_code_case_exists() throws Exception {
         // Given
         checkForLinkedCases(FIND_CASE_EVENT_URL);
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
@@ -284,8 +275,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     @Test
-    public void auto_scan_should_handle_callback_and_return_caseid_and_state_case_created()
-        throws Exception {
+    public void auto_scan_should_handle_callback_and_return_caseid_and_state_case_created() throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
 
@@ -304,8 +294,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     @Test
-    public void auto_scan_should_handle_callback_and_return_caseid_and_state_case_created_Sscs1U()
-        throws Exception {
+    public void auto_scan_should_handle_callback_and_return_caseid_and_state_case_created_Sscs1U() throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "attendanceAllowance");
 
@@ -325,13 +314,12 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
     }
 
     @Test
-    public void auto_scan_with_appointee_should_handle_callback_and_return_caseid_and_state_case_created()
-        throws Exception {
+    public void auto_scan_with_appointee_should_handle_callback_and_return_caseid_and_state_case_created() throws Exception {
         checkForLinkedCases(FIND_CASE_EVENT_URL);
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "ESA");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-        when(refDataService.getVenueRefData("Coventry (CMCB)")).thenReturn(CourtVenue.builder().regionId("1").epimsId("1").build());
+        when(refDataService.getVenueRefData("Coventry (CMCB)")).thenReturn(CourtVenue.builder().regionId("1").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(
             caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU"), "SSCS1PEU"),
@@ -341,14 +329,14 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             this.restTemplate
                 .postForEntity(baseUrl + TRANSFORM_SCANNED_DATA, request, SuccessfulTransformationResponse.class);
 
-        SuccessfulTransformationResponse callbackResponse = result.getBody();
-
+        //Epims ID on this expectation is wrong due to a mismatch in how the rpc is resolved when an appointee exists.
+        //Will be fixed in SSCS-10704
         verifyResultData(result, "mappings/exception/auto-valid-appeal-with-appointee-response.json",
             this::getAppointeeTya);
     }
 
     @Test
-    public void auto_scan_should_not_transform_incomplete_case_when_data_missing() throws Exception {
+    public void auto_scan_should_not_transform_incomplete_case_when_data_missing() {
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
@@ -403,7 +391,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         findCaseByForCaseworker(FIND_CASE_EVENT_URL, MRN_DATE_YESTERDAY_YYYY_MM_DD, "childSupport");
 
         when(authTokenValidator.getServiceName(SERVICE_AUTH_TOKEN)).thenReturn("test_service");
-        when(refDataService.getVenueRefData("Chelmsford")).thenReturn(CourtVenue.builder().regionId("1").epimsId("1").build());
+        when(refDataService.getVenueRefData("Chelmsford")).thenReturn(CourtVenue.builder().regionId("1").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
             exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS2"), "SSCS2", false),
