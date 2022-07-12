@@ -97,45 +97,7 @@ public class FromTypeValidatorTest {
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
         assertEquals("#: extraneous key [invalid_key2] is not permitted", response.getErrors().get(1));
     }
-
-    @Test
-    public void givenIsBenefitTypeEsaPipUcForFromTypeSscs5_thenReturnAnEmptyCaseResponse() {
-        Map<String, Object> valueMap1 = new HashMap<>();
-        valueMap1.put("name", "is_benefit_type_esa");
-        valueMap1.put("value", "test");
-        Map<String, Object> valueMap2 = new HashMap<>();
-        valueMap2.put("name", "is_benefit_type_pip");
-        valueMap2.put("value", "test");
-        Map<String, Object> valueMap3 = new HashMap<>();
-        valueMap3.put("name", "is_benefit_type_uc");
-        valueMap3.put("value", "test");
-
-        List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap1, valueMap2, valueMap3);
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS5.toString()).build();
-
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
-        assertNull(response.getErrors());
-    }
-
-    @Test
-    public void givenIsBenefitTypeEsaPipUcForFromTypeSscs2_thenReturnAnEmptyCaseResponse() {
-
-        Map<String, Object> valueMap1 = new HashMap<>();
-        valueMap1.put("name", "is_benefit_type_esa");
-        valueMap1.put("value", "test");
-        Map<String, Object> valueMap2 = new HashMap<>();
-        valueMap2.put("name", "is_benefit_type_pip");
-        valueMap2.put("value", "test");
-        Map<String, Object> valueMap3 = new HashMap<>();
-        valueMap3.put("name", "is_benefit_type_uc");
-        valueMap3.put("value", "test");
-
-        List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap1, valueMap2, valueMap3);
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS2.toString()).build();
-
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
-        assertNull(response.getErrors());
-    }
+    
 
     @Test
     public void givenValidChildSupportKeyValuePair_thenReturnAnEmptyCaseResponse() {
