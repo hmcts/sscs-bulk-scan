@@ -5,7 +5,7 @@ java:
   aadIdentityName: sscs
   ingressHost: sscs-bulk-scan-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   keyVaults:
-    sscs-bulk-scan:
+    sscs:
       secrets:
         - name: sscs-s2s-secret
           alias: S2S_SECRET
