@@ -61,7 +61,6 @@ public class TestDataConstants {
     public static final String IS_HEARING_TYPE_PAPER = "false";
     public static final String HEARING_OPTIONS_EXCLUDE_DATES = "01/12/2030";
     public static final Boolean HEARING_LOOP = true;
-    public static final Boolean DISABLED_ACCESS = true;
     public static final Boolean SIGN_LANGUAGE_REQUIRED = true;
     public static final String SIGN_LANGUAGE_TYPE = "My sign language";
     public static final String HEARING_OPTIONS_LANGUAGE_TYPE = "Spanish";
@@ -73,8 +72,9 @@ public class TestDataConstants {
     public static final String CASE_CODE = "002DD";
     public static final String HEARING_TELEPHONE_NUMBER = "01234567890";
     public static final String HEARING_VIDEO_EMAIL = "my@email.com";
-    public static final String PROCESSING_VENUE = "Cardiff";
     public static final String OTHER_PARTY_ID_ONE = "1";
+    public static final String PROCESSING_VENUE = "Cardiff";
     public static final String EPIMMS_ID = "1";
     public static final String REGION_ID = "100";
+    public static final String VENUE_POSTCODE = "CF24 0AB";
 }

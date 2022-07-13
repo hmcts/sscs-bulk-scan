@@ -1,12 +1,11 @@
 package uk.gov.hmcts.reform.sscs.functional;
 
+import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
+import static net.javacrumbs.jsonunit.JsonAssert.whenIgnoringPaths;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
 import io.restassured.RestAssured;
@@ -195,7 +194,7 @@ public class BaseFunctionalTest {
     }
 
     @SuppressWarnings("unchecked")
-    protected void verifyResponseIsExpected(String expectedJson, Response response) throws JsonProcessingException {
+    protected void verifyResponseIsExpected(String expectedJson, Response response) {
         JsonPath transformationResponse = response.getBody().jsonPath();
 
         Map<String, Object> caseData = ((Map<String, Object>) transformationResponse
@@ -209,12 +208,8 @@ public class BaseFunctionalTest {
         expectedJson = replaceTyaInSubscription(expectedJson, "representativeSubscription", "TYA_RANDOM_NUMBER_REP", subscriptions);
         expectedJson = replaceTyaInSubscription(expectedJson, "jointPartySubscription", "TYA_RANDOM_NUMBER_JOINT_PARTY", subscriptions);
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        JsonNode expectedJsonNode = mapper.readTree(expectedJson);
-        JsonNode actualJsonNode = mapper.readTree(response.getBody().prettyPrint());
-
-        assertEquals(expectedJsonNode, actualJsonNode);
+        assertJsonEquals(expectedJson, response.getBody().prettyPrint(), whenIgnoringPaths("case_creation_details.case_data.regionalProcessingCenter.epimsId",
+            "case_creation_details.case_data.caseManagementLocation.region"));
     }
 
     @SuppressWarnings("unchecked")
