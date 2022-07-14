@@ -48,7 +48,7 @@ import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
-import uk.gov.hmcts.reform.sscs.validators.FormTypeValidator;
+import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
 
 @Slf4j
 @Component
@@ -57,14 +57,12 @@ public class SscsCaseTransformer implements CaseTransformer {
     private static final String OTHER_PARTY_ID_ONE = "1";
 
     private final CcdService ccdService;
-    
     private final IdamService idamService;
-
     private final SscsDataHelper sscsDataHelper;
     private final SscsJsonExtractor sscsJsonExtractor;
     private final FuzzyMatcherService fuzzyMatcherService;
     private final AppealPostcodeHelper appealPostcodeHelper;
-    private final FormTypeValidator formTypeValidator;
+    private final SscsKeyValuePairValidator keyValuePairValidator;
     private final DwpAddressLookupService dwpAddressLookupService;
     private final CaseManagementLocationService caseManagementLocationService;
 
@@ -80,7 +78,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                                SscsJsonExtractor sscsJsonExtractor,
                                FuzzyMatcherService fuzzyMatcherService,
                                AppealPostcodeHelper appealPostcodeHelper,
-                               FormTypeValidator formTypeValidator,
+                               SscsKeyValuePairValidator keyValuePairValidator,
                                DwpAddressLookupService dwpAddressLookupService,
                                CaseManagementLocationService caseManagementLocationService,
                                RegionalProcessingCenterService regionalProcessingCenterService,
@@ -91,7 +89,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.sscsJsonExtractor = sscsJsonExtractor;
         this.fuzzyMatcherService = fuzzyMatcherService;
         this.appealPostcodeHelper = appealPostcodeHelper;
-        this.formTypeValidator = formTypeValidator;
+        this.keyValuePairValidator = keyValuePairValidator;
         this.dwpAddressLookupService = dwpAddressLookupService;
         this.caseManagementLocationService = caseManagementLocationService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
@@ -114,24 +112,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         }
         log.info("Validating exception record against schema caseId {}", caseId);
 
-        CaseResponse formTypeValidatorResponse = formTypeValidator.validate(caseId, exceptionRecord);
+        String formType = exceptionRecord.getFormType();
+        CaseResponse keyValuePairValidatorResponse = keyValuePairValidator.validate(exceptionRecord.getOcrDataFields(),
+            FormType.getById(formType));
 
-        if (formTypeValidatorResponse.getErrors() != null) {
+        if (keyValuePairValidatorResponse.getErrors() != null) {
             log.info("Errors found while validating key value pairs while transforming exception record caseId {}",
                 caseId);
-            return formTypeValidatorResponse;
-        }
-
-        String formType = exceptionRecord.getFormType();
-        log.info("formtype for case {} is {}", caseId, formType);
-
-        if (formType == null || notAValidFormType(formType)) {
-            ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
-            String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
-
-            if (!notAValidFormType(ocrFormType)) {
-                formType = ocrFormType;
-            }
+            return keyValuePairValidatorResponse;
         }
 
         log.info("Extracting and transforming exception record caseId {}", caseId);
@@ -141,9 +129,11 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null && exceptionRecord.getIgnoreWarnings();
 
+        ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
+
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, formType, errors, ignoreWarningsValue);
+        Map<String, Object> transformed = transformData(caseId, scannedData, token, formType, errors, ignoreWarningsValue);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -205,10 +195,6 @@ public class SscsCaseTransformer implements CaseTransformer {
             scannedData.getOpeningDate());
 
         return checkForMatches(transformed, token);
-    }
-
-    private boolean notAValidFormType(String formType) {
-        return FormType.UNKNOWN.equals(FormType.getById(formType));
     }
 
     private Subscriptions populateSubscriptions(Appeal appeal, Map<String, Object> ocrCaseData) {
@@ -1046,5 +1032,4 @@ public class SscsCaseTransformer implements CaseTransformer {
             }
         }
     }
-
 }

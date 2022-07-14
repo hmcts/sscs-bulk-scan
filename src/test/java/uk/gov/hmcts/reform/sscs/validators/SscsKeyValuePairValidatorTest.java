@@ -9,18 +9,12 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
-import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
-import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
+public class SscsKeyValuePairValidatorTest {
 
-
-public class FromTypeValidatorTest {
-
-
-    SscsJsonExtractor sscsJsonExtractor = new SscsJsonExtractor();
-    FormTypeValidator validator = new FormTypeValidator(sscsJsonExtractor);
+    SscsKeyValuePairValidator validator = new SscsKeyValuePairValidator();
 
     @Test
     public void givenNewFieldsInV2OfTheForm_thenNoErrorsAreGiven() {
@@ -43,9 +37,7 @@ public class FromTypeValidatorTest {
         }).toArray(HashMap[]::new));
 
         @SuppressWarnings("unchecked")
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS1PEU.toString()).build();
-
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS1);
         assertNull(response.getErrors());
     }
 
@@ -58,9 +50,8 @@ public class FromTypeValidatorTest {
         valueMap.put("value", "Bob");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS1.toString()).build();
 
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
+        CaseResponse response = validator.validate(scanOcrData, FormType.UNKNOWN);
         assertNull(response.getErrors());
     }
 
@@ -72,10 +63,9 @@ public class FromTypeValidatorTest {
         valueMap.put("value", "test");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType("invalid_key").build();
 
-        CaseResponse response = validator.validate("123456", exceptionRecord);
-        assertEquals("No valid form type was found. There needs to be a valid form_type on the OCR data or on the exception record.", response.getErrors().get(0));
+        CaseResponse response = validator.validate(scanOcrData, null);
+        assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
     }
 
     @Test
@@ -90,14 +80,12 @@ public class FromTypeValidatorTest {
         valueMap2.put("value", "test");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap1, valueMap2);
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS1PE.toString()).build();
 
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS1PE);
         assertEquals(2, response.getErrors().size());
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
         assertEquals("#: extraneous key [invalid_key2] is not permitted", response.getErrors().get(1));
     }
-    
 
     @Test
     public void givenValidChildSupportKeyValuePair_thenReturnAnEmptyCaseResponse() {
@@ -107,9 +95,8 @@ public class FromTypeValidatorTest {
         valueMap.put("value", "Test1234");
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS2.toString()).build();
 
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
@@ -138,9 +125,7 @@ public class FromTypeValidatorTest {
         }).toArray(HashMap[]::new));
 
         @SuppressWarnings("unchecked")
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS2.toString()).build();
-
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
@@ -156,9 +141,7 @@ public class FromTypeValidatorTest {
 
         List<OcrDataField> scanOcrData = buildScannedValidationOcrData(valueMap);
 
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS2.toString()).build();
-
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS2);
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
@@ -184,9 +167,7 @@ public class FromTypeValidatorTest {
         }).toArray(HashMap[]::new));
 
         @SuppressWarnings("unchecked")
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(scanOcrData).formType(FormType.SSCS5.toString()).build();
-
-        CaseResponse response = validator.validate("caseId", exceptionRecord);
+        CaseResponse response = validator.validate(scanOcrData, FormType.SSCS5);
         assertNull(response.getErrors());
         assertEquals(0, response.getWarnings().size());
     }
