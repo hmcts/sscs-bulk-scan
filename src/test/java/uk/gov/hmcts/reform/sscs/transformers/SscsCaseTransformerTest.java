@@ -49,7 +49,7 @@ import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
-import uk.gov.hmcts.reform.sscs.validators.SscsKeyValuePairValidator;
+import uk.gov.hmcts.reform.sscs.validators.FormTypeValidator;
 
 @RunWith(JUnitParamsRunner.class)
 public class SscsCaseTransformerTest {
@@ -60,7 +60,10 @@ public class SscsCaseTransformerTest {
     private SscsJsonExtractor sscsJsonExtractor;
 
     @Mock
-    private SscsKeyValuePairValidator keyValuePairValidator;
+    FormTypeValidator formTypeValidator;
+
+    FormTypeValidator formTypeValidator2;
+
 
     @Mock
     private IdamService idamService;
@@ -80,6 +83,7 @@ public class SscsCaseTransformerTest {
     @Mock
     private RegionalProcessingCenterService regionalProcessingCenterService;
     private SscsCaseTransformer transformer;
+    private SscsCaseTransformer transformer2;
 
     private final List<OcrDataField> ocrList = new ArrayList<>();
 
@@ -92,7 +96,6 @@ public class SscsCaseTransformerTest {
     private ExceptionRecord nullFormExceptionRecord;
 
     private ExceptionRecord sscs2ExceptionRecord;
-
     private ExceptionRecord sscs5ExceptionRecord;
 
     @Before
@@ -100,6 +103,8 @@ public class SscsCaseTransformerTest {
         openMocks(this);
 
         DwpAddressLookupService dwpAddressLookupService = new DwpAddressLookupService();
+
+        formTypeValidator2 = new FormTypeValidator(sscsJsonExtractor);
 
         SscsDataHelper sscsDataHelper = new SscsDataHelper(
             null,
@@ -114,7 +119,20 @@ public class SscsCaseTransformerTest {
             sscsJsonExtractor,
             new FuzzyMatcherService(),
             appealPostcodeHelper,
-            keyValuePairValidator,
+            formTypeValidator,
+            dwpAddressLookupService,
+            caseManagementLocationService,
+            regionalProcessingCenterService,
+            false);
+
+        transformer2 = new SscsCaseTransformer(
+            ccdService,
+            idamService,
+            sscsDataHelper,
+            sscsJsonExtractor,
+            new FuzzyMatcherService(),
+            appealPostcodeHelper,
+            formTypeValidator2,
             dwpAddressLookupService,
             caseManagementLocationService,
             regionalProcessingCenterService,
@@ -126,24 +144,24 @@ public class SscsCaseTransformerTest {
 
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             SSCS1PEU.getId()).build();
-        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().build());
+        given(formTypeValidator.validate(exceptionRecord.getExceptionRecordId(), exceptionRecord)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         sscs1UExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-
-        given(keyValuePairValidator.validate(ocrList, SSCS1U)).willReturn(CaseResponse.builder().build());
+        given(formTypeValidator.validate(sscs1UExceptionRecord.getExceptionRecordId(), sscs1UExceptionRecord)).willReturn(CaseResponse.builder().build());
         nullFormExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(FormType.SSCS1U.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs1UExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
-        given(keyValuePairValidator.validate(ocrList, SSCS2)).willReturn(CaseResponse.builder().build());
+        given(formTypeValidator.validate(nullFormExceptionRecord.getExceptionRecordId(), nullFormExceptionRecord)).willReturn(CaseResponse.builder().build());
         sscs2ExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             SSCS2.getId()).build();
         given(sscsJsonExtractor.extractJson(sscs2ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
-        given(keyValuePairValidator.validate(ocrList, SSCS5)).willReturn(CaseResponse.builder().build());
-        sscs5ExceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+        given(formTypeValidator.validate(sscs2ExceptionRecord.getExceptionRecordId(), sscs2ExceptionRecord)).willReturn(CaseResponse.builder().build());
+        sscs5ExceptionRecord = ExceptionRecord.builder().id("null").exceptionRecordId("123456").ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             SSCS5.getId()).build();
+        given(formTypeValidator.validate(sscs5ExceptionRecord.getExceptionRecordId(), sscs5ExceptionRecord)).willReturn(CaseResponse.builder().build());
         given(sscsJsonExtractor.extractJson(sscs5ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
@@ -271,7 +289,7 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = isPip ? PIP : ESA;
-        assertEquals(expectedBenefit.name(),  appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefit.name(), appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -284,7 +302,7 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = Benefit.ATTENDANCE_ALLOWANCE;
-        assertEquals(expectedBenefit.getShortName(),  appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefit.getShortName(), appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -302,7 +320,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
-        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
+        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement", "Job Seekers Allowance, JSA",
         "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
         "Industrial Death Benefit, industrialDeathBenefit", "Pension Credit, pensionCredit", "Retirement Pension, retirementPension",})
     public void givenBenefitTypeIsOtherWithValidType_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
@@ -314,12 +332,12 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(shortName,  appeal.getBenefitType().getCode());
+        assertEquals(shortName, appeal.getBenefitType().getCode());
     }
 
     @Test
     @Parameters({"Attendance Allowance, attendanceAllowance", "Bereavement Benefit, bereavementBenefit", "Carer's Allowance, carersAllowance", "Disability Living Allowance, DLA",
-        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement","Job Seekers Allowance, JSA",
+        "Income Support, incomeSupport", " Industrial Injuries Disablement Benefit, industrialInjuriesDisablement", "Job Seekers Allowance, JSA",
         "Maternity Allowance, maternityAllowance", "Social Fund, socialFund", "Bereavement Support Payment Scheme, bereavementSupportPaymentScheme",
         "Industrial Death Benefit, industrialDeathBenefit", "Pension Credit, pensionCredit", "Retirement Pension, retirementPension",})
     public void givenBenefitTypeIsOtherNotTickedWithValidType_thenCorrectCodeIsReturned(String benefitDescription, String shortName) {
@@ -331,7 +349,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs1UExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(shortName,  appeal.getBenefitType().getCode());
+        assertEquals(shortName, appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -345,7 +363,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs5ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(expectedBenefitCode,  appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefitCode, appeal.getBenefitType().getCode());
         assertEquals(issuingOffice, appeal.getMrnDetails().getDwpIssuingOffice());
     }
 
@@ -430,7 +448,7 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
         Benefit expectedBenefit = isPip.equals("Yes") ? PIP : ESA;
-        assertEquals(expectedBenefit.name(),  appeal.getBenefitType().getCode());
+        assertEquals(expectedBenefit.name(), appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -441,7 +459,7 @@ public class SscsCaseTransformerTest {
 
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(BENEFIT_TYPE,  appeal.getBenefitType().getCode());
+        assertEquals(BENEFIT_TYPE, appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -450,7 +468,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         Appeal appeal = (Appeal) result.getTransformedCase().get("appeal");
-        assertEquals(BENEFIT_TYPE,  appeal.getBenefitType().getCode());
+        assertEquals(BENEFIT_TYPE, appeal.getBenefitType().getCode());
     }
 
     @Test
@@ -1431,6 +1449,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("Yes", result.getTransformedCase().get("linkedCasesBoolean"));
+
         assertEquals("123", ((CaseLink)((List<?>) result.getTransformedCase().get("associatedCase")).get(0)).getValue().getCaseReference());
     }
 
@@ -1479,8 +1498,9 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenACaseWithFailedSchemaValidation_thenAddErrorToList() {
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().id("123456").ocrDataFields(ocrList).formType(FormType.SSCS1PEU.toString()).build();
 
-        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        given(formTypeValidator.validate("123456", exceptionRecord)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
@@ -1890,7 +1910,9 @@ public class SscsCaseTransformerTest {
     public void givenATransformForValidationRequestFailsSchemaValidation_thenReturnErrors() {
         pairs.put("bla", "12/99/1987");
 
-        given(keyValuePairValidator.validate(ocrList, SSCS1PEU)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().id("123456").ocrDataFields(ocrList).formType(FormType.SSCS1PEU.toString()).build();
+
+        given(formTypeValidator.validate("123456", exceptionRecord)).willReturn(CaseResponse.builder().errors(ImmutableList.of("NI Number is invalid")).build());
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, true);
 
@@ -2141,7 +2163,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
-        assertEquals(childMaintenance,  result.getTransformedCase().get("childMaintenanceNumber"));
+        assertEquals(childMaintenance, result.getTransformedCase().get("childMaintenanceNumber"));
     }
 
     @Test
@@ -2416,6 +2438,94 @@ public class SscsCaseTransformerTest {
         assertNull(appellantConfidentialityRequired);
     }
 
+    @Test
+    @Parameters({"SSCS2", "SSCS5", "SSCS1", "SSCS1U", "SSCS1PE", "SSCS1PEU"})
+    public void notAValidFormFalse(String formType) {
+        assertFalse(formTypeValidator2.notAValidFormType(formType));
+    }
+
+    @Test
+    @Parameters({"SSCS", "SSCS55", "SSCS11", "UNKNOWN"})
+    public void notAValidFormTrue(String formType) {
+        assertTrue(formTypeValidator2.notAValidFormType(formType));
+    }
+
+    @Test
+    public void givenNullForm_thenThrowError() {
+        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
+
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            null).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+        assertTrue(result.getErrors().size() == 1);
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    @Test
+    public void givenNullFormAndInvalid_thenThrowError() {
+        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
+
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        pairs.put("form_type", "SSCS");
+
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            null).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+
+        assertTrue(result.getErrors().size() == 1);
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    @Test
+    public void givenNullFormWithOcrFormType_thenThrowNoError() {
+        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
+
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        pairs.put("form_type", "SSCS5");
+
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            null).build();
+        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
 
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
