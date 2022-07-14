@@ -70,8 +70,7 @@
     "hearing_type_face_to_face": {"type": "string"},
     "appeal_grounds_2": {"type": "string"},
     "is_benefit_type_other": {"type": "string"},
-    "benefit_type_other": {"type": "string"},
-    "form_type": {"type": "string"}
+    "benefit_type_other": {"type": "string"}
   },
   "additionalProperties": false
 }
