@@ -209,7 +209,7 @@ public class BaseFunctionalTest {
         expectedJson = replaceTyaInSubscription(expectedJson, "jointPartySubscription", "TYA_RANDOM_NUMBER_JOINT_PARTY", subscriptions);
 
         assertJsonEquals(expectedJson, response.getBody().prettyPrint(), whenIgnoringPaths("case_creation_details.case_data.regionalProcessingCenter.epimsId",
-            "case_creation_details.case_data.caseManagementLocation.region"));
+            "case_creation_details.case_data.caseManagementLocation.region", "case_creation_details.case_data.regionalProcessingCenter.hearingRoute"));
     }
 
     @SuppressWarnings("unchecked")
