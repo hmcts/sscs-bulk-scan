@@ -180,7 +180,7 @@ def versions = [
   pitest             : '1.4.2',
   sonarPitest        : '0.5',
   restAssured        : '4.3.3',
-  sscsCommon     	 : '4.13.1'
+  sscsCommon     	 : '4.14.0'
 ]
 
 configurations.all {
@@ -281,7 +281,7 @@ dependencyManagement {
      dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.3.0'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.63') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.64') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'

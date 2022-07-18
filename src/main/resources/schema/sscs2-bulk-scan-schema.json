@@ -68,7 +68,8 @@
     "is_paying_parent": {"type": "string"},
     "is_receiving_parent": {"type": "string"},
     "is_another_party": {"type": "string"},
-    "other_party_details": {"type": "string"}
+    "other_party_details": {"type": "string"},
+    "form_type": {"type": "string"}
   },
   "additionalProperties": false
 }
