@@ -1,7 +1,7 @@
 {
   "case_creation_details": {
     "case_data": {
-      "caseAccessCategory": "tax-freeChildcare",
+      "CaseAccessCategory": "tax-freeChildcare",
       "caseManagementCategory": {
         "value": {
           "code": "taxFreeChildcare",

@@ -37,7 +37,7 @@
         "region":"8",
         "baseLocation":"372653"
       },
-      "caseAccessCategory": "attendanceAllowance",
+      "CaseAccessCategory": "attendanceAllowance",
       "caseManagementCategory": {
         "value": {
           "code": "attendanceAllowance",

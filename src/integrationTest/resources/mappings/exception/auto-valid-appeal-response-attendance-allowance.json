@@ -1,7 +1,7 @@
 {
   "case_creation_details": {
     "case_data": {
-      "caseAccessCategory": "attendanceAllowance",
+      "CaseAccessCategory": "attendanceAllowance",
       "caseManagementCategory": {
         "value": {
           "code": "attendanceAllowance",

@@ -24,7 +24,7 @@
       "formType": "sscs1peu",
       "dwpRegionalCentre": "Sheffield DRT",
       "bulkScanCaseReference": "1234567891011",
-      "caseAccessCategory": "employmentAndSupportAllowance",
+      "CaseAccessCategory": "employmentAndSupportAllowance",
       "caseManagementCategory": {
         "value": {
           "code": "ESA",
