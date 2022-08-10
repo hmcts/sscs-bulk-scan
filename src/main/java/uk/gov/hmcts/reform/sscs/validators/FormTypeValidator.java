@@ -86,19 +86,18 @@ public class FormTypeValidator {
     }
 
     public String getFormType(String caseId, ExceptionRecord exceptionRecord) {
-        String formType = exceptionRecord.getFormType();
-        log.info("formtype for case {} is {}", caseId, formType);
+        ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
+        String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
 
-        if (formType == null || notAValidFormType(formType)) {
-            ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
-            String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+        if (formType == null  || notAValidFormType(formType)) {
+            formType = exceptionRecord.getFormType();
 
-            if (ocrFormType == null || notAValidFormType(ocrFormType)) {
-                return null;
-            } else {
-                formType = ocrFormType;
+            if (formType == null || notAValidFormType(formType)) {
+                formType = null;
             }
         }
+
+        log.info("formtype for case {} is {}", caseId, formType);
 
         return formType;
     }
