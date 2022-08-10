@@ -57,7 +57,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private static final String OTHER_PARTY_ID_ONE = "1";
 
     private final CcdService ccdService;
-    
+
     private final IdamService idamService;
 
     private final SscsDataHelper sscsDataHelper;
@@ -122,17 +122,19 @@ public class SscsCaseTransformer implements CaseTransformer {
             return formTypeValidatorResponse;
         }
 
-        String formType = exceptionRecord.getFormType();
-        log.info("formtype for case {} is {}", caseId, formType);
 
-        if (formType == null || notAValidFormType(formType)) {
-            ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
-            String ocrFormType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+        ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
+        String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
 
-            if (!notAValidFormType(ocrFormType)) {
-                formType = ocrFormType;
+        if (formType == null  || notAValidFormType(formType)) {
+            formType = exceptionRecord.getFormType();
+
+            if (formType == null || notAValidFormType(formType)) {
+                formType = null;
             }
         }
+
+        log.info("formtype for case {} is {}", caseId, formType);
 
         log.info("Extracting and transforming exception record caseId {}", caseId);
 
