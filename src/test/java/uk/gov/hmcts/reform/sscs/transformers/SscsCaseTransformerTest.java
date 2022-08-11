@@ -2527,6 +2527,34 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getWarnings().isEmpty());
     }
 
+    @Test
+    public void givenOtherFormTypeWithInputValidFromType_thenThrowNoError(){
+        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
+
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        pairs.put("form_type", "SSCS5");
+
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            "Other").build();
+
+        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+
+        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
         Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
