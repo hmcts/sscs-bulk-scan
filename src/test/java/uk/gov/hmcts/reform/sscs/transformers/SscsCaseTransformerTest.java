@@ -2543,7 +2543,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenOtherFormTypeWithInputValidFromType_thenThrowNoError(){
+    public void givenOtherFormTypeWithInputValidFromType_thenThrowNoError() {
         pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
 
         pairs.put("person1_title", APPELLANT_TITLE);
