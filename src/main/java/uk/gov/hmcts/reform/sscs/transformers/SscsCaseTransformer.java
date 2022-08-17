@@ -129,7 +129,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (formType == null  || notAValidFormType(formType)) {
             formType = exceptionRecord.getFormType();
 
-            if (formType == null || notAValidFormType(formType)) {
+            if (formType != null && notAValidFormType(formType)) {
                 formType = null;
             }
         }
