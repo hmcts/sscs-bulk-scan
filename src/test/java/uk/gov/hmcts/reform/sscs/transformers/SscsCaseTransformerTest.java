@@ -2628,7 +2628,7 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenValidFormAndWithNullFormTypeInput_thenThrowError() {
+    public void givenValidFormAndWithNullFormTypeInput_thenNoThrowError() {
         pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
 
         pairs.put("person1_title", APPELLANT_TITLE);
@@ -2652,7 +2652,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
 
-        assertTrue(result.getErrors().size() == 1);
+        assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
     }
 
