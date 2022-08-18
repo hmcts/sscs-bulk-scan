@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.sscs.ccd.service.SscsQueryBuilder;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.service.RefDataService;
+import uk.gov.hmcts.reform.sscs.service.VenueService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -50,6 +51,9 @@ public abstract class BaseTest {
 
     @MockBean
     protected RefDataService refDataService;
+
+    @MockBean
+    protected VenueService venueService;
 
     @Rule
     public WireMockRule ccdServer;
