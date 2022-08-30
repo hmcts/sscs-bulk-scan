@@ -329,7 +329,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(venueService.getEpimsIdForVenue(COVENTRY_CMCB)).thenReturn(COVENTRY_CMCB_EPIMS_ID);
         when(refDataService.getCourtVenueRefDataByEpimsId(COVENTRY_CMCB_EPIMS_ID)).thenReturn(CourtVenue.builder().regionId(
-            BASILDON_CC_EPIMS_ID).build());
+            "1").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(
             caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU"), "SSCS1PEU"),
