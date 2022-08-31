@@ -172,7 +172,7 @@ public class BaseFunctionalTest {
     protected String generateRandomNino() {
         String firstChar = generateRandomCharacterFromRange("ABCEHJKLMNOPRSTWXYZ");
         String secondChar = generateRandomCharacterFromRange("ABCEHJLMPRSWXY");
-        String lastChar = generateRandomCharacterFromRange("ABCD");
+        String lastChar = generateRandomCharacterFromRange("ABCD");;
 
         return firstChar + secondChar + RandomStringUtils.random(6, false, true) + lastChar;
     }
