@@ -16,19 +16,14 @@ import uk.gov.hmcts.reform.sscs.model.CourtVenue;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseManagementLocationServiceTest {
 
-    public static final String BRADFORD = "Bradford";
-    public static final String EPIMS_ID = "1234";
     @Mock
     private RefDataService refDataService;
-
-    @Mock
-    private VenueService venueService;
 
     private CaseManagementLocationService caseManagementLocationService;
 
     public void setupCaseManagementLocationService(boolean feature) {
         caseManagementLocationService = new CaseManagementLocationService(
-            refDataService, venueService, feature);
+            refDataService, feature);
     }
 
     @Test
@@ -68,12 +63,13 @@ public class CaseManagementLocationServiceTest {
     @Test
     public void shouldNotRetrieveCaseManagementLocation_givenInvalidProcessingVenue() {
         setupCaseManagementLocationService(true);
+
         RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().build();
 
-        when(venueService.getEpimsIdForVenue(BRADFORD)).thenReturn(EPIMS_ID);
+        when(refDataService.getVenueRefData("Bradford")).thenReturn(null);
 
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation(BRADFORD,
+            caseManagementLocationService.retrieveCaseManagementLocation("Bradford",
                 regionalProcessingCentre);
 
         assertTrue(caseManagementLocation.isEmpty());
@@ -82,13 +78,13 @@ public class CaseManagementLocationServiceTest {
     @Test
     public void shouldNotRetrieveCaseManagementLocation_givenInvalidCourtVenue() {
         setupCaseManagementLocationService(true);
+
         RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().build();
 
-        when(venueService.getEpimsIdForVenue(BRADFORD)).thenReturn(EPIMS_ID);
-        when(refDataService.getCourtVenueRefDataByEpimsId(EPIMS_ID)).thenReturn(CourtVenue.builder().build());
+        when(refDataService.getVenueRefData("Bradford")).thenReturn(CourtVenue.builder().build());
 
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation(BRADFORD,
+            caseManagementLocationService.retrieveCaseManagementLocation("Bradford",
                 regionalProcessingCentre);
 
         assertTrue(caseManagementLocation.isEmpty());
@@ -97,14 +93,12 @@ public class CaseManagementLocationServiceTest {
     @Test
     public void shouldRetrieveCaseManagementLocation_givenValidProcessingVenue_andPostcode() {
         setupCaseManagementLocationService(true);
-        RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().epimsId("rpcEpimsId").build();
 
-        when(venueService.getEpimsIdForVenue(BRADFORD)).thenReturn(EPIMS_ID);
-        when(refDataService.getCourtVenueRefDataByEpimsId(EPIMS_ID)).thenReturn(CourtVenue.builder()
-            .regionId("regionId").build());
+        RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().epimsId("rpcEpimsId").build();
+        when(refDataService.getVenueRefData("Bradford")).thenReturn(CourtVenue.builder().regionId("regionId").build());
 
         Optional<CaseManagementLocation> caseManagementLocation =
-            caseManagementLocationService.retrieveCaseManagementLocation(BRADFORD, regionalProcessingCentre);
+            caseManagementLocationService.retrieveCaseManagementLocation("Bradford", regionalProcessingCentre);
 
         assertTrue(caseManagementLocation.isPresent());
         CaseManagementLocation result = caseManagementLocation.get();

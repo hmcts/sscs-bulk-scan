@@ -15,13 +15,10 @@ public class CaseManagementLocationService {
 
     private final RefDataService refDataService;
     private final boolean caseAccessManagementFeature;
-    private final VenueService venueService;
 
     public CaseManagementLocationService(RefDataService refDataService,
-                                         VenueService venueService,
                                          @Value("${feature.case-access-management.enabled}") boolean caseAccessManagementFeature) {
         this.refDataService = refDataService;
-        this.venueService = venueService;
         this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
@@ -31,8 +28,7 @@ public class CaseManagementLocationService {
             && isNotBlank(processingVenue)
             && nonNull(regionalProcessingCenter)) {
 
-            String venueEpimsId = venueService.getEpimsIdForVenue(processingVenue);
-            CourtVenue courtVenue = refDataService.getCourtVenueRefDataByEpimsId(venueEpimsId);
+            CourtVenue courtVenue = refDataService.getVenueRefData(processingVenue);
 
             if (nonNull(courtVenue)
                 && isNotBlank(courtVenue.getRegionId())) {
