@@ -35,14 +35,14 @@
     <cve>CVE-2022-22968</cve>
     <cve>CVE-2021-22060</cve>
   </suppress>
-  <suppress until="2022-09-01">
+  <suppress until="2022-10-01">
     <notes><![CDATA[
    file name: spring-web-5.3.20.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
     <cve>CVE-2016-1000027</cve>
   </suppress>
-  <suppress until="2022-09-01">
+  <suppress until="2022-10-01">
     <notes><![CDATA[
    file name: spring-cloud-openfeign-core@3.0.4
    ]]></notes>
@@ -76,7 +76,7 @@
     <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
     <cve>CVE-2022-25647</cve>
   </suppress>
-  <suppress until="2022-09-01">
+  <suppress until="2022-10-01">
     <notes><![CDATA[
    file name: spring-core-5.3.21.jar
    ]]></notes>
@@ -117,5 +117,13 @@
    ]]></notes>
     <packageUrl regex="true">^.*$</packageUrl>
     <cve>CVE-2022-31569</cve>
+  </suppress>
+  <suppress until="2022-10-01">
+    <notes><![CDATA[
+   file name: snakeyaml-1.28.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org.yaml/snakeyaml@.*$</packageUrl>
+    <cve>CVE-2022-38752</cve>
+    <cve>CVE-2022-25857</cve>
   </suppress>
 </suppressions>
