@@ -76,7 +76,7 @@
     <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
     <cve>CVE-2022-25647</cve>
   </suppress>
-  <suppress until="2022-09-01">
+  <suppress until="2022-09-30">
     <notes><![CDATA[
    file name: spring-core-5.3.21.jar
    ]]></notes>
