@@ -326,6 +326,10 @@ dependencyManagement {
       entry 'spring-web'
       entry 'spring-webmvc'
     }
+    
+    dependencySet(group: 'org.yaml', version: '1.31') {
+      entry 'snakeyaml'
+    }
 
     //CVE-2021-27568
     dependencySet(group: 'net.minidev', version: '2.4.7') {
