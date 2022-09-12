@@ -180,7 +180,7 @@ def versions = [
   pitest             : '1.4.2',
   sonarPitest        : '0.5',
   restAssured        : '4.3.3',
-  sscsCommon         : '4.14.4'
+  sscsCommon     	 : '4.15.3'
 ]
 
 configurations.all {
@@ -308,6 +308,10 @@ dependencyManagement {
 
     dependencySet(group: 'org.apache.commons', version: '1.21') {
       entry 'commons-compress'
+    }
+    
+    dependencySet(group: 'org.yaml', version: '1.31') {
+            entry 'snakeyaml'
     }
 
     //CVE-2021-22118
