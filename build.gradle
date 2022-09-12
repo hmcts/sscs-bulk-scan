@@ -309,6 +309,10 @@ dependencyManagement {
     dependencySet(group: 'org.apache.commons', version: '1.21') {
       entry 'commons-compress'
     }
+    
+    dependencySet(group: 'org.yaml', version: '1.31') {
+            entry 'snakeyaml'
+    }
 
     //CVE-2021-22118
     dependencySet(group: 'org.springframework', version: '5.3.21') {
