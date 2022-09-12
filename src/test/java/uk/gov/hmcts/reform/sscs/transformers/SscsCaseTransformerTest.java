@@ -1,7 +1,11 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
@@ -25,7 +29,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.assertj.core.api.Assertions;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.junit.Before;
@@ -696,7 +699,10 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals(buildTestAppealData(), result.getTransformedCase().get("appeal"));
+        assertThat(result.getTransformedCase().get("appeal"))
+            .usingRecursiveComparison()
+            .ignoringFields("appellant.id", "rep.id")
+            .isEqualTo(buildTestAppealData());
         assertEquals(BENEFIT_CODE, result.getTransformedCase().get("benefitCode"));
         assertEquals(ISSUE_CODE, result.getTransformedCase().get("issueCode"));
         assertEquals(CASE_CODE, result.getTransformedCase().get("caseCode"));
@@ -821,7 +827,10 @@ public class SscsCaseTransformerTest {
         Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("Yes").address(appellantAddress).appointee(appointee).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
-        assertEquals(expectedAppellant, appellantResult);
+        assertThat(appellantResult)
+            .usingRecursiveComparison()
+            .ignoringFields("id", "appointee.id")
+            .isEqualTo(expectedAppellant);
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -849,7 +858,10 @@ public class SscsCaseTransformerTest {
         Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
-        assertEquals(expectedAppellant, appellantResult);
+        assertThat(appellantResult)
+            .usingRecursiveComparison()
+            .ignoringFields("id", "appointee.id")
+            .isEqualTo(expectedAppellant);
 
         assertTrue(result.getErrors().isEmpty());
     }
@@ -1605,7 +1617,7 @@ public class SscsCaseTransformerTest {
         @SuppressWarnings("unchecked")
         List<SscsDocument> docs = ((List<SscsDocument>) result.getTransformedCase().get("sscsDocument"));
 
-        Assertions.assertThat(docs)
+        assertThat(docs)
             .extracting(doc -> doc.getValue().getDocumentDateAdded())
             .containsExactlyInAnyOrder(
                 LocalDateTime.now().minusDays(1).toLocalDate().toString(),
@@ -2316,7 +2328,10 @@ public class SscsCaseTransformerTest {
         Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").role(role).address(appellantAddress).contact(Contact.builder().build()).build();
 
         Appellant appellantResult = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant();
-        assertEquals(expectedAppellant, appellantResult);
+        assertThat(appellantResult)
+            .usingRecursiveComparison()
+            .ignoringFields("id", "appointee.id")
+            .isEqualTo(expectedAppellant);
 
         assertTrue(result.getErrors().isEmpty());
     }
