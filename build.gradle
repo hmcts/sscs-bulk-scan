@@ -170,7 +170,6 @@ sonarqube {
 // it is important to specify logback classic and core packages explicitly as libraries like spring boot
 // enforces it's own (older) version which is not recommended.
 def versions = [
-  reformLogging      : '5.1.7',
   springBoot         : springBoot.class.package.implementationVersion,
   springfoxSwagger   : '2.9.2',
   jsonUnit           : '2.35.0',
@@ -180,7 +179,6 @@ def versions = [
   pitest             : '1.4.2',
   sonarPitest        : '0.5',
   restAssured        : '4.3.3',
-  sscsCommon         : '4.14.4'
 ]
 
 configurations.all {
@@ -221,11 +219,10 @@ dependencies {
   compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
 
   compile group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
-  compile group: 'com.github.hmcts', name: 'java-logging', version: versions.reformLogging
+  compile group: 'com.github.hmcts', name: 'java-logging', version: '5.1.7'
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
-
-  // Added to fix CVE-2021-33037
-  compile group: 'com.github.hmcts', name: 'sscs-common', version: versions.sscsCommon
+  
+  compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.15.5'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   compile group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -325,6 +322,10 @@ dependencyManagement {
       entry 'spring-tx'
       entry 'spring-web'
       entry 'spring-webmvc'
+    }
+    
+    dependencySet(group: 'org.yaml', version: '1.31') {
+      entry 'snakeyaml'
     }
 
     //CVE-2021-27568
