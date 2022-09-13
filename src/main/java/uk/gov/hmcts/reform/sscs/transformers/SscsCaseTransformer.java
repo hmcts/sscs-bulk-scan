@@ -125,6 +125,12 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
         String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
+        String orgFormType = exceptionRecord.getFormType();
+        boolean formTypeUpdated = false;
+
+        if (formType != null && orgFormType != null && !formType.equals(orgFormType)) {
+            formTypeUpdated = true;
+        }
 
         if (formType == null  || notAValidFormType(formType)) {
             formType = exceptionRecord.getFormType();
@@ -133,6 +139,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 formType = null;
             }
         }
+
 
         log.info("formtype for case {} is {}", caseId, formType);
 
@@ -145,7 +152,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         IdamTokens token = idamService.getIdamTokens();
 
-        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, formType, errors, ignoreWarningsValue);
+        Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, formType, errors, ignoreWarningsValue, formTypeUpdated, orgFormType);
 
         duplicateCaseCheck(caseId, transformed, token);
 
@@ -173,9 +180,11 @@ public class SscsCaseTransformer implements CaseTransformer {
                                               IdamTokens token,
                                               String formType,
                                               Set<String> errors,
-                                              boolean ignoreWarnings) {
+                                              boolean ignoreWarnings,
+                                              boolean formTypeUpdated,
+                                              String orgFormType) {
         Appeal appeal = buildAppealFromData(scannedData.getOcrCaseData(), caseId, formType, errors, ignoreWarnings);
-        List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords());
+        List<SscsDocument> sscsDocuments = buildDocumentsFromData(scannedData.getRecords(), formTypeUpdated, orgFormType, formType);
         Subscriptions subscriptions = populateSubscriptions(appeal, scannedData.getOcrCaseData());
 
         Map<String, Object> transformed = new HashMap<>();
@@ -931,10 +940,19 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     }
 
-    private List<SscsDocument> buildDocumentsFromData(List<InputScannedDoc> records) {
+    private List<SscsDocument> buildDocumentsFromData(List<InputScannedDoc> records, boolean formTypeUpdated, String orgFormType, String newFormType) {
         List<SscsDocument> documentDetails = new ArrayList<>();
         if (records != null) {
             for (InputScannedDoc record : records) {
+
+                String fromType = record.getSubtype();
+                if (formTypeUpdated) {
+                    if ("Form".equals(record.getType()) && orgFormType.equals(record.getSubtype())) {
+                        fromType = newFormType;
+                    }
+                }
+
+                fromType = record.getSubtype();
 
                 checkFileExtensionValid(record.getFileName());
 
@@ -945,7 +963,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .documentLink(record.getUrl())
                     .documentDateAdded(scannedDate)
                     .documentFileName(record.getFileName())
-                    .documentType(findDocumentType(record.getSubtype())).build();
+                    .documentType(findDocumentType(fromType)).build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
             }
         }
