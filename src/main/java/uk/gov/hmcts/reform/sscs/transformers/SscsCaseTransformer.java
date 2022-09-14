@@ -945,15 +945,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (records != null) {
             for (InputScannedDoc record : records) {
 
+
                 String fromType = record.getSubtype();
                 if (formTypeUpdated) {
                     if ("Form".equals(record.getType()) && orgFormType.equals(record.getSubtype())) {
                         fromType = newFormType;
                     }
                 }
-
-                fromType = record.getSubtype();
-
+                
                 checkFileExtensionValid(record.getFileName());
 
                 String scannedDate =
