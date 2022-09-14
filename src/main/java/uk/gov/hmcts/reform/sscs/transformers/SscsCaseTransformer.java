@@ -57,7 +57,6 @@ public class SscsCaseTransformer implements CaseTransformer {
     private static final String OTHER_PARTY_ID_ONE = "1";
 
     private final CcdService ccdService;
-
     private final IdamService idamService;
 
     private final SscsDataHelper sscsDataHelper;
@@ -952,7 +951,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                         fromType = newFormType;
                     }
                 }
-                
+
                 checkFileExtensionValid(record.getFileName());
 
                 String scannedDate =

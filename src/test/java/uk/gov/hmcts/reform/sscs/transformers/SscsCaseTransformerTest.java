@@ -2753,8 +2753,6 @@ public class SscsCaseTransformerTest {
             .build();
     }
 
-
-
     private InputScannedDoc buildTestScannedRecord(DocumentLink link, String subType) {
         return InputScannedDoc.builder()
             .scannedDate(LocalDateTime.now())
