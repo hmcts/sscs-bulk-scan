@@ -2618,8 +2618,8 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenNullFormAndWithNullFormTypeInput_thenThrowNoError() {
-        checkFormTypeNoThrowError(null, null);
+    public void givenNullFormAndWithNullFormTypeInput_thenThrowError() {
+        checkFormTypeWithOneError(null, null);
     }
 
     @Test
