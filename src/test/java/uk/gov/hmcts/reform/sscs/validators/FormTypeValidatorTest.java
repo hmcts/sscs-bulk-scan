@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 
 
 
-public class FromTypeValidatorTest {
+public class FormTypeValidatorTest {
 
 
     SscsJsonExtractor sscsJsonExtractor = new SscsJsonExtractor();
@@ -97,7 +97,7 @@ public class FromTypeValidatorTest {
         assertEquals("#: extraneous key [invalid_key] is not permitted", response.getErrors().get(0));
         assertEquals("#: extraneous key [invalid_key2] is not permitted", response.getErrors().get(1));
     }
-    
+
 
     @Test
     public void givenValidChildSupportKeyValuePair_thenReturnAnEmptyCaseResponse() {
