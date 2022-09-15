@@ -2162,8 +2162,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
         assertEquals(childMaintenance, result.getTransformedCase().get("childMaintenanceNumber"));
     }
 
@@ -2190,8 +2189,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
 
         @SuppressWarnings("unchecked")
         OtherParty otherParty = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties")).get(0).getValue();
@@ -2222,8 +2220,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
         assertNull(result.getTransformedCase().get("childMaintenanceNumber"));
         @SuppressWarnings("unchecked")
         List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
@@ -2278,8 +2275,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
         @SuppressWarnings("unchecked")
         List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
         assertNotNull(otherParties.get(0).getValue().getAddress());
@@ -2373,8 +2369,7 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
         assertEquals(expected, appellantConfidentialityRequired.toString());
@@ -2403,8 +2398,7 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
         assertNull(appellantConfidentialityRequired);
@@ -2432,8 +2426,7 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
         assertNull(appellantConfidentialityRequired);
@@ -2471,8 +2464,7 @@ public class SscsCaseTransformerTest {
             null).build();
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
-        assertTrue(result.getWarnings().isEmpty());
+        assertOneError(result);
     }
 
     @Test
@@ -2485,8 +2477,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
-        assertTrue(result.getErrors().size() == 1);
-        assertTrue(result.getWarnings().isEmpty());
+        assertOneError(result);
     }
 
     @Test
@@ -2510,9 +2501,7 @@ public class SscsCaseTransformerTest {
             null).build();
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
-
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
     }
 
     private void prepareData(String formType) {
@@ -2532,7 +2521,17 @@ public class SscsCaseTransformerTest {
         pairs.put("form_type", formType);
     }
 
-    private void assertNoErrorsOrWarnings(String formType) {
+    private void assertOneError(CaseResponse result) {
+        assertTrue(result.getErrors().size() == 1);
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    private void assertNoErrorsOrWarnings(CaseResponse result) {
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    private void assertNoErrorsOrWarningsWithFormType(String formType) {
         prepareData("SSCS5");
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
@@ -2542,19 +2541,31 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void assertSscsDocumentFormType(CaseResponse result, String formType){
+        Object resultObject = result.getTransformedCase().get("sscsDocument");
+        Assert.isInstanceOf(List.class, resultObject);
+
+        Assertions.assertThat((List<SscsDocument>)resultObject)
+            .extracting(SscsDocument::getValue)
+            .extracting(SscsDocumentDetails::getDocumentType)
+            .contains(formType);
     }
 
     @Test
     public void givenOtherFormTypeWithInputValidFormType_thenThrowNoError() {
-        assertNoErrorsOrWarnings("Other");
+        assertNoErrorsOrWarningsWithFormType("Other");
     }
 
     @Test
     public void givenNullFormTypeWithInputValidFormType_thenThrowNoError() {
-        assertNoErrorsOrWarnings(null);
+        assertNoErrorsOrWarningsWithFormType(null);
     }
+
+
 
     @Test
     public void givenNullFormAndWithNullFormTypeInput_thenThrowError() {
@@ -2568,8 +2579,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
 
-        assertTrue(result.getErrors().size() == 1);
-        assertTrue(result.getWarnings().isEmpty());
+        assertOneError(result);
     }
 
     @Test
@@ -2584,9 +2594,10 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
 
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
     }
+
+
 
     @Test
     public void givenOtherFormAndWithNullFormTypeInput_thenThrowError() {
@@ -2599,12 +2610,10 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
+        assertOneError(result);
 
-        assertTrue(result.getErrors().size() == 1);
-        assertTrue(result.getWarnings().isEmpty());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void givenOtherFormAndWithSscs2FormTypeInput_thenDocumentUpdated() {
         prepareData("SSCS2");
@@ -2621,17 +2630,11 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
-        Object resultObject = result.getTransformedCase().get("sscsDocument");
-        Assert.isInstanceOf(List.class, resultObject);
-
-        Assertions.assertThat((List<SscsDocument>)resultObject)
-            .extracting(SscsDocument::getValue)
-            .extracting(SscsDocumentDetails::getDocumentType)
-            .contains("sscs2");
+        assertSscsDocumentFormType(result, "sscs2");
 
     }
 
-    @SuppressWarnings("unchecked")
+
     @Test
     public void givenSscs2FormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
         prepareData("sscs5");
@@ -2648,17 +2651,10 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
-        Object resultObject = result.getTransformedCase().get("sscsDocument");
-        Assert.isInstanceOf(List.class, resultObject);
-
-        Assertions.assertThat((List<SscsDocument>)resultObject)
-            .extracting(SscsDocument::getValue)
-            .extracting(SscsDocumentDetails::getDocumentType)
-            .contains("sscs5");
+        assertSscsDocumentFormType(result, "sscs5");
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void givenNullFormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
         prepareData("sscs5");
@@ -2676,13 +2672,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
-        Object resultObject = result.getTransformedCase().get("sscsDocument");
-        Assert.isInstanceOf(List.class, resultObject);
-
-        Assertions.assertThat((List<SscsDocument>)resultObject)
-            .extracting(SscsDocument::getValue)
-            .extracting(SscsDocumentDetails::getDocumentType)
-            .contains("sscs5");
+        assertSscsDocumentFormType(result, "sscs5");
 
     }
 
