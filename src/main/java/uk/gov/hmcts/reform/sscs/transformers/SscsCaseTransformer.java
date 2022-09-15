@@ -944,11 +944,11 @@ public class SscsCaseTransformer implements CaseTransformer {
         if (records != null) {
             for (InputScannedDoc record : records) {
 
-                String fromType = record.getSubtype();
+                String formType = record.getSubtype();
                 if (formTypeUpdated && "Form".equals(record.getType())) {
                     if ((record.getSubtype() == null && orgFormType == null)
                         || (orgFormType != null && orgFormType.equals(record.getSubtype()))) {
-                        fromType = newFormType;
+                        formType = newFormType;
                     }
                 }
 
@@ -961,7 +961,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     .documentLink(record.getUrl())
                     .documentDateAdded(scannedDate)
                     .documentFileName(record.getFileName())
-                    .documentType(findDocumentType(fromType)).build();
+                    .documentType(findDocumentType(formType)).build();
                 documentDetails.add(SscsDocument.builder().value(details).build());
             }
         }
