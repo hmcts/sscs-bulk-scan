@@ -2547,12 +2547,11 @@ public class SscsCaseTransformerTest {
         pairs.put("form_type", formType);
     }
 
-    @Test
-    public void givenOtherFormTypeWithInputValidFormType_thenThrowNoError() {
+    private void assertNoErrorsOrWarnings(String formType) {
         prepareData("SSCS5");
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
-            "Other").build();
+            formType).build();
 
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
@@ -2563,18 +2562,13 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
+    public void givenOtherFormTypeWithInputValidFormType_thenThrowNoError() {
+        assertNoErrorsOrWarnings("Other");
+    }
+
+    @Test
     public void givenNullFormTypeWithInputValidFormType_thenThrowNoError() {
-        prepareData("SSCS5");
-
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
-            null).build();
-
-        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-
-        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
-
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(null);
     }
 
     @Test
