@@ -2492,20 +2492,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenNullFormAndInvalid_thenThrowError() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", "SSCS");
+        prepareData("SSCS");
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             null).build();
@@ -2543,8 +2530,7 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getWarnings().isEmpty());
     }
 
-    @Test
-    public void givenOtherFormTypeWithInputValidFromType_thenThrowNoError() {
+    private void prepareData(String formType) {
         pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
 
         pairs.put("person1_title", APPELLANT_TITLE);
@@ -2558,7 +2544,12 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", "SSCS5");
+        pairs.put("form_type", formType);
+    }
+
+    @Test
+    public void givenOtherFormTypeWithInputValidFormType_thenThrowNoError() {
+        prepareData("SSCS5");
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             "Other").build();
@@ -2572,21 +2563,8 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenNullFormTypeWithInputValidFromType_thenThrowNoError() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", "SSCS5");
+    public void givenNullFormTypeWithInputValidFormType_thenThrowNoError() {
+        prepareData("SSCS5");
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             null).build();
@@ -2601,20 +2579,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenNullFormAndWithNullFormTypeInput_thenThrowError() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", null);
+        prepareData(null);
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             null).build();
@@ -2630,20 +2595,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenValidFormAndWithNullFormTypeInput_thenNoThrowError() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", null);
+        prepareData(null);
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             "sscs5").build();
@@ -2659,20 +2611,7 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenOtherFormAndWithNullFormTypeInput_thenThrowError() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", null);
+        prepareData(null);
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             "Other").build();
@@ -2689,20 +2628,7 @@ public class SscsCaseTransformerTest {
     @SuppressWarnings("unchecked")
     @Test
     public void givenOtherFormAndWithSscs2FormTypeInput_thenDocumentUpdated() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", "sscs2");
+        prepareData("SSCS2");
 
         List<InputScannedDoc> records = new ArrayList<>();
         InputScannedDoc scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "Other");
@@ -2729,20 +2655,7 @@ public class SscsCaseTransformerTest {
     @SuppressWarnings("unchecked")
     @Test
     public void givenSscs2FormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", "sscs5");
+        prepareData("sscs5");
 
         List<InputScannedDoc> records = new ArrayList<>();
         InputScannedDoc scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), "sscs2");
@@ -2769,20 +2682,7 @@ public class SscsCaseTransformerTest {
     @SuppressWarnings("unchecked")
     @Test
     public void givenNullFormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", "sscs5");
+        prepareData("sscs5");
 
 
         List<InputScannedDoc> records = new ArrayList<>();

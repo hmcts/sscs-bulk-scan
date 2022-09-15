@@ -945,12 +945,10 @@ public class SscsCaseTransformer implements CaseTransformer {
             for (InputScannedDoc record : records) {
 
                 String fromType = record.getSubtype();
-                if (formTypeUpdated) {
-                    if ("Form".equals(record.getType())) {
-                        if ((record.getSubtype() == null && orgFormType == null)
-                            || (orgFormType != null && orgFormType.equals(record.getSubtype()))) {
-                            fromType = newFormType;
-                        }
+                if (formTypeUpdated && "Form".equals(record.getType())) {
+                    if ((record.getSubtype() == null && orgFormType == null)
+                        || (orgFormType != null && orgFormType.equals(record.getSubtype()))) {
+                        fromType = newFormType;
                     }
                 }
 
