@@ -2560,7 +2560,7 @@ public class SscsCaseTransformerTest {
     }
 
     @SuppressWarnings("unchecked")
-    private void assertSscsDocumentFormType(CaseResponse result, String formType){
+    private void assertSscsDocumentFormType(CaseResponse result, String formType) {
         Object resultObject = result.getTransformedCase().get("sscsDocument");
         Assert.isInstanceOf(List.class, resultObject);
 
