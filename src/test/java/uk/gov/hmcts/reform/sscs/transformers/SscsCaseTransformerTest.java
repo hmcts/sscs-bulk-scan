@@ -2536,7 +2536,7 @@ public class SscsCaseTransformerTest {
         pairs.put("form_type", formType);
     }
 
-    private void assertOneError(CaseResponse result){
+    private void assertOneError(CaseResponse result) {
         assertError(result, 1);
     }
 
@@ -2591,7 +2591,7 @@ public class SscsCaseTransformerTest {
         checkFormTypeWithError(given, input, 1);
     }
 
-    private void checkFormTypeWithError(String given, String input, int errorCount){
+    private void checkFormTypeWithError(String given, String input, int errorCount) {
         prepareData(input);
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
