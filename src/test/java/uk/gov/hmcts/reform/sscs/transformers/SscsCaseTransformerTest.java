@@ -2589,7 +2589,7 @@ public class SscsCaseTransformerTest {
         assertError(result, errorCount);
     }
 
-    private void checkFromTypeAndDocumentUpdated(String given, String input, String expected) {
+    private void checkFormTypeAndDocumentUpdated(String given, String input, String expected) {
         prepareData(input);
 
         List<InputScannedDoc> records = new ArrayList<>();
@@ -2635,19 +2635,19 @@ public class SscsCaseTransformerTest {
 
     @Test
     public void givenOtherFormAndWithSscs2FormTypeInput_thenDocumentUpdated() {
-        checkFromTypeAndDocumentUpdated("Other", "SSCS2", "sscs2");
+        checkFormTypeAndDocumentUpdated("Other", "SSCS2", "sscs2");
 
     }
 
 
     @Test
     public void givenSscs2FormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
-        checkFromTypeAndDocumentUpdated("sscs2", "sscs5", "sscs5");
+        checkFormTypeAndDocumentUpdated("sscs2", "sscs5", "sscs5");
     }
 
     @Test
     public void givenNullFormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
-        checkFromTypeAndDocumentUpdated(null, "sscs5", "sscs5");
+        checkFormTypeAndDocumentUpdated(null, "sscs5", "sscs5");
     }
 
 
