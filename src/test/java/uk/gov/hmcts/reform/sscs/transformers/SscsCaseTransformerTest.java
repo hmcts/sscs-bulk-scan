@@ -2535,19 +2535,6 @@ public class SscsCaseTransformerTest {
         assertTrue(result.getWarnings().isEmpty());
     }
 
-    private void assertNoErrorsOrWarningsWithFormType(String formType) {
-        prepareData("SSCS5");
-
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
-            formType).build();
-
-        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-
-        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
-
-        assertNoErrorsOrWarnings(result);
-    }
-
     @SuppressWarnings("unchecked")
     private void assertSscsDocumentFormType(CaseResponse result, String formType) {
         Object resultObject = result.getTransformedCase().get("sscsDocument");
@@ -2559,15 +2546,30 @@ public class SscsCaseTransformerTest {
             .contains(formType);
     }
 
-    private void checkFormTypeNoThrowError(String given, String input) {
+
+    private CaseResponse preparingFormTypeCheckingDataAndImplementTransformExceptionRecord(String given, String input, boolean isIncludeDocument) {
         prepareData(input);
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             given).build();
 
-        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+        if (isIncludeDocument) {
+            List<InputScannedDoc> records = new ArrayList<>();
+            InputScannedDoc scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), given);
+            records.add(scannedRecord);
 
-        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+            given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(
+                ScannedData.builder().ocrCaseData(pairs).records(records).openingDate(LocalDateTime.now().toLocalDate().toString()).build());
+        } else {
+            given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+        }
+
+
+        return transformer2.transformExceptionRecord(exceptionRecord, false);
+    }
+
+    private void checkFormTypeNoThrowError(String given, String input) {
+        CaseResponse result = preparingFormTypeCheckingDataAndImplementTransformExceptionRecord(given, input, false);
 
         assertNoErrorsOrWarnings(result);
     }
@@ -2577,44 +2579,25 @@ public class SscsCaseTransformerTest {
     }
 
     private void checkFormTypeWithError(String given, String input, int errorCount) {
-        prepareData(input);
-
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
-            given).build();
-
-        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
-
-        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+        CaseResponse result = preparingFormTypeCheckingDataAndImplementTransformExceptionRecord(given, input, false);
 
         assertError(result, errorCount);
     }
 
     private void checkFormTypeAndDocumentUpdated(String given, String input, String expected) {
-        prepareData(input);
-
-        List<InputScannedDoc> records = new ArrayList<>();
-        InputScannedDoc scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), given);
-        records.add(scannedRecord);
-
-        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
-            given).build();
-
-        given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(
-            ScannedData.builder().ocrCaseData(pairs).records(records).openingDate(LocalDateTime.now().toLocalDate().toString()).build());
-
-        CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+        CaseResponse result = preparingFormTypeCheckingDataAndImplementTransformExceptionRecord(given, input, true);
 
         assertSscsDocumentFormType(result, expected);
     }
 
     @Test
     public void givenOtherFormTypeWithInputValidFormType_thenThrowNoError() {
-        assertNoErrorsOrWarningsWithFormType("Other");
+        checkFormTypeNoThrowError("Other", "SSCS5");
     }
 
     @Test
     public void givenNullFormTypeWithInputValidFormType_thenThrowNoError() {
-        assertNoErrorsOrWarningsWithFormType(null);
+        checkFormTypeNoThrowError(null, "SSCS5");
     }
 
     @Test
@@ -2630,13 +2613,11 @@ public class SscsCaseTransformerTest {
     @Test
     public void givenOtherFormAndWithNullFormTypeInput_thenThrowError() {
         checkFormTypeWithOneError("Other", null);
-
     }
 
     @Test
     public void givenOtherFormAndWithSscs2FormTypeInput_thenDocumentUpdated() {
         checkFormTypeAndDocumentUpdated("Other", "SSCS2", "sscs2");
-
     }
 
 
