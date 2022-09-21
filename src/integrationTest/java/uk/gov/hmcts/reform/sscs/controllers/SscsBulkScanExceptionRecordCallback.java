@@ -5,11 +5,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.google.common.io.Resources.getResource;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Strings.concat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -45,7 +45,6 @@ import org.junit.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -919,7 +918,13 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
         ObjectMapper obj = new ObjectMapper();
         String jsonStr = obj.writeValueAsString(callbackResponse);
 
-        JSONAssert.assertEquals(expected, jsonStr, NON_EXTENSIBLE);
+
+        assertThatJson(jsonStr)
+            .whenIgnoringPaths(
+                "case_creation_details.case_data.appeal.appellant.id",
+                "case_creation_details.case_data.appeal.appellant.appointee.id",
+                "case_creation_details.case_data.appeal.rep.id")
+            .isEqualTo(expected);
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
