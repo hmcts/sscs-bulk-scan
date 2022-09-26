@@ -85,7 +85,7 @@ public class CaseManagementLocationServiceTest {
         RegionalProcessingCenter regionalProcessingCentre = RegionalProcessingCenter.builder().build();
 
         when(venueService.getEpimsIdForVenue(BRADFORD)).thenReturn(EPIMS_ID);
-        when(refDataService.getCourtVenueRefDataByEpimsId(EPIMS_ID)).thenReturn(CourtVenue.builder().build());
+        when(refDataService.getCourtVenueRefDataByEpimsId(EPIMS_ID)).thenReturn(CourtVenue.builder().courtStatus("Open").build());
 
         Optional<CaseManagementLocation> caseManagementLocation =
             caseManagementLocationService.retrieveCaseManagementLocation(BRADFORD,
@@ -101,7 +101,7 @@ public class CaseManagementLocationServiceTest {
 
         when(venueService.getEpimsIdForVenue(BRADFORD)).thenReturn(EPIMS_ID);
         when(refDataService.getCourtVenueRefDataByEpimsId(EPIMS_ID)).thenReturn(CourtVenue.builder()
-            .regionId("regionId").build());
+            .regionId("regionId").courtStatus("Open").build());
 
         Optional<CaseManagementLocation> caseManagementLocation =
             caseManagementLocationService.retrieveCaseManagementLocation(BRADFORD, regionalProcessingCentre);

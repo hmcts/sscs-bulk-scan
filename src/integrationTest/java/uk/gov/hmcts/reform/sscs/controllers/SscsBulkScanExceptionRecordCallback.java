@@ -328,7 +328,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(venueService.getEpimsIdForVenue(COVENTRY_CMCB)).thenReturn(COVENTRY_CMCB_EPIMS_ID);
         when(refDataService.getCourtVenueRefDataByEpimsId(COVENTRY_CMCB_EPIMS_ID)).thenReturn(CourtVenue.builder().regionId(
-            "1").build());
+            "1").courtStatus("Open").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(autoExceptionCaseData(
             caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellantAndAppointee, "SSCS1PEU"), "SSCS1PEU"),
@@ -403,7 +403,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(venueService.getEpimsIdForVenue(CHELMSFORD)).thenReturn(CHELMSFORD_EPIMS_ID);
         when(refDataService.getCourtVenueRefDataByEpimsId(CHELMSFORD_EPIMS_ID)).thenReturn(CourtVenue.builder().regionId(
-            "1").build());
+            "1").courtStatus("Open").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
             exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS2"), "SSCS2", false),
@@ -426,7 +426,7 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
 
         when(venueService.getEpimsIdForVenue(BASILDON_CC)).thenReturn(BASILDON_CC_EPIMS_ID);
         when(refDataService.getCourtVenueRefDataByEpimsId(BASILDON_CC_EPIMS_ID)).thenReturn(CourtVenue.builder().regionId("1").epimsId(
-            BASILDON_CC_EPIMS_ID).build());
+            BASILDON_CC_EPIMS_ID).courtStatus("Open").build());
 
         HttpEntity<ExceptionRecord> request = new HttpEntity<>(
             exceptionCaseData(caseDataWithMrnDate(MRN_DATE_YESTERDAY_DD_MM_YYYY, this::addAppellant, "SSCS5"), "SSCS5", false),
