@@ -9,12 +9,4 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
     <cve>CVE-2016-1000027</cve>
   </suppress>
-  <suppress until="2023-09-01">
-    <notes><![CDATA[
-      2022-09: Suppression for snakeyaml. Not applicable to us as our yaml files are crafted by us and therefore trusted.
-      Suppressed for a year to allow re-assessing in and updating the library if possible.
-    ]]></notes>
-    <cve>CVE-2022-38752</cve>
-  </suppress>
-
 </suppressions>

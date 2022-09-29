@@ -221,7 +221,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
   compile group: 'com.github.hmcts', name: 'java-logging', version: '5.1.7'
   compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
-  
+
   compile group: 'com.github.hmcts', name: 'sscs-common', version: '4.17.1'
 
   compile group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
@@ -307,7 +307,8 @@ dependencyManagement {
       entry 'commons-compress'
     }
 
-    dependencySet(group: 'org.yaml', version: '1.31') {
+    //CVE-2022-38752
+    dependencySet(group: 'org.yaml', version: '1.32') {
       entry 'snakeyaml'
     }
     //CVE-2021-22118
@@ -326,7 +327,7 @@ dependencyManagement {
       entry 'spring-web'
       entry 'spring-webmvc'
     }
-    
+
     dependencySet(group: 'org.yaml', version: '1.31') {
       entry 'snakeyaml'
     }
