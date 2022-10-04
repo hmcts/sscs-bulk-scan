@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.sscs.functional;
 
-import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
-import static net.javacrumbs.jsonunit.JsonAssert.whenIgnoringPaths;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -208,8 +207,15 @@ public class BaseFunctionalTest {
         expectedJson = replaceTyaInSubscription(expectedJson, "representativeSubscription", "TYA_RANDOM_NUMBER_REP", subscriptions);
         expectedJson = replaceTyaInSubscription(expectedJson, "jointPartySubscription", "TYA_RANDOM_NUMBER_JOINT_PARTY", subscriptions);
 
-        assertJsonEquals(expectedJson, response.getBody().prettyPrint(), whenIgnoringPaths("case_creation_details.case_data.regionalProcessingCenter.epimsId",
-            "case_creation_details.case_data.caseManagementLocation.region", "case_creation_details.case_data.regionalProcessingCenter.hearingRoute"));
+        assertThatJson(response.getBody().prettyPrint())
+            .whenIgnoringPaths(
+                "case_creation_details.case_data.regionalProcessingCenter.epimsId",
+                "case_creation_details.case_data.caseManagementLocation.region",
+                "case_creation_details.case_data.regionalProcessingCenter.hearingRoute",
+                "case_creation_details.case_data.appeal.appellant.id",
+                "case_creation_details.case_data.appeal.rep.id",
+                "case_creation_details.case_data.appeal.appellant.appointee.id")
+            .isEqualTo(expectedJson);
     }
 
     @SuppressWarnings("unchecked")
