@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.assertj.core.api.Assertions;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.junit.Before;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import org.junit.platform.commons.util.StringUtils;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.springframework.util.Assert;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
 import uk.gov.hmcts.reform.sscs.ccd.service.CcdService;
@@ -2173,8 +2175,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
         assertEquals(childMaintenance, result.getTransformedCase().get("childMaintenanceNumber"));
     }
 
@@ -2201,8 +2202,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
 
         @SuppressWarnings("unchecked")
         OtherParty otherParty = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties")).get(0).getValue();
@@ -2233,8 +2233,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
         assertNull(result.getTransformedCase().get("childMaintenanceNumber"));
         @SuppressWarnings("unchecked")
         List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
@@ -2289,8 +2288,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_mobile", APPELLANT_MOBILE);
         pairs.put("is_paying_parent", "true");
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
         @SuppressWarnings("unchecked")
         List<CcdValue<OtherParty>> otherParties = ((List<CcdValue<OtherParty>>) result.getTransformedCase().get("otherParties"));
         assertNotNull(otherParties.get(0).getValue().getAddress());
@@ -2387,8 +2385,7 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
         assertEquals(expected, appellantConfidentialityRequired.toString());
@@ -2417,8 +2414,7 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
         assertNull(appellantConfidentialityRequired);
@@ -2446,8 +2442,7 @@ public class SscsCaseTransformerTest {
 
         ExceptionRecord exceptionRecord = formType.equals(SSCS2) ? sscs2ExceptionRecord : sscs5ExceptionRecord;
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
+        assertNoErrorsOrWarnings(result);
 
         YesNo appellantConfidentialityRequired = ((Appeal) result.getTransformedCase().get("appeal")).getAppellant().getConfidentialityRequired();
         assertNull(appellantConfidentialityRequired);
@@ -2485,26 +2480,12 @@ public class SscsCaseTransformerTest {
             null).build();
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
-        assertTrue(result.getErrors().size() == 1);
-        assertTrue(result.getWarnings().isEmpty());
+        assertOneError(result);
     }
 
     @Test
     public void givenNullFormAndInvalid_thenThrowError() {
-        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
-
-        pairs.put("person1_title", APPELLANT_TITLE);
-        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
-        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
-        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
-        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
-        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
-        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_postcode", APPELLANT_POSTCODE);
-        pairs.put("person1_email", APPELLANT_EMAIL);
-        pairs.put("person1_mobile", APPELLANT_MOBILE);
-        pairs.put("is_paying_parent", "true");
-        pairs.put("form_type", "SSCS");
+        prepareData("SSCS");
 
         ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
             null).build();
@@ -2512,8 +2493,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
 
-        assertTrue(result.getErrors().size() == 1);
-        assertTrue(result.getWarnings().isEmpty());
+        assertOneError(result);
     }
 
     @Test
@@ -2537,10 +2517,137 @@ public class SscsCaseTransformerTest {
             null).build();
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
         CaseResponse result = transformer2.transformExceptionRecord(exceptionRecord, false);
+        assertNoErrorsOrWarnings(result);
+    }
 
+    private void prepareData(String formType) {
+        pairs.put(IS_BENEFIT_TYPE_TAX_CREDIT, true);
+
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("is_paying_parent", "true");
+        pairs.put("form_type", formType);
+    }
+
+    private void assertOneError(CaseResponse result) {
+        assertError(result, 1);
+    }
+
+    private void assertError(CaseResponse result, int errorCount) {
+        assertTrue(result.getErrors().size() == errorCount);
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    private void assertNoErrorsOrWarnings(CaseResponse result) {
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
     }
+
+    @SuppressWarnings("unchecked")
+    private void assertSscsDocumentFormType(CaseResponse result, String formType) {
+        Object resultObject = result.getTransformedCase().get("sscsDocument");
+        Assert.isInstanceOf(List.class, resultObject);
+
+        Assertions.assertThat((List<SscsDocument>)resultObject)
+            .extracting(SscsDocument::getValue)
+            .extracting(SscsDocumentDetails::getDocumentType)
+            .contains(formType);
+    }
+
+
+    private CaseResponse preparingFormTypeCheckingDataAndImplementTransformExceptionRecord(String given, String input, boolean isIncludeDocument) {
+        prepareData(input);
+
+        ExceptionRecord exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).id(null).exceptionRecordId("123456").formType(
+            given).build();
+
+        if (isIncludeDocument) {
+            List<InputScannedDoc> records = new ArrayList<>();
+            InputScannedDoc scannedRecord = buildTestScannedRecord(DocumentLink.builder().documentUrl("www.test.com").build(), given);
+            records.add(scannedRecord);
+
+            given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(
+                ScannedData.builder().ocrCaseData(pairs).records(records).openingDate(LocalDateTime.now().toLocalDate().toString()).build());
+        } else {
+            given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
+        }
+
+
+        return transformer2.transformExceptionRecord(exceptionRecord, false);
+    }
+
+    private void checkFormTypeNoThrowError(String given, String input) {
+        CaseResponse result = preparingFormTypeCheckingDataAndImplementTransformExceptionRecord(given, input, false);
+
+        assertNoErrorsOrWarnings(result);
+    }
+
+    private void checkFormTypeWithOneError(String given, String input) {
+        checkFormTypeWithError(given, input, 1);
+    }
+
+    private void checkFormTypeWithError(String given, String input, int errorCount) {
+        CaseResponse result = preparingFormTypeCheckingDataAndImplementTransformExceptionRecord(given, input, false);
+
+        assertError(result, errorCount);
+    }
+
+    private void checkFormTypeAndDocumentUpdated(String given, String input, String expected) {
+        CaseResponse result = preparingFormTypeCheckingDataAndImplementTransformExceptionRecord(given, input, true);
+
+        assertSscsDocumentFormType(result, expected);
+    }
+
+    @Test
+    public void givenOtherFormTypeWithInputValidFormType_thenThrowNoError() {
+        checkFormTypeNoThrowError("Other", "SSCS5");
+    }
+
+    @Test
+    public void givenNullFormTypeWithInputValidFormType_thenThrowNoError() {
+        checkFormTypeNoThrowError(null, "SSCS5");
+    }
+
+    @Test
+    public void givenNullFormAndWithNullFormTypeInput_thenThrowError() {
+        checkFormTypeWithOneError(null, null);
+    }
+
+    @Test
+    public void givenValidFormAndWithNullFormTypeInput_thenThrowNoError() {
+        checkFormTypeNoThrowError("sscs5", null);
+    }
+
+    @Test
+    public void givenOtherFormAndWithNullFormTypeInput_thenThrowError() {
+        checkFormTypeWithOneError("Other", null);
+    }
+
+    @Test
+    public void givenOtherFormAndWithSscs2FormTypeInput_thenDocumentUpdated() {
+        checkFormTypeAndDocumentUpdated("Other", "SSCS2", "sscs2");
+    }
+
+
+    @Test
+    public void givenSscs2FormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
+        checkFormTypeAndDocumentUpdated("sscs2", "sscs5", "sscs5");
+    }
+
+    @Test
+    public void givenNullFormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
+        checkFormTypeAndDocumentUpdated(null, "sscs5", "sscs5");
+    }
+
+
 
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
