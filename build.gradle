@@ -185,7 +185,7 @@ configurations.all {
   resolutionStrategy {
     eachDependency { DependencyResolveDetails details ->
       if (details.requested.group in ['com.fasterxml.jackson.core', 'com.fasterxml.jackson.module', 'com.fasterxml.jackson.datatype']) {
-        details.useVersion '2.13.3'
+        details.useVersion '2.13.4'
       }
       // CVE-2020-17521
       if (details.requested.group == 'org.codehaus.groovy') {
