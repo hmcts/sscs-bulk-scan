@@ -51,6 +51,8 @@ dependencies {
   functionalTestImplementation(sourceSets.test.output)
 }
 
+tasks.withType(Copy).all { duplicatesStrategy 'warn' }
+
 tasks.withType(JavaCompile) {
   options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
