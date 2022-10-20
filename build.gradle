@@ -6,7 +6,7 @@ plugins {
   id 'info.solidsoft.pitest' version '1.7.0'
   id 'io.spring.dependency-management' version '1.0.12.RELEASE'
   id 'org.springframework.boot' version '2.5.14'
-  id 'uk.gov.hmcts.java' version '0.12.12'
+  id 'uk.gov.hmcts.java' version '0.12.32'
   id 'org.owasp.dependencycheck' version '7.2.1'
   id 'com.github.ben-manes.versions' version '0.39.0'
 }
