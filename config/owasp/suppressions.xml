@@ -9,7 +9,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
     <cve>CVE-2016-1000027</cve>
   </suppress>
-  <suppress until = "2022-11-01">
+  <suppress until = "2022-11-08">
     <notes><![CDATA[
    file name: jackson-databind-2.13.4.jar
    ]]></notes>
