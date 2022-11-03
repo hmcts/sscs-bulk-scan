@@ -266,7 +266,7 @@ dependencyManagement {
      dependency group: 'org.apache.santuario', name: 'xmlsec', version: '2.3.0'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.65') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.68') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
@@ -278,7 +278,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22112
-    dependencySet(group: 'org.springframework.security', version: '5.7.2') {
+    dependencySet(group: 'org.springframework.security', version: '5.7.5') {
       entry 'spring-security-crypto'
     }
 
