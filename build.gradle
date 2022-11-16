@@ -327,8 +327,7 @@ dependencyManagement {
     }
     //CVE-2021-28170
     dependency group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'
-
-    //CVE-2020-36518, CVE-2022-42003, CVE-2022-42004
+    
     dependencySet(group: 'com.fasterxml.jackson.core', version: '2.14.0') {
         entry 'jackson-databind'
         entry 'jackson-core'
