@@ -9,11 +9,4 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
     <cve>CVE-2016-1000027</cve>
   </suppress>
-  <suppress until = "2023-01-31">
-    <notes><![CDATA[
-   file name: jackson-databind-2.13.4.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
-    <cve>CVE-2022-42003</cve>
-  </suppress>
 </suppressions>
