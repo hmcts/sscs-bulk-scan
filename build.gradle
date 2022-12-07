@@ -156,6 +156,23 @@ pitest {
   mutationThreshold = 90
 }
 
+task installLocalGitHook(type: Copy) {
+  from new File(rootProject.rootDir, 'config/git/pre-commit')
+  into { new File(rootProject.rootDir, '.git/hooks')}
+  fileMode 0775
+}
+
+compileJava.dependsOn installLocalGitHook
+
+task runGitPreCommitTasks {
+  dependsOn 'test'
+  dependsOn 'pmdMain'
+  dependsOn 'pmdTest'
+  dependsOn 'dependencyCheckAggregate'
+  dependsOn 'checkstyleMain'
+  dependsOn 'checkstyleTest'
+}
+
 project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
 check.dependsOn integration
 checkstyleMain.shouldRunAfter(compileJava)
