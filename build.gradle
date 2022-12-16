@@ -308,7 +308,7 @@ dependencyManagement {
       entry 'batik-all'
     }
 
-    dependencySet(group: 'org.apache.commons', version: '1.21') {
+    dependencySet(group: 'org.apache.commons', version: '1.22') {
       entry 'commons-compress'
     }
 
@@ -346,7 +346,7 @@ dependencyManagement {
     dependency group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'
 
     //CVE-2020-36518, CVE-2022-42004
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.14.0') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.14.1') {
         entry 'jackson-databind'
         entry 'jackson-core'
         entry 'jackson-annotations'
