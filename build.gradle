@@ -3,11 +3,11 @@ plugins {
   id 'pmd'
   id 'org.sonarqube' version '3.5.0.2730'
   id 'jacoco'
-  id 'info.solidsoft.pitest' version '1.9.0'
+  id 'info.solidsoft.pitest' version '1.9.11'
   id 'io.spring.dependency-management' version '1.0.12.RELEASE'
   id 'org.springframework.boot' version '2.5.14'
   id 'uk.gov.hmcts.java' version '0.12.12'
-  id 'org.owasp.dependencycheck' version '7.3.2'
+  id 'org.owasp.dependencycheck' version '7.4.1'
   id 'com.github.ben-manes.versions' version '0.44.0'
 }
 
@@ -246,8 +246,8 @@ dependencies {
 
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.1'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '2.36.0'
-  testImplementation group: 'org.pitest', name: 'pitest', version: '1.9.11'
-  testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: '1.9.0'
+  testImplementation group: 'org.pitest', name: 'pitest', version: '1.10.3'
+  testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: '1.9.11'
   testImplementation group: 'org.codehaus.sonar-plugins', name: 'sonar-pitest-plugin', version: '0.5'
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.35.0', {
       exclude group: 'junit', module: 'junit'
