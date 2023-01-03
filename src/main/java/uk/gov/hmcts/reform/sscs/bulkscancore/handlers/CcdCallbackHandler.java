@@ -3,12 +3,19 @@ package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.springframework.util.CollectionUtils.*;
+import static org.springframework.util.CollectionUtils.isEmpty;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.InterlocReviewState.NONE;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
-import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.*;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateBenefitCode;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateCaseCode;
+import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateIssueCode;
 import static uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator.IS_NOT_A_VALID_POSTCODE;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -21,7 +28,16 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
-import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
+import uk.gov.hmcts.reform.sscs.ccd.domain.CaseManagementLocation;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DirectionType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DynamicList;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DynamicListItem;
+import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsType;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
@@ -133,7 +149,7 @@ public class CcdCallbackHandler {
         log.info("Processing validation and update request for SSCS exception record id {}", callback.getCaseDetails().getId());
 
         if (null != callback.getCaseDetails().getCaseData().getInterlocReviewState()) {
-            callback.getCaseDetails().getCaseData().setInterlocReviewState("none");
+            callback.getCaseDetails().getCaseData().setInterlocReviewState(NONE);
         }
 
         setUnsavedFieldsOnCallback(callback);
