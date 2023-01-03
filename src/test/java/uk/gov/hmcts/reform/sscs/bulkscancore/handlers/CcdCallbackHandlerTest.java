@@ -2,13 +2,21 @@ package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.EPIMMS_ID;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.PROCESSING_VENUE;
-import static uk.gov.hmcts.reform.sscs.common.TestHelper.*;
+import static uk.gov.hmcts.reform.sscs.TestDataConstants.REGION_ID;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.InterlocReviewState.NONE;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.InterlocReviewState.REVIEW_BY_TCW;
+import static uk.gov.hmcts.reform.sscs.common.TestHelper.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.sscs.common.TestHelper.TEST_USER_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.sscs.common.TestHelper.TEST_USER_ID;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -43,7 +51,21 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
 import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
 import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
 import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
-import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
+import uk.gov.hmcts.reform.sscs.ccd.domain.BenefitType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.CaseManagementLocation;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DynamicList;
+import uk.gov.hmcts.reform.sscs.ccd.domain.DynamicListItem;
+import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Identity;
+import uk.gov.hmcts.reform.sscs.ccd.domain.MrnDetails;
+import uk.gov.hmcts.reform.sscs.ccd.domain.Name;
+import uk.gov.hmcts.reform.sscs.ccd.domain.RegionalProcessingCenter;
+import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
+import uk.gov.hmcts.reform.sscs.ccd.domain.State;
 import uk.gov.hmcts.reform.sscs.domain.CaseEvent;
 import uk.gov.hmcts.reform.sscs.domain.SscsCaseDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
@@ -276,7 +298,7 @@ public class CcdCallbackHandlerTest {
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
             .caseData(SscsCaseData.builder().regionalProcessingCenter(rpc)
-                .appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
+                .appeal(appeal).interlocReviewState(REVIEW_BY_TCW).formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -293,7 +315,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors()).isEmpty();
         assertThat(ccdCallbackResponse.getWarnings()).isEmpty();
-        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo(NONE);
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("002");
@@ -328,7 +350,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState(REVIEW_BY_TCW).formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -341,7 +363,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors()).isEmpty();
         assertThat(ccdCallbackResponse.getWarnings()).isEmpty();
-        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo(NONE);
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
@@ -374,7 +396,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState(REVIEW_BY_TCW).formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -388,7 +410,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors()).isEmpty();
         assertThat(ccdCallbackResponse.getWarnings()).isEmpty();
-        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo(NONE);
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
@@ -421,7 +443,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
+            .caseData(SscsCaseData.builder().appeal(appeal).interlocReviewState(REVIEW_BY_TCW).formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("1234")
             .build();
@@ -435,7 +457,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getData()).isNotNull();
         assertThat(ccdCallbackResponse.getErrors()).isEmpty();
         assertThat(ccdCallbackResponse.getWarnings()).isEmpty();
-        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo(NONE);
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
@@ -467,7 +489,7 @@ public class CcdCallbackHandlerTest {
 
         SscsCaseDetails caseDetails = SscsCaseDetails
             .builder()
-            .caseData(SscsCaseData.builder().ccdCaseId("123").appeal(appeal).interlocReviewState("something").formType(FormType.SSCS1PEU).build())
+            .caseData(SscsCaseData.builder().ccdCaseId("123").appeal(appeal).interlocReviewState(REVIEW_BY_TCW).formType(FormType.SSCS1PEU).build())
             .state("ScannedRecordReceived")
             .caseId("123")
             .build();
@@ -481,7 +503,7 @@ public class CcdCallbackHandlerTest {
         assertThat(ccdCallbackResponse.getErrors()).hasSize(1);
         assertThat(ccdCallbackResponse.getErrors()).contains("Mrn date is empty");
         assertThat(ccdCallbackResponse.getWarnings()).isEmpty();
-        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo("none");
+        assertThat(ccdCallbackResponse.getData().getInterlocReviewState()).isEqualTo(NONE);
         assertThat(ccdCallbackResponse.getData().getCreatedInGapsFrom()).isEqualTo("readyToList");
         assertThat(ccdCallbackResponse.getData().getEvidencePresent()).isEqualTo("No");
         assertThat(ccdCallbackResponse.getData().getBenefitCode()).isEqualTo("051");
