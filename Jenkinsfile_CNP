@@ -48,7 +48,7 @@ withPipeline("java", product, component) {
     env.IDAM_S2S_AUTH_MICROSERVICE = "sscs_bulkscan"
 
 
-  after('test') {
+  afterSuccess('test') {
     builder.gradle('integration')
     /*
     try {
