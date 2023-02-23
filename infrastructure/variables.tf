@@ -15,8 +15,6 @@ variable "location_app" {
 variable "env" {
 }
 
-variable "ilbIp" {}
-
 variable "tenant_id" {}
 
 variable "jenkins_AAD_objectId" {
