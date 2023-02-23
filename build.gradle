@@ -7,7 +7,7 @@ plugins {
   id 'io.spring.dependency-management' version '1.0.12.RELEASE'
   id 'org.springframework.boot' version '2.5.14'
   id 'uk.gov.hmcts.java' version '0.12.12'
-  id 'org.owasp.dependencycheck' version '8.0.2'
+  id 'org.owasp.dependencycheck' version '8.1.0'
   id 'com.github.ben-manes.versions' version '0.44.0'
 }
 
@@ -222,7 +222,7 @@ dependencies {
 
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.0.3'
 
-  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '4.24.5'
+  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '4.25.1'
 
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -246,7 +246,7 @@ dependencies {
 
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.1'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '2.36.0'
-  testImplementation group: 'org.pitest', name: 'pitest', version: '1.10.3'
+  testImplementation group: 'org.pitest', name: 'pitest', version: '1.11.0'
   testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: '1.9.11'
   testImplementation group: 'org.codehaus.sonar-plugins', name: 'sonar-pitest-plugin', version: '0.5'
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.35.0', {
