@@ -8,7 +8,7 @@ plugins {
   id 'org.springframework.boot' version '2.5.14'
   id 'uk.gov.hmcts.java' version '0.12.12'
   id 'org.owasp.dependencycheck' version '8.1.2'
-  id 'com.github.ben-manes.versions' version '0.44.0'
+  id 'com.github.ben-manes.versions' version '0.46.0'
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -245,7 +245,7 @@ dependencies {
   }
 
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.1'
-  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '2.36.0'
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '2.36.1'
   testImplementation group: 'org.pitest', name: 'pitest', version: '1.11.4'
   testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: '1.9.11'
   testImplementation group: 'org.codehaus.sonar-plugins', name: 'sonar-pitest-plugin', version: '0.5'
@@ -254,10 +254,10 @@ dependencies {
   }
   testImplementation group: 'com.typesafe', name: 'config', version: '1.4.2'
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
-  testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '5.9.1'
+  testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '5.9.2'
   testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: '1.1.2'
 
-  integrationTestImplementation(group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: '3.1.5') {
+  integrationTestImplementation(group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: '3.1.6') {
     exclude group: "com.github.tomakehurst", module: "wiremock-standalone"
   }
 
