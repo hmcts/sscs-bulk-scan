@@ -9,7 +9,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
     <cve>CVE-2016-1000027</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: spring-security-crypto-5.5.3.jar
    ]]></notes>
@@ -17,7 +17,7 @@
     <cve>CVE-2022-22978</cve>
     <cve>CVE-2022-22976</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: jackson-databind-2.13.4.jar
    ]]></notes>
@@ -26,7 +26,7 @@
     <cve>CVE-2022-42003</cve>
     <cve>CVE-2022-42004</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: postgresql-42.4.1.jar
    ]]></notes>
@@ -40,70 +40,70 @@
     <packageUrl regex="true">^pkg:maven/org\.apache\.qpid/qpid\-jms\-client@.*$</packageUrl>
     <cve>CVE-2016-3094</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
      these common libraries are being mistaken as Apache Commons Net
    ]]></notes>
     <packageUrl regex="true">^pkg:maven\/commons\-(?!net)\w+\/commons\-(?!net)\w+@.*$</packageUrl>
     <cve>CVE-2021-37533</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
      these common libraries are being mistaken as Apache Commons Net
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-(?!net)\w+@.*$</packageUrl>
     <cve>CVE-2021-37533</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: LatencyUtils-2.0.3.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.latencyutils/LatencyUtils@.*$</packageUrl>
     <cve>CVE-2021-4277</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: snakeyaml-1.33.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
     <cve>CVE-2022-3064</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: snakeyaml-1.33.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
     <cve>CVE-2021-4235</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: tomcat-embed-core-9.0.68.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
     <cve>CVE-2022-45143</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: tomcat-embed-websocket-9.0.68.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
     <cve>CVE-2022-45143</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: groovy-json-3.0.10.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.codehaus\.groovy/groovy\-json@.*$</packageUrl>
     <cve>CVE-2022-45688</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: jackson-core-2.14.1.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
     <cve>CVE-2022-45688</cve>
   </suppress>
-  <suppress until="2023-04-08">
+  <suppress until="2023-06-08">
     <notes><![CDATA[
    file name: json-20220320.jar
    ]]></notes>
@@ -117,77 +117,77 @@
     <packageUrl regex="true">^pkg:maven/commons\-fileupload/commons\-fileupload@.*$</packageUrl>
     <cve>CVE-2023-24998</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: snakeyaml-1.33.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
     <cve>CVE-2022-1471</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: tomcat-embed-core-9.0.68.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
     <cve>CVE-2023-28708</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: tomcat-embed-websocket-9.0.68.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
     <cve>CVE-2023-28708</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
 file name: spring.*?@5\.3\.22
 ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: spring-aop-5.3.21.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-aop@.*$</packageUrl>
     <cve>CVE-2023-20860</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: spring-beans-5.3.21.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-beans@.*$</packageUrl>
     <cve>CVE-2023-20860</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: spring-context-5.3.21.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-context@.*$</packageUrl>
     <cve>CVE-2023-20860</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: spring-core-5.3.21.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-core@.*$</packageUrl>
     <cve>CVE-2023-20860</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: spring-expression-5.3.21.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-expression@.*$</packageUrl>
     <cve>CVE-2023-20860</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: spring-jcl-5.3.21.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-jcl@.*$</packageUrl>
     <cve>CVE-2023-20860</cve>
   </suppress>
-  <suppress until = "2023-04-08">
+  <suppress until = "2023-06-08">
     <notes><![CDATA[
    file name: spring-webmvc-5.3.21.jar
    ]]></notes>
