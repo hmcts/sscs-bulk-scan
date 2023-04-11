@@ -1,11 +1,11 @@
 apiVersion: v2
 name: sscs-bulk-scan
 home: https://github.com/hmcts/sscs-bulk-scan
-version: 0.0.32
+version: 0.0.33
 description: SSCS Bulk Scan
 maintainers:
   - name: HMCTS SSCS Team
 dependencies:
   - name: java
-    version: 4.0.12
+    version: 4.0.13
     repository: https://hmctspublic.azurecr.io/helm/v1/repo/
