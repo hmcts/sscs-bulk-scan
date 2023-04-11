@@ -43,6 +43,7 @@
   "10054_Cookie without SameSite Attribute_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/validate-record_POST" : "ignore",
   "10054_Cookie without SameSite Attribute_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/_GET" : "ignore",
   "10054_Cookie without SameSite Attribute_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/v2/api-docs_GET" : "ignore",
-  "10010_CookieNoHttpOnlyFlag_http://sscs-tya-notif-aat.service.core-compute-aat.internal_GET":"ignore"
+  "10010_CookieNoHttpOnlyFlag_http://sscs-tya-notif-aat.service.core-compute-aat.internal_GET" : "ignore",
+  "10010_Cookie No HttpOnly Flag_http://sscs-tya-notif-aat.service.core-compute-aat.internal/_GET" : "ignore"
 
 }
