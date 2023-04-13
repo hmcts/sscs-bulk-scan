@@ -211,7 +211,7 @@ dependencies {
   implementation group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
   implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.2'
   implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.8'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
 
   implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
   implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
