@@ -33,9 +33,9 @@
       "formType": "sscs1peu",
       "dwpRegionalCentre": "Universal Credit",
       "bulkScanCaseReference": "id",
-      "caseManagementLocation":{
-        "region":"8",
-        "baseLocation":"372653"
+      "caseManagementLocation": {
+        "region": "8",
+        "baseLocation": "372653"
       },
       "CaseAccessCategory": "universalCredit",
       "caseManagementCategory": {
@@ -99,7 +99,18 @@
           "wantsToAttend": "No",
           "wantsSupport": "Yes",
           "languageInterpreter": "Yes",
-          "languages": "Spanish",
+          "languages": {
+            "value": {
+              "code": "spa",
+              "label": "Spanish"
+            },
+            "list_items": [
+              {
+                "code": "tel",
+                "label": "Telugu"
+              }
+            ]
+          },
           "arrangements": [
             "hearingLoop"
           ],
@@ -197,7 +208,7 @@
   },
   "warnings": [],
   "supplementary_data": {
-    "$set" : {
+    "$set": {
       "HMCTSServiceId": "BBA3"
     }
   }

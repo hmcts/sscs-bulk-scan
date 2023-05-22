@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
@@ -44,10 +45,13 @@ import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.model.dwp.OfficeMapping;
+import uk.gov.hmcts.reform.sscs.reference.data.model.Language;
+import uk.gov.hmcts.reform.sscs.reference.data.service.VerbalLanguagesService;
 import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
+import uk.gov.hmcts.reform.sscs.util.DynamicListLanguageUtil;
 import uk.gov.hmcts.reform.sscs.validators.FormTypeValidator;
 
 @Slf4j
@@ -66,8 +70,9 @@ public class SscsCaseTransformer implements CaseTransformer {
     private final FormTypeValidator formTypeValidator;
     private final DwpAddressLookupService dwpAddressLookupService;
     private final CaseManagementLocationService caseManagementLocationService;
-
     private final RegionalProcessingCenterService regionalProcessingCenterService;
+    private final DynamicListLanguageUtil dynamicListLanguageUtil;
+    private final VerbalLanguagesService verbalLanguagesService;
     private boolean ucOfficeFeatureActive;
 
     private Set<String> errors;
@@ -83,6 +88,8 @@ public class SscsCaseTransformer implements CaseTransformer {
                                DwpAddressLookupService dwpAddressLookupService,
                                CaseManagementLocationService caseManagementLocationService,
                                RegionalProcessingCenterService regionalProcessingCenterService,
+                               DynamicListLanguageUtil dynamicListLanguageUtil,
+                               VerbalLanguagesService verbalLanguagesService,
                                @Value("${feature.uc-office-feature.enabled}") boolean ucOfficeFeatureActive) {
         this.ccdService = ccdService;
         this.idamService = idamService;
@@ -95,6 +102,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.caseManagementLocationService = caseManagementLocationService;
         this.ucOfficeFeatureActive = ucOfficeFeatureActive;
         this.regionalProcessingCenterService = regionalProcessingCenterService;
+        this.dynamicListLanguageUtil = dynamicListLanguageUtil;
+        this.verbalLanguagesService = verbalLanguagesService;
     }
 
     public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
@@ -812,7 +821,28 @@ public class SscsCaseTransformer implements CaseTransformer {
             findBooleanExists(getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL))
                 || findBooleanExists(getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL));
 
-        String languageType = isLanguageInterpreterRequired ? findLanguageTypeString(pairs) : null;
+        DynamicList languageDynamicList = null;
+        if (isLanguageInterpreterRequired) {
+
+            String hearingOptionsLanguageType = getField(pairs, HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL);
+            String hearingOptionsDialect = getField(pairs, HEARING_OPTIONS_DIALECT_LITERAL);
+            String languageType;
+
+            if (isNotEmpty(hearingOptionsLanguageType)) {
+                languageType = hearingOptionsLanguageType;
+            } else if (isNotEmpty(hearingOptionsDialect)) {
+                languageType = hearingOptionsDialect;
+            } else {
+                languageType = "";
+            }
+
+            if (isNotEmpty(languageType)) {
+                Language language = verbalLanguagesService.getVerbalLanguage(languageType);
+                DynamicListItem dynamicListItem = dynamicListLanguageUtil.getLanguageDynamicListItem(language);
+                languageDynamicList = new DynamicList(dynamicListItem, null);
+                languageDynamicList = dynamicListLanguageUtil.generateInterpreterLanguageFields(languageDynamicList);
+            }
+        }
 
         String wantsToAttend = hearingType != null && hearingType.equals(HEARING_TYPE_ORAL) ? YES_LITERAL : NO_LITERAL;
 
@@ -838,7 +868,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .arrangements(arrangements)
             .other(getField(pairs, HEARING_SUPPORT_ARRANGEMENTS_LITERAL))
             .languageInterpreter(convertBooleanToYesNoString(isLanguageInterpreterRequired))
-            .languages(languageType)
+            .languages(languageDynamicList)
             .signLanguageType(signLanguageType)
             .build();
     }

@@ -49,11 +49,13 @@ import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
 import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
+import uk.gov.hmcts.reform.sscs.reference.data.service.VerbalLanguagesService;
 import uk.gov.hmcts.reform.sscs.service.AirLookupService;
 import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.FuzzyMatcherService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
+import uk.gov.hmcts.reform.sscs.util.DynamicListLanguageUtil;
 import uk.gov.hmcts.reform.sscs.validators.FormTypeValidator;
 
 @RunWith(JUnitParamsRunner.class)
@@ -87,6 +89,12 @@ public class SscsCaseTransformerTest {
 
     @Mock
     private RegionalProcessingCenterService regionalProcessingCenterService;
+
+    @Mock
+    private DynamicListLanguageUtil dynamicListLanguageUtil;
+
+    @Mock
+    private VerbalLanguagesService verbalLanguagesService;
     private SscsCaseTransformer transformer;
     private SscsCaseTransformer transformer2;
 
@@ -128,6 +136,8 @@ public class SscsCaseTransformerTest {
             dwpAddressLookupService,
             caseManagementLocationService,
             regionalProcessingCenterService,
+            dynamicListLanguageUtil,
+            verbalLanguagesService,
             false);
 
         transformer2 = new SscsCaseTransformer(
@@ -141,6 +151,8 @@ public class SscsCaseTransformerTest {
             dwpAddressLookupService,
             caseManagementLocationService,
             regionalProcessingCenterService,
+            dynamicListLanguageUtil,
+            verbalLanguagesService,
             false);
 
         pairs.put("is_hearing_type_oral", IS_HEARING_TYPE_ORAL);
@@ -170,6 +182,10 @@ public class SscsCaseTransformerTest {
         given(sscsJsonExtractor.extractJson(sscs5ExceptionRecord)).willReturn(ScannedData.builder().ocrCaseData(pairs).build());
 
         when(idamService.getIdamTokens()).thenReturn(IdamTokens.builder().build());
+
+        DynamicListItem item = new DynamicListItem("spa", HEARING_OPTIONS_LANGUAGE_TYPE);
+        DynamicList list = new DynamicList(item, List.of(item));
+        given(dynamicListLanguageUtil.generateInterpreterLanguageFields(any())).willReturn(list);
     }
 
     @Test
@@ -1328,7 +1344,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
+        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages().getValue().getLabel());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
 
         assertTrue(result.getErrors().isEmpty());
@@ -1342,7 +1358,7 @@ public class SscsCaseTransformerTest {
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
+        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages().getValue().getLabel());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
 
         assertTrue(result.getErrors().isEmpty());
@@ -1353,9 +1369,13 @@ public class SscsCaseTransformerTest {
 
         pairs.put(HEARING_OPTIONS_DIALECT_LITERAL, HEARING_OPTIONS_DIALECT_TYPE);
 
+        DynamicListItem item = new DynamicListItem("cas", HEARING_OPTIONS_DIALECT_TYPE);
+        DynamicList list = new DynamicList(item, List.of(item));
+        given(dynamicListLanguageUtil.generateInterpreterLanguageFields(any())).willReturn(list);
+
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
-        assertEquals(HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
+        assertEquals(HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages().getValue().getLabel());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguageInterpreter());
 
         assertTrue(result.getErrors().isEmpty());
@@ -1425,7 +1445,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals(SIGN_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
-        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
+        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages().getValue().getLabel());
     }
 
     @Test
@@ -1439,7 +1459,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
         assertEquals("signLanguageInterpreter", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getArrangements().get(0));
         assertEquals("British Sign Language", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getSignLanguageType());
-        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE + " " + HEARING_OPTIONS_DIALECT_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages());
+        assertEquals(HEARING_OPTIONS_LANGUAGE_TYPE, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getLanguages().getValue().getLabel());
     }
 
     @Test
@@ -2668,6 +2688,9 @@ public class SscsCaseTransformerTest {
         List<String> hearingSupportArrangements = new ArrayList<>();
         hearingSupportArrangements.add("hearingLoop");
 
+        DynamicListItem item = new DynamicListItem("spa", HEARING_OPTIONS_LANGUAGE_TYPE);
+        DynamicList list = new DynamicList(item, List.of(item));
+
         return Appeal.builder()
             .benefitType(BenefitType.builder().code(BENEFIT_TYPE).description(BENEFIT_TYPE_DESCRIPTION).build())
             .appellant(appellant)
@@ -2682,7 +2705,7 @@ public class SscsCaseTransformerTest {
                 .agreeLessNotice(YES_LITERAL)
                 .arrangements(hearingSupportArrangements)
                 .languageInterpreter(YES_LITERAL)
-                .languages(HEARING_OPTIONS_LANGUAGE_TYPE)
+                .languages(list)
                 .wantsToAttend(YES_LITERAL)
                 .wantsSupport(YES_LITERAL).build())
             .signer(SIGNATURE_NAME)

@@ -83,7 +83,18 @@
             }
           ],
           "languageInterpreter": "Yes",
-          "languages": "Spanish",
+          "languages": {
+            "value": {
+              "code": "spa",
+              "label": "Spanish"
+            },
+            "list_items": [
+              {
+                "code": "tel",
+                "label": "Telugu"
+              }
+            ]
+          },
           "other": "Wheelchair access",
           "scheduleHearing": "No",
           "wantsSupport": "Yes",
