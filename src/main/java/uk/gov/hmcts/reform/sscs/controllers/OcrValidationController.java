@@ -3,9 +3,10 @@ package uk.gov.hmcts.reform.sscs.controllers;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.ResponseEntity.ok;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import javax.validation.Valid;
@@ -14,7 +15,11 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriUtils;
 import uk.gov.hmcts.reform.sscs.auth.AuthService;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
@@ -46,13 +51,14 @@ public class OcrValidationController {
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ApiOperation("Validates OCR form data based on form type")
-    @ApiResponses({
-        @ApiResponse(code = 200, response = OcrValidationResponse.class,
-            message = "Validation executed successfully"),
-        @ApiResponse(code = 401, message = "Provided S2S token is missing or invalid"),
-        @ApiResponse(code = 403, message = "S2S token is not authorized to use the service")
-    })
+    @Operation(summary = "Validates OCR form data based on form type")
+    @ApiResponse(
+        responseCode = "200",
+        content = @Content(schema = @Schema(implementation = OcrValidationResponse.class)),
+        description = "Validation executed successfully"
+    )
+    @ApiResponse(responseCode = "401", description = "Provided S2S token is missing or invalid")
+    @ApiResponse(responseCode = "403", description = "S2S token is not authorized to use the service")
     public ResponseEntity<OcrValidationResponse> validateOcrData(
         @RequestHeader(name = "ServiceAuthorization", required = false) String serviceAuthHeader,
         @PathVariable(name = "form-type", required = false) String formType,
