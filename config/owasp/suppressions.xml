@@ -197,4 +197,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$</packageUrl>
     <cve>CVE-2023-20862</cve>
   </suppress>
+  <suppress until = "2023-07-01">
+    <cve>CVE-2023-35116</cve>
+  </suppress>
 </suppressions>
