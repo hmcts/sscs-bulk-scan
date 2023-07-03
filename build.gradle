@@ -295,7 +295,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22112
-    dependencySet(group: 'org.springframework.security', version: '5.7.5') {
+    dependencySet(group: 'org.springframework.security', version: '5.7.9') {
       entry 'spring-security-crypto'
     }
 
@@ -317,7 +317,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22118
-    dependencySet(group: 'org.springframework', version: '5.3.26') {
+    dependencySet(group: 'org.springframework', version: '5.3.28') {
       entry 'spring-aop'
       entry 'spring-aspects'
       entry 'spring-beans'
@@ -349,7 +349,7 @@ dependencyManagement {
     dependency group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'
 
     //CVE-2020-36518, CVE-2022-42004
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.14.2') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.14.3') {
         entry 'jackson-databind'
         entry 'jackson-core'
         entry 'jackson-annotations'
