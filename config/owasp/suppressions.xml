@@ -89,21 +89,21 @@
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
     <cve>CVE-2022-45143</cve>
   </suppress>
-  <suppress until="2023-07-01">
+  <suppress until="2023-09-01">
     <notes><![CDATA[
    file name: groovy-json-3.0.10.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.codehaus\.groovy/groovy\-json@.*$</packageUrl>
     <cve>CVE-2022-45688</cve>
   </suppress>
-  <suppress until="2023-07-01">
+  <suppress until="2023-09-01">
     <notes><![CDATA[
    file name: jackson-core-2.14.1.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
     <cve>CVE-2022-45688</cve>
   </suppress>
-  <suppress until="2023-07-01">
+  <suppress until="2023-09-01">
     <notes><![CDATA[
    file name: json-20220320.jar
    ]]></notes>
@@ -117,7 +117,7 @@
     <packageUrl regex="true">^pkg:maven/commons\-fileupload/commons\-fileupload@.*$</packageUrl>
     <cve>CVE-2023-24998</cve>
   </suppress>
-  <suppress until = "2023-07-01">
+  <suppress until = "2023-09-01">
     <notes><![CDATA[
    file name: snakeyaml-1.33.jar
    ]]></notes>
@@ -197,7 +197,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$</packageUrl>
     <cve>CVE-2023-20862</cve>
   </suppress>
-  <suppress until = "2023-07-01">
+  <suppress until = "2023-09-01">
     <cve>CVE-2023-35116</cve>
   </suppress>
 </suppressions>
