@@ -185,6 +185,7 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
                 "Mrn date is empty",
                 "DWP issuing office is empty",
                 "Benefit type description is empty",
+                "Add an end date for unavailable dates",
                 "Hearing type is invalid");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);

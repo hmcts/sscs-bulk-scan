@@ -730,10 +730,32 @@ public class SscsCaseValidator implements CaseValidator {
         return isValid;
     }
 
+    private void checkExcludeStartDateAndEndDate(ExcludeDate excludeDate) {
+        boolean isStartDateEmpty = StringUtils.isEmpty(excludeDate.getValue().getStart());
+        boolean isEndDateEmpty = StringUtils.isEmpty(excludeDate.getValue().getEnd());
+
+        if (isStartDateEmpty) {
+            errors.add("Add a start date for unavailable dates");
+        }
+        if (isEndDateEmpty) {
+            errors.add("Add an end date for unavailable dates");
+        }
+
+        if (!isStartDateEmpty && !isEndDateEmpty) {
+            LocalDate startDate = LocalDate.parse(excludeDate.getValue().getStart());
+            LocalDate endDate = LocalDate.parse(excludeDate.getValue().getEnd());
+
+            if (startDate.isAfter(endDate)) {
+                errors.add("Start date must be before end date");
+            }
+        }
+    }
+
     private void checkExcludedDates(Appeal appeal) {
         if (appeal.getHearingOptions() != null && appeal.getHearingOptions().getExcludeDates() != null) {
             for (ExcludeDate excludeDate : appeal.getHearingOptions().getExcludeDates()) {
                 checkDateValidDate(excludeDate.getValue().getStart(), HEARING_OPTIONS_EXCLUDE_DATES_LITERAL, "", false);
+                checkExcludeStartDateAndEndDate(excludeDate);
             }
         }
     }
