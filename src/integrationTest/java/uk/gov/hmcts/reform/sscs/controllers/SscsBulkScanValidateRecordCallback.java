@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HAS_REPRESENTATIVE_FIELD_MISSING;
 import static uk.gov.hmcts.reform.sscs.helper.TestConstants.*;
 
 import com.google.common.io.Resources;
