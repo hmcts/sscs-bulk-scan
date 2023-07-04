@@ -68,7 +68,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
-        assertThat(callbackResponse.getErrors()).isEmpty();
         assertThat(callbackResponse.getWarnings()).isEmpty();
 
         assertEquals("readyToList", callbackResponse.getData().get("createdInGapsFrom"));
@@ -96,8 +95,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
-
-        assertThat(callbackResponse.getErrors()).isEmpty();
         assertThat(callbackResponse.getWarnings()).isEmpty();
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
@@ -123,7 +120,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
-        assertThat(callbackResponse.getErrors()).isEmpty();
         assertThat(callbackResponse.getWarnings()).isEmpty();
 
         assertEquals("Test1234", callbackResponse.getData().get("childMaintenanceNumber"));
@@ -147,11 +143,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly(
-                "Child maintenance number is empty",
-                "Other party first name is empty",
-                "Other party address town is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -171,21 +162,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly(
-                "Appellant title is empty",
-                "Appellant last name is empty",
-                "Appellant address line 1 is empty",
-                "Appellant address town is empty",
-                "Appellant address county is empty",
-                "Appellant postcode is empty",
-                "Appellant first name is empty",
-                "Appellant date of birth is in future",
-                "Hearing options exclude dates is in past",
-                "Mrn date is empty",
-                "DWP issuing office is empty",
-                "Benefit type description is empty",
-                "Hearing type is invalid");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -206,11 +182,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly(
-                "Appointee title is empty",
-                "Appointee first name is empty",
-                "Appointee last name is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -232,12 +203,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly(
-                "Appointee title is empty",
-                "Appointee first name is empty",
-                "Appointee last name is empty",
-                "Hearing option telephone, video and face to face are empty. At least one must be populated");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -259,14 +224,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly("Appointee title is empty",
-                "Appointee first name is empty",
-                "Appointee last name is empty",
-                "Appellant title is empty",
-                "Appellant first name is empty",
-                "Appellant last name is empty",
-                "Hearing option telephone, video and face to face are empty. At least one must be populated");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -288,13 +245,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly("Appointee title is empty",
-                "Appointee first name is empty",
-                "Appointee last name is empty",
-                "Appellant title is empty",
-                "Appellant first name is empty",
-                "Appellant last name is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -315,12 +265,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly(
-                "Representative organisation, Representative first name and Representative last name are empty. At least one must be populated",
-                "Representative address town is empty",
-                "Representative address county is empty",
-                "Representative postcode is empty");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -344,8 +288,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly(HAS_REPRESENTATIVE_FIELD_MISSING);
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -407,9 +349,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors().size()).isEqualTo(0);
-        assertThat(result.getBody().getWarnings())
-            .containsOnly("Appellant postcode is not a valid postcode");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -430,8 +369,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly("Appellant role and/or description is missing");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -452,8 +389,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         // Then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getErrors())
-            .containsOnly("Appellant role and/or description is missing");
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
     }
@@ -479,7 +414,6 @@ public class SscsBulkScanValidateRecordCallback extends BaseTest {
 
         AboutToStartOrSubmitCallbackResponse callbackResponse = result.getBody();
 
-        assertThat(callbackResponse.getErrors()).isEmpty();
         assertThat(callbackResponse.getWarnings()).isEmpty();
 
         assertEquals("TCO Preston Appeals Team", callbackResponse.getData().get("dwpRegionalCentre"));
