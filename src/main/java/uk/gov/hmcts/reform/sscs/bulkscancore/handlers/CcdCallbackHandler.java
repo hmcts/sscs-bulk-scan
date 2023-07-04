@@ -307,6 +307,9 @@ public class CcdCallbackHandler {
             appendedWarningsAndErrors.addAll(caseResponse.getErrors());
         }
 
+        appendedWarningsAndErrors.add("Sample error one");
+        appendedWarningsAndErrors.add("Sample error two");
+
         if (!appendedWarningsAndErrors.isEmpty() || !warningsThatAreNotErrors.isEmpty()) {
             PreSubmitCallbackResponse<SscsCaseData> preSubmitCallbackResponse = new PreSubmitCallbackResponse<>(caseData);
 
