@@ -15,6 +15,7 @@ import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_POSTCODE;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
+import java.time.LocalDate;
 import java.util.*;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -2041,14 +2042,14 @@ public class SscsCaseValidatorTest {
     private Map<String, Object> buildMinimumAppealData(Appellant appellant, Boolean exceptionCaseType,
                                                        FormType formType) {
         return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant,
-            buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL,
+            buildMinimumRep(), LocalDate.now().plusDays(1).toString(), exceptionCaseType, HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrn(MrnDetails mrn, Appellant appellant,
                                                               Boolean exceptionCaseType,
                                                               FormType formType) {
-        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, buildMinimumRep(), null,
+        return buildMinimumAppealDataWithMrnDateAndBenefitType(mrn, ESA.name(), appellant, buildMinimumRep(), LocalDate.now().plusDays(1).toString(),
             exceptionCaseType, HEARING_TYPE_PAPER, null, formType);
     }
 
@@ -2056,7 +2057,7 @@ public class SscsCaseValidatorTest {
                                                                       Boolean exceptionCaseType,
                                                                       FormType formType) {
         return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, benefitCode, appellant,
-            buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL,
+            buildMinimumRep(), LocalDate.now().plusDays(1).toString(), exceptionCaseType, HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
     }
 
@@ -2065,7 +2066,7 @@ public class SscsCaseValidatorTest {
                                                                          Boolean exceptionCaseType,
                                                                          FormType formType) {
         return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant, representative,
-            null, exceptionCaseType, HEARING_TYPE_ORAL,
+            LocalDate.now().plusDays(1).toString(), exceptionCaseType, HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
     }
 
@@ -2088,7 +2089,7 @@ public class SscsCaseValidatorTest {
                                                                          Boolean exceptionCaseType,
                                                                          FormType formType) {
         return buildMinimumAppealDataWithMrnDateAndBenefitType(defaultMrnDetails, PIP.name(), appellant,
-            buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL, hearingSubtype, formType);
+            buildMinimumRep(), LocalDate.now().plusDays(1).toString(), exceptionCaseType, HEARING_TYPE_ORAL, hearingSubtype, formType);
     }
 
     private Representative buildMinimumRep() {
@@ -2100,7 +2101,7 @@ public class SscsCaseValidatorTest {
                                                                                  Boolean exceptionCaseType,
                                                                                  FormType formType) {
         return buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(defaultMrnDetails, benefitCode, appellant,
-            buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL,
+            buildMinimumRep(), LocalDate.now().plusDays(1).toString(), exceptionCaseType, HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
     }
 
@@ -2128,7 +2129,7 @@ public class SscsCaseValidatorTest {
                                                                                         FormType formType) {
         Map<String, Object> dataMap = new HashMap<>();
         List<ExcludeDate> excludedDates = new ArrayList<>();
-        excludedDates.add(ExcludeDate.builder().value(DateRange.builder().start(excludeDates).build()).build());
+        excludedDates.add(ExcludeDate.builder().value(DateRange.builder().start(excludeDates).end(excludeDates).build()).build());
 
         dataMap.put("formType", formType);
         dataMap.put("appeal", Appeal.builder()
@@ -2184,7 +2185,7 @@ public class SscsCaseValidatorTest {
             UC.getShortName(),
             buildAppellant(true),
             buildMinimumRep(),
-            null,
+            LocalDate.now().plusDays(1).toString(),
             true,
             HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
