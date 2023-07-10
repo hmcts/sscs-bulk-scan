@@ -735,7 +735,7 @@ public class SscsCaseValidator implements CaseValidator {
         boolean isEndDateEmpty = StringUtils.isEmpty(excludeDate.getValue().getEnd());
 
         if (isStartDateEmpty) {
-            errors.add("Add an start date for unavailable dates");
+            errors.add("Add a start date for unavailable dates");
         }
         if (isEndDateEmpty) {
             errors.add("Add an end date for unavailable dates");
