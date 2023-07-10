@@ -759,7 +759,7 @@ public class SscsCaseValidator implements CaseValidator {
             }
         }
         if (appeal.getHearingOptions() == null || appeal.getHearingOptions().getExcludeDates() == null) {
-            errors.add("Add an start date for unavailable dates");
+            errors.add("Add a start date and end date for unavailable dates");
         }
     }
 
