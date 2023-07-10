@@ -758,6 +758,9 @@ public class SscsCaseValidator implements CaseValidator {
                 checkExcludeStartDateAndEndDate(excludeDate);
             }
         }
+        if (appeal.getHearingOptions().getExcludeDates() == null) {
+            errors.add("Add an start date for unavailable dates");
+        }
     }
 
     private void checkMobileNumber(Contact contact, String personType) {
