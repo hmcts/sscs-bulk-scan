@@ -79,6 +79,10 @@
     {
       "name": "other_party_details",
       "value": "Papa"
+    },
+    {
+      "name": "hearing_options_exclude_dates",
+      "value": "11/11/2025 - 12/11/2025"
     }
   ]
 }

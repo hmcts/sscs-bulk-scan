@@ -67,6 +67,10 @@
     {
       "name": "hearing_type_telephone",
       "value": "true"
+    },
+    {
+      "name": "hearing_options_exclude_dates",
+      "value": "11/11/2025 - 12/11/2025"
     }
   ]
 }
