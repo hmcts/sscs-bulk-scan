@@ -125,7 +125,7 @@
     },
     {
       "name": "hearing_options_exclude_dates",
-      "value": "01/11/2030,01/12/2030"
+      "value": "01/11/2030 - 01/11/2030, 01/12/2030 - 01/12/2030"
     },
     {
       "name": "hearing_support_arrangements",
