@@ -225,7 +225,7 @@ dependencies {
 
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.0.3'
 
-  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '4.26.0'
+  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '4.26.2'
 
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -293,12 +293,12 @@ dependencyManagement {
     }
 
     //to remove CVE-2020-8908
-    dependencySet(group: 'com.google.guava', version: '31.1-jre') {
+    dependencySet(group: 'com.google.guava', version: '32.1.0-jre') {
       entry 'guava'
     }
 
     //CVE-2021-22112
-    dependencySet(group: 'org.springframework.security', version: '5.7.5') {
+    dependencySet(group: 'org.springframework.security', version: '5.7.9') {
       entry 'spring-security-crypto'
     }
 
@@ -320,7 +320,7 @@ dependencyManagement {
     }
 
     //CVE-2021-22118
-    dependencySet(group: 'org.springframework', version: '5.3.26') {
+    dependencySet(group: 'org.springframework', version: '5.3.28') {
       entry 'spring-aop'
       entry 'spring-aspects'
       entry 'spring-beans'
@@ -352,7 +352,7 @@ dependencyManagement {
     dependency group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'
 
     //CVE-2020-36518, CVE-2022-42004
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.14.2') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.14.3') {
         entry 'jackson-databind'
         entry 'jackson-core'
         entry 'jackson-annotations'
