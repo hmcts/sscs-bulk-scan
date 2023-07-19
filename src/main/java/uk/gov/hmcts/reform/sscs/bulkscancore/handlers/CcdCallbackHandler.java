@@ -188,7 +188,7 @@ public class CcdCallbackHandler {
     private void setUnsavedFieldsOnCallback(Callback<SscsCaseData> callback) {
         callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(READY_TO_LIST.getId());
         callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
-        if (callback.getCaseDetails().getCaseData() == null) {
+        if (callback.getCaseDetails().getCaseData().getIsConfidentialCase() == null) {
             callback.getCaseDetails().getCaseData().setIsConfidentialCase(YesNo.NO);
         }
 
