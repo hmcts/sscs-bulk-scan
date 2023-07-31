@@ -16,7 +16,7 @@ java:
         - name: idam-sscs-oauth2-client-secret
           alias: IDAM_OAUTH2_CLIENT_SECRET
         - name: AppInsightsInstrumentationKey
-          alias: azure.application-insights.instrumentation-key
+          alias: AppInsightsInstrumentationKey
   environment:
     ROOT_LOGGING_LEVEL: INFO
     LOG_OUTPUT: single

@@ -1,0 +1,6 @@
+{
+  "connectionString": "${file:/mnt/secrets/sscs/AppInsightsInstrumentationKey}",
+  "role": {
+    "name": "SscsBulkScan"
+  }
+}
