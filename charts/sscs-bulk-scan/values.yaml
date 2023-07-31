@@ -15,7 +15,7 @@ java:
           alias: IDAM_SSCS_SYSTEMUPDATE_PASSWORD
         - name: idam-sscs-oauth2-client-secret
           alias: IDAM_OAUTH2_CLIENT_SECRET
-        - name: AppInsightsInstrumentationKey
+        - name: app-insights-connection-string
           alias: AppInsightsInstrumentationKey
   environment:
     ROOT_LOGGING_LEVEL: INFO
