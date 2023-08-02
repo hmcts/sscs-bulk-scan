@@ -1,5 +1,4 @@
 provider "azurerm" {
-  version = "3.50.0"
   features {}
 }
 
@@ -53,6 +52,12 @@ resource "azurerm_key_vault_secret" "app_insights_key" {
 
 output "appInsightsInstrumentationKey" {
   value = data.azurerm_application_insights.sscsappinsights.instrumentation_key
+}
+
+resource "azurerm_key_vault_secret" "app_insights_connection_string" {
+  name         = "app-insights-connection-string"
+  value        = data.azurerm_application_insights.sscsappinsights.connection_string
+  key_vault_id = module.sscs-bulk-scan-vault.key_vault_id
 }
 
 
