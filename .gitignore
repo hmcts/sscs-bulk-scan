@@ -23,3 +23,7 @@
 infrastructure/.terraform/**
 infrastructure/.terraform.lock.hcl
 infrastructure/override.tf
+
+# Application insight
+lib/applicationinsights-agent-*.jar
+lib/applicationinsights.log
