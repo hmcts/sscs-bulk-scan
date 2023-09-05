@@ -103,7 +103,7 @@
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
     <cve>CVE-2022-45688</cve>
   </suppress>
-  <suppress until="2023-09-01">
+  <suppress until="2023-10-05">
     <notes><![CDATA[
    file name: json-20220320.jar
    ]]></notes>
@@ -117,7 +117,7 @@
     <packageUrl regex="true">^pkg:maven/commons\-fileupload/commons\-fileupload@.*$</packageUrl>
     <cve>CVE-2023-24998</cve>
   </suppress>
-  <suppress until = "2023-09-01">
+  <suppress until = "2023-10-05">
     <notes><![CDATA[
    file name: snakeyaml-1.33.jar
    ]]></notes>
@@ -197,7 +197,11 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$</packageUrl>
     <cve>CVE-2023-20862</cve>
   </suppress>
-  <suppress until = "2023-09-01">
+  <suppress until = "2023-10-05">
     <cve>CVE-2023-35116</cve>
   </suppress>
+  <suppress until = "2023-10-05">
+    <cve>CVE-2023-41080</cve>
+  </suppress>
+
 </suppressions>

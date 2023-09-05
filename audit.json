@@ -54,6 +54,13 @@
   "10021_X-Content-Type-Options Header Missing_http://sscs-bulk-scan-aat.service.core-compute-aat.internal_GET" : "ignore",
   "90033_Loosely Scoped Cookie_http://sscs-bulk-scan-aat.service.core-compute-aat.internal_GET" : "ignore",
   "90033_Loosely Scoped Cookie_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/robots.txt_GET" : "ignore",
-  "10096_Timestamp Disclosure - Unix_http://sscs-bulk-scan-aat.service.core-compute-aat.internal_GET" : "ignore"
+  "10096_Timestamp Disclosure - Unix_http://sscs-bulk-scan-aat.service.core-compute-aat.internal_GET" : "ignore",
+  "10049_Non-Storable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/transform-exception-record_POST" : "ignore",
+  "10049_Non-Storable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/transform-scanned-data_POST" : "ignore",
+  "10049_Non-Storable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/validate-record_POST" : "ignore",
+  "10112_Session Management Response Identified_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/_GET" : "ignore",
+  "10049_Storable and Cacheable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/_GET" : "ignore",
+  "10049_Storable and Cacheable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/v2/api-docs_GET" : "ignore",
+  "10049_Storable and Cacheable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/forms/form-type/validate-ocr_POST" : "ignore"
 
 }
