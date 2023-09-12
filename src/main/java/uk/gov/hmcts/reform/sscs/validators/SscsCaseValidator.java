@@ -701,15 +701,15 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkBenefitCodeMatchesBenefitType(String benefitCode, Appeal appeal) {
-        if (benefitCode != null) {
-            Benefit benefit = Benefit.getBenefitFromBenefitCode(benefitCode);
-            String expectedBenefitShortName = benefit != null ? benefit.getShortName() : null;
-            BenefitType caseBenefitType = appeal != null ? appeal.getBenefitType() : null;
-            String caseBenefitTypeShortName = caseBenefitType != null ? caseBenefitType.getCode() : null;
-            if (expectedBenefitShortName != null && caseBenefitTypeShortName != null
-                && !expectedBenefitShortName.equals(caseBenefitTypeShortName)) {
-                errors.add("Invalid combination of benefit type and benefit code");
-            }
+        Optional<String> expectedBenefitShortName = Optional.ofNullable(benefitCode)
+            .map(Benefit::getBenefitFromBenefitCode)
+            .map(Benefit::getShortName);
+        Optional<String> caseBenefitShortName = Optional.ofNullable(appeal)
+            .map(Appeal::getBenefitType)
+            .map(BenefitType::getCode);
+        if (expectedBenefitShortName.isPresent() && caseBenefitShortName.isPresent()
+            && !expectedBenefitShortName.get().equals(caseBenefitShortName.get())) {
+            errors.add("Invalid combination of benefit type and benefit code");
         }
     }
 
