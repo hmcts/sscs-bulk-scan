@@ -4,9 +4,9 @@ plugins {
   id 'org.sonarqube' version '4.0.0.2929'
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.9.11'
-  id 'io.spring.dependency-management' version '1.0.12.RELEASE'
-  id 'org.springframework.boot' version '2.5.15'
-  id 'uk.gov.hmcts.java' version '0.12.12'
+  id 'io.spring.dependency-management' version '1.1.0'
+  id 'org.springframework.boot' version '2.7.12'
+  id 'uk.gov.hmcts.java' version '0.12.43'
   id 'org.owasp.dependencycheck' version '8.3.1'
   id 'com.github.ben-manes.versions' version '0.46.0'
 }
@@ -216,8 +216,7 @@ dependencies {
   implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
 
-  implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
-  implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
 
   implementation group: 'com.github.hmcts', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
   implementation group: 'com.github.hmcts', name: 'java-logging', version: '5.1.9'
@@ -347,7 +346,7 @@ dependencyManagement {
     }
 
     imports {
-      mavenBom "org.springframework.cloud:spring-cloud-dependencies:2020.0.6"
+      mavenBom "org.springframework.cloud:spring-cloud-dependencies:2021.0.4"
     }
     //CVE-2021-28170
     dependency group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'

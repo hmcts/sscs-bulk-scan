@@ -98,3 +98,7 @@ feign:
         loggerLevel: full
       core-case-data-api:
         loggerLevel: full
+
+springdoc:
+  packagesToScan: "uk.gov.hmcts.reform.sscs.controllers"
+
