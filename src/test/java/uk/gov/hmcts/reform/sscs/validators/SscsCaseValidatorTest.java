@@ -122,10 +122,8 @@ public class SscsCaseValidatorTest {
                 benefitShortName,
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
-            false
-        );
+                FormType.SSCS1U),
+            false);
 
         assertEquals("office is invalid", response.getWarnings().get(0));
     }
@@ -144,10 +142,8 @@ public class SscsCaseValidatorTest {
                 benefitShortName,
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
-            false
-        );
+                FormType.SSCS1U),
+            false);
 
         assertEquals(0, response.getWarnings().size());
         assertEquals(0, response.getErrors().size());
@@ -166,10 +162,8 @@ public class SscsCaseValidatorTest {
                 UC.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
-            false
-        );
+                FormType.SSCS1U),
+            false);
 
         assertEquals("office is invalid", response.getWarnings().get(0));
     }
@@ -189,8 +183,7 @@ public class SscsCaseValidatorTest {
                 buildAppellant(false),
                 true,
                 FormType.SSCS1U),
-            false
-        );
+            false);
 
         assertEquals(0, response.getWarnings().size());
         assertEquals(0, response.getErrors().size());
@@ -210,10 +203,8 @@ public class SscsCaseValidatorTest {
                 ATTENDANCE_ALLOWANCE.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
-            false
-        );
+                FormType.SSCS1U),
+            false);
 
         String assertionMessage = "Asserting Benefit: Attendance Allowance with Office: " + dwpIssuingOffice;
         assertEquals(assertionMessage, 0, response.getWarnings().size());
@@ -233,8 +224,7 @@ public class SscsCaseValidatorTest {
                 DLA.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: DLA with Office: " + dwpIssuingOffice;
@@ -256,8 +246,7 @@ public class SscsCaseValidatorTest {
                 INCOME_SUPPORT.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: Income Support with Office: " + dwpIssuingOffice;
@@ -278,8 +267,7 @@ public class SscsCaseValidatorTest {
                 IIDB.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: IIDB with Office: " + dwpIssuingOffice;
@@ -300,8 +288,7 @@ public class SscsCaseValidatorTest {
                 JSA.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: JSA with Office: " + dwpIssuingOffice;
@@ -324,8 +311,7 @@ public class SscsCaseValidatorTest {
                 SOCIAL_FUND.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: Social Fund with Office: " + dwpIssuingOffice;
@@ -347,8 +333,7 @@ public class SscsCaseValidatorTest {
                 INDUSTRIAL_DEATH_BENEFIT.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: Industrial Death Benefit with Office: " + dwpIssuingOffice;
@@ -370,8 +355,7 @@ public class SscsCaseValidatorTest {
                 PENSION_CREDIT.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: Pension Credit with Office: " + dwpIssuingOffice;
@@ -393,8 +377,7 @@ public class SscsCaseValidatorTest {
                 RETIREMENT_PENSION.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: Retirement Pension with Office: " + dwpIssuingOffice;
@@ -416,8 +399,7 @@ public class SscsCaseValidatorTest {
                 BEREAVEMENT_BENEFIT.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: Bereavement Benefit with Office: " + dwpIssuingOffice;
@@ -461,8 +443,7 @@ public class SscsCaseValidatorTest {
                 MATERNITY_ALLOWANCE.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage = "Asserting Benefit: Maternity Allowance with Office: " + dwpIssuingOffice;
@@ -483,8 +464,7 @@ public class SscsCaseValidatorTest {
                 BEREAVEMENT_SUPPORT_PAYMENT_SCHEME.getShortName(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1U
-            ),
+                FormType.SSCS1U),
             false);
 
         String assertionMessage =
@@ -1116,8 +1096,7 @@ public class SscsCaseValidatorTest {
                 null,
                 buildAppellant(false),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals(BENEFIT_TYPE_DESCRIPTION + " is empty", response.getWarnings().get(0));
@@ -1131,8 +1110,7 @@ public class SscsCaseValidatorTest {
             null,
             buildAppellant(false),
             true,
-            formType
-        );
+            formType);
         caseData.put("formType", formType);
         ExceptionRecord exceptionRecord = formType.equals(FormType.SSCS1U) ? exceptionRecordSscs1U : exceptionRecordSscs5;
         CaseResponse response =
@@ -1151,8 +1129,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 buildAppellant(false),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         List<String> benefitNameList = new ArrayList<>();
@@ -1174,8 +1151,7 @@ public class SscsCaseValidatorTest {
                 PIP.name().toLowerCase(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         List<String> benefitNameList = new ArrayList<>();
@@ -1200,8 +1176,7 @@ public class SscsCaseValidatorTest {
                 PIP.name(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("PIP", ((Appeal) response.getTransformedCase().get("appeal")).getBenefitType().getCode());
@@ -1221,8 +1196,7 @@ public class SscsCaseValidatorTest {
                 PIP.name(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals(0, response.getWarnings().size());
@@ -1239,8 +1213,7 @@ public class SscsCaseValidatorTest {
                 PIP.name(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals(0, response.getWarnings().size());
@@ -1257,8 +1230,7 @@ public class SscsCaseValidatorTest {
                 PIP.name(),
                 buildAppellant(false),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("Address 1",
@@ -1276,8 +1248,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 buildAppellantWithMobileNumber("07776156"),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("person1_mobile is invalid", response.getErrors().get(0));
@@ -1296,8 +1267,7 @@ public class SscsCaseValidatorTest {
                 buildAppellant(false),
                 representative,
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("representative_mobile is invalid", response.getErrors().get(0));
@@ -1316,8 +1286,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 appellant,
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("person1_mobile is invalid", response.getErrors().get(0));
@@ -1336,8 +1305,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 appellant,
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("person1_mobile is invalid", response.getErrors().get(0));
@@ -1354,8 +1322,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 buildAppellantWithMobileNumber("077761560000"),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("person1_mobile is invalid", response.getErrors().get(0));
@@ -1412,8 +1379,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 appellant,
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("person1_mobile is invalid", response.getErrors().get(0));
@@ -1432,8 +1398,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 appellant,
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("person1_mobile is invalid", response.getErrors().get(0));
@@ -1450,8 +1415,7 @@ public class SscsCaseValidatorTest {
                 PIP.name(),
                 buildAppellantWithMobileNumber(VALID_MOBILE),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals(VALID_MOBILE,
@@ -1471,8 +1435,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 buildAppellantWithPostcode("Bla Bla"),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("person1_postcode is not in a valid format", response.getErrors().get(0));
@@ -1490,8 +1453,7 @@ public class SscsCaseValidatorTest {
                 PIP.name(),
                 buildAppellantWithPostcode("W1 1LA"),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals("person1_postcode is not a valid postcode", response.getWarnings().get(0));
@@ -1510,8 +1472,7 @@ public class SscsCaseValidatorTest {
                 PIP.name(),
                 buildAppellantWithPostcode("W1 1LA"),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertThat(response.getWarnings().size()).isEqualTo(0);
@@ -1528,8 +1489,7 @@ public class SscsCaseValidatorTest {
                 PIP.name(),
                 buildAppellantWithPostcode(VALID_POSTCODE),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             false);
 
         assertEquals(VALID_POSTCODE,
@@ -1909,8 +1869,7 @@ public class SscsCaseValidatorTest {
                 "Bla",
                 buildAppellantWithMobileNumber("07776156"),
                 true,
-                FormType.SSCS1PE
-            ),
+                FormType.SSCS1PE),
             true);
 
         assertEquals("person1_mobile is invalid", response.getWarnings().get(1));
@@ -2073,8 +2032,7 @@ public class SscsCaseValidatorTest {
             CHILD_SUPPORT.getShortName(),
             buildAppellant(false),
             true,
-            FormType.SSCS2
-        );
+            FormType.SSCS2);
         caseData.remove("childMaintenanceNumber");
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse,
@@ -2361,8 +2319,7 @@ public class SscsCaseValidatorTest {
             exceptionCaseType,
             HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
-            formType
-        );
+            formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrn(MrnDetails mrn, Appellant appellant,
@@ -2378,8 +2335,7 @@ public class SscsCaseValidatorTest {
             exceptionCaseType,
             HEARING_TYPE_PAPER,
             null,
-            formType
-        );
+            formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithBenefitCodeAndBenefitType(String benefitCode, String benefitType, Appellant appellant,
@@ -2395,8 +2351,7 @@ public class SscsCaseValidatorTest {
             exceptionCaseType,
             HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
-            formType
-        );
+            formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithRepresentative(Appellant appellant,
@@ -2414,8 +2369,7 @@ public class SscsCaseValidatorTest {
             exceptionCaseType,
             HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
-            formType
-        );
+            formType);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithExcludedDate(String excludedDate, Appellant appellant,
@@ -2464,8 +2418,7 @@ public class SscsCaseValidatorTest {
             exceptionCaseType,
             HEARING_TYPE_ORAL,
             hearingSubtype,
-            formType
-        );
+            formType);
     }
 
     private Representative buildMinimumRep() {
