@@ -312,7 +312,7 @@ dependencyManagement {
       entry 'batik-all'
     }
 
-    dependencySet(group: 'org.apache.commons', version: '1.22') {
+    dependencySet(group: 'org.apache.commons', version: '1.24.0') {
       entry 'commons-compress'
     }
 
