@@ -33,5 +33,8 @@
    ]]></notes>
     <cve>CVE-2023-34047</cve>
   </suppress>
+  <suppress until = "2023-11-05">
+    <cve>CVE-2023-42503</cve>
+  </suppress>
 
 </suppressions>
