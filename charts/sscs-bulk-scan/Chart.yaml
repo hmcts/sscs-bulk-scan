@@ -1,7 +1,7 @@
 apiVersion: v2
 name: sscs-bulk-scan
 home: https://github.com/hmcts/sscs-bulk-scan
-version: 0.0.35
+version: 0.0.36
 description: SSCS Bulk Scan
 maintainers:
   - name: HMCTS SSCS Team
