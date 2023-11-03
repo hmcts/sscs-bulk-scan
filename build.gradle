@@ -219,13 +219,15 @@ dependencies {
   implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
   implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 
+  implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.0.1'
+
   implementation group: 'com.github.hmcts', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
-  implementation group: 'com.github.hmcts', name: 'java-logging', version: '5.1.9'
+  implementation group: 'com.github.hmcts', name: 'java-logging', version: '6.0.1'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.8.6'
 
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.0.3'
 
-  implementation group: 'com.github.hmcts', name: 'sscs-common', version: 'e3df5dd'
+  implementation group: 'com.github.hmcts', name: 'sscs-common', version: 'd86afe7'
 
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
