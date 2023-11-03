@@ -13,4 +13,11 @@
     <cve>CVE-2023-24998</cve>
     <cve>CVE-2023-42503</cve>
   </suppress>
+  <suppress until="2023-11-20">
+   <notes><![CDATA[
+   file name: dom4j-2.1.3.jar
+   ]]></notes>
+   <packageUrl regex="true">^pkg:maven/org\.dom4j/dom4j@.*$</packageUrl>
+   <cve>CVE-2023-45960</cve>
+</suppress>
 </suppressions>
