@@ -159,6 +159,9 @@ public class SscsCaseValidator implements CaseValidator {
 
         isBenefitTypeValid(appeal, formType);
 
+        String benefitCode = (String) caseData.get("benefitCode");
+        checkBenefitCodeMatchesBenefitType(benefitCode, appeal);
+
         isHearingTypeValid(appeal);
 
         checkHearingSubTypeIfHearingIsOral(appeal, caseData);
@@ -694,6 +697,19 @@ public class SscsCaseValidator implements CaseValidator {
             if (formType == null || (!formType.equals(FormType.SSCS1U) && !formType.equals(FormType.SSCS5))) {
                 warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, IS_EMPTY));
             }
+        }
+    }
+
+    private void checkBenefitCodeMatchesBenefitType(String benefitCode, Appeal appeal) {
+        Optional<String> expectedBenefitShortName = Optional.ofNullable(benefitCode)
+            .map(Benefit::getBenefitFromBenefitCode)
+            .map(Benefit::getShortName);
+        Optional<String> caseBenefitShortName = Optional.ofNullable(appeal)
+            .map(Appeal::getBenefitType)
+            .map(BenefitType::getCode);
+        if (expectedBenefitShortName.isPresent() && caseBenefitShortName.isPresent()
+            && !expectedBenefitShortName.get().equals(caseBenefitShortName.get())) {
+            errors.add("Invalid combination of benefit type and benefit code");
         }
     }
 
