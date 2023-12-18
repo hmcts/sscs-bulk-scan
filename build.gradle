@@ -7,7 +7,7 @@ plugins {
   id 'io.spring.dependency-management' version '1.0.12.RELEASE'
   id 'org.springframework.boot' version '2.5.15'
   id 'uk.gov.hmcts.java' version '0.12.12'
-  id 'org.owasp.dependencycheck' version '8.3.1'
+  id 'org.owasp.dependencycheck' version '9.0.6'
   id 'com.github.ben-manes.versions' version '0.46.0'
 }
 
@@ -119,7 +119,7 @@ dependencyCheck {
   // range of 7-10 fails the build, anything lower and it doesn't fail the build
   failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 7.0 : 11
   suppressionFile = 'config/owasp/suppressions.xml'
-  cveValidForHours = 24 // on Jenkins we have 24, so if you get more vulnerabilities locally, try to normalize this value with Jenkins
+  nvd.validForHours = 24 // on Jenkins we have 24, so if you get more vulnerabilities locally, try to normalize this value with Jenkins
 
   analyzers {
     retirejs {
