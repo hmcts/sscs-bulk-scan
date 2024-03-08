@@ -212,7 +212,7 @@ dependencies {
   implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.3'
   implementation group: 'io.rest-assured', name: 'xml-path', version: '4.3.3'
   implementation group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
-  implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.2'
+  implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.3'
   implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
 
