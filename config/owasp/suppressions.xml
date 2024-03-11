@@ -3,7 +3,6 @@
   <suppress until="2024-04-01">
     <cve>CVE-2022-1471</cve>
     <cve>CVE-2023-35116</cve>
-    <cve>CVE-2023-24998</cve>
     <cve>CVE-2023-42503</cve>
     <cve>CVE-2023-33202</cve>
     <cve>CVE-2023-6378</cve>
