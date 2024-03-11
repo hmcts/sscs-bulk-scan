@@ -365,6 +365,9 @@ dependencyManagement {
       entry 'logback-core'
       entry 'logback-classic'
     }
+
+    // CVE-2023-34042
+    dependency group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.10'
   }
 }
 
