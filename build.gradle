@@ -212,7 +212,7 @@ dependencies {
   implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.3'
   implementation group: 'io.rest-assured', name: 'xml-path', version: '4.3.3'
   implementation group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
-  implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.2'
+  implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.3'
   implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
 
@@ -227,7 +227,7 @@ dependencies {
 
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.0.3'
 
-  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '5.3.4'
+  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '5.3.6'
 
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -289,7 +289,7 @@ dependencyManagement {
      dependency group: 'org.apache.santuario', name: 'xmlsec', version: '3.0.1'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.75') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.86') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
@@ -312,10 +312,6 @@ dependencyManagement {
 
     dependencySet(group: 'org.apache.xmlgraphics', version: '1.16') {
       entry 'batik-all'
-    }
-
-    dependencySet(group: 'org.apache.commons', version: '1.22') {
-      entry 'commons-compress'
     }
 
     dependencySet(group: 'org.yaml', version: '1.33') {
@@ -360,6 +356,18 @@ dependencyManagement {
         entry 'jackson-core'
         entry 'jackson-annotations'
     }
+
+    // CVE-2023-33202
+    dependency group: 'org.springframework.security', name: 'spring-security-rsa', version: '1.1.1'
+
+    //CVE-2023-6378, CVE-2023-6481
+    dependencySet(group: 'ch.qos.logback', version: '1.2.13') {
+      entry 'logback-core'
+      entry 'logback-classic'
+    }
+
+    // CVE-2023-34042
+    dependency group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.10'
   }
 }
 
