@@ -904,6 +904,11 @@ public class SscsCaseTransformer implements CaseTransformer {
                 if (2 == range.size()) {
                     endDate = getDateForCcd(range.get(1), errors, errorMessage);
                 }
+
+                if (1 == range.size()) {
+                    endDate = startDate;
+                }
+
                 excludeDates.add(
                     ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
             }

@@ -1147,13 +1147,14 @@ public class SscsCaseTransformerTest {
     }
 
     @Test
-    public void givenSingleExcludedDate_thenBuildAnAppealWithExcludedStartDateAndWantToAttendYes() {
+    public void givenSingleExcludedDate_thenBuildAnAppealWithExcludedStartDateAndEndDateAndWantToAttendYes() {
 
         pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getStart());
+        assertEquals("2030-12-01", ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getExcludeDates().get(0).getValue().getEnd());
         assertEquals(YES_LITERAL, ((Appeal) result.getTransformedCase().get("appeal")).getHearingOptions().getWantsToAttend());
 
         assertTrue(result.getErrors().isEmpty());
