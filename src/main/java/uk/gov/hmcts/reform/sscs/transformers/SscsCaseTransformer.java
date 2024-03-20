@@ -899,15 +899,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                 }
 
                 String startDate = getDateForCcd(range.get(0), errors, errorMessage);
-                String endDate = null;
-
-                if (2 == range.size()) {
-                    endDate = getDateForCcd(range.get(1), errors, errorMessage);
-                }
-
-                if (1 == range.size()) {
-                    endDate = startDate;
-                }
+                String endDate = setEndDatesForExcludeDates(startDate, range, errorMessage);
 
                 excludeDates.add(
                     ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
@@ -923,6 +915,18 @@ public class SscsCaseTransformer implements CaseTransformer {
             return null;
         }
         return excludeDates;
+    }
+
+    private String setEndDatesForExcludeDates(String startDate, List<String> range, String errorMessage) {
+        if (2 == range.size()) {
+            return getDateForCcd(range.get(1), errors, errorMessage);
+        }
+
+        if (1 == range.size()) {
+            return startDate;
+        }
+
+        return null;
     }
 
     private List<String> buildArrangements(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
