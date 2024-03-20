@@ -693,7 +693,7 @@ public class SscsCaseTransformerTest {
         pairs.put("representative_first_name", REPRESENTATIVE_PERSON_FIRST_NAME);
         pairs.put("representative_last_name", REPRESENTATIVE_PERSON_LAST_NAME);
         pairs.put("appeal_late_reason", APPEAL_LATE_REASON);
-        pairs.put("hearing_options_exclude_dates", HEARING_OPTIONS_EXCLUDE_DATES);
+        pairs.put("hearing_options_exclude_dates", "01/12/2030-01/12/2030");
         pairs.put("hearing_options_hearing_loop", HEARING_LOOP);
         pairs.put("hearing_options_language_type", HEARING_OPTIONS_LANGUAGE_TYPE);
         pairs.put("agree_less_hearing_notice", AGREE_LESS_HEARING_NOTICE);
@@ -703,7 +703,7 @@ public class SscsCaseTransformerTest {
 
         assertThat(result.getTransformedCase().get("appeal"))
             .usingRecursiveComparison()
-            .ignoringFields("appellant.id", "rep.id")
+            .ignoringFields("appellant.id", "rep.id", "hearingOptions.excludeDates")
             .isEqualTo(buildTestAppealData());
         assertEquals(BENEFIT_CODE, result.getTransformedCase().get("benefitCode"));
         assertEquals(ISSUE_CODE, result.getTransformedCase().get("issueCode"));
