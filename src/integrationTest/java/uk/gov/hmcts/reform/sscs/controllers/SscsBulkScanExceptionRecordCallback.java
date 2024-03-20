@@ -923,7 +923,8 @@ public class SscsBulkScanExceptionRecordCallback extends BaseTest {
             .whenIgnoringPaths(
                 "case_creation_details.case_data.appeal.appellant.id",
                 "case_creation_details.case_data.appeal.appellant.appointee.id",
-                "case_creation_details.case_data.appeal.rep.id")
+                "case_creation_details.case_data.appeal.rep.id",
+                "case_creation_details.case_data.appeal.hearingOptions.excludeDates")
             .isEqualTo(expected);
 
         verify(authTokenValidator).getServiceName(SERVICE_AUTH_TOKEN);
