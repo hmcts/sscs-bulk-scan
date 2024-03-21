@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
@@ -900,6 +901,10 @@ public class SscsCaseTransformer implements CaseTransformer {
 
                 String startDate = getDateForCcd(range.get(0), errors, errorMessage);
                 String endDate = setEndDatesForExcludeDates(startDate, range, errorMessage);
+
+                if (isNull(startDate) && !isNull(endDate)) {
+                    startDate = endDate;
+                }
 
                 excludeDates.add(
                     ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
