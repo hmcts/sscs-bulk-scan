@@ -5,7 +5,7 @@ java:
   aadIdentityName: sscs
   ingressHost: sscs-bulk-scan-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   spotInstances:
-    enabled: true
+    enabled: false
   keyVaults:
     sscs-bulk-scan:
       secrets:
