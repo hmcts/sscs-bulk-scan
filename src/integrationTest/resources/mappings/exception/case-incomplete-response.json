@@ -55,6 +55,7 @@
           "wantsToAttend": "Yes",
           "wantsSupport": "No",
           "languageInterpreter": "No",
+          "languages": null,
           "arrangements": [],
           "scheduleHearing": "No"
         },
