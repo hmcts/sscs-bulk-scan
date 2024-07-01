@@ -296,7 +296,7 @@ dependencyManagement {
     }
 
     //to remove CVE-2020-8908
-    dependencySet(group: 'com.google.guava', version: '32.1.0-jre') {
+    dependencySet(group: 'com.google.guava', version: '33.2.1-jre') {
       entry 'guava'
     }
 
