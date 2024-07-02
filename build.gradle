@@ -7,7 +7,7 @@ plugins {
   id 'io.spring.dependency-management' version '1.0.12.RELEASE'
   id 'org.springframework.boot' version '2.5.15'
   id 'uk.gov.hmcts.java' version '0.12.12'
-  id 'org.owasp.dependencycheck' version '8.3.1'
+  id 'org.owasp.dependencycheck' version '9.0.6'
   id 'com.github.ben-manes.versions' version '0.46.0'
 }
 
@@ -119,7 +119,7 @@ dependencyCheck {
   // range of 7-10 fails the build, anything lower and it doesn't fail the build
   failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 7.0 : 11
   suppressionFile = 'config/owasp/suppressions.xml'
-  cveValidForHours = 24 // on Jenkins we have 24, so if you get more vulnerabilities locally, try to normalize this value with Jenkins
+  nvd.validForHours = 24 // on Jenkins we have 24, so if you get more vulnerabilities locally, try to normalize this value with Jenkins
 
   analyzers {
     retirejs {
@@ -212,7 +212,7 @@ dependencies {
   implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.3'
   implementation group: 'io.rest-assured', name: 'xml-path', version: '4.3.3'
   implementation group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
-  implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.2'
+  implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.3'
   implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
 
@@ -289,7 +289,7 @@ dependencyManagement {
      dependency group: 'org.apache.santuario', name: 'xmlsec', version: '3.0.1'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.75') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.86') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
@@ -314,13 +314,7 @@ dependencyManagement {
       entry 'batik-all'
     }
 
-    dependencySet(group: 'org.apache.commons', version: '1.22') {
-      entry 'commons-compress'
-    }
-
-    dependencySet(group: 'org.yaml', version: '1.33') {
-      entry 'snakeyaml'
-    }
+    dependency group: 'org.yaml', name: 'snakeyaml', version: '2.0'
 
     //CVE-2021-22118
     dependencySet(group: 'org.springframework', version: '5.3.28') {
@@ -360,6 +354,18 @@ dependencyManagement {
         entry 'jackson-core'
         entry 'jackson-annotations'
     }
+
+    // CVE-2023-33202
+    dependency group: 'org.springframework.security', name: 'spring-security-rsa', version: '1.1.1'
+
+    //CVE-2023-6378, CVE-2023-6481
+    dependencySet(group: 'ch.qos.logback', version: '1.2.13') {
+      entry 'logback-core'
+      entry 'logback-classic'
+    }
+
+    // CVE-2023-34042
+    dependency group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.10'
   }
 }
 
