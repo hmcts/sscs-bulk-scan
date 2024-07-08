@@ -208,16 +208,16 @@ dependencies {
   implementation group: 'org.springframework.retry', name: 'spring-retry', version: '1.3.4'
 
   implementation group: 'me.xdrop', name: 'fuzzywuzzy', version: '1.4.0'
-  implementation group: 'io.rest-assured', name: 'rest-assured', version: '4.3.3'
-  implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.3'
-  implementation group: 'io.rest-assured', name: 'xml-path', version: '4.3.3'
-  implementation group: 'io.github.openfeign', name: 'feign-jackson', version: '11.0'
+  implementation group: 'io.rest-assured', name: 'rest-assured', version: '4.5.1'
+  implementation group: 'io.rest-assured', name: 'json-path', version: '4.5.1'
+  implementation group: 'io.rest-assured', name: 'xml-path', version: '4.5.1'
+  implementation group: 'io.github.openfeign', name: 'feign-jackson', version: '11.10'
   implementation group: 'com.github.everit-org.json-schema', name: 'org.everit.json.schema', version: '1.14.3'
   implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
 
-  implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
-  implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+  implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.10.5'
+  implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.10.5'
 
   implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.0.1'
 
@@ -229,8 +229,8 @@ dependencies {
 
   implementation group: 'com.github.hmcts', name: 'sscs-common', version: '5.9.0'
 
-  implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
-  implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
+  implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.4'
+  implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.4'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
   implementation group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
@@ -289,7 +289,7 @@ dependencyManagement {
      dependency group: 'org.apache.santuario', name: 'xmlsec', version: '3.0.1'
 
     // CVE-2019-0232, CVE-2019-0199 - command line injections on windows
-    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.86') {
+    dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.91') {
       entry 'tomcat-embed-core'
       entry 'tomcat-embed-el'
       entry 'tomcat-embed-websocket'
