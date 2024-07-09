@@ -227,7 +227,7 @@ dependencies {
 
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.0.3'
 
-  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '5.3.9'
+  implementation group: 'com.github.hmcts', name: 'sscs-common', version: '5.9.0'
 
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.3'
   implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.3'
@@ -314,9 +314,7 @@ dependencyManagement {
       entry 'batik-all'
     }
 
-    dependencySet(group: 'org.yaml', version: '1.33') {
-      entry 'snakeyaml'
-    }
+    dependency group: 'org.yaml', name: 'snakeyaml', version: '2.0'
 
     //CVE-2021-22118
     dependencySet(group: 'org.springframework', version: '5.3.28') {
