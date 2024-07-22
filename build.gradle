@@ -7,7 +7,7 @@ plugins {
   id 'io.spring.dependency-management' version '1.0.12.RELEASE'
   id 'org.springframework.boot' version '2.5.15'
   id 'uk.gov.hmcts.java' version '0.12.12'
-  id 'org.owasp.dependencycheck' version '9.0.6'
+  id 'org.owasp.dependencycheck' version '10.0.2'
   id 'com.github.ben-manes.versions' version '0.46.0'
 }
 
@@ -54,29 +54,34 @@ dependencies {
   functionalTestImplementation(sourceSets.test.output)
 }
 
-tasks.withType(Copy).all { duplicatesStrategy 'warn' }
+tasks.withType(Copy).configureEach { duplicatesStrategy DuplicatesStrategy.WARN }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
   options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
 
-task functional(type: Test, description: 'Runs the functional tests.', group: 'Verification') {
+tasks.register('functional', Test) {
+  description = 'Runs the functional tests.'
+  group = 'Verification'
   testClassesDirs = sourceSets.functionalTest.output.classesDirs
   classpath = sourceSets.functionalTest.runtimeClasspath
 }
 
-task integration(type: Test, description: 'Runs the integration tests.', group: 'Verification') {
+tasks.register('integration', Test) {
+  description = 'Runs the integration tests.'
+  group = 'Verification'
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
-task smoke(type: Test, description: 'Runs Smoke Tests.') {
+tasks.register('smoke', Test) {
+  description = 'Runs Smoke Tests.'
   testClassesDirs = sourceSets.smokeTest.output.classesDirs
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
-task fortifyScan(type: JavaExec)  {
-  main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
+tasks.register('fortifyScan', JavaExec) {
+  mainClass = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
   classpath += sourceSets.test.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
@@ -85,16 +90,16 @@ pmd {
   toolVersion = "6.55.0"
   ignoreFailures = true
   sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functionalTest, sourceSets.integrationTest, sourceSets.smokeTest]
-  reportsDir = file("$project.buildDir/reports/pmd")
+  reportsDir = file("$project.layout.buildDirectory/reports/pmd")
   ruleSetFiles = files("config/pmd/ruleset.xml")
 }
 
 jacocoTestReport {
   executionData(test, integration)
   reports {
-    xml.enabled = true
-    csv.enabled = false
-    xml.destination = file("${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+    xml.required = true
+    csv.required = false
+    xml.outputLocation = file("${project.layout.buildDirectory}/reports/jacoco/test/jacocoTestReport.xml")
   }
 }
 
@@ -143,7 +148,9 @@ repositories {
     url 'https://repo.spring.io/libs-milestone'
   }
 }
-project.tasks['pitest'].group = "Verification"
+project.tasks.named('pitest') {
+  group = "Verification"
+}
 
 pitest {
   targetClasses = ['uk.gov.hmcts.reform.sscs.*']
@@ -159,7 +166,7 @@ pitest {
   mutationThreshold = 90
 }
 
-task installLocalGitHook(type: Copy) {
+tasks.register('installLocalGitHook', Copy) {
   from new File(rootProject.rootDir, 'config/git/pre-commit')
   into { new File(rootProject.rootDir, '.git/hooks')}
   fileMode 0775
@@ -167,7 +174,7 @@ task installLocalGitHook(type: Copy) {
 
 compileJava.dependsOn installLocalGitHook
 
-task runGitPreCommitTasks {
+tasks.register('runGitPreCommitTasks') {
   dependsOn 'test'
   dependsOn 'pmdMain'
   dependsOn 'pmdTest'
@@ -176,18 +183,21 @@ task runGitPreCommitTasks {
   dependsOn 'checkstyleTest'
 }
 
-project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
-check.dependsOn integration
-checkstyleMain.shouldRunAfter(compileJava)
-test.shouldRunAfter(checkstyleTest)
-integration.shouldRunAfter(checkstyleIntegrationTest)
-integration.shouldRunAfter(test)
+project.tasks.named('sonarqube') {
+  dependsOn test, integration, jacocoTestReport
+  check.dependsOn integration
+  checkstyleMain.shouldRunAfter(compileJava)
+  test.shouldRunAfter(checkstyleTest)
+  integration.shouldRunAfter(checkstyleIntegrationTest)
+  integration.shouldRunAfter(test)
+}
+
 
 sonarqube {
   properties {
     property "sonar.projectName", "SSCS - Bulk Scan"
     property "sonar.projectKey", "sscs-bulk-scan"
-    property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+    property "sonar.coverage.jacoco.xmlReportPaths", "${project.layout.buildDirectory}/reports/jacoco/test/jacocoTestReport.xml"
     property "sonar.exclusions", "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/bulkscancore/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/BulkScanApplication.java," +
@@ -372,18 +382,22 @@ dependencyManagement {
 run {
   def debug = System.getProperty("debug")
   if (debug == 'true') {
-    jvmArgs = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005']
+    application {
+      jvmArgs = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005']
+    }
   }
 }
 
-mainClassName = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
+application {
+  mainClass = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
+}
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
   useJUnitPlatform()
 }
 
 bootJar {
-  archiveName = 'sscs-bulk-scan.jar'
+  archiveFileName = 'sscs-bulk-scan.jar'
 
   manifest {
     attributes('Implementation-Version': project.version.toString())
