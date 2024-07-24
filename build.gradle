@@ -87,21 +87,19 @@ tasks.register('fortifyScan', JavaExec) {
 }
 
 pmd {
-  Provider<Directory> pmdReport = layout.buildDirectory.dir("reports/pmd")
   toolVersion = "6.55.0"
   ignoreFailures = true
   sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functionalTest, sourceSets.integrationTest, sourceSets.smokeTest]
-  reportsDir = pmdReport.get().asFile
+  reportsDir = layout.buildDirectory.dir("reports/pmd").get().asFile
   ruleSetFiles = files("config/pmd/ruleset.xml")
 }
 
 jacocoTestReport {
   executionData(test, integration)
   reports {
-    Provider<RegularFile> jacocoReport = layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
     xml.required = true
     csv.required = false
-    xml.outputLocation = jacocoReport.get().asFile
+    xml.outputLocation = layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
   }
 }
 
@@ -197,11 +195,10 @@ integration.shouldRunAfter(checkstyleIntegrationTest)
 integration.shouldRunAfter(test)
 
 sonarqube {
-  Provider<RegularFile> jacocoReport = layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
   properties {
     property "sonar.projectName", "SSCS - Bulk Scan"
     property "sonar.projectKey", "sscs-bulk-scan"
-    property "sonar.coverage.jacoco.xmlReportPaths", jacocoReport.map { it.asFile.path }
+    property "sonar.coverage.jacoco.xmlReportPaths", layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
     property "sonar.exclusions", "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/bulkscancore/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/BulkScanApplication.java," +
