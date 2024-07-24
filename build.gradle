@@ -173,8 +173,6 @@ tasks.register('installLocalGitHook', Copy) {
   fileMode 0775
 }
 
-compileJava.dependsOn installLocalGitHook
-
 tasks.register('runGitPreCommitTasks') {
   dependsOn 'test'
   dependsOn 'pmdMain'
@@ -386,7 +384,10 @@ run {
   }
 }
 
-mainClassName = 'uk.gov.hmcts.reform.sscs.BulkScanApplication'
+application {
+  mainClass.set('uk.gov.hmcts.reform.sscs.BulkScanApplication')
+  compileJava.dependsOn installLocalGitHook
+}
 
 tasks.withType(Test).configureEach {
   useJUnitPlatform()
