@@ -196,7 +196,7 @@ sonarqube {
   properties {
     property "sonar.projectName", "SSCS - Bulk Scan"
     property "sonar.projectKey", "sscs-bulk-scan"
-    property "sonar.coverage.jacoco.xmlReportPaths", layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
+    property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.outputLocation}"
     property "sonar.exclusions", "src/main/java/uk/gov/hmcts/reform/sscs/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/bulkscancore/domain/**," +
       "src/main/java/uk/gov/hmcts/reform/sscs/BulkScanApplication.java," +
