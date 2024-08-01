@@ -182,7 +182,7 @@ tasks.register('runGitPreCommitTasks') {
   dependsOn 'checkstyleTest'
 }
 
-project.tasks.named('sonarqube') {
+project.tasks.named('sonar') {
   dependsOn test, integration, jacocoTestReport
 }
 
@@ -192,7 +192,7 @@ test.shouldRunAfter(checkstyleTest)
 integration.shouldRunAfter(checkstyleIntegrationTest)
 integration.shouldRunAfter(test)
 
-sonarqube {
+sonar {
   properties {
     property "sonar.projectName", "SSCS - Bulk Scan"
     property "sonar.projectKey", "sscs-bulk-scan"
@@ -386,8 +386,9 @@ run {
 
 application {
   mainClass.set('uk.gov.hmcts.reform.sscs.BulkScanApplication')
-  compileJava.dependsOn installLocalGitHook
 }
+
+compileJava.dependsOn installLocalGitHook
 
 tasks.withType(Test).configureEach {
   useJUnitPlatform()
