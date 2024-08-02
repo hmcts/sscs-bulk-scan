@@ -182,7 +182,7 @@ tasks.register('runGitPreCommitTasks') {
   dependsOn 'checkstyleTest'
 }
 
-project.tasks.named('sonar') {
+project.tasks.named('sonarqube') {
   dependsOn test, integration, jacocoTestReport
 }
 
@@ -192,7 +192,7 @@ test.shouldRunAfter(checkstyleTest)
 integration.shouldRunAfter(checkstyleIntegrationTest)
 integration.shouldRunAfter(test)
 
-sonar {
+sonarqube {
   properties {
     property "sonar.projectName", "SSCS - Bulk Scan"
     property "sonar.projectKey", "sscs-bulk-scan"
@@ -261,7 +261,7 @@ dependencies {
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.1'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '2.36.1'
   testImplementation group: 'org.pitest', name: 'pitest', version: '1.11.7'
-  testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: '1.9.11'
+  testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: pitest.pitestVersion.get()
   testImplementation group: 'org.codehaus.sonar-plugins', name: 'sonar-pitest-plugin', version: '0.5'
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.35.0', {
       exclude group: 'junit', module: 'junit'
