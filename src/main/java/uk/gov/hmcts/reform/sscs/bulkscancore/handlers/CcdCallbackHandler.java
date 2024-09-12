@@ -1,52 +1,26 @@
 package uk.gov.hmcts.reform.sscs.bulkscancore.handlers;
 
-import static org.apache.commons.collections4.ListUtils.emptyIfNull;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.CollectionUtils.isEmpty;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.InterlocReviewState.NONE;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.State.READY_TO_LIST;
-import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateBenefitCode;
-import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateCaseCode;
-import static uk.gov.hmcts.reform.sscs.service.CaseCodeService.generateIssueCode;
-import static uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator.IS_NOT_A_VALID_POSTCODE;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.CaseResponse;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.transformers.CaseTransformer;
-import uk.gov.hmcts.reform.sscs.bulkscancore.validators.CaseValidator;
-import uk.gov.hmcts.reform.sscs.ccd.callback.Callback;
-import uk.gov.hmcts.reform.sscs.ccd.callback.PreSubmitCallbackResponse;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appeal;
-import uk.gov.hmcts.reform.sscs.ccd.domain.Benefit;
-import uk.gov.hmcts.reform.sscs.ccd.domain.CaseManagementLocation;
-import uk.gov.hmcts.reform.sscs.ccd.domain.DirectionType;
-import uk.gov.hmcts.reform.sscs.ccd.domain.DynamicList;
-import uk.gov.hmcts.reform.sscs.ccd.domain.DynamicListItem;
 import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
-import uk.gov.hmcts.reform.sscs.ccd.domain.FormType;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsCaseData;
-import uk.gov.hmcts.reform.sscs.ccd.domain.SscsType;
 import uk.gov.hmcts.reform.sscs.domain.transformation.CaseCreationDetails;
 import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationResponse;
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
-import uk.gov.hmcts.reform.sscs.helper.AppealPostcodeHelper;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
-import uk.gov.hmcts.reform.sscs.idam.IdamTokens;
-import uk.gov.hmcts.reform.sscs.service.CaseManagementLocationService;
-import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
+import uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator;
 
 @Slf4j
 @Component
@@ -56,28 +30,16 @@ public class CcdCallbackHandler {
     private static final String LOGSTR_VALIDATION_WARNING = "Warnings found while validating exception record id {} - {}";
     private static final String CASE_TYPE_ID = "Benefit";
 
-    private final CaseValidator caseValidator;
     private final SscsDataHelper sscsDataHelper;
+    private final SscsCaseValidator caseValidator;
     private final CaseTransformer caseTransformer;
-    private final AppealPostcodeHelper appealPostcodeHelper;
-    private final DwpAddressLookupService dwpAddressLookupService;
-    private final CaseManagementLocationService caseManagementLocationService;
-    private final boolean caseAccessManagementFeature;
 
-    public CcdCallbackHandler(CaseValidator caseValidator,
-                              SscsDataHelper sscsDataHelper,
-                              CaseTransformer caseTransformer,
-                              AppealPostcodeHelper appealPostcodeHelper,
-                              DwpAddressLookupService dwpAddressLookupService,
-                              CaseManagementLocationService caseManagementLocationService,
-                              @Value("${feature.case-access-management.enabled}") boolean caseAccessManagementFeature) {
-        this.caseValidator = caseValidator;
+    public CcdCallbackHandler(SscsDataHelper sscsDataHelper,
+                              SscsCaseValidator caseValidator,
+                              CaseTransformer caseTransformer) {
         this.sscsDataHelper = sscsDataHelper;
+        this.caseValidator = caseValidator;
         this.caseTransformer = caseTransformer;
-        this.appealPostcodeHelper = appealPostcodeHelper;
-        this.dwpAddressLookupService = dwpAddressLookupService;
-        this.caseManagementLocationService = caseManagementLocationService;
-        this.caseAccessManagementFeature = caseAccessManagementFeature;
     }
 
     public CaseResponse handleValidation(ExceptionRecord exceptionRecord) {
@@ -143,184 +105,6 @@ public class CcdCallbackHandler {
 
     private String stringJoin(List<String> messages) {
         return String.join(". ", messages);
-    }
-
-    public PreSubmitCallbackResponse<SscsCaseData> handleValidationAndUpdate(Callback<SscsCaseData> callback, IdamTokens token) {
-        log.info("Processing validation and update request for SSCS exception record id {}", callback.getCaseDetails().getId());
-
-        if (null != callback.getCaseDetails().getCaseData().getInterlocReviewState()) {
-            callback.getCaseDetails().getCaseData().setInterlocReviewState(NONE);
-        }
-
-        setUnsavedFieldsOnCallback(callback);
-
-        FormType formType = callback.getCaseDetails().getCaseData().getFormType();
-        Map<String, Object> appealData = new HashMap<>();
-        sscsDataHelper.addSscsDataToMap(appealData,
-            callback.getCaseDetails().getCaseData().getAppeal(),
-            callback.getCaseDetails().getCaseData().getSscsDocument(),
-            callback.getCaseDetails().getCaseData().getSubscriptions(),
-            formType,
-            callback.getCaseDetails().getCaseData().getChildMaintenanceNumber(),
-            callback.getCaseDetails().getCaseData().getOtherParties()
-        );
-
-        boolean ignoreMrnValidation = false;
-        if (callback.getEvent() != null && (EventType.DIRECTION_ISSUED.equals(callback.getEvent())
-            || EventType.DIRECTION_ISSUED_WELSH.equals(callback.getEvent()))
-            && callback.getCaseDetails().getCaseData().getDirectionTypeDl() != null) {
-            ignoreMrnValidation = StringUtils.equals(DirectionType.APPEAL_TO_PROCEED.toString(),
-                callback.getCaseDetails().getCaseData().getDirectionTypeDl().getValue().getCode());
-        }
-        CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData, ignoreMrnValidation);
-
-        PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
-
-        if (validationErrorResponse != null) {
-            log.info(LOGSTR_VALIDATION_ERRORS, callback.getCaseDetails().getId(), ".");
-            return validationErrorResponse;
-        } else {
-            log.info("Exception record id {} validated successfully", callback.getCaseDetails().getId());
-
-            PreSubmitCallbackResponse<SscsCaseData> preSubmitCallbackResponse = new PreSubmitCallbackResponse<>(callback.getCaseDetails().getCaseData());
-
-            if (caseValidationResponse.getWarnings() != null) {
-                preSubmitCallbackResponse.addWarnings(caseValidationResponse.getWarnings());
-            }
-
-            caseValidationResponse.setTransformedCase(caseTransformer.checkForMatches(caseValidationResponse.getTransformedCase(), token));
-
-            return preSubmitCallbackResponse;
-        }
-    }
-
-    private void setUnsavedFieldsOnCallback(Callback<SscsCaseData> callback) {
-        Appeal appeal = callback.getCaseDetails().getCaseData().getAppeal();
-        callback.getCaseDetails().getCaseData().setCreatedInGapsFrom(READY_TO_LIST.getId());
-        callback.getCaseDetails().getCaseData().setEvidencePresent(sscsDataHelper.hasEvidence(callback.getCaseDetails().getCaseData().getSscsDocument()));
-
-        if (appeal != null && callback.getCaseDetails().getCaseData().getAppeal().getBenefitType() != null
-            && isNotBlank(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode())) {
-            String addressName = null;
-            if (appeal.getMrnDetails() != null) {
-                addressName = appeal.getMrnDetails().getDwpIssuingOffice();
-            }
-            String benefitCode = generateBenefitCode(callback.getCaseDetails().getCaseData().getAppeal().getBenefitType().getCode(), addressName).orElse(EMPTY);
-
-            String issueCode = generateIssueCode();
-
-            callback.getCaseDetails().getCaseData().setBenefitCode(benefitCode);
-            callback.getCaseDetails().getCaseData().setIssueCode(issueCode);
-            callback.getCaseDetails().getCaseData().setCaseCode(generateCaseCode(benefitCode, issueCode));
-
-            if (callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails() != null
-                && callback.getCaseDetails().getCaseData().getAppeal().getMrnDetails().getDwpIssuingOffice() != null) {
-
-                String dwpRegionCentre = dwpAddressLookupService.getDwpRegionalCenterByBenefitTypeAndOffice(
-                    appeal.getBenefitType().getCode(),
-                    appeal.getMrnDetails().getDwpIssuingOffice());
-
-                callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
-            }
-
-            String postcode = appealPostcodeHelper.resolvePostcode(appeal.getAppellant());
-            String processingVenue = sscsDataHelper.findProcessingVenue(postcode, appeal.getBenefitType());
-
-            if (isNotBlank(processingVenue)) {
-                callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
-                Optional<CaseManagementLocation> caseManagementLocationOptional = caseManagementLocationService
-                    .retrieveCaseManagementLocation(processingVenue, callback.getCaseDetails().getCaseData().getRegionalProcessingCenter());
-
-                caseManagementLocationOptional.ifPresent(caseManagementLocation ->
-                    callback.getCaseDetails().getCaseData()
-                        .setCaseManagementLocation(caseManagementLocation));
-            }
-            setCaseAccessManagementCategories(appeal, callback);
-        } else {
-            setUnknownCategory(callback);
-        }
-
-        setCaseAccessManagementFields(appeal, callback);
-    }
-
-    private void setCaseAccessManagementCategories(Appeal appeal, Callback<SscsCaseData> callback) {
-        if (caseAccessManagementFeature) {
-            Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
-            benefit.ifPresent(
-                value -> callback.getCaseDetails().getCaseData().getCaseAccessManagementFields()
-                    .setCategories(value));
-        }
-    }
-
-    private void setUnknownCategory(Callback<SscsCaseData> callback) {
-        FormType formType = callback.getCaseDetails().getCaseData().getFormType();
-        if (formType != null) {
-            DynamicListItem caseManagementCategoryItem = formType.equals(FormType.SSCS5)
-                ? new DynamicListItem("sscs5Unknown", "SSCS5 Unknown")
-                : new DynamicListItem("sscs12Unknown", "SSCS1/2 Unknown");
-            callback.getCaseDetails().getCaseData().getCaseAccessManagementFields()
-                .setCaseManagementCategory(new DynamicList(
-                    caseManagementCategoryItem,
-                    List.of(caseManagementCategoryItem)));
-        }
-    }
-
-    private void setCaseAccessManagementFields(Appeal appeal, Callback<SscsCaseData> callback) {
-        if (caseAccessManagementFeature) {
-            if (appeal != null && appeal.getAppellant() != null && appeal.getAppellant().getName() != null
-                && appeal.getAppellant().getName().getFirstName() != null && appeal.getAppellant().getName().getLastName() != null) {
-                callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setCaseNames(appeal.getAppellant().getName().getFullNameNoTitle());
-            }
-            if (appeal != null && appeal.getBenefitType() != null) {
-                FormType formType = callback.getCaseDetails().getCaseData().getFormType();
-                Optional<Benefit> benefit = Benefit.getBenefitOptionalByCode(appeal.getBenefitType().getCode());
-                String ogdType = isHmrcBenefit(benefit, formType) ? "HMRC" : "DWP";
-                callback.getCaseDetails().getCaseData().getCaseAccessManagementFields().setOgdType(ogdType);
-            }
-        }
-    }
-
-    private boolean isHmrcBenefit(Optional<Benefit> benefit, FormType formType) {
-        if (benefit.isEmpty()) {
-            return FormType.SSCS5.equals(formType);
-        }
-        return SscsType.SSCS5.equals(benefit.get().getSscsType());
-    }
-
-    private PreSubmitCallbackResponse<SscsCaseData> convertWarningsToErrors(SscsCaseData caseData, CaseResponse caseResponse) {
-
-        List<String> appendedWarningsAndErrors = new ArrayList<>();
-
-        List<String> allWarnings = caseResponse.getWarnings();
-        List<String> warningsThatAreNotErrors = getWarningsThatShouldNotBeErrors(caseResponse);
-        List<String> filteredWarnings = emptyIfNull(allWarnings).stream()
-            .filter(w -> !warningsThatAreNotErrors.contains(w))
-            .collect(Collectors.toList());
-
-        if (!isEmpty(filteredWarnings)) {
-            log.info(LOGSTR_VALIDATION_WARNING, caseData.getCcdCaseId(), stringJoin(filteredWarnings));
-            appendedWarningsAndErrors.addAll(filteredWarnings);
-        }
-
-        if (!isEmpty(caseResponse.getErrors())) {
-            log.info(LOGSTR_VALIDATION_ERRORS, caseData.getCcdCaseId(), stringJoin(caseResponse.getErrors()));
-            appendedWarningsAndErrors.addAll(caseResponse.getErrors());
-        }
-
-        if (!appendedWarningsAndErrors.isEmpty() || !warningsThatAreNotErrors.isEmpty()) {
-            PreSubmitCallbackResponse<SscsCaseData> preSubmitCallbackResponse = new PreSubmitCallbackResponse<>(caseData);
-
-            preSubmitCallbackResponse.addErrors(appendedWarningsAndErrors);
-            preSubmitCallbackResponse.addWarnings(warningsThatAreNotErrors);
-            return preSubmitCallbackResponse;
-        }
-        return null;
-    }
-
-    private List<String> getWarningsThatShouldNotBeErrors(CaseResponse caseResponse) {
-        return emptyIfNull(caseResponse.getWarnings()).stream()
-            .filter(warning -> warning.endsWith(IS_NOT_A_VALID_POSTCODE))
-            .collect(Collectors.toList());
     }
 
     private void stampReferredCase(CaseResponse caseValidationResponse, String eventId) {
