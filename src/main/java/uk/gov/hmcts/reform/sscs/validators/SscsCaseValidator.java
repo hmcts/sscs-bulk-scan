@@ -98,7 +98,7 @@ public class SscsCaseValidator {
         ScannedData ocrCaseData = sscsJsonExtractor.extractJson(exceptionRecord);
 
         boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
-        warnings = appealValidator.validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, ignoreWarningsValue, true); //need to add warnings since its from another class
+        warnings = (List<String>) appealValidator.validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, ignoreWarningsValue, true); //need to add warnings since its from another class
 
         if (combineWarnings) {
             warnings = combineWarnings();
