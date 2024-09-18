@@ -225,9 +225,7 @@ dependencies {
   implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
 
-//  implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
-  implementation group: 'io.springfox', name: 'springfox-boot-starter', version: '3.0.0'
-  implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '3.0.0'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.6.0'
 
   implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.0.1'
 
