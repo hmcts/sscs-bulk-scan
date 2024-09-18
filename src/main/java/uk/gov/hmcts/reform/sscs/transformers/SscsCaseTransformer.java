@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.hmcts.reform.sscs.ccd.callback.ValidationType.EXCEPTION_RECORD;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
 import static uk.gov.hmcts.reform.sscs.ccd.service.SscsCcdConvertService.normaliseNino;
@@ -9,9 +10,24 @@ import static uk.gov.hmcts.reform.sscs.config.SscsConstants.ADDRESS_LINE2;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.ADDRESS_LINE3;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.ADDRESS_LINE4;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.ADDRESS_POSTCODE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.AGREE_LESS_HEARING_NOTICE_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.APPEAL_GROUNDS;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.APPEAL_GROUNDS_2;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.BENEFIT_TYPE_DESCRIPTION;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.BENEFIT_TYPE_OTHER;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.DEFAULT_SIGN_LANGUAGE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.EMAIL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.FIELDS_EMPTY;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.FORM_TYPE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_EXCLUDE_DATES_MISSING;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_OPTIONS_DIALECT_LITERAL;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_OPTIONS_EXCLUDE_DATES_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_OPTIONS_HEARING_LOOP_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_SUPPORT_ARRANGEMENTS_LITERAL;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_TELEPHONE_LITERAL;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_TYPE_FACE_TO_FACE_LITERAL;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_TYPE_ORAL;
@@ -19,40 +35,24 @@ import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_TYPE_PAPER;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_TYPE_TELEPHONE_LITERAL;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_TYPE_VIDEO_LITERAL;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_VIDEO_EMAIL_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.IS_BENEFIT_TYPE_OTHER;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.IS_HEARING_TYPE_ORAL_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.IS_HEARING_TYPE_PAPER_LITERAL;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.IS_INVALID;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.IS_OTHER_PARTY_ADDRESS_KNOWN;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.KEEP_HOME_ADDRESS_CONFIDENTIAL;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.MOBILE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.NO_LITERAL;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.OTHER_PARTY_DETAILS;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.OTHER_PARTY_VALUE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.PERSON1_VALUE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.PERSON2_VALUE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.PERSON_1_CHILD_MAINTENANCE_NUMBER;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.PHONE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.REPRESENTATIVE_VALUE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.TELL_TRIBUNAL_ABOUT_DATES;
 import static uk.gov.hmcts.reform.sscs.config.SscsConstants.YES_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.AGREE_LESS_HEARING_NOTICE_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.APPEAL_GROUNDS;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.APPEAL_GROUNDS_2;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.DEFAULT_SIGN_LANGUAGE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.EMAIL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.FIELDS_EMPTY;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.FORM_TYPE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_EXCLUDE_DATES_MISSING;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_ACCESSIBLE_HEARING_ROOMS_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_DIALECT_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_HEARING_LOOP_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_LANGUAGE_TYPE_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_SIGN_LANGUAGE_INTERPRETER_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_SUPPORT_ARRANGEMENTS_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_BENEFIT_TYPE_OTHER;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_HEARING_TYPE_ORAL_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_HEARING_TYPE_PAPER_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.IS_OTHER_PARTY_ADDRESS_KNOWN;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.KEEP_HOME_ADDRESS_CONFIDENTIAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.NO_LITERAL;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.OTHER_PARTY_DETAILS;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON1_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON2_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PERSON_1_CHILD_MAINTENANCE_NUMBER;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.PHONE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.REPRESENTATIVE_VALUE;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.TELL_TRIBUNAL_ABOUT_DATES;
-import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCallbackType;
-import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
+import static uk.gov.hmcts.reform.sscs.config.WarningMessage.getMessageByValidationType;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.model.AllowedFileTypes.getContentTypeForFileName;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.*;
@@ -622,7 +622,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private boolean validateValues(List<String> validValues, String otherPartyDetails, boolean ignoreWarnings) {
         if (validValues.isEmpty() && StringUtils.isEmpty(otherPartyDetails)) {
             if (!ignoreWarnings) {
-                warnings.add(getMessageByCallbackType(EXCEPTION_CALLBACK, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
+                warnings.add(getMessageByValidationType(EXCEPTION_RECORD, "", WarningMessage.APPELLANT_PARTY_NAME.toString(),
                     FIELDS_EMPTY));
             }
             return false;
@@ -642,7 +642,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
             if (OTHER.equals(appellantRole) && StringUtils.isEmpty(otherPartyDetails)) {
                 if (!ignoreWarnings) {
-                    warnings.add(getMessageByCallbackType(EXCEPTION_CALLBACK, "", WarningMessage.APPELLANT_PARTY_DESCRIPTION.toString(),
+                    warnings.add(getMessageByValidationType(EXCEPTION_RECORD, "", WarningMessage.APPELLANT_PARTY_DESCRIPTION.toString(),
                         FIELDS_EMPTY));
                 }
                 return false;

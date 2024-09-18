@@ -16,7 +16,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static uk.gov.hmcts.reform.sscs.bulkscancore.domain.JourneyClassification.NEW_APPLICATION;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS2;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.FormType.SSCS5;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.HEARING_EXCLUDE_DATES_MISSING;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.HEARING_EXCLUDE_DATES_MISSING;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilderTest.buildScannedValidationOcrData;
 import static uk.gov.hmcts.reform.sscs.helper.TestConstants.FIND_CASE_EVENT_URL;
 import static uk.gov.hmcts.reform.sscs.helper.TestConstants.SERVICE_AUTHORIZATION_HEADER_KEY;

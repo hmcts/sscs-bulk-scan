@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.FORM_TYPE;
+import static uk.gov.hmcts.reform.sscs.config.SscsConstants.FORM_TYPE;
 import static uk.gov.hmcts.reform.sscs.helper.OcrDataBuilder.build;
 import static uk.gov.hmcts.reform.sscs.helper.SscsDataHelper.getValidationStatus;
 import static uk.gov.hmcts.reform.sscs.util.SscsOcrDataUtil.getField;
