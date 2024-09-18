@@ -225,7 +225,7 @@ dependencies {
   implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
 
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.6.0'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
 
   implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.0.1'
 
@@ -323,22 +323,22 @@ dependencyManagement {
 
     dependency group: 'org.yaml', name: 'snakeyaml', version: '2.0'
 
-    //CVE-2021-22118
-    dependencySet(group: 'org.springframework', version: '5.3.28') {
-      entry 'spring-aop'
-      entry 'spring-aspects'
-      entry 'spring-beans'
-      entry 'spring-context'
-      entry 'spring-context-support'
-      entry 'spring-core'
-      entry 'spring-expression'
-      entry 'spring-jcl'
-      entry 'spring-jdbc'
-      entry 'spring-orm'
-      entry 'spring-tx'
-      entry 'spring-web'
-      entry 'spring-webmvc'
-    }
+//    //CVE-2021-22118
+//    dependencySet(group: 'org.springframework', version: '5.3.28') {
+//      entry 'spring-aop'
+//      entry 'spring-aspects'
+//      entry 'spring-beans'
+//      entry 'spring-context'
+//      entry 'spring-context-support'
+//      entry 'spring-core'
+//      entry 'spring-expression'
+//      entry 'spring-jcl'
+//      entry 'spring-jdbc'
+//      entry 'spring-orm'
+//      entry 'spring-tx'
+//      entry 'spring-web'
+//      entry 'spring-webmvc'
+//    }
 
     //CVE-2021-27568
     dependencySet(group: 'net.minidev', version: '2.4.10') {
