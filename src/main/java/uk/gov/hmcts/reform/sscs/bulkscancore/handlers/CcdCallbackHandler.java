@@ -5,7 +5,6 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.util.List;
 import java.util.Map;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +19,7 @@ import uk.gov.hmcts.reform.sscs.domain.transformation.SuccessfulTransformationRe
 import uk.gov.hmcts.reform.sscs.exceptions.InvalidExceptionRecordException;
 import uk.gov.hmcts.reform.sscs.handler.InterlocReferralReasonOptions;
 import uk.gov.hmcts.reform.sscs.helper.SscsDataHelper;
-import uk.gov.hmcts.reform.sscs.validators.SscsCaseValidator;
+import uk.gov.hmcts.reform.sscs.validators.ExceptionRecordValidator;
 
 @Slf4j
 @Component
@@ -31,14 +30,14 @@ public class CcdCallbackHandler {
     private static final String CASE_TYPE_ID = "Benefit";
 
     private final SscsDataHelper sscsDataHelper;
-    private final SscsCaseValidator caseValidator;
+    private final ExceptionRecordValidator exceptionRecordValidator;
     private final CaseTransformer caseTransformer;
 
     public CcdCallbackHandler(SscsDataHelper sscsDataHelper,
-                              SscsCaseValidator caseValidator,
+                              ExceptionRecordValidator exceptionRecordValidator,
                               CaseTransformer caseTransformer) {
         this.sscsDataHelper = sscsDataHelper;
-        this.caseValidator = caseValidator;
+        this.exceptionRecordValidator = exceptionRecordValidator;
         this.caseTransformer = caseTransformer;
     }
 
@@ -55,7 +54,7 @@ public class CcdCallbackHandler {
 
         log.info("Exception record id {} transformed successfully ready for validation", exceptionRecord.getId());
 
-        return caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), true);
+        return exceptionRecordValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), true);
     }
 
     public SuccessfulTransformationResponse handle(ExceptionRecord exceptionRecord) {
@@ -80,7 +79,7 @@ public class CcdCallbackHandler {
 
         log.info("Exception record id {} transformed successfully. About to validate transformed case from exception", exceptionRecordId);
 
-        CaseResponse caseValidationResponse = caseValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), false);
+        CaseResponse caseValidationResponse = exceptionRecordValidator.validateExceptionRecord(caseTransformationResponse, exceptionRecord, caseTransformationResponse.getTransformedCase(), false);
 
         if (!isEmpty(caseValidationResponse.getErrors())) {
             log.info(LOGSTR_VALIDATION_ERRORS, exceptionRecordId, stringJoin(caseValidationResponse.getErrors()));

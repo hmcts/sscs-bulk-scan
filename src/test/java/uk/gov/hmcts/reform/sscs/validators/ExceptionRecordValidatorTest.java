@@ -1,27 +1,13 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
-import static java.util.Collections.emptyMap;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.CHILD_MAINTENANCE_NUMBER;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE1;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE2;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE3;
-import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_POSTCODE;
-import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
-import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import java.util.*;
 import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import junitparams.converters.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
@@ -33,14 +19,14 @@ import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ExceptionRecord;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.OcrDataField;
 import uk.gov.hmcts.reform.sscs.bulkscancore.domain.ScannedData;
 import uk.gov.hmcts.reform.sscs.ccd.domain.*;
+import uk.gov.hmcts.reform.sscs.ccd.validation.sscscasedata.AddressValidator;
 import uk.gov.hmcts.reform.sscs.json.SscsJsonExtractor;
 import uk.gov.hmcts.reform.sscs.service.DwpAddressLookupService;
 import uk.gov.hmcts.reform.sscs.service.RegionalProcessingCenterService;
 
 @RunWith(JUnitParamsRunner.class)
-public class SscsCaseValidatorTest {
+public class ExceptionRecordValidatorTest {
 
-    private static final String VALID_MOBILE = "07832882849";
     private static final String VALID_POSTCODE = "CM13 0GD";
     private final List<String> titles = new ArrayList<>();
     private final Map<String, Object> ocrCaseData = new HashMap<>();
@@ -53,8 +39,8 @@ public class SscsCaseValidatorTest {
     SscsJsonExtractor sscsJsonExtractor;
     DwpAddressLookupService dwpAddressLookupService;
     @Mock
-    private PostcodeValidator postcodeValidator;
-    private SscsCaseValidator validator;
+    private AddressValidator addressValidator;
+    private ExceptionRecordValidator validator;
     private MrnDetails defaultMrnDetails;
     private CaseResponse transformResponse;
     private CaseDetails caseDetails;
@@ -70,8 +56,7 @@ public class SscsCaseValidatorTest {
         dwpAddressLookupService = new DwpAddressLookupService();
         scannedData = mock(ScannedData.class);
         caseDetails = mock(CaseDetails.class);
-        validator = new SscsCaseValidator(regionalProcessingCenterService, dwpAddressLookupService, postcodeValidator,
-            sscsJsonExtractor, null, false);
+        validator = new ExceptionRecordValidator(sscsJsonExtractor, dwpAddressLookupService, addressValidator, titles);
         transformResponse = CaseResponse.builder().build();
 
         defaultMrnDetails = MrnDetails.builder().dwpIssuingOffice("2").mrnDate("2018-12-09").build();
@@ -90,8 +75,6 @@ public class SscsCaseValidatorTest {
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PE.getId()).build();
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(scannedData);
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseData);
-        given(postcodeValidator.isValid(anyString())).willReturn(true);
-        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
 
         exceptionRecordSscs1U =
             ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1U.getId()).build();
