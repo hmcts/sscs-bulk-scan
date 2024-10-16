@@ -3,9 +3,11 @@ package uk.gov.hmcts.reform.sscs.controllers;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.ResponseEntity.ok;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import javax.validation.Valid;
@@ -46,12 +48,12 @@ public class OcrValidationController {
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ApiOperation("Validates OCR form data based on form type")
+    @Operation(summary = "Validates OCR form data based on form type")
     @ApiResponses({
-        @ApiResponse(code = 200, response = OcrValidationResponse.class,
-            message = "Validation executed successfully"),
-        @ApiResponse(code = 401, message = "Provided S2S token is missing or invalid"),
-        @ApiResponse(code = 403, message = "S2S token is not authorized to use the service")
+        @ApiResponse(responseCode = "200", description = "Validation executed successfully", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = OcrValidationResponse.class)) }),
+        @ApiResponse(responseCode = "401", description = "Provided S2S token is missing or invalid"),
+        @ApiResponse(responseCode = "403", description = "S2S token is not authorized to use the service")
     })
     public ResponseEntity<OcrValidationResponse> validateOcrData(
         @RequestHeader(name = "ServiceAuthorization", required = false) String serviceAuthHeader,
