@@ -228,9 +228,9 @@ dependencies {
   implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
   implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 
-  implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.0.1'
+  implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.4'
 
-  implementation group: 'com.github.hmcts', name: 'java-logging', version: '6.0.1'
+  implementation group: 'com.github.hmcts', name: 'java-logging', version: '6.1.7'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.8.6'
 
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.0.3'
@@ -290,8 +290,8 @@ dependencyManagement {
 
     dependency group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
-    dependency group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.20.0'
-    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.20.0'
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.24.1'
+    dependency group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.24.1'
 
     //CVE-2021-40690
      dependency group: 'org.apache.santuario', name: 'xmlsec', version: '3.0.1'
@@ -367,7 +367,7 @@ dependencyManagement {
     dependency group: 'org.springframework.security', name: 'spring-security-rsa', version: '1.1.1'
 
     //CVE-2023-6378, CVE-2023-6481
-    dependencySet(group: 'ch.qos.logback', version: '1.2.13') {
+    dependencySet(group: 'ch.qos.logback', version: '1.5.11') {
       entry 'logback-core'
       entry 'logback-classic'
     }
