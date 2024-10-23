@@ -252,7 +252,6 @@ public class SscsCaseValidator implements CaseValidator {
                 checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData,
                     appellant);
                 checkAppellantNino(appellant, personType);
-
             }
 
             checkMobileNumber(appellant.getContact(), personType);
