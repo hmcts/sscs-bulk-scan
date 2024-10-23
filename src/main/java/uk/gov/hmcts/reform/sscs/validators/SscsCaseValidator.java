@@ -144,9 +144,13 @@ public class SscsCaseValidator implements CaseValidator {
         FormType formType = (FormType) caseData.get("formType");
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
+        String benefitTypeCode = appeal.getBenefitType().getCode();
 
-        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType, ignorePartyRoleValidation, ignoreWarnings);
-        checkRepresentative(appeal, ocrCaseData, caseData);
+        if (!INFECTED_BLOOD_COMPENSATION.equals(benefitTypeCode)) {
+            checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType, ignorePartyRoleValidation, ignoreWarnings);
+            checkRepresentative(appeal, ocrCaseData, caseData);
+        }
+
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation, formType);
 
         if (formType != null && formType.equals(FormType.SSCS2)) {
