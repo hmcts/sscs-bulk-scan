@@ -2,9 +2,11 @@ package uk.gov.hmcts.reform.sscs.controllers;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -46,13 +48,14 @@ public class CcdCallbackController {
 
     @PostMapping(path = "/validate-record",
         consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Handles callback from SSCS to check case meets validation to change state to appeal created")
+    @Operation(summary = "Handles callback from SSCS to check case meets validation to change state to appeal created")
     @ApiResponses(value = {
-        @ApiResponse(code = 200,
-            message = "Callback was processed successfully or in case of an error message is attached to the case",
-            response = CallbackResponse.class),
-        @ApiResponse(code = 400, message = "Bad Request"),
-        @ApiResponse(code = 500, message = "Internal Server Error")
+        @ApiResponse(responseCode = "200",
+            description = "Callback was processed successfully or in case of an error message is attached to the case",
+            content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = CallbackResponse.class)) }),
+        @ApiResponse(responseCode = "400", description = "Bad Request"),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     public ResponseEntity<PreSubmitCallbackResponse<SscsCaseData>> handleValidationCallback(
         @RequestHeader(value = "Authorization") String userAuthToken,
