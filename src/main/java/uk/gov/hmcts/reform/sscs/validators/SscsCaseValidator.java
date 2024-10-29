@@ -148,7 +148,6 @@ public class SscsCaseValidator implements CaseValidator {
             .map(Appeal::getBenefitType)
             .map(BenefitType::getCode)
             .orElse(null);
-        log.info("the benefitTypeCode is {}", benefitTypeCode);
 
         checkAppellant(
             appeal,
