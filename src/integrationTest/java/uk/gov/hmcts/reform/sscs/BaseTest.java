@@ -23,7 +23,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.SocketUtils;
+import org.springframework.test.util.TestSocketUtils;
 import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.sscs.ccd.service.SscsQueryBuilder;
 import uk.gov.hmcts.reform.sscs.idam.IdamService;
@@ -65,7 +65,7 @@ public abstract class BaseTest {
     protected IdamTokens idamTokens;
 
     static {
-        wiremockPort = SocketUtils.findAvailableTcpPort();
+        wiremockPort = TestSocketUtils.findAvailableTcpPort();
         System.setProperty("core_case_data.api.url", "http://localhost:" + wiremockPort);
     }
 
