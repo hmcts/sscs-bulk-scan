@@ -11,6 +11,9 @@ management:
     web:
       base-path: /
 
+springdoc:
+  packagesToScan: uk.gov.hmcts.reform.sscs.controllers
+
 spring:
   application:
     name: SscsBulkScan
