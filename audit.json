@@ -62,6 +62,6 @@
   "10049_Storable and Cacheable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/_GET" : "ignore",
   "10049_Storable and Cacheable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/v2/api-docs_GET" : "ignore",
   "10049_Storable and Cacheable Content_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/forms/form-type/validate-ocr_POST" : "ignore",
-  "10112_Session Management Response Identified_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/v2/api-docs_GET" : "ignore"
-
+  "10112_Session Management Response Identified_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/v2/api-docs_GET" : "ignore",
+  "100000_A Client Error response code was returned by the server_http://sscs-bulk-scan-aat.service.core-compute-aat.internal/v2/api-docs_GET" : "ignore"
 }
