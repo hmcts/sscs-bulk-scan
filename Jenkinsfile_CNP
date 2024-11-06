@@ -66,5 +66,6 @@ withPipeline("java", product, component) {
   disableLegacyDeployment()
   enableAksStagingDeployment()
   syncBranchesWithMaster(branchesToSync)
+  enableSecurityScan()
 }
 
