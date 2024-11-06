@@ -62,6 +62,15 @@
   "10049_Storable and Cacheable Content_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/_GET" : "ignore",
   "10049_Storable and Cacheable Content_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/v2/api-docs_GET" : "ignore",
   "10049_Storable and Cacheable Content_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/forms/form-type/validate-ocr_POST" : "ignore",
-  "10112_Session Management Response Identified_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/v2/api-docs_GET" : "ignore"
-
+  "10112_Session Management Response Identified_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/v2/api-docs_GET" : "ignore",
+  "10035_Strict-Transport-Security Header Not Set_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/_GET" : "ignore",
+  "10035_Strict-Transport-Security Header Not Set_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/v2/api-docs_GET" : "ignore",
+  "10035_Strict-Transport-Security Header Not Set_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/forms/form-type/validate-ocr_POST" : "ignore",
+  "10035_Strict-Transport-Security Header Not Set_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/transform-exception-record_POST" : "ignore",
+  "10035_Strict-Transport-Security Header Not Set_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/transform-scanned-data_POST" : "ignore",
+  "10035_Strict-Transport-Security Header Not Set_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/validate-record_POST" : "ignore",
+  "10015_Re-examine Cache-control Directives_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/_GET" : "ignore",
+  "10015_Re-examine Cache-control Directives_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/v2/api-docs_GET" : "ignore",
+  "10015_Re-examine Cache-control Directives_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/forms/form-type/validate-ocr_POST" : "ignore",
+  "10015_Re-examine Cache-control Directives_https://sscs-bulk-scan-pr-1525.preview.platform.hmcts.net/validate-record_POST" : "ignore"
 }
