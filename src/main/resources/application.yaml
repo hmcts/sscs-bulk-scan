@@ -13,6 +13,8 @@ management:
 
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.sscs.controllers
+  api-docs:
+    path: /v2/api-docs
 
 spring:
   application:
