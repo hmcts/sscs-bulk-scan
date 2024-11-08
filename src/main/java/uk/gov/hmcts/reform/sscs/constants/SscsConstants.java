@@ -78,5 +78,5 @@ public final class SscsConstants {
     public static final String OTHER_PARTY_DETAILS = "other_party_details";
     public static final String FORM_TYPE = "form_type";
 
-    public static final String INFECTED_BLOOD_COMPENSATION = "infectedBloodAppeal";
+    public static final String INFECTED_BLOOD_COMPENSATION = "infectedBloodCompensation";
 }
