@@ -144,9 +144,26 @@ public class SscsCaseValidator implements CaseValidator {
         FormType formType = (FormType) caseData.get("formType");
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
+        final String benefitTypeCode = Optional.of(appeal)
+            .map(Appeal::getBenefitType)
+            .map(BenefitType::getCode)
+            .orElse(null);
 
-        checkAppellant(appeal, ocrCaseData, caseData, appellantPersonType, formType, ignorePartyRoleValidation, ignoreWarnings);
-        checkRepresentative(appeal, ocrCaseData, caseData);
+        checkAppellant(
+            appeal,
+            ocrCaseData,
+            caseData,
+            appellantPersonType,
+            formType,
+            ignorePartyRoleValidation,
+            ignoreWarnings,
+            benefitTypeCode
+        );
+
+        if (!INFECTED_BLOOD_COMPENSATION.equals(benefitTypeCode)) {
+            checkRepresentative(appeal, ocrCaseData, caseData);
+        }
+
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation, formType);
 
         if (formType != null && formType.equals(FormType.SSCS2)) {
@@ -200,7 +217,9 @@ public class SscsCaseValidator implements CaseValidator {
 
 
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                String personType, FormType formType, boolean ignorePartyRoleValidation, boolean ignoreWarnings) {
+                                String personType, FormType formType, boolean ignorePartyRoleValidation,
+                                boolean ignoreWarnings, String benefitTypeCode) {
+
         Appellant appellant = appeal.getAppellant();
 
         if (appellant == null) {
@@ -227,9 +246,13 @@ public class SscsCaseValidator implements CaseValidator {
             checkAppointee(appellant, ocrCaseData, caseData);
 
             checkPersonName(appellant.getName(), personType, appellant);
-            checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData,
-                appellant);
-            checkAppellantNino(appellant, personType);
+
+            if (!INFECTED_BLOOD_COMPENSATION.equals(benefitTypeCode)) {
+                checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData,
+                    appellant);
+                checkAppellantNino(appellant, personType);
+            }
+
             checkMobileNumber(appellant.getContact(), personType);
 
             checkHearingSubtypeDetails(appeal.getHearingSubtype());
