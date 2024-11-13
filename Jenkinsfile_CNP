@@ -65,6 +65,7 @@ withPipeline("java", product, component) {
   loadVaultSecrets(secrets)
   disableLegacyDeployment()
   enableAksStagingDeployment()
+  enableFullFunctionalTest()
   syncBranchesWithMaster(branchesToSync)
 }
 
