@@ -2113,7 +2113,7 @@ public class SscsCaseTransformerTest {
         RegionalProcessingCenter rpc = RegionalProcessingCenter.builder()
             .epimsId("rpcEpimsId").build();
 
-        when(regionalProcessingCenterService.getByPostcode(APPOINTEE_POSTCODE)).thenReturn(rpc);
+        when(regionalProcessingCenterService.getByPostcode(eq(APPOINTEE_POSTCODE), anyBoolean())).thenReturn(rpc);
         when(appealPostcodeHelper.resolvePostcode(any())).thenReturn(APPOINTEE_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPOINTEE_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
         when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, rpc)).thenReturn(
@@ -2141,7 +2141,37 @@ public class SscsCaseTransformerTest {
         RegionalProcessingCenter rpc = RegionalProcessingCenter.builder()
             .epimsId("rpcEpimsId").build();
 
-        when(regionalProcessingCenterService.getByPostcode(APPELLANT_POSTCODE)).thenReturn(rpc);
+        when(regionalProcessingCenterService.getByPostcode(APPELLANT_POSTCODE, false)).thenReturn(rpc);
+
+        when(appealPostcodeHelper.resolvePostcode(any())).thenReturn(APPELLANT_POSTCODE);
+        when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
+        when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, rpc)).thenReturn(
+            Optional.of(CaseManagementLocation.builder().baseLocation("rpcEpimsId").region(REGION_ID).build()));
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(PROCESSING_VENUE, result.getTransformedCase().get("processingVenue"));
+
+        CaseManagementLocation caseManagementLocation = (CaseManagementLocation) result.getTransformedCase().get("caseManagementLocation");
+        assertNotNull(caseManagementLocation);
+        assertEquals("rpcEpimsId", caseManagementLocation.getBaseLocation());
+        assertEquals(REGION_ID, caseManagementLocation.getRegion());
+    }
+
+    @Test
+    public void setProcessingVenue_isIbcCase() {
+        pairs.put(BenefitTypeIndicator.PIP.getIndicatorString(), false);
+        pairs.put("benefit_type_description", Benefit.INFECTED_BLOOD_COMPENSATION.getDescription());
+        pairs.put("person1_address_line1", "10 my street");
+        pairs.put("person1_address_line2", "line2 address");
+        pairs.put("person1_address_line3", "London");
+        pairs.put("person1_address_line4", "county");
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+
+        RegionalProcessingCenter rpc = RegionalProcessingCenter.builder()
+            .epimsId("rpcEpimsId").build();
+
+        when(regionalProcessingCenterService.getByPostcode(APPELLANT_POSTCODE, true)).thenReturn(rpc);
 
         when(appealPostcodeHelper.resolvePostcode(any())).thenReturn(APPELLANT_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);

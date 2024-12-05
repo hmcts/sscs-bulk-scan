@@ -198,8 +198,9 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         String postcode = appealPostcodeHelper.resolvePostcode(appeal.getAppellant());
         String processingVenue = sscsDataHelper.findProcessingVenue(postcode, appeal.getBenefitType());
-
-        RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postcode);
+        boolean isIbcCase = appeal.getBenefitType() != null && (appeal.getBenefitType().getCode().equals(Benefit.INFECTED_BLOOD_COMPENSATION.getShortName()) ||
+            appeal.getBenefitType().getDescription().equalsIgnoreCase(Benefit.INFECTED_BLOOD_COMPENSATION.getDescription()));
+        RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postcode, isIbcCase);
 
         if (isNotBlank(processingVenue)) {
             log.info("{} - setting venue name to {}", caseId, processingVenue);
