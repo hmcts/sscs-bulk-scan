@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.sscs.validators;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -84,7 +86,7 @@ public class SscsCaseValidatorTest {
         ocrCaseData.put("representative_address_line4", "county");
         ocrCaseData.put("office", "2");
 
-        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE))
+        given(regionalProcessingCenterService.getByPostcode(eq(VALID_POSTCODE), anyBoolean()))
             .willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
 
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PE.getId()).build();
@@ -774,7 +776,7 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenAnAppellantContainsPostcodeWithNoRegionalProcessingCenter_thenDoNotAddRegionalProcessingCenter() {
         Appellant appellant = buildAppellant(false);
-        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE)).willReturn(null);
+        given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE, false)).willReturn(null);
 
         CaseResponse response = validator
             .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS1PE),
@@ -790,7 +792,7 @@ public class SscsCaseValidatorTest {
     public void givenAnAppointee_thenRegionalProcessingCenterIsAlwaysFromTheAppellantsPostcode() {
         Appellant appellant = buildAppellant(true);
         RegionalProcessingCenter rpc = RegionalProcessingCenter.builder().name("person2_postcode").build();
-        given(regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode())).willReturn(rpc);
+        given(regionalProcessingCenterService.getByPostcode(appellant.getAddress().getPostcode(), false)).willReturn(rpc);
 
         CaseResponse response = validator
             .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS1PE),
@@ -1223,8 +1225,20 @@ public class SscsCaseValidatorTest {
     public void givenAnAppealContainsAnValidPostcodeFormatButFound_thenNoErrorOrWarnings() {
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
         given(postcodeValidator.isValid(anyString())).willReturn(true);
-        given(regionalProcessingCenterService.getByPostcode(anyString())).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
+        given(regionalProcessingCenterService.getByPostcode(anyString(), eq(false))).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(PIP.name(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS1PE), false);
+
+        assertThat(response.getWarnings().size()).isEqualTo(0);
+        assertThat(response.getErrors().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void givenAnIbcAppealContainsAnValidPostcodeFormatButFound_thenNoErrorOrWarnings() {
+        given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
+        given(postcodeValidator.isValid(anyString())).willReturn(true);
+
+        given(regionalProcessingCenterService.getByPostcode(anyString(), eq(true))).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(Benefit.INFECTED_BLOOD_COMPENSATION.getShortName(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS1PE), false);
 
         assertThat(response.getWarnings().size()).isEqualTo(0);
         assertThat(response.getErrors().size()).isEqualTo(0);
@@ -2176,7 +2190,6 @@ public class SscsCaseValidatorTest {
             .appointee(appointee)
             .role(Role.builder().name("Paying parent").build()).build();
     }
-
 
     private Map<String, Object> buildCaseWithChildMaintenanceWithOtherPartyNameAddress(String childMaintenanceNumber, String line1, String line2, String line3, String postcode, Name otherPartyName) {
         Map<String, Object> datamap = buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(

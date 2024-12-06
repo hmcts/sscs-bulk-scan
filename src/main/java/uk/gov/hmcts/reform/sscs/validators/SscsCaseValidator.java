@@ -161,7 +161,7 @@ public class SscsCaseValidator implements CaseValidator {
         );
 
         if (!INFECTED_BLOOD_COMPENSATION.equals(benefitTypeCode)) {
-            checkRepresentative(appeal, ocrCaseData, caseData);
+            checkRepresentative(appeal, ocrCaseData, caseData, benefitTypeCode);
         }
 
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation, formType);
@@ -243,13 +243,13 @@ public class SscsCaseValidator implements CaseValidator {
                     IS_EMPTY));
         } else {
 
-            checkAppointee(appellant, ocrCaseData, caseData);
+            checkAppointee(appellant, ocrCaseData, caseData, benefitTypeCode);
 
             checkPersonName(appellant.getName(), personType, appellant);
 
             if (!INFECTED_BLOOD_COMPENSATION.equals(benefitTypeCode)) {
                 checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData,
-                    appellant);
+                    appellant, benefitTypeCode);
                 checkAppellantNino(appellant, personType);
             }
 
@@ -304,23 +304,23 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkAppointee(Appellant appellant, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
+    private void checkAppointee(Appellant appellant, Map<String, Object> ocrCaseData, Map<String, Object> caseData, String benefitTypeCode) {
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
             checkPersonName(appellant.getAppointee().getName(), PERSON1_VALUE, appellant);
             checkPersonAddressAndDob(appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(),
-                PERSON1_VALUE, ocrCaseData, caseData, appellant);
+                PERSON1_VALUE, ocrCaseData, caseData, appellant, benefitTypeCode);
             checkMobileNumber(appellant.getAppointee().getContact(), PERSON1_VALUE);
         }
     }
 
-    private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData) {
+    private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData, String benefitTypeCode) {
         if (appeal.getRep() == null || StringUtils.isBlank(appeal.getRep().getHasRepresentative())) {
             errors.add(HAS_REPRESENTATIVE_FIELD_MISSING);
         }
         if (appeal.getRep() != null && StringUtils.equals(appeal.getRep().getHasRepresentative(), YES_LITERAL)) {
             final Contact repsContact = appeal.getRep().getContact();
             checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData,
-                appeal.getAppellant());
+                appeal.getAppellant(), benefitTypeCode);
 
             Name name = appeal.getRep().getName();
 
@@ -479,7 +479,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkPersonAddressAndDob(Address address, Identity identity, String personType,
                                           Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                          Appellant appellant) {
+                                          Appellant appellant, String benefitTypeCode) {
 
         boolean isAddressLine4Present = findBooleanExists(getField(ocrCaseData, personType + "_address_line4"));
 
@@ -512,7 +512,8 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (isAddressPostcodeValid(address, personType, appellant) && address != null) {
             if (personType.equals(getPerson1OrPerson2(appellant))) {
-                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode());
+                boolean isIbc = INFECTED_BLOOD_COMPENSATION.equals(benefitTypeCode);
+                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode(), isIbc);
 
                 if (rpc != null) {
                     caseData.put("region", rpc.getName());
