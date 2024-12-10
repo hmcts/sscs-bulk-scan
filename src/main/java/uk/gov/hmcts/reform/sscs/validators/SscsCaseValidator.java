@@ -588,6 +588,9 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
+        if (address != null && YesNo.NO.equals(address.getInMainlandUk())) {
+            return true;
+        }
         if (address != null && address.getPostcode() != null) {
             if (postcodeValidator.isValidPostcodeFormat(address.getPostcode())) {
                 boolean isValidPostcode = postcodeValidator.isValid(address.getPostcode());
