@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appointee;
+import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @Component
@@ -15,10 +16,14 @@ public class AppealPostcodeHelper {
 
     private final PostcodeValidator postcodeValidator;
 
-    public String resolvePostcode(Appellant appellant) {
+    public String resolvePostCodeOrPort(Appellant appellant) {
 
-        if (appellant == null) {
+        if (appellant == null || appellant.getAddress() == null) {
             return StringUtils.EMPTY;
+        }
+
+        if (YesNo.NO.equals(appellant.getAddress().getInMainlandUk())) {
+            return appellant.getAddress().getPortOfEntry() == null ? StringUtils.EMPTY : appellant.getAddress().getPortOfEntry();
         }
 
         return Optional.ofNullable(appellant.getAppointee())

@@ -2114,7 +2114,7 @@ public class SscsCaseTransformerTest {
             .epimsId("rpcEpimsId").build();
 
         when(regionalProcessingCenterService.getByPostcode(eq(APPOINTEE_POSTCODE), anyBoolean())).thenReturn(rpc);
-        when(appealPostcodeHelper.resolvePostcode(any())).thenReturn(APPOINTEE_POSTCODE);
+        when(appealPostcodeHelper.resolvePostCodeOrPort(any())).thenReturn(APPOINTEE_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPOINTEE_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
         when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, rpc)).thenReturn(
             Optional.of(CaseManagementLocation.builder().baseLocation("rpcEpimsId").region(REGION_ID).build()));
@@ -2143,7 +2143,7 @@ public class SscsCaseTransformerTest {
 
         when(regionalProcessingCenterService.getByPostcode(APPELLANT_POSTCODE, false)).thenReturn(rpc);
 
-        when(appealPostcodeHelper.resolvePostcode(any())).thenReturn(APPELLANT_POSTCODE);
+        when(appealPostcodeHelper.resolvePostCodeOrPort(any())).thenReturn(APPELLANT_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
         when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, rpc)).thenReturn(
             Optional.of(CaseManagementLocation.builder().baseLocation("rpcEpimsId").region(REGION_ID).build()));
@@ -2173,7 +2173,7 @@ public class SscsCaseTransformerTest {
 
         when(regionalProcessingCenterService.getByPostcode(APPELLANT_POSTCODE, true)).thenReturn(rpc);
 
-        when(appealPostcodeHelper.resolvePostcode(any())).thenReturn(APPELLANT_POSTCODE);
+        when(appealPostcodeHelper.resolvePostCodeOrPort(any())).thenReturn(APPELLANT_POSTCODE);
         when(airLookupService.lookupAirVenueNameByPostCode(eq(APPELLANT_POSTCODE), any(BenefitType.class))).thenReturn(PROCESSING_VENUE);
         when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, rpc)).thenReturn(
             Optional.of(CaseManagementLocation.builder().baseLocation("rpcEpimsId").region(REGION_ID).build()));

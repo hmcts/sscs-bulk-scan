@@ -37,7 +37,7 @@ public class AppealPostcodeHelperTest {
                 .build())
             .build();
 
-        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
 
         assertThat(actualPostcode).isEqualTo("CR2 8YY");
     }
@@ -57,7 +57,7 @@ public class AppealPostcodeHelperTest {
                 .build())
             .build();
 
-        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
 
         assertThat(actualPostcode).isEqualTo("TS3 6NM");
     }
@@ -73,7 +73,7 @@ public class AppealPostcodeHelperTest {
             .appointee(Appointee.builder().build())
             .build();
 
-        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
 
         assertThat(actualPostcode).isEqualTo("TS3 6NM");
     }
@@ -90,7 +90,7 @@ public class AppealPostcodeHelperTest {
                 .build())
             .build();
 
-        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
 
         assertThat(actualPostcode).isEmpty();
     }
@@ -104,7 +104,7 @@ public class AppealPostcodeHelperTest {
                 .build())
             .build();
 
-        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
 
         assertThat(actualPostcode).isEmpty();
     }
@@ -113,7 +113,7 @@ public class AppealPostcodeHelperTest {
     public void shouldReturnBlankPostcode_givenAppointeeAndAppellantAddressDoNotExist() {
         Appellant testAppellant = Appellant.builder().build();
 
-        String actualPostcode = appealPostcodeHelper.resolvePostcode(testAppellant);
+        String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
 
         assertThat(actualPostcode).isEmpty();
     }

@@ -305,7 +305,7 @@ public class CcdCallbackHandlerTest {
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
         when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
-        when(appealPostcodeHelper.resolvePostcode(appeal.getAppellant())).thenReturn("CV35 2TD");
+        when(appealPostcodeHelper.resolvePostCodeOrPort(appeal.getAppellant())).thenReturn("CV35 2TD");
 
         when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, rpc)).thenReturn(
             Optional.of(CaseManagementLocation.builder().baseLocation("rpcEpimsId").region(REGION_ID).build()));
