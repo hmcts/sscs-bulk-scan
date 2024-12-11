@@ -223,8 +223,8 @@ public class CcdCallbackHandler {
                 callback.getCaseDetails().getCaseData().setDwpRegionalCentre(dwpRegionCentre);
             }
 
-            String postcode = appealPostcodeHelper.resolvePostcode(appeal.getAppellant());
-            String processingVenue = sscsDataHelper.findProcessingVenue(postcode, appeal.getBenefitType());
+            String postCodeOrPort = appealPostcodeHelper.resolvePostCodeOrPort(appeal.getAppellant());
+            String processingVenue = sscsDataHelper.findProcessingVenue(postCodeOrPort, appeal.getBenefitType());
 
             if (isNotBlank(processingVenue)) {
                 callback.getCaseDetails().getCaseData().setProcessingVenue(processingVenue);
