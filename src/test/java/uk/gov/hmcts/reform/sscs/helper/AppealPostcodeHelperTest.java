@@ -11,6 +11,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Address;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appellant;
 import uk.gov.hmcts.reform.sscs.ccd.domain.Appointee;
+import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 import uk.gov.hmcts.reform.sscs.validators.PostcodeValidator;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,6 +41,36 @@ public class AppealPostcodeHelperTest {
         String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
 
         assertThat(actualPostcode).isEqualTo("CR2 8YY");
+    }
+
+    @Test
+    public void shouldReturnPortOfEntry_givenAppointeeNonMainlandUkAddress() {
+
+        Appellant testAppellant = Appellant.builder()
+            .address(Address.builder()
+                .inMainlandUk(YesNo.NO)
+                .portOfEntry("GB11111")
+                .build())
+            .build();
+
+        String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
+
+        assertThat(actualPostcode).isEqualTo("GB11111");
+    }
+
+    @Test
+    public void shouldReturnEmptyString_givenAppointeeNonMainlandWithNoPort() {
+
+        Appellant testAppellant = Appellant.builder()
+            .address(Address.builder()
+                .inMainlandUk(YesNo.NO)
+                .portOfEntry(null)
+                .build())
+            .build();
+
+        String actualPostcode = appealPostcodeHelper.resolvePostCodeOrPort(testAppellant);
+
+        assertThat(actualPostcode).isEqualTo("");
     }
 
     @Test
