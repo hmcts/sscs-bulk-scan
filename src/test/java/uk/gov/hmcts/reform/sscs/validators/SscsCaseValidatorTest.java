@@ -15,6 +15,7 @@ import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LIN
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE3;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_POSTCODE;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.*;
+import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.INFECTED_BLOOD_COMPENSATION;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 
 import java.util.*;
@@ -44,6 +45,7 @@ public class SscsCaseValidatorTest {
 
     private static final String VALID_MOBILE = "07832882849";
     private static final String VALID_POSTCODE = "CM13 0GD";
+    private static final String PORT_OF_NORWICH_A_FINE_CITY = "GBSTGTY00";
     private final List<String> titles = new ArrayList<>();
     private final Map<String, Object> ocrCaseData = new HashMap<>();
     private final List<OcrDataField> ocrList = new ArrayList<>();
@@ -88,6 +90,9 @@ public class SscsCaseValidatorTest {
 
         given(regionalProcessingCenterService.getByPostcode(eq(VALID_POSTCODE), anyBoolean()))
             .willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
+
+        given(regionalProcessingCenterService.getByPostcode(eq(PORT_OF_NORWICH_A_FINE_CITY), anyBoolean()))
+            .willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Bradford").build());
 
         exceptionRecord = ExceptionRecord.builder().ocrDataFields(ocrList).formType(FormType.SSCS1PE.getId()).build();
         given(sscsJsonExtractor.extractJson(exceptionRecord)).willReturn(scannedData);
@@ -774,6 +779,21 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantDoesNotContainAPostcodeButNotInUk_thenLetItGoElsa() {
+        defaultMrnDetails.setDwpIssuingOffice("IBCA");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setPostcode(null);
+        appellant.getAddress().setInMainlandUk(YesNo.NO);
+        appellant.getAddress().setPortOfEntry(PORT_OF_NORWICH_A_FINE_CITY);
+
+        var data = buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS5);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
+
+        assertEquals(0, response.getWarnings().size());
+        verifyNoInteractions(regionalProcessingCenterService);
+    }
+
+    @Test
     public void givenAnAppellantContainsPostcodeWithNoRegionalProcessingCenter_thenDoNotAddRegionalProcessingCenter() {
         Appellant appellant = buildAppellant(false);
         given(regionalProcessingCenterService.getByPostcode(VALID_POSTCODE, false)).willReturn(null);
@@ -1238,7 +1258,7 @@ public class SscsCaseValidatorTest {
         given(postcodeValidator.isValid(anyString())).willReturn(true);
 
         given(regionalProcessingCenterService.getByPostcode(anyString(), eq(true))).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
-        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(Benefit.INFECTED_BLOOD_COMPENSATION.getShortName(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS1PE), false);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS1PE), false);
 
         assertThat(response.getWarnings().size()).isEqualTo(0);
         assertThat(response.getErrors().size()).isEqualTo(0);

@@ -513,7 +513,9 @@ public class SscsCaseValidator implements CaseValidator {
         if (isAddressPostcodeValid(address, personType, appellant) && address != null) {
             if (personType.equals(getPerson1OrPerson2(appellant))) {
                 boolean isIbc = INFECTED_BLOOD_COMPENSATION.equals(benefitTypeCode);
-                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(address.getPostcode(), isIbc);
+                var postCodeOrPort = YesNo.NO.equals(address.getInMainlandUk()) ? address.getPortOfEntry() : address.getPostcode();
+
+                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postCodeOrPort, isIbc);
 
                 if (rpc != null) {
                     caseData.put("region", rpc.getName());
@@ -588,6 +590,9 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
+        if (address != null && YesNo.NO.equals(address.getInMainlandUk())) {
+            return true;
+        }
         if (address != null && address.getPostcode() != null) {
             if (postcodeValidator.isValidPostcodeFormat(address.getPostcode())) {
                 boolean isValidPostcode = postcodeValidator.isValid(address.getPostcode());
