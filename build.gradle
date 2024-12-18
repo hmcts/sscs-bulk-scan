@@ -4,7 +4,7 @@ plugins {
   id 'org.sonarqube' version '4.3.0.3225'
   id 'jacoco'
   id 'info.solidsoft.pitest' version '1.9.11'
-  id 'io.spring.dependency-management' version '1.1.6'
+  id 'io.spring.dependency-management' version '1.1.7'
   id 'org.springframework.boot' version '2.7.18'
   id 'uk.gov.hmcts.java' version '0.12.63'
   id 'org.owasp.dependencycheck' version '10.0.4'
@@ -214,7 +214,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: springBoot.class.package.implementationVersion
 
   // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
-  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.9'
+  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.11'
 
   implementation group: 'me.xdrop', name: 'fuzzywuzzy', version: '1.4.0'
   implementation group: 'io.rest-assured', name: 'rest-assured', version: '4.5.1'
@@ -291,7 +291,7 @@ dependencyManagement {
     dependency group: 'org.yaml', name: 'snakeyaml', version: '2.0'
 
     imports {
-      mavenBom "org.springframework.cloud:spring-cloud-dependencies:2021.0.8"
+      mavenBom "org.springframework.cloud:spring-cloud-dependencies:2021.0.9"
     }
 
     // CVE-2023-35116
@@ -302,7 +302,7 @@ dependencyManagement {
     }
 
     // CVE-2023-33202
-    dependency group: 'org.springframework.security', name: 'spring-security-rsa', version: '1.1.1'
+    dependency group: 'org.springframework.security', name: 'spring-security-rsa', version: '1.1.5'
 
     //CVE-2023-6378, CVE-2023-6481
     dependencySet(group: 'ch.qos.logback', version: '1.2.13') {
