@@ -235,10 +235,6 @@ dependencies {
 
   implementation group: 'com.github.hmcts', name: 'sscs-common', version: 'spring-boot-3-SNAPSHOT'
 
-// TODO: SB3
-//  implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.4'
-//  implementation group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.6.4'
-
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
   implementation group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
 
@@ -262,7 +258,6 @@ dependencies {
   testImplementation group: 'org.pitest', name: 'pitest', version: '1.17.0'
   testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: pitest.pitestVersion.get()
   testImplementation group: 'org.codehaus.sonar-plugins', name: 'sonar-pitest-plugin', version: '0.5'
-  testImplementation 'org.wiremock.integrations:wiremock-spring-boot:3.6.0'
   testImplementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-contract-stub-runner'
 
   testImplementation group: 'com.typesafe', name: 'config', version: '1.4.3'
