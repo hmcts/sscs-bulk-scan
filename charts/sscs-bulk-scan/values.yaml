@@ -8,6 +8,7 @@ java:
   ingressHost: sscs-bulk-scan-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   spotInstances:
     enabled: false
+  memoryLimits: '4096Mi'
   keyVaults:
     sscs-bulk-scan:
       secrets:
