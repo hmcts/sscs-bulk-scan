@@ -88,7 +88,9 @@ postcode-validator:
 
 ---
 spring:
-  profiles: dev
+  config:
+    activate:
+      on-profile: dev
 logging.level:
   org.springframework.web: ${LOG_LEVEL_SPRING_WEB:debug}
   uk.gov.hmcts.reform.sscs: ${LOG_LEVEL_SSCS:debug}
