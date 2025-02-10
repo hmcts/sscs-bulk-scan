@@ -28,7 +28,9 @@
             "firstName": "John",
             "lastName": null
           },
-          "address": {},
+          "address": {
+            "inMainlandUk": "Yes"
+          },
           "contact": {
             "email": null,
             "phone": null,

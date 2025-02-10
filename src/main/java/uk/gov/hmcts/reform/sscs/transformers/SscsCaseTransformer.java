@@ -482,7 +482,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private Appellant buildAppellant(Map<String, Object> pairs, String personType, Appointee appointee,
                                      Contact contact, String formType, boolean ignoreWarnings) {
-        return Appellant.builder()
+        Appellant.AppellantBuilder<?, ?> builder = Appellant.builder()
             .name(buildPersonName(pairs, personType))
             .isAppointee(convertBooleanToYesNoString(appointee != null))
             .address(buildPersonAddress(pairs, personType))
@@ -490,8 +490,11 @@ public class SscsCaseTransformer implements CaseTransformer {
             .contact(contact)
             .confidentialityRequired(getConfidentialityRequired(pairs, errors))
             .appointee(appointee)
-            .role(buildAppellantRole(pairs, formType, ignoreWarnings))
-            .build();
+            .role(buildAppellantRole(pairs, formType, ignoreWarnings));
+        if (FormType.SSCS8.toString().equalsIgnoreCase(formType)) {
+            builder.ibcRole(getField(pairs, personType + IBC_ROLE));
+        }
+        return builder.build();
     }
 
     private YesNo getConfidentialityRequired(Map<String, Object> pairs, Set<String> errors) {
@@ -622,7 +625,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         String office = getDwpIssuingOffice(pairs, benefitType);
 
         return MrnDetails.builder()
-            .mrnDate(generateDateForCcd(pairs, errors, "mrn_date"))
+            .mrnDate(generateDateForCcd(pairs, errors, MRN_DATE))
             .mrnLateReason(getField(pairs, "appeal_late_reason"))
             .dwpIssuingOffice(office)
             .build();
@@ -674,12 +677,12 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Name buildPersonName(Map<String, Object> pairs, String personType) {
-        String title = transformTitle(getField(pairs, personType + "_title"));
+        String title = transformTitle(getField(pairs, personType + TITLE));
 
         return Name.builder()
             .title(title)
-            .firstName(getField(pairs, personType + "_first_name"))
-            .lastName(getField(pairs, personType + "_last_name"))
+            .firstName(getField(pairs, personType + FIRST_NAME))
+            .lastName(getField(pairs, personType + LAST_NAME))
             .build();
     }
 
@@ -693,6 +696,17 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Address buildPersonAddress(Map<String, Object> pairs, String personType) {
+        if (findBooleanExists(getField(pairs, personType + ADDRESS_PORT_OF_ENTRY))) {
+            return Address.builder()
+                .line1(getField(pairs, personType + ADDRESS_LINE1))
+                .line2(getField(pairs, personType + ADDRESS_LINE2))
+                .town(getField(pairs, personType + ADDRESS_LINE3))
+                .country(getField(pairs, personType + ADDRESS_COUNTRY))
+                .portOfEntry(getField(pairs, personType + ADDRESS_PORT_OF_ENTRY))
+                .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
+                .inMainlandUk(YesNo.NO)
+                .build();
+        }
         if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE4))) {
             return Address.builder()
                 .line1(getField(pairs, personType + ADDRESS_LINE1))
@@ -700,33 +714,33 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .town(getField(pairs, personType + ADDRESS_LINE3))
                 .county(getField(pairs, personType + ADDRESS_LINE4))
                 .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
+                .inMainlandUk(YesNo.YES)
                 .build();
         }
-        boolean line3IsBlank = false;
-        if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE2))
-            && !findBooleanExists(getField(pairs, personType + ADDRESS_LINE3))) {
-            line3IsBlank = true;
-        }
+        boolean line3IsBlank = findBooleanExists(getField(pairs, personType + ADDRESS_LINE2))
+            && !findBooleanExists(getField(pairs, personType + ADDRESS_LINE3));
         return Address.builder()
             .line1(getField(pairs, personType + ADDRESS_LINE1))
             .town(getField(pairs, personType + ADDRESS_LINE2))
             .county(line3IsBlank ? "." : getField(pairs, personType + ADDRESS_LINE3))
             .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
+            .inMainlandUk(YesNo.YES)
             .build();
     }
 
     private Identity buildPersonIdentity(Map<String, Object> pairs, String personType) {
         return Identity.builder()
-            .dob(generateDateForCcd(pairs, errors, personType + "_dob"))
-            .nino(normaliseNino(getField(pairs, personType + "_nino")))
+            .dob(generateDateForCcd(pairs, errors, personType + DOB))
+            .nino(normaliseNino(getField(pairs, personType + NINO)))
+            .ibcaReference(getField(pairs, personType + IBCA_REFERENCE))
             .build();
     }
 
     private Contact buildPersonContact(Map<String, Object> pairs, String personType) {
         return Contact.builder()
-            .phone(getField(pairs, personType + "_phone"))
-            .mobile(getField(pairs, personType + "_mobile"))
-            .email(getField(pairs, personType + "_email"))
+            .phone(getField(pairs, personType + PHONE))
+            .mobile(getField(pairs, personType + MOBILE))
+            .email(getField(pairs, personType + EMAIL))
             .build();
     }
 

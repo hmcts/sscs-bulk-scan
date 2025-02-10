@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.CHILD_MAINTENANCE_NUMBER;
 import static uk.gov.hmcts.reform.sscs.TestDataConstants.OTHER_PARTY_ADDRESS_LINE1;
@@ -428,6 +429,35 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenAnAppellantIsEmptySscs8_thenAddAWarningForIbcaReference() {
+        Map<String, Object> ocrCaseDataEmptyOffice = new HashMap<>();
+        ocrCaseDataEmptyOffice.put("person1_address_line4", "county");
+        ocrCaseDataEmptyOffice.put("person2_address_line4", "county");
+        ocrCaseDataEmptyOffice.put("representative_address_line4", "county");
+        given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataEmptyOffice);
+        Map<String, Object> pairs = new HashMap<>();
+        BenefitType benefitType = BenefitType.builder().code(INFECTED_BLOOD_COMPENSATION.getShortName()).build();
+        pairs.put("appeal", Appeal.builder().hearingType(HEARING_TYPE_ORAL).benefitType(benefitType).build());
+        pairs.put("bulkScanCaseReference", 123);
+        pairs.put("formType", FormType.SSCS8);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
+
+        assertThat(response.getWarnings())
+            .containsOnly(
+                "person1_title is empty",
+                "person1_first_name is empty",
+                "person1_last_name is empty",
+                "person1_address_line1 is empty",
+                "person1_address_line3 is empty",
+                "person1_address_line4 is empty",
+                "person1_postcode is empty",
+                "person1_ibca_reference is empty",
+                "mrn_date is empty",
+                "office is empty");
+    }
+
+    @Test
     public void givenAnAppellantWithNoName_thenAddWarnings() {
         Map<String, Object> pairs = new HashMap<>();
 
@@ -525,6 +555,53 @@ public class SscsCaseValidatorTest {
                 "person1_address_line3 is empty",
                 "person1_address_line4 is empty",
                 "person1_postcode is empty");
+    }
+
+    @Test
+    public void givenIbcCaseAppellantWithNoAddress_thenAddWarnings() {
+        Map<String, Object> pairs = new HashMap<>();
+        pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(
+                    Name.builder().firstName("Harry").lastName("Kane").build())
+                .identity(Identity.builder().ibcaReference("A12A21").build())
+                .ibcRole("some-role").build())
+            .benefitType(BenefitType.builder().code(INFECTED_BLOOD_COMPENSATION.getShortName()).build())
+            .mrnDetails(defaultMrnDetails)
+            .hearingType(HEARING_TYPE_ORAL)
+            .hearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build()).build());
+        pairs.put("bulkScanCaseReference", 123);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
+
+        assertThat(response.getWarnings())
+            .containsOnly(
+                "person1_title is empty",
+                "person1_address_line1 is empty",
+                "person1_address_line3 is empty",
+                "person1_address_line4 is empty",
+                "person1_postcode is empty");
+    }
+
+    @Test
+    public void givenIbcCaseAppellantWithPortOfEntry_thenNoWarningsForCountyPostcode() {
+        Map<String, Object> pairs = new HashMap<>();
+        pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(
+                    Name.builder().firstName("Harry").lastName("Kane").build())
+                .identity(Identity.builder().ibcaReference("A12A21").build())
+                .ibcRole("some-role").address(Address.builder().portOfEntry("GBSTGTY00")
+                    .build()).build())
+            .benefitType(BenefitType.builder().code(INFECTED_BLOOD_COMPENSATION.getShortName()).build())
+            .mrnDetails(defaultMrnDetails)
+            .hearingType(HEARING_TYPE_ORAL)
+            .hearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build()).build());
+        pairs.put("bulkScanCaseReference", 123);
+
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
+
+        assertThat(response.getWarnings())
+            .containsOnly(
+                "person1_title is empty",
+                "person1_address_line1 is empty",
+                "person1_address_line3 is empty");
     }
 
     @Test
@@ -785,12 +862,14 @@ public class SscsCaseValidatorTest {
         appellant.getAddress().setPostcode(null);
         appellant.getAddress().setInMainlandUk(YesNo.NO);
         appellant.getAddress().setPortOfEntry(PORT_OF_NORWICH_A_FINE_CITY);
+        appellant.getIdentity().setIbcaReference("A12A12");
+        appellant.setIbcRole("some-role");
 
         var data = buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS5);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
 
         assertEquals(0, response.getWarnings().size());
-        verifyNoInteractions(regionalProcessingCenterService);
+        verify(regionalProcessingCenterService).getByPostcode(PORT_OF_NORWICH_A_FINE_CITY, true);
     }
 
     @Test
@@ -858,6 +937,45 @@ public class SscsCaseValidatorTest {
 
         assertEquals(0, response.getWarnings().size());
         assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenSscs8DoesNotContainIbcaReference_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setIbcaReference(null);
+        appellant.setIbcRole("some-role");
+
+        CaseResponse response = validator
+            .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
+                false);
+
+        assertEquals("person1_ibca_reference is empty", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenSscs8DoesNotContainValidIbcaReference_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setIbcaReference("NOT VALID");
+        appellant.setIbcRole("some-role");
+
+        CaseResponse response = validator
+            .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
+                false);
+
+        assertEquals("person1_ibca_reference is invalid", response.getWarnings().get(0));
+    }
+
+    @Test
+    public void givenSscs8HasNoAppellantIbcRole_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setIbcaReference("A12A12");
+        appellant.setIbcRole(null);
+
+        CaseResponse response = validator
+            .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
+                false);
+
+        assertEquals("person1_ibc_role is empty", response.getWarnings().get(0));
     }
 
     @Test
@@ -2205,9 +2323,10 @@ public class SscsCaseValidatorTest {
             .name(Name.builder().title("Mr").firstName("Bob").lastName("Smith").build())
             .address(
                 Address.builder().line1("101 My Road").town("Brentwood").county("Essex").postcode(postcode).build())
-            .identity(Identity.builder().nino("BB000000B").build())
+            .identity(Identity.builder().nino("BB000000B").ibcaReference("A12A12").build())
             .contact(Contact.builder().mobile(mobileNumber).build())
             .appointee(appointee)
+            .ibcRole("some-role")
             .role(Role.builder().name("Paying parent").build()).build();
     }
 

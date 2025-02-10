@@ -59,7 +59,8 @@
             "line2": "Hutton",
             "town": "Brentwood",
             "county": "Essex",
-            "postcode": "CM13 1AQ"
+            "postcode": "CM13 1AQ",
+            "inMainlandUk": "Yes"
           },
           "contact": {
             "email": null,
@@ -86,7 +87,8 @@
               "line2": "Benedictine",
               "town": "Coventry",
               "county": "Warwickshire",
-              "postcode": "CV3 6GU"
+              "postcode": "CV3 6GU",
+              "inMainlandUk": "Yes"
             },
             "contact": {
               "email": null,
@@ -158,7 +160,6 @@
           }
         }
       ],
-
       "linkedCasesBoolean": "No",
       "caseCreated": "2018-01-11",
       "region": "BRADFORD",
@@ -173,7 +174,7 @@
         "postcode": "BD3 7BH",
         "city": "BRADFORD",
         "email": "SSCS_Bradford@justice.gov.uk",
-        "hearingRoute":  "gaps",
+        "hearingRoute": "gaps",
         "epimsId": "698118"
       },
       "caseManagementLocation": {
@@ -187,7 +188,7 @@
   },
   "warnings": [],
   "supplementary_data": {
-    "$set" : {
+    "$set": {
       "HMCTSServiceId": "BBA3"
     }
   }

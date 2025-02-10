@@ -47,12 +47,16 @@ public final class SscsConstants {
     public static final String ADDRESS_LINE2 = "_address_line2";
     public static final String ADDRESS_LINE3 = "_address_line3";
     public static final String ADDRESS_LINE4 = "_address_line4";
+    public static final String ADDRESS_COUNTRY = "_country";
+    public static final String ADDRESS_PORT_OF_ENTRY = "_port_of_entry";
     public static final String ADDRESS_POSTCODE = "_postcode";
     public static final String PHONE = "_phone";
     public static final String MOBILE = "_mobile";
     public static final String EMAIL = "_email";
     public static final String NINO = "_nino";
+    public static final String IBCA_REFERENCE = "_ibca_reference";
     public static final String DOB = "_dob";
+    public static final String IBC_ROLE = "_ibc_role";
     public static final String IS_EMPTY = "is empty";
     public static final String IS_MISSING = "is missing";
     public static final String ARE_EMPTY = "are empty. At least one must be populated";
@@ -77,6 +81,7 @@ public final class SscsConstants {
     public static final String IS_ANOTHER_PARTY = "is_another_party";
     public static final String OTHER_PARTY_DETAILS = "other_party_details";
     public static final String FORM_TYPE = "form_type";
+
 
     public static final String INFECTED_BLOOD_COMPENSATION = "infectedBloodCompensation";
 }

@@ -36,7 +36,8 @@
             "line2": "Hutton",
             "town": "Brentwood",
             "county": "Essex",
-            "postcode": "CM13 1AQ"
+            "postcode": "CM13 1AQ",
+            "inMainlandUk": "Yes"
           },
           "contact": {
             "email": null,
@@ -49,10 +50,10 @@
             "dob": "1976-11-11",
             "nino": "BB000000B"
           },
-          "isAppointee" : "No",
+          "isAppointee": "No",
           "confidentialityRequired": null,
           "appointee": null,
-          "isAddressSameAsAppointee" : null,
+          "isAddressSameAsAppointee": null,
           "role": null
         },
         "benefitType": {
@@ -67,18 +68,20 @@
           "wantsHearingTypeFaceToFace": "No"
         },
         "hearingOptions": {
-          "wantsToAttend" : "Yes",
-          "wantsSupport" : "No",
+          "wantsToAttend": "Yes",
+          "wantsSupport": "No",
           "languageInterpreter": "No",
           "languages": null,
-          "arrangements" : [],
-          "scheduleHearing" : "Yes",
-          "excludeDates" : [{
-            "value" : {
-              "start" : "2030-12-01",
-              "end" : null
+          "arrangements": [],
+          "scheduleHearing": "Yes",
+          "excludeDates": [
+            {
+              "value": {
+                "start": "2030-12-01",
+                "end": null
+              }
             }
-          }]
+          ]
         },
         "appealReasons": null,
         "rep": {
@@ -92,20 +95,22 @@
         },
         "signer": null,
         "hearingType": "oral",
-        "receivedVia" : "Paper"
+        "receivedVia": "Paper"
       },
-      "sscsDocument" : [ {
-        "value" : {
-          "documentType" : "appellantEvidence",
-          "documentFileName" : "11111.pdf",
-          "documentDateAdded" : "2018-10-10",
-          "documentLink" : {
-            "document_url" : "http://www.bbc.com",
-            "document_binary_url" : "http://www.bbc.com/binary",
-            "document_filename" : "myfile.jpg"
+      "sscsDocument": [
+        {
+          "value": {
+            "documentType": "appellantEvidence",
+            "documentFileName": "11111.pdf",
+            "documentDateAdded": "2018-10-10",
+            "documentLink": {
+              "document_url": "http://www.bbc.com",
+              "document_binary_url": "http://www.bbc.com/binary",
+              "document_filename": "myfile.jpg"
+            }
           }
         }
-      } ],
+      ],
       "subscriptions": {
         "appellantSubscription": {
           "wantSmsNotifications": "No",
@@ -117,30 +122,30 @@
           "lastLoggedIntoMya": null,
           "tya": "TYA_RANDOM_NUMBER"
         },
-        "supporterSubscription" : null,
-        "representativeSubscription" : null,
-        "appointeeSubscription" : null,
+        "supporterSubscription": null,
+        "representativeSubscription": null,
+        "appointeeSubscription": null,
         "jointPartySubscription": null
       },
-      "region" : "BRADFORD",
-      "regionalProcessingCenter" : {
-        "name" : "BRADFORD",
+      "region": "BRADFORD",
+      "regionalProcessingCenter": {
+        "name": "BRADFORD",
         "address1": "HM Courts & Tribunals Service",
         "address2": "Social Security & Child Support Appeals",
         "address3": "Phoenix House",
         "address4": "Rushton Avenue",
         "city": "BRADFORD",
         "postcode": "BD3 7BH",
-        "phoneNumber" : "0300 123 1142",
-        "faxNumber" : "0126 434 7983",
-        "email" : "SSCS_Bradford@justice.gov.uk",
-        "hearingRoute":  "gaps",
+        "phoneNumber": "0300 123 1142",
+        "faxNumber": "0126 434 7983",
+        "email": "SSCS_Bradford@justice.gov.uk",
+        "hearingRoute": "gaps",
         "epimsId": "698118"
       },
       "processingVenue": "Basildon CC",
       "interlocReferralReason": "over13MonthsAndGroundsMissing",
-      "evidencePresent" : "Yes",
-      "bulkScanCaseReference" : "1234567890",
+      "evidencePresent": "Yes",
+      "bulkScanCaseReference": "1234567890",
       "benefitCode": "051",
       "caseCode": "051DD",
       "caseCreated": "2018-01-11",
@@ -155,7 +160,7 @@
   },
   "warnings": [],
   "supplementary_data": {
-    "$set" : {
+    "$set": {
       "HMCTSServiceId": "BBA3"
     }
   }
