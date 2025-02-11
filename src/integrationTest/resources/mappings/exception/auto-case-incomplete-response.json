@@ -14,9 +14,7 @@
             "firstName": "John",
             "lastName": null
           },
-          "address": {
-            "inMainlandUk": "Yes",
-          },
+          "address": {},
           "contact": {
             "email": null,
             "phone": null,
@@ -49,9 +47,7 @@
           "hasRepresentative": "No",
           "organisation": null,
           "name": null,
-          "address": {
-            "inMainlandUk": "Yes"
-          },
+          "address": {},
           "contact": null
         },
         "signer": null,

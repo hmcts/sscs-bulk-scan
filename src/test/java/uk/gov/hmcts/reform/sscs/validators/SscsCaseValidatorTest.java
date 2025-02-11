@@ -569,6 +569,7 @@ public class SscsCaseValidatorTest {
             .hearingType(HEARING_TYPE_ORAL)
             .hearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build()).build());
         pairs.put("bulkScanCaseReference", 123);
+        pairs.put("formType", FormType.SSCS8);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 
@@ -594,6 +595,7 @@ public class SscsCaseValidatorTest {
             .hearingType(HEARING_TYPE_ORAL)
             .hearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build()).build());
         pairs.put("bulkScanCaseReference", 123);
+        pairs.put("formType", FormType.SSCS8);
 
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, pairs, false);
 
@@ -865,7 +867,7 @@ public class SscsCaseValidatorTest {
         appellant.getIdentity().setIbcaReference("A12A12");
         appellant.setIbcRole("some-role");
 
-        var data = buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS5);
+        var data = buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
 
         assertEquals(0, response.getWarnings().size());
@@ -1376,7 +1378,7 @@ public class SscsCaseValidatorTest {
         given(postcodeValidator.isValid(anyString())).willReturn(true);
 
         given(regionalProcessingCenterService.getByPostcode(anyString(), eq(true))).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
-        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS1PE), false);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS8), false);
 
         assertThat(response.getWarnings().size()).isEqualTo(0);
         assertThat(response.getErrors().size()).isEqualTo(0);

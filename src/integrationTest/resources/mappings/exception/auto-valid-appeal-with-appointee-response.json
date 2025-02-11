@@ -59,8 +59,7 @@
             "line2": "Hutton",
             "town": "Brentwood",
             "county": "Essex",
-            "postcode": "CM13 1AQ",
-            "inMainlandUk": "Yes"
+            "postcode": "CM13 1AQ"
           },
           "contact": {
             "email": null,
@@ -87,8 +86,7 @@
               "line2": "Benedictine",
               "town": "Coventry",
               "county": "Warwickshire",
-              "postcode": "CV3 6GU",
-              "inMainlandUk": "Yes"
+              "postcode": "CV3 6GU"
             },
             "contact": {
               "email": null,

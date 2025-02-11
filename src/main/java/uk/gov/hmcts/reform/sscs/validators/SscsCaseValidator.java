@@ -149,7 +149,7 @@ public class SscsCaseValidator implements CaseValidator {
             .map(BenefitType::getCode)
             .orElse(null);
 
-        final boolean isSscs8OrIbc = isIbcOrSscs8(formType, benefitTypeCode);
+        final boolean isSscs8 = FormType.SSCS8.equals(formType);
 
         checkAppellant(
             appeal,
@@ -159,10 +159,10 @@ public class SscsCaseValidator implements CaseValidator {
             formType,
             ignorePartyRoleValidation,
             ignoreWarnings,
-            isSscs8OrIbc
+            isSscs8
         );
 
-        checkRepresentative(appeal, ocrCaseData, caseData, isSscs8OrIbc);
+        checkRepresentative(appeal, ocrCaseData, caseData, isSscs8);
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation, formType);
 
         if (formType != null && formType.equals(FormType.SSCS2)) {
@@ -216,7 +216,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData,
                                 String personType, FormType formType, boolean ignorePartyRoleValidation,
-                                boolean ignoreWarnings, boolean isSscs8OrIbc) {
+                                boolean ignoreWarnings, boolean isSscs8) {
 
         Appellant appellant = appeal.getAppellant();
 
@@ -237,24 +237,24 @@ public class SscsCaseValidator implements CaseValidator {
             warnings.add(getMessageByCallbackType(callbackType, personType,
                 getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE, IS_EMPTY));
             warnings.add(
-                getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + (isSscs8OrIbc ? IBCA_REFERENCE : NINO),
+                getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + (isSscs8 ? IBCA_REFERENCE : NINO),
                     IS_EMPTY));
         } else {
 
-            checkAppointee(appellant, ocrCaseData, caseData, isSscs8OrIbc);
+            checkAppointee(appellant, ocrCaseData, caseData, isSscs8);
 
             checkPersonName(appellant.getName(), personType, appellant);
 
             checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData,
-                appellant, isSscs8OrIbc);
+                appellant, isSscs8);
 
-            if (isSscs8OrIbc) {
+            if (isSscs8) {
                 checkAppellantIbcaReference(appellant, personType);
             } else {
                 checkAppellantNino(appellant, personType);
             }
 
-            if (isSscs8OrIbc) {
+            if (isSscs8) {
                 checkIbcRole(appellant.getIbcRole(), personType, appellant);
             }
 
@@ -309,23 +309,23 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkAppointee(Appellant appellant, Map<String, Object> ocrCaseData, Map<String, Object> caseData, boolean isSscs8OrIbc) {
+    private void checkAppointee(Appellant appellant, Map<String, Object> ocrCaseData, Map<String, Object> caseData, boolean isSscs8) {
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
             checkPersonName(appellant.getAppointee().getName(), PERSON1_VALUE, appellant);
             checkPersonAddressAndDob(appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(),
-                PERSON1_VALUE, ocrCaseData, caseData, appellant, isSscs8OrIbc);
+                PERSON1_VALUE, ocrCaseData, caseData, appellant, isSscs8);
             checkMobileNumber(appellant.getAppointee().getContact(), PERSON1_VALUE);
         }
     }
 
-    private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData, boolean isSscs8OrIbc) {
+    private void checkRepresentative(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData, boolean isSscs8) {
         if (appeal.getRep() == null || StringUtils.isBlank(appeal.getRep().getHasRepresentative())) {
             errors.add(HAS_REPRESENTATIVE_FIELD_MISSING);
         }
         if (appeal.getRep() != null && StringUtils.equals(appeal.getRep().getHasRepresentative(), YES_LITERAL)) {
             final Contact repsContact = appeal.getRep().getContact();
             checkPersonAddressAndDob(appeal.getRep().getAddress(), null, REPRESENTATIVE_VALUE, ocrCaseData, caseData,
-                appeal.getAppellant(), isSscs8OrIbc);
+                appeal.getAppellant(), isSscs8);
 
             Name name = appeal.getRep().getName();
 
@@ -492,12 +492,12 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkPersonAddressAndDob(Address address, Identity identity, String personType,
                                           Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                          Appellant appellant, boolean isSscs8OrIbc) {
+                                          Appellant appellant, boolean isSscs8) {
 
         boolean isAddressLine4Present = findBooleanExists(getField(ocrCaseData, personType + "_address_line4"));
 
         // Remove this part if/when the mainland UK question is added to sscs8 form
-        if (isSscs8OrIbc && address != null && address.getInMainlandUk() == null) {
+        if (isSscs8 && address != null && address.getInMainlandUk() == null) {
             address.setInMainlandUk(doesAddressPortOfEntryExist(address) ? YesNo.NO : YesNo.YES);
         }
 
@@ -520,7 +520,7 @@ public class SscsCaseValidator implements CaseValidator {
         }
 
         // Removed from IBC as it's an optional field for non mainland UK addresses
-        if (!isSscs8OrIbc || isInMainlandUk(address)) {
+        if (!isSscs8 || isInMainlandUk(address)) {
             // Once form has been updated to account for this, this can be re-enabled
             String countyLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTY";
             if (!doesAddressCountyExist(address)) {
@@ -536,7 +536,7 @@ public class SscsCaseValidator implements CaseValidator {
             if (personType.equals(getPerson1OrPerson2(appellant))) {
                 var postCodeOrPort = YesNo.NO.equals(address.getInMainlandUk()) ? address.getPortOfEntry() : address.getPostcode();
 
-                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postCodeOrPort, isSscs8OrIbc);
+                RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postCodeOrPort, isSscs8);
 
                 if (rpc != null) {
                     caseData.put("region", rpc.getName());

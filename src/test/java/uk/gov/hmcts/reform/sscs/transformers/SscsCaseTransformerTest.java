@@ -484,7 +484,7 @@ public class SscsCaseTransformerTest {
             .town("town")
             .county("county")
             .postcode(APPELLANT_POSTCODE)
-            .inMainlandUk(YesNo.YES)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.put(person + "_address_line1", expectedAddress.getLine1());
@@ -509,7 +509,7 @@ public class SscsCaseTransformerTest {
             .town("town")
             .county(".")
             .postcode(APPELLANT_POSTCODE)
-            .inMainlandUk(YesNo.YES)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.remove(person + "_address_line4");
@@ -534,7 +534,7 @@ public class SscsCaseTransformerTest {
             .town("town")
             .county(".")
             .postcode(APPELLANT_POSTCODE)
-            .inMainlandUk(YesNo.YES)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.remove(person + "_address_line4");
@@ -559,7 +559,7 @@ public class SscsCaseTransformerTest {
             .town(null)
             .county(null)
             .postcode(APPELLANT_POSTCODE)
-            .inMainlandUk(YesNo.YES)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.remove(person + "_address_line4");
@@ -585,7 +585,7 @@ public class SscsCaseTransformerTest {
             .town(null)
             .county("county")
             .postcode(APPELLANT_POSTCODE)
-            .inMainlandUk(YesNo.YES)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.put(person + "_address_line1", expectedAddress.getLine1());
@@ -883,11 +883,11 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
-        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).inMainlandUk(YesNo.YES).build();
+        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob("1987-08-12").build();
 
         Name appointeeName = Name.builder().title(APPOINTEE_TITLE).firstName(APPOINTEE_FIRST_NAME).lastName(APPOINTEE_LAST_NAME).build();
-        Address appointeeAddress = Address.builder().line1(APPOINTEE_ADDRESS_LINE1).line2(APPOINTEE_ADDRESS_LINE2).town(APPOINTEE_ADDRESS_LINE3).county(APPOINTEE_ADDRESS_LINE4).postcode(APPOINTEE_POSTCODE).inMainlandUk(YesNo.YES).build();
+        Address appointeeAddress = Address.builder().line1(APPOINTEE_ADDRESS_LINE1).line2(APPOINTEE_ADDRESS_LINE2).town(APPOINTEE_ADDRESS_LINE3).county(APPOINTEE_ADDRESS_LINE4).postcode(APPOINTEE_POSTCODE).build();
         Identity appointeeIdentity = Identity.builder().dob("1990-12-03").build();
         Contact appointeeContact = Contact.builder().phone(APPOINTEE_PHONE).mobile(APPOINTEE_MOBILE).build();
         Appointee appointee = Appointee.builder().name(appointeeName).address(appointeeAddress).contact(appointeeContact).identity(appointeeIdentity).build();
@@ -920,7 +920,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
-        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).inMainlandUk(YesNo.YES).build();
+        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob("1987-08-12").build();
 
         Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(Contact.builder().build()).build();
@@ -2416,7 +2416,7 @@ public class SscsCaseTransformerTest {
         CaseResponse result = transformer.transformExceptionRecord(sscs2ExceptionRecord, false);
 
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
-        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).inMainlandUk(YesNo.YES).build();
+        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob("1987-08-12").build();
         Role role = Role.builder().name(appellantRole.getName()).description(StringUtils.isBlank(description) ? null : description).build();
         Appellant expectedAppellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").role(role).address(appellantAddress).contact(Contact.builder().build()).build();
@@ -2745,14 +2745,14 @@ public class SscsCaseTransformerTest {
 
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
-        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).inMainlandUk(YesNo.YES).build();
+        Address appellantAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).build();
         Identity appellantIdentity = Identity.builder().nino(normaliseNino(APPELLANT_NINO)).dob(formatDate(APPELLANT_DATE_OF_BIRTH)).build();
         Contact appellantContact = Contact.builder().phone(APPELLANT_PHONE).mobile(APPELLANT_MOBILE).email(APPELLANT_EMAIL).build();
         Appellant appellant = Appellant.builder().name(appellantName).identity(appellantIdentity).isAppointee("No").address(appellantAddress).contact(appellantContact).build();
         HearingSubtype hearingSubtype = HearingSubtype.builder().build();
 
         Name repName = Name.builder().title(REPRESENTATIVE_PERSON_TITLE).firstName(REPRESENTATIVE_PERSON_FIRST_NAME).lastName(REPRESENTATIVE_PERSON_LAST_NAME).build();
-        Address repAddress = Address.builder().line1(REPRESENTATIVE_ADDRESS_LINE1).line2(REPRESENTATIVE_ADDRESS_LINE2).town(REPRESENTATIVE_ADDRESS_LINE3).county(REPRESENTATIVE_ADDRESS_LINE4).postcode(REPRESENTATIVE_POSTCODE).inMainlandUk(YesNo.YES).build();
+        Address repAddress = Address.builder().line1(REPRESENTATIVE_ADDRESS_LINE1).line2(REPRESENTATIVE_ADDRESS_LINE2).town(REPRESENTATIVE_ADDRESS_LINE3).county(REPRESENTATIVE_ADDRESS_LINE4).postcode(REPRESENTATIVE_POSTCODE).build();
         Contact repContact = Contact.builder().phone(REPRESENTATIVE_PHONE_NUMBER).email(REPRESENTATIVE_EMAIL).build();
 
         ExcludeDate excludeDate = ExcludeDate.builder().value(DateRange.builder().start(formatDate(HEARING_OPTIONS_EXCLUDE_DATES)).build()).build();

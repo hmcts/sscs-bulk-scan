@@ -14,8 +14,7 @@
               "line1": "299 Harrow",
               "town": "The Avenue",
               "county": "Hatch End",
-              "postcode": "HA5 4QT",
-              "inMainlandUk": "Yes"
+              "postcode": "HA5 4QT"
             }
           }
         }
@@ -55,8 +54,7 @@
             "line2": "Hutton",
             "town": "Brentwood",
             "county": "Essex",
-            "postcode": "CM13 1AQ",
-            "inMainlandUk": "Yes"
+            "postcode": "CM13 1AQ"
           },
           "contact": {
             "email": null,
