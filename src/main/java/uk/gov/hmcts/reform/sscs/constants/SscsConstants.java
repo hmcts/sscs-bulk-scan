@@ -47,7 +47,7 @@ public final class SscsConstants {
     public static final String ADDRESS_LINE2 = "_address_line2";
     public static final String ADDRESS_LINE3 = "_address_line3";
     public static final String ADDRESS_LINE4 = "_address_line4";
-    public static final String ADDRESS_COUNTRY = "_country";
+    public static final String ADDRESS_COUNTRY = "_Country";
     public static final String ADDRESS_PORT_OF_ENTRY = "_port_of_entry";
     public static final String ADDRESS_POSTCODE = "_postcode";
     public static final String PHONE = "_phone";
@@ -56,7 +56,12 @@ public final class SscsConstants {
     public static final String NINO = "_nino";
     public static final String IBCA_REFERENCE = "_ibca_reference";
     public static final String DOB = "_dob";
-    public static final String IBC_ROLE = "_ibc_role";
+    public static final String IBC_ROLE = "ibc_role";
+    public static final String IBC_ROLE_FOR_SELF = "person1_for_self";
+    public static final String IBC_ROLE_FOR_U18 = "person1_for_person_under_18";
+    public static final String IBC_ROLE_FOR_LACKING_CAPACITY = "person1_on_behalf_of_a_person_who_lacks_capacity";
+    public static final String IBC_ROLE_FOR_POA = "person1_as_poa";
+    public static final String IBC_ROLE_FOR_DECEASED = "person1_as_rep_of_deceased";
     public static final String IS_EMPTY = "is empty";
     public static final String IS_MISSING = "is missing";
     public static final String ARE_EMPTY = "are empty. At least one must be populated";

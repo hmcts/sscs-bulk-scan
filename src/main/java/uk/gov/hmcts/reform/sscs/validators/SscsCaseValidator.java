@@ -144,10 +144,6 @@ public class SscsCaseValidator implements CaseValidator {
         FormType formType = (FormType) caseData.get("formType");
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
-        final String benefitTypeCode = Optional.of(appeal)
-            .map(Appeal::getBenefitType)
-            .map(BenefitType::getCode)
-            .orElse(null);
 
         final boolean isSscs8 = FormType.SSCS8.equals(formType);
 
@@ -243,7 +239,7 @@ public class SscsCaseValidator implements CaseValidator {
 
             checkAppointee(appellant, ocrCaseData, caseData, isSscs8);
 
-            checkPersonName(appellant.getName(), personType, appellant);
+            checkPersonName(appellant.getName(), personType, appellant, isSscs8);
 
             checkPersonAddressAndDob(appellant.getAddress(), appellant.getIdentity(), personType, ocrCaseData, caseData,
                 appellant, isSscs8);
@@ -255,7 +251,7 @@ public class SscsCaseValidator implements CaseValidator {
             }
 
             if (isSscs8) {
-                checkIbcRole(appellant.getIbcRole(), personType, appellant);
+                checkIbcRole(personType, ocrCaseData, caseData, appellant);
             }
 
             checkMobileNumber(appellant.getContact(), personType);
@@ -311,7 +307,7 @@ public class SscsCaseValidator implements CaseValidator {
 
     private void checkAppointee(Appellant appellant, Map<String, Object> ocrCaseData, Map<String, Object> caseData, boolean isSscs8) {
         if (appellant != null && !isAppointeeDetailsEmpty(appellant.getAppointee())) {
-            checkPersonName(appellant.getAppointee().getName(), PERSON1_VALUE, appellant);
+            checkPersonName(appellant.getAppointee().getName(), PERSON1_VALUE, appellant, isSscs8);
             checkPersonAddressAndDob(appellant.getAppointee().getAddress(), appellant.getAppointee().getIdentity(),
                 PERSON1_VALUE, ocrCaseData, caseData, appellant, isSscs8);
             checkMobileNumber(appellant.getAppointee().getContact(), PERSON1_VALUE);
@@ -375,7 +371,7 @@ public class SscsCaseValidator implements CaseValidator {
                     IS_INVALID));
         }
 
-        boolean hasNoName = ! doesFirstNameExist(name) && !doesLastNameExist(name);
+        boolean hasNoName = !doesFirstNameExist(name) && !doesLastNameExist(name);
 
         if (!hasNoName) {
             otherPartyNameValidation(name);
@@ -460,16 +456,17 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkPersonName(Name name, String personType, Appellant appellant) {
-
-        if (!doesTitleExist(name)) {
-            warnings.add(
-                getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE,
-                    IS_EMPTY));
-        } else if (name != null && !isTitleValid(name.getTitle())) {
-            warnings.add(
-                getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE,
-                    IS_INVALID));
+    private void checkPersonName(Name name, String personType, Appellant appellant, boolean isSscs8) {
+        if (!isSscs8) {
+            if (!doesTitleExist(name)) {
+                warnings.add(
+                    getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE,
+                        IS_EMPTY));
+            } else if (name != null && !isTitleValid(name.getTitle())) {
+                warnings.add(
+                    getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + TITLE,
+                        IS_INVALID));
+            }
         }
 
         if (!doesFirstNameExist(name)) {
@@ -482,11 +479,42 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkIbcRole(String ibcRole, String personType, Appellant appellant) {
-        if (!StringUtils.isNotEmpty(ibcRole)) {
-            warnings.add(
-                getMessageByCallbackType(callbackType, personType, getWarningMessageName(personType, appellant) + IBC_ROLE,
-                    IS_EMPTY));
+    private void checkIbcRole(String personType, Map<String, Object> ocrCaseData, Map<String, Object> caseData, Appellant appellant) {
+        if (personType.equalsIgnoreCase("person1")) {
+            Map<String, Integer> ibcRoles = Map.of(
+                IBC_ROLE_FOR_SELF, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_SELF) ? 1 : 0,
+                IBC_ROLE_FOR_U18, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_U18) ? 1 : 0,
+                IBC_ROLE_FOR_LACKING_CAPACITY, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_LACKING_CAPACITY) ? 1 : 0,
+                IBC_ROLE_FOR_POA, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_POA) ? 1 : 0,
+                IBC_ROLE_FOR_DECEASED, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_DECEASED) ? 1 : 0
+            );
+            Map<String, String> valueMapping = Map.of(
+                IBC_ROLE_FOR_SELF, "myself",
+                IBC_ROLE_FOR_U18, "parent",
+                IBC_ROLE_FOR_LACKING_CAPACITY, "guardian",
+                IBC_ROLE_FOR_POA, "powerOfAttorney",
+                IBC_ROLE_FOR_DECEASED, "deceasedRepresentative"
+            );
+
+            long trueCount = ibcRoles.values().stream().filter(value -> value == 1).count();
+
+            if (trueCount > 1) {
+                ibcRoles.forEach((role, value) -> {
+                    if (value == 1) {
+                        errors.add(role + ": cannot be chosen with other ibc roles");
+                    }
+                });
+            } else if (trueCount == 0) {
+                ibcRoles.keySet().forEach(role -> {
+                    errors.add(role + ": at least one role must be chosen");
+                });
+            } else {
+                ibcRoles.forEach((role, value) -> {
+                    if (value == 1) {
+                        caseData.put(IBC_ROLE, valueMapping.get(role));
+                    }
+                });
+            }
         }
     }
 
@@ -766,7 +794,13 @@ public class SscsCaseValidator implements CaseValidator {
                     .build());
             }
         } else {
-            if (formType == null || (!formType.equals(FormType.SSCS1U) && !formType.equals(FormType.SSCS5))) {
+            if (FormType.SSCS8.equals(formType)) {
+                appeal.setBenefitType(BenefitType.builder()
+                    .description(Benefit.INFECTED_BLOOD_COMPENSATION.getDescription())
+                    .code(Benefit.INFECTED_BLOOD_COMPENSATION.getShortName())
+                    .build());
+            }
+            if (formType == null || (!formType.equals(FormType.SSCS1U) && !formType.equals(FormType.SSCS5) && !formType.equals(FormType.SSCS8))) {
                 warnings.add(getMessageByCallbackType(callbackType, "", BENEFIT_TYPE_DESCRIPTION, IS_EMPTY));
             }
         }

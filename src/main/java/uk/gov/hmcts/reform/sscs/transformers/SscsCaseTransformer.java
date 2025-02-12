@@ -131,7 +131,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             formTypeUpdated = true;
         }
 
-        if (formType == null  || notAValidFormType(formType)) {
+        if (formType == null || notAValidFormType(formType)) {
             formType = exceptionRecord.getFormType();
 
             if (formType != null && notAValidFormType(formType)) {
@@ -287,10 +287,13 @@ public class SscsCaseTransformer implements CaseTransformer {
                 benefitType = BenefitType.builder()
                     .code(CHILD_SUPPORT.getShortName())
                     .description(CHILD_SUPPORT.getDescription()).build();
+            } else if (FormType.SSCS8.toString().equalsIgnoreCase(formType)) {
+                benefitType = BenefitType.builder()
+                    .code(Benefit.INFECTED_BLOOD_COMPENSATION.getShortName())
+                    .description(Benefit.INFECTED_BLOOD_COMPENSATION.getDescription()).build();
             } else {
                 benefitType = getBenefitType(caseId, pairs, FormType.getById(formType));
             }
-
 
             return Appeal.builder()
                 .benefitType(benefitType)
@@ -492,7 +495,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             .confidentialityRequired(getConfidentialityRequired(pairs, errors))
             .appointee(appointee)
             .role(buildAppellantRole(pairs, formType, ignoreWarnings))
-            .ibcRole(isSscs8 ? getField(pairs, personType + IBC_ROLE) : null)
+            .ibcRole(buildIbcRole(pairs, personType, isSscs8))
             .build();
     }
 
@@ -500,6 +503,14 @@ public class SscsCaseTransformer implements CaseTransformer {
         String keepHomeAddressConfidential = (String) pairs.get(KEEP_HOME_ADDRESS_CONFIDENTIAL);
         return keepHomeAddressConfidential != null && isNotBlank(keepHomeAddressConfidential)
             ? convertBooleanToYesNo(getBoolean(pairs, errors, KEEP_HOME_ADDRESS_CONFIDENTIAL)) : null;
+    }
+
+    private String buildIbcRole(Map<String, Object> pairs, String personType, boolean isSscs8) {
+        String value = null;
+        if (isSscs8 && personType.equalsIgnoreCase("person1")) {
+            value = getField(pairs, IBC_ROLE);
+        }
+        return value;
     }
 
     private Role buildAppellantRole(Map<String, Object> pairs, String formType, boolean ignoreWarnings) {
@@ -592,18 +603,18 @@ public class SscsCaseTransformer implements CaseTransformer {
             if (doesOtherPartyExist) {
                 if (isOtherPartyAddressValid(pairs)) {
                     return Collections.singletonList(CcdValue.<OtherParty>builder().value(
-                        OtherParty.builder()
-                            .id(OTHER_PARTY_ID_ONE)
-                            .name(buildPersonName(pairs, OTHER_PARTY_VALUE))
-                            .address(buildPersonAddress(pairs, OTHER_PARTY_VALUE, isSscs8))
-                            .build())
+                            OtherParty.builder()
+                                .id(OTHER_PARTY_ID_ONE)
+                                .name(buildPersonName(pairs, OTHER_PARTY_VALUE))
+                                .address(buildPersonAddress(pairs, OTHER_PARTY_VALUE, isSscs8))
+                                .build())
                         .build());
                 }
 
                 return Collections.singletonList(CcdValue.<OtherParty>builder().value(
-                    OtherParty.builder()
-                        .id(OTHER_PARTY_ID_ONE)
-                        .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
+                        OtherParty.builder()
+                            .id(OTHER_PARTY_ID_ONE)
+                            .name(buildPersonName(pairs, OTHER_PARTY_VALUE)).build())
                     .build());
             }
         }
