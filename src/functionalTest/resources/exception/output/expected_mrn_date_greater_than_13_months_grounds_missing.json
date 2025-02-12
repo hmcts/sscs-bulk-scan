@@ -86,13 +86,13 @@
           "excludeDates": [
             {
               "value": {
-                "end": null,
+                "end": "2030-11-01",
                 "start": "2030-11-01"
               }
             },
             {
               "value": {
-                "end": null,
+                "end": "2030-12-01",
                 "start": "2030-12-01"
               }
             }
