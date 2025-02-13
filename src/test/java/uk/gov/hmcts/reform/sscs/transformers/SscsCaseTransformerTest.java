@@ -735,7 +735,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_email", APPELLANT_EMAIL);
         pairs.put(APPEAL_GROUNDS, APPEAL_REASON);
         pairs.put("person1_ibca_reference", APPELLANT_IBCA_REFERENCE);
-        pairs.put("ibc_role", APPELLANT_IBC_ROLE);
+        pairs.put("ibcRole", APPELLANT_IBC_ROLE);
         pairs.put("form_type", SSCS8_FORM_TYPE);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
@@ -762,7 +762,7 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_port_of_entry", APPELLANT_PORT_OF_ENTRY);
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
         pairs.put("person1_ibca_reference", APPELLANT_IBCA_REFERENCE);
-        pairs.put("ibc_role", APPELLANT_IBC_ROLE);
+        pairs.put("ibcRole", APPELLANT_IBC_ROLE);
         pairs.put("form_type", SSCS8_FORM_TYPE);
 
         CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
