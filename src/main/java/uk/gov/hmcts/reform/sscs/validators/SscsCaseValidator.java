@@ -508,12 +508,6 @@ public class SscsCaseValidator implements CaseValidator {
                 ibcRoles.keySet().forEach(role -> {
                     errors.add(role + ": at least one role must be chosen");
                 });
-            } else {
-                ibcRoles.forEach((role, value) -> {
-                    if (value == 1) {
-                        caseData.put(IBC_ROLE, valueMapping.get(role));
-                    }
-                });
             }
         }
     }

@@ -508,7 +508,38 @@ public class SscsCaseTransformer implements CaseTransformer {
     private String buildIbcRole(Map<String, Object> pairs, String personType, boolean isSscs8) {
         String value = null;
         if (isSscs8 && personType.equalsIgnoreCase("person1")) {
-            value = getField(pairs, IBC_ROLE);
+            Map<String, Integer> ibcRoles = Map.of(
+                IBC_ROLE_FOR_SELF, extractBooleanValue(pairs, warnings, IBC_ROLE_FOR_SELF) ? 1 : 0,
+                IBC_ROLE_FOR_U18, extractBooleanValue(pairs, warnings, IBC_ROLE_FOR_U18) ? 1 : 0,
+                IBC_ROLE_FOR_LACKING_CAPACITY, extractBooleanValue(pairs, warnings, IBC_ROLE_FOR_LACKING_CAPACITY) ? 1 : 0,
+                IBC_ROLE_FOR_POA, extractBooleanValue(pairs, warnings, IBC_ROLE_FOR_POA) ? 1 : 0,
+                IBC_ROLE_FOR_DECEASED, extractBooleanValue(pairs, warnings, IBC_ROLE_FOR_DECEASED) ? 1 : 0
+            );
+            Map<String, String> valueMapping = Map.of(
+                IBC_ROLE_FOR_SELF, "myself",
+                IBC_ROLE_FOR_U18, "parent",
+                IBC_ROLE_FOR_LACKING_CAPACITY, "guardian",
+                IBC_ROLE_FOR_POA, "powerOfAttorney",
+                IBC_ROLE_FOR_DECEASED, "deceasedRepresentative"
+            );
+
+            long trueCount = ibcRoles.values().stream().filter(intValue -> intValue == 1).count();
+
+            if (trueCount > 1) {
+                ibcRoles.forEach((role, intValue) -> {
+                    if (intValue == 1) {
+                        errors.add(role + ": cannot be chosen with other ibc roles");
+                    }
+                });
+            } else if (trueCount == 0) {
+                warnings.add("No IBC role selected");
+            } else {
+                value = ibcRoles.entrySet().stream()
+                    .filter(entry -> entry.getValue() == 1)
+                    .map(entry -> valueMapping.get(entry.getKey()))
+                    .findFirst()
+                    .orElse(null);
+            }
         }
         return value;
     }

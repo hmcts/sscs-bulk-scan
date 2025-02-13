@@ -44,7 +44,6 @@ public enum WarningMessage {
     APPELLANT_ADDRESS_COUNTRY(ADDRESS_COUNTRY, "Appellant address country"),
     APPELLANT_ADDRESS_PORT_OF_ENTRY(ADDRESS_PORT_OF_ENTRY, "Appellant address port of entry"),
     APPELLANT_IBCA_REFERENCE(IBCA_REFERENCE, "Appellant ibca reference"),
-    APPELLANT_IBC_ROLE(IBC_ROLE, "Appellant ibc role"),
     BENEFIT_TYPE_DESCRIPTION(SscsConstants.BENEFIT_TYPE_DESCRIPTION, "Benefit type description"),
     BENEFIT_TYPE_OTHER(SscsConstants.BENEFIT_TYPE_OTHER, "Benefit type description"),
     MRN_DATE(SscsConstants.MRN_DATE, "Mrn date"),

@@ -27,7 +27,11 @@ public class TestDataConstants {
     public static final String APPELLANT_DATE_OF_BIRTH = "12/08/1987";
     public static final String APPELLANT_NINO = "JT072319B";
     public static final String APPELLANT_IBCA_REFERENCE = "A12A12";
-    public static final String APPELLANT_IBC_ROLE = "some-role";
+    public static final String APPELLANT_IBC_ROLE_FOR_SELF =  "myself";
+    public static final String APPELLANT_IBC_ROLE_FOR_U18 =  "parent";
+    public static final String APPELLANT_IBC_ROLE_FOR_LACKING_CAPACITY =  "guardian";
+    public static final String APPELLANT_IBC_ROLE_FOR_POA =  "powerOfAttorney";
+    public static final String APPELLANT_IBC_ROLE_FOR_DECEASED =  "deceasedRepresentative";
     public static final String APPOINTEE_TITLE = "Mrs";
     public static final String APPOINTEE_FIRST_NAME = "Wendy";
     public static final String APPOINTEE_LAST_NAME = "Baker";

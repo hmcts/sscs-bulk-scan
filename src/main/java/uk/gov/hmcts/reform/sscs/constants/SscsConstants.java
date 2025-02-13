@@ -56,7 +56,6 @@ public final class SscsConstants {
     public static final String NINO = "_nino";
     public static final String IBCA_REFERENCE = "_ibca_reference";
     public static final String DOB = "_dob";
-    public static final String IBC_ROLE = "ibcRole";
     public static final String IBC_ROLE_FOR_SELF = "person1_for_self";
     public static final String IBC_ROLE_FOR_U18 = "person1_for_person_under_18";
     public static final String IBC_ROLE_FOR_LACKING_CAPACITY = "person1_on_behalf_of_a_person_who_lacks_capacity";
