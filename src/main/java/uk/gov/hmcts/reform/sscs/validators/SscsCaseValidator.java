@@ -441,7 +441,7 @@ public class SscsCaseValidator implements CaseValidator {
                 log.info("DwpHandling handling office is not valid");
                 warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_INVALID));
             }
-        } else if (dwpIssuingOffice == null && !FormType.SSCS2.equals(formType) && !FormType.SSCS5.equals(formType)) {
+        } else if (dwpIssuingOffice == null && !FormType.SSCS2.equals(formType) && !FormType.SSCS5.equals(formType) && !FormType.SSCS8.equals(formType)) {
             warnings.add(getMessageByCallbackType(callbackType, "", ISSUING_OFFICE, IS_EMPTY));
         }
     }
@@ -488,25 +488,20 @@ public class SscsCaseValidator implements CaseValidator {
                 IBC_ROLE_FOR_POA, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_POA) ? 1 : 0,
                 IBC_ROLE_FOR_DECEASED, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_DECEASED) ? 1 : 0
             );
-            Map<String, String> valueMapping = Map.of(
-                IBC_ROLE_FOR_SELF, "myself",
-                IBC_ROLE_FOR_U18, "parent",
-                IBC_ROLE_FOR_LACKING_CAPACITY, "guardian",
-                IBC_ROLE_FOR_POA, "powerOfAttorney",
-                IBC_ROLE_FOR_DECEASED, "deceasedRepresentative"
-            );
 
             long trueCount = ibcRoles.values().stream().filter(value -> value == 1).count();
 
             if (trueCount > 1) {
+                ArrayList<String> chosenRoles = new ArrayList<>();
                 ibcRoles.forEach((role, value) -> {
                     if (value == 1) {
-                        errors.add(role + ": cannot be chosen with other ibc roles");
+                        chosenRoles.add(role);
                     }
                 });
+                errors.add(String.join(", ", chosenRoles) + " cannot all be True");
             } else if (trueCount == 0) {
                 ibcRoles.keySet().forEach(role -> {
-                    errors.add(role + ": at least one role must be chosen");
+                    errors.add(role + ": one role must be True");
                 });
             }
         }
@@ -556,14 +551,15 @@ public class SscsCaseValidator implements CaseValidator {
 
         if (isAddressPostcodeValid(address, personType, appellant) && address != null) {
             if (personType.equals(getPerson1OrPerson2(appellant))) {
-                var postCodeOrPort = YesNo.NO.equals(address.getInMainlandUk()) ? address.getPortOfEntry() : address.getPostcode();
+                boolean isPort = YesNo.NO.equals(address.getInMainlandUk());
+                String postCodeOrPort = isPort ? address.getPortOfEntry() : address.getPostcode();
 
                 RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postCodeOrPort, isSscs8);
 
                 if (rpc != null) {
                     caseData.put("region", rpc.getName());
                     caseData.put("regionalProcessingCenter", rpc);
-                } else {
+                } else if (!isPort) {
                     warnings.add(getMessageByCallbackType(callbackType, personType,
                         getWarningMessageName(personType, appellant) + ADDRESS_POSTCODE,
                         "is not a postcode that maps to a regional processing center"));

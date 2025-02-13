@@ -523,23 +523,11 @@ public class SscsCaseTransformer implements CaseTransformer {
                 IBC_ROLE_FOR_DECEASED, "deceasedRepresentative"
             );
 
-            long trueCount = ibcRoles.values().stream().filter(intValue -> intValue == 1).count();
-
-            if (trueCount > 1) {
-                ibcRoles.forEach((role, intValue) -> {
-                    if (intValue == 1) {
-                        errors.add(role + ": cannot be chosen with other ibc roles");
-                    }
-                });
-            } else if (trueCount == 0) {
-                warnings.add("No IBC role selected");
-            } else {
-                value = ibcRoles.entrySet().stream()
-                    .filter(entry -> entry.getValue() == 1)
-                    .map(entry -> valueMapping.get(entry.getKey()))
-                    .findFirst()
-                    .orElse(null);
-            }
+            value = ibcRoles.entrySet().stream()
+                .filter(entry -> entry.getValue() == 1)
+                .map(entry -> valueMapping.get(entry.getKey()))
+                .findFirst()
+                .orElse(null);
         }
         return value;
     }
@@ -676,6 +664,9 @@ public class SscsCaseTransformer implements CaseTransformer {
         String dwpIssuingOffice = getField(pairs, "office");
 
         if (benefitType != null && benefitType.getCode() != null) {
+            if (benefitType.getCode().equalsIgnoreCase(Benefit.INFECTED_BLOOD_COMPENSATION.getShortName())) {
+                return IBCA_ISSUING_OFFICE;
+            }
             if (Benefit.getBenefitOptionalByCode(benefitType.getCode())
                 .filter(benefit -> isBenefitWithAutoFilledOffice(benefit, dwpIssuingOffice)).isPresent()) {
                 return dwpAddressLookupService.getDefaultDwpMappingByBenefitType(benefitType.getCode())

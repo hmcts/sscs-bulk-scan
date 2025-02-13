@@ -453,8 +453,7 @@ public class SscsCaseValidatorTest {
                 "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_ibca_reference is empty",
-                "mrn_date is empty",
-                "office is empty");
+                "mrn_date is empty");
     }
 
     @Test
@@ -975,11 +974,11 @@ public class SscsCaseValidatorTest {
             .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
                 false);
 
-        assertTrue(response.getErrors().contains("person1_as_rep_of_deceased: at least one role must be chosen"));
-        assertTrue(response.getErrors().contains("person1_on_behalf_of_a_person_who_lacks_capacity: at least one role must be chosen"));
-        assertTrue(response.getErrors().contains("person1_as_poa: at least one role must be chosen"));
-        assertTrue(response.getErrors().contains("person1_for_self: at least one role must be chosen"));
-        assertTrue(response.getErrors().contains("person1_for_person_under_18: at least one role must be chosen"));
+        assertTrue(response.getErrors().contains("person1_as_rep_of_deceased: one role must be True"));
+        assertTrue(response.getErrors().contains("person1_on_behalf_of_a_person_who_lacks_capacity: one role must be True"));
+        assertTrue(response.getErrors().contains("person1_as_poa: one role must be True"));
+        assertTrue(response.getErrors().contains("person1_for_self: one role must be True"));
+        assertTrue(response.getErrors().contains("person1_for_person_under_18: one role must be True"));
     }
 
     @Test
@@ -996,12 +995,14 @@ public class SscsCaseValidatorTest {
         CaseResponse response = validator
             .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
                 false);
-
-        assertTrue(response.getErrors().contains("person1_as_rep_of_deceased: cannot be chosen with other ibc roles"));
-        assertTrue(response.getErrors().contains("person1_on_behalf_of_a_person_who_lacks_capacity: cannot be chosen with other ibc roles"));
-        assertTrue(response.getErrors().contains("person1_as_poa: cannot be chosen with other ibc roles"));
-        assertTrue(response.getErrors().contains("person1_for_self: cannot be chosen with other ibc roles"));
-        assertTrue(response.getErrors().contains("person1_for_person_under_18: cannot be chosen with other ibc roles"));
+        assertEquals(1, response.getErrors().size());
+        String error = response.getErrors().get(0).replace(" cannot all be True", "");
+        List<String> errors = Arrays.asList(error.split(", "));
+        assertTrue(errors.contains(IBC_ROLE_FOR_SELF));
+        assertTrue(errors.contains(IBC_ROLE_FOR_U18));
+        assertTrue(errors.contains(IBC_ROLE_FOR_LACKING_CAPACITY));
+        assertTrue(errors.contains(IBC_ROLE_FOR_POA));
+        assertTrue(errors.contains(IBC_ROLE_FOR_DECEASED));
     }
 
     @Test
@@ -1017,9 +1018,12 @@ public class SscsCaseValidatorTest {
             .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
                 false);
 
-        assertTrue(response.getErrors().contains("person1_as_poa: cannot be chosen with other ibc roles"));
-        assertTrue(response.getErrors().contains("person1_for_self: cannot be chosen with other ibc roles"));
-        assertTrue(response.getErrors().contains("person1_for_person_under_18: cannot be chosen with other ibc roles"));
+        assertEquals(1, response.getErrors().size());
+        String error = response.getErrors().get(0).replace(" cannot all be True", "");
+        List<String> errors = Arrays.asList(error.split(", "));
+        assertTrue(errors.contains(IBC_ROLE_FOR_SELF));
+        assertTrue(errors.contains(IBC_ROLE_FOR_U18));
+        assertTrue(errors.contains(IBC_ROLE_FOR_POA));
     }
 
     @Test
