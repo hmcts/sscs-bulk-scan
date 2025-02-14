@@ -968,7 +968,6 @@ public class SscsCaseValidatorTest {
     public void givenSscs8HasNoAppellantIbcRole_thenAddAnError() {
         Appellant appellant = buildAppellant(false);
         appellant.getIdentity().setIbcaReference("A12A12");
-        appellant.setIbcRole(null);
 
         CaseResponse response = validator
             .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
@@ -979,6 +978,19 @@ public class SscsCaseValidatorTest {
         assertTrue(response.getErrors().contains("person1_as_poa: one role must be True"));
         assertTrue(response.getErrors().contains("person1_for_self: one role must be True"));
         assertTrue(response.getErrors().contains("person1_for_person_under_18: one role must be True"));
+    }
+
+    @Test
+    public void givenSscs8HasOneAppellantIbcRole_thenDoNotError() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setIbcaReference("A12A12");
+        ocrCaseData.put(IBC_ROLE_FOR_SELF, true);
+
+        CaseResponse response = validator
+            .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
+                false);
+
+        assertEquals(0, response.getErrors().size());
     }
 
     @Test
@@ -1024,6 +1036,32 @@ public class SscsCaseValidatorTest {
         assertTrue(errors.contains(IBC_ROLE_FOR_SELF));
         assertTrue(errors.contains(IBC_ROLE_FOR_U18));
         assertTrue(errors.contains(IBC_ROLE_FOR_POA));
+    }
+
+    @Test
+    public void givenSscs8HasIbcRoleFieldTrueAndSet_thenDoNotError() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setIbcaReference("A12A12");
+        appellant.setIbcRole("myself");
+
+        CaseResponse response = validator
+            .validateValidationRecord(buildMinimumAppealData(appellant, true, FormType.SSCS8),
+                false, true);
+
+        assertEquals(0, response.getErrors().size());
+    }
+
+    @Test
+    public void givenSscs8HasIbcRoleFieldTrueAndNotSet_thenError() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setIbcaReference("A12A12");
+        appellant.setIbcRole(null);
+
+        CaseResponse response = validator
+            .validateValidationRecord(buildMinimumAppealData(appellant, true, FormType.SSCS8),
+                false, true);
+
+        assertEquals(Collections.singletonList("ibcRole is empty"), response.getErrors());
     }
 
     @Test
@@ -1735,7 +1773,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("sscsDocument", buildDocument("myfile.pdf"));
 
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
 
         assertEquals(0, response.getErrors().size());
     }
@@ -1746,7 +1784,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("sscsDocument", buildDocument(null));
 
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
 
         assertEquals(
             "There is a file attached to the case that does not have a filename, add a filename, e.g. filename.pdf",
@@ -1759,7 +1797,7 @@ public class SscsCaseValidatorTest {
 
         pairs.put("sscsDocument", buildDocument("Waiver"));
 
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
 
         assertEquals(
             "There is a file attached to the case called Waiver, filenames must have extension, e.g. filename.pdf",
@@ -1772,7 +1810,7 @@ public class SscsCaseValidatorTest {
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setPostcode(null);
 
-        CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false, FormType.SSCS1PE), false);
+        CaseResponse response = validator.validateValidationRecord(buildMinimumAppealData(appellant, false, FormType.SSCS1PE), false, false);
 
         assertEquals("Appellant postcode is empty", response.getWarnings().get(0));
         verifyNoInteractions(regionalProcessingCenterService);
@@ -1785,7 +1823,7 @@ public class SscsCaseValidatorTest {
             buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("Sheffield DRT").build(),
                 buildAppellant(false), false, FormType.SSCS1PE);
 
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
 
         assertEquals(0, response.getWarnings().size());
         assertEquals(0, response.getErrors().size());
@@ -1798,7 +1836,7 @@ public class SscsCaseValidatorTest {
             buildMinimumAppealDataWithMrn(MrnDetails.builder().dwpIssuingOffice("Sheffield DRT").build(),
                 buildAppellant(false), false, FormType.SSCS1PE);
 
-        CaseResponse response = validator.validateValidationRecord(pairs, false);
+        CaseResponse response = validator.validateValidationRecord(pairs, false, false);
 
         assertEquals("Mrn date is empty", response.getWarnings().get(0));
     }
@@ -1843,7 +1881,7 @@ public class SscsCaseValidatorTest {
             HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber("01222").build(),
             buildAppellant(false), false, FormType.SSCS1PE);
 
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
 
         assertEquals(
             "Telephone hearing selected but the number used is invalid. Please check either the telephone or hearing telephone number fields",
@@ -1870,7 +1908,7 @@ public class SscsCaseValidatorTest {
             HearingSubtype.builder().wantsHearingTypeTelephone("Yes").hearingTelephoneNumber(null).build(),
             buildAppellant(false), false, FormType.SSCS1PE);
 
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
 
         assertEquals("Hearing telephone number has not been provided but data indicates hearing telephone is required",
             response.getWarnings().get(0));
@@ -1896,7 +1934,7 @@ public class SscsCaseValidatorTest {
             HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail(null).build(),
             buildAppellant(false), false, FormType.SSCS1PE);
 
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
 
         assertEquals("Hearing video email address has not been provided but data indicates hearing video is required",
             response.getWarnings().get(0));
@@ -1907,7 +1945,7 @@ public class SscsCaseValidatorTest {
     public void givenAnAppealWithAnHearingTypePaperAndEmptyHearingSubTypeForSscsCase_thenNoWarning() {
         Map<String, Object> pairs =
             buildMinimumAppealDataWithHearingType(HEARING_TYPE_PAPER, buildAppellant(false), false, FormType.SSCS1PE);
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
         assertEquals(0, response.getWarnings().size());
     }
 
@@ -1920,7 +1958,7 @@ public class SscsCaseValidatorTest {
             pairs.put("childMaintenanceNumber", "123456");
         }
         pairs.put("formType", formType);
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
         assertEquals(1, response.getWarnings().size());
         assertEquals("Hearing option telephone, video and face to face are empty. At least one must be populated",
             response.getWarnings().get(0));
@@ -1930,7 +1968,7 @@ public class SscsCaseValidatorTest {
     public void givenAnAppealWithAnEmptyHearingSubTypeForSscsCase_thenNoWarning() {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false, FormType.SSCS1PE);
         pairs.put("formType", FormType.SSCS1);
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
         assertEquals(0, response.getWarnings().size());
     }
 
@@ -1939,7 +1977,7 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs =
             buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().build(), buildAppellant(false), false, FormType.SSCS1PE);
         pairs.put("formType", null);
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
         assertEquals(0, response.getWarnings().size());
     }
 
@@ -1948,7 +1986,7 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs = buildMinimumAppealDataWithHearingSubtype(
             HearingSubtype.builder().wantsHearingTypeVideo("Yes").hearingVideoEmail("m@m.com").build(),
             buildAppellant(false), false, FormType.SSCS1PE);
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
         assertEquals(0, response.getWarnings().size());
     }
 
@@ -1957,7 +1995,7 @@ public class SscsCaseValidatorTest {
         Map<String, Object> pairs =
             buildMinimumAppealDataWithHearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
                 buildAppellant(false), false, FormType.SSCS1PE);
-        CaseResponse response = validator.validateValidationRecord(pairs, true);
+        CaseResponse response = validator.validateValidationRecord(pairs, true, false);
         assertEquals(0, response.getWarnings().size());
     }
 

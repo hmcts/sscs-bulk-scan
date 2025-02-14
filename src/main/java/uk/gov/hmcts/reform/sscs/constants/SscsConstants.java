@@ -62,6 +62,7 @@ public final class SscsConstants {
     public static final String IBC_ROLE_FOR_LACKING_CAPACITY = "person1_on_behalf_of_a_person_who_lacks_capacity";
     public static final String IBC_ROLE_FOR_POA = "person1_as_poa";
     public static final String IBC_ROLE_FOR_DECEASED = "person1_as_rep_of_deceased";
+    public static final String IBC_ROLE = "ibcRole";
     public static final String IS_EMPTY = "is empty";
     public static final String IS_MISSING = "is missing";
     public static final String ARE_EMPTY = "are empty. At least one must be populated";

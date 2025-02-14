@@ -107,7 +107,7 @@ public class SscsCaseValidator implements CaseValidator {
         ScannedData ocrCaseData = sscsJsonExtractor.extractJson(exceptionRecord);
 
         boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, ignoreWarningsValue, true);
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, false, ignoreWarningsValue, true);
 
         if (combineWarnings) {
             warnings = combineWarnings();
@@ -122,14 +122,14 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     @Override
-    public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation) {
+    public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation, boolean validateIbcRoleField) {
         warnings = new ArrayList<>();
         errors = new ArrayList<>();
         callbackType = VALIDATION_CALLBACK;
 
         Map<String, Object> ocrCaseData = new HashMap<>();
 
-        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation, false, false);
+        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation, validateIbcRoleField, false, false);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -139,7 +139,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                        boolean ignoreMrnValidation, boolean ignoreWarnings, boolean ignorePartyRoleValidation) {
+                                        boolean ignoreMrnValidation, boolean validateIbcRoleField, boolean ignoreWarnings, boolean ignorePartyRoleValidation) {
 
         FormType formType = (FormType) caseData.get("formType");
         Appeal appeal = (Appeal) caseData.get("appeal");
@@ -153,6 +153,7 @@ public class SscsCaseValidator implements CaseValidator {
             caseData,
             appellantPersonType,
             formType,
+            validateIbcRoleField,
             ignorePartyRoleValidation,
             ignoreWarnings,
             isSscs8
@@ -211,8 +212,8 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private void checkAppellant(Appeal appeal, Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                String personType, FormType formType, boolean ignorePartyRoleValidation,
-                                boolean ignoreWarnings, boolean isSscs8) {
+                                String personType, FormType formType, boolean validateIbcRoleField,
+                                boolean ignorePartyRoleValidation, boolean ignoreWarnings, boolean isSscs8) {
 
         Appellant appellant = appeal.getAppellant();
 
@@ -251,7 +252,7 @@ public class SscsCaseValidator implements CaseValidator {
             }
 
             if (isSscs8) {
-                checkIbcRole(personType, ocrCaseData, caseData, appellant);
+                checkIbcRole(personType, ocrCaseData, appellant, validateIbcRoleField);
             }
 
             checkMobileNumber(appellant.getContact(), personType);
@@ -479,8 +480,8 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkIbcRole(String personType, Map<String, Object> ocrCaseData, Map<String, Object> caseData, Appellant appellant) {
-        if (personType.equalsIgnoreCase("person1")) {
+    private void checkIbcRole(String personType, Map<String, Object> ocrCaseData, Appellant appellant, boolean validateIbcRoleField) {
+        if (!validateIbcRoleField && personType.equalsIgnoreCase("person1")) {
             Map<String, Integer> ibcRoles = Map.of(
                 IBC_ROLE_FOR_SELF, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_SELF) ? 1 : 0,
                 IBC_ROLE_FOR_U18, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_U18) ? 1 : 0,
@@ -504,6 +505,10 @@ public class SscsCaseValidator implements CaseValidator {
                     errors.add(role + ": one role must be True");
                 });
             }
+        }
+
+        if (validateIbcRoleField && appellant.getIbcRole() == null) {
+            errors.add(IBC_ROLE + " " + IS_EMPTY);
         }
     }
 
