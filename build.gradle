@@ -228,7 +228,7 @@ dependencies {
 
   implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.4'
 
-  implementation group: 'com.github.hmcts', name: 'java-logging', version: '6.1.6'
+  implementation group: 'com.github.hmcts', name: 'java-logging', version: '6.1.8'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '5.0.3'
 
   implementation group: 'com.github.hmcts', name: 'sscs-common', version: '6.0.1'
