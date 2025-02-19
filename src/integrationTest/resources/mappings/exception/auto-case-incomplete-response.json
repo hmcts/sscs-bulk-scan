@@ -47,7 +47,7 @@
           "hasRepresentative": "No",
           "organisation": null,
           "name": null,
-          "address": null,
+          "address": {},
           "contact": null
         },
         "signer": null,

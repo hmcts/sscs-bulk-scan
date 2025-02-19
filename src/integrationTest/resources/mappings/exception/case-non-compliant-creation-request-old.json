@@ -34,9 +34,9 @@
           "dob": "1976-11-11",
           "nino": "BB000000B"
         },
-        "isAppointee" : "No",
+        "isAppointee": "No",
         "appointee": null,
-        "isAddressSameAsAppointee" : null
+        "isAddressSameAsAppointee": null
       },
       "benefitType": {
         "code": "ESA",
@@ -44,17 +44,19 @@
       },
       "hearingSubtype": {},
       "hearingOptions": {
-        "wantsToAttend" : "Yes",
-        "wantsSupport" : "No",
+        "wantsToAttend": "Yes",
+        "wantsSupport": "No",
         "languageInterpreter": "No",
-        "arrangements" : [],
-        "scheduleHearing" : "Yes",
-        "excludeDates" : [{
-          "value" : {
-            "start" : "2030-12-01",
-            "end" : null
+        "arrangements": [],
+        "scheduleHearing": "Yes",
+        "excludeDates": [
+          {
+            "value": {
+              "start": "2030-12-01",
+              "end": null
+            }
           }
-        }]
+        ]
       },
       "appealReasons": null,
       "rep": {
@@ -66,20 +68,22 @@
       },
       "signer": null,
       "hearingType": "oral",
-      "receivedVia" : "Paper"
+      "receivedVia": "Paper"
     },
-    "sscsDocument" : [ {
-      "value" : {
-        "documentType" : "appellantEvidence",
-        "documentFileName" : "11111.pdf",
-        "documentDateAdded" : "2018-10-10",
-        "documentLink" : {
-          "document_url" : "http://www.bbc.com",
-          "document_binary_url" : "http://www.bbc.com/binary",
-          "document_filename" : "myfile.jpg"
+    "sscsDocument": [
+      {
+        "value": {
+          "documentType": "appellantEvidence",
+          "documentFileName": "11111.pdf",
+          "documentDateAdded": "2018-10-10",
+          "documentLink": {
+            "document_url": "http://www.bbc.com",
+            "document_binary_url": "http://www.bbc.com/binary",
+            "document_filename": "myfile.jpg"
+          }
         }
       }
-    } ],
+    ],
     "subscriptions": {
       "appellantSubscription": {
         "wantSmsNotifications": "No",
@@ -89,28 +93,28 @@
         "subscribeSms": "No",
         "reason": null
       },
-      "supporterSubscription" : null,
-      "representativeSubscription" : null,
-      "appointeeSubscription" : null
+      "supporterSubscription": null,
+      "representativeSubscription": null,
+      "appointeeSubscription": null
     },
-    "region" : "BRADFORD",
-    "regionalProcessingCenter" : {
-      "name" : "BRADFORD",
+    "region": "BRADFORD",
+    "regionalProcessingCenter": {
+      "name": "BRADFORD",
       "address1": "HM Courts & Tribunals Service",
       "address2": "Social Security & Child Support Appeals",
       "address3": "Phoenix House",
       "address4": "Rushton Avenue",
       "city": "BRADFORD",
       "postcode": "BD3 7BH",
-      "phoneNumber" : "0300 123 1142",
-      "faxNumber" : "0126 434 7983",
-      "email" : "SSCS_Bradford@justice.gov.uk"
+      "phoneNumber": "0300 123 1142",
+      "faxNumber": "0126 434 7983",
+      "email": "SSCS_Bradford@justice.gov.uk"
     },
-    "evidencePresent" : "Yes",
-    "bulkScanCaseReference" : "1234567890",
-    "caseCreated" : "2018-01-11"
+    "evidencePresent": "Yes",
+    "bulkScanCaseReference": "1234567890",
+    "caseCreated": "2018-01-11"
   },
-  "security_classification" : "PUBLIC",
-  "event_token" : "test_event_token",
-  "ignore_warning" : false
+  "security_classification": "PUBLIC",
+  "event_token": "test_event_token",
+  "ignore_warning": false
 }
