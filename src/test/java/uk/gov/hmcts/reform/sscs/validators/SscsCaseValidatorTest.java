@@ -987,11 +987,14 @@ public class SscsCaseValidatorTest {
             .validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealData(appellant, true, FormType.SSCS8),
                 false);
 
-        assertTrue(response.getErrors().contains("person1_as_rep_of_deceased: one role must be True"));
-        assertTrue(response.getErrors().contains("person1_on_behalf_of_a_person_who_lacks_capacity: one role must be True"));
-        assertTrue(response.getErrors().contains("person1_as_poa: one role must be True"));
-        assertTrue(response.getErrors().contains("person1_for_self: one role must be True"));
-        assertTrue(response.getErrors().contains("person1_for_person_under_18: one role must be True"));
+        assertEquals(1, response.getErrors().size());
+        String actualError = response.getErrors().get(0);
+        assertTrue(actualError.startsWith("One of the following must be True: "));
+        assertTrue(actualError.contains("person1_as_rep_of_deceased"));
+        assertTrue(actualError.contains("person1_on_behalf_of_a_person_who_lacks_capacity"));
+        assertTrue(actualError.contains("person1_as_poa"));
+        assertTrue(actualError.contains("person1_for_self"));
+        assertTrue(actualError.contains("person1_for_person_under_18"));
     }
 
     @Test

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 
 public final class SscsOcrDataUtil {
 
+    private final static String INVALID_YES_NO_ERROR_MESSAGE = " has an invalid value. Should be Yes/No or True/False";
     private SscsOcrDataUtil() {
 
     }
@@ -92,7 +93,7 @@ public final class SscsOcrDataUtil {
             if (booleanValue) {
                 return true;
             } else {
-                errors.add(value + " has an invalid value. Should be Yes/No or True/False");
+                errors.add(value + INVALID_YES_NO_ERROR_MESSAGE);
             }
         }
         return false;
@@ -104,7 +105,7 @@ public final class SscsOcrDataUtil {
             if (booleanValue != null) {
                 return booleanValue;
             } else {
-                errors.add(value + " has an invalid value. Should be Yes/No or True/False");
+                errors.add(value + INVALID_YES_NO_ERROR_MESSAGE);
             }
         }
         return false;
@@ -116,7 +117,7 @@ public final class SscsOcrDataUtil {
             if (booleanValue != null) {
                 return booleanValue;
             } else {
-                errors.add(value + " has an invalid value. Should be Yes/No or True/False");
+                errors.add(value + INVALID_YES_NO_ERROR_MESSAGE);
             }
         }
         return false;

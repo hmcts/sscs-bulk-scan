@@ -478,30 +478,27 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
+    private Map<String, Boolean> getIbcRoleMapping(Map<String, Object> ocrCaseData) {
+        return Map.of(
+            IBC_ROLE_FOR_SELF, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_SELF),
+            IBC_ROLE_FOR_U18, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_U18),
+            IBC_ROLE_FOR_LACKING_CAPACITY, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_LACKING_CAPACITY),
+            IBC_ROLE_FOR_POA, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_POA),
+            IBC_ROLE_FOR_DECEASED, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_DECEASED)
+        );
+    }
+
     private void checkIbcRole(String personType, Map<String, Object> ocrCaseData, Appellant appellant, boolean validateIbcRoleField) {
         if (!validateIbcRoleField && personType.equalsIgnoreCase("person1")) {
-            Map<String, Integer> ibcRoles = Map.of(
-                IBC_ROLE_FOR_SELF, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_SELF) ? 1 : 0,
-                IBC_ROLE_FOR_U18, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_U18) ? 1 : 0,
-                IBC_ROLE_FOR_LACKING_CAPACITY, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_LACKING_CAPACITY) ? 1 : 0,
-                IBC_ROLE_FOR_POA, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_POA) ? 1 : 0,
-                IBC_ROLE_FOR_DECEASED, extractBooleanValueWarning(ocrCaseData, warnings, IBC_ROLE_FOR_DECEASED) ? 1 : 0
-            );
+            Map<String, Boolean> ibcRoles = getIbcRoleMapping(ocrCaseData);
 
-            long trueCount = ibcRoles.values().stream().filter(value -> value == 1).count();
+            long trueCount = ibcRoles.values().stream().filter(bool -> bool).count();
 
             if (trueCount > 1) {
-                ArrayList<String> chosenRoles = new ArrayList<>();
-                ibcRoles.forEach((role, value) -> {
-                    if (value == 1) {
-                        chosenRoles.add(role);
-                    }
-                });
-                errors.add(String.join(", ", chosenRoles) + " cannot all be True");
+                List<String> trueValues = ibcRoles.keySet().stream().filter(ibcRoles::get).toList();
+                errors.add(String.join(", ", trueValues) + " cannot all be True");
             } else if (trueCount == 0) {
-                ibcRoles.keySet().forEach(role -> {
-                    errors.add(role + ": one role must be True");
-                });
+                errors.add("One of the following must be True: " + String.join(", ", ibcRoles.keySet()));
             }
         }
 
@@ -518,7 +515,7 @@ public class SscsCaseValidator implements CaseValidator {
 
         // Remove this part if/when the mainland UK question is added to sscs8 form
         if (isIbcOrSscs8 && address != null && address.getInMainlandUk() == null) {
-            address.setInMainlandUk(doesAddressPortOfEntryExist(address) ? YesNo.NO : YesNo.YES);
+            address.setInMainlandUk(Boolean.TRUE.equals(doesAddressPortOfEntryExist(address)) ? YesNo.NO : YesNo.YES);
         }
 
         if (!doesAddressLine1Exist(address)) {
