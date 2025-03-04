@@ -15,9 +15,9 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.YesNo;
 
 public final class SscsOcrDataUtil {
 
-    private final static String INVALID_YES_NO_ERROR_MESSAGE = " has an invalid value. Should be Yes/No or True/False";
-    private SscsOcrDataUtil() {
+    private static final String INVALID_YES_NO_ERROR_MESSAGE = " has an invalid value. Should be Yes/No or True/False";
 
+    private SscsOcrDataUtil() {
     }
 
     public static Boolean hasPerson(Map<String, Object> pairs, String person) {
