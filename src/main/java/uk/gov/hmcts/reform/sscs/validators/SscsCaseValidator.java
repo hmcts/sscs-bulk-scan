@@ -145,7 +145,7 @@ public class SscsCaseValidator implements CaseValidator {
         Appeal appeal = (Appeal) caseData.get("appeal");
         String appellantPersonType = getPerson1OrPerson2(appeal.getAppellant());
 
-        final boolean isSscs8 = FormType.SSCS8.equals(formType);
+        final boolean isSscs8 = FormType.SSCS8.equals(formType) || Benefit.INFECTED_BLOOD_COMPENSATION.getShortName().equalsIgnoreCase(appeal.getBenefitType().getCode());
 
         checkAppellant(
             appeal,

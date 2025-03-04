@@ -952,6 +952,20 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
+    public void givenIbcCaseDoesNotContainIbcaReference_thenAddAWarning() {
+        Appellant appellant = buildAppellant(false);
+        appellant.getIdentity().setIbcaReference(null);
+        appellant.setIbcRole("some-role");
+
+        CaseResponse response = validator
+            .validateExceptionRecord(transformResponse, exceptionRecord,
+                buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8),
+                false);
+
+        assertEquals("person1_ibca_reference is empty", response.getWarnings().get(0));
+    }
+
+    @Test
     public void givenSscs8DoesNotContainValidIbcaReference_thenAddAWarning() {
         Appellant appellant = buildAppellant(false);
         appellant.getIdentity().setIbcaReference("NOT VALID");
