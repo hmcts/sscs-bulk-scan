@@ -651,6 +651,8 @@ public class SscsCaseValidator implements CaseValidator {
 
     private Boolean isPortOfEntryValid(Address address) {
         if (address != null && address.getPortOfEntry() != null) {
+            // TODO get actual wording for warning message below
+            warnings.add(getMessageByCallbackType(callbackType, PERSON1_VALUE, ADDRESS_PORT_OF_ENTRY, "needs updating to its associated port of entry code. Please refer to guidance."));
             String portOfEntry = address.getPortOfEntry();
             List<String> validPortCodes = Arrays.stream(UkPortOfEntry.values()).map((UkPortOfEntry::getLocationCode)).toList();
             if (!validPortCodes.contains(portOfEntry)) {
