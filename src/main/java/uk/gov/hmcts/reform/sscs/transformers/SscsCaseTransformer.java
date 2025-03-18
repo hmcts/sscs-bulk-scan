@@ -26,6 +26,7 @@ import static uk.gov.hmcts.reform.sscs.utility.AppealNumberGenerator.generateApp
 
 import java.util.*;
 import java.util.stream.Collectors;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -68,6 +69,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private final CaseManagementLocationService caseManagementLocationService;
 
     private final RegionalProcessingCenterService regionalProcessingCenterService;
+    @Setter
     private boolean ucOfficeFeatureActive;
 
     private Set<String> errors;
@@ -97,10 +99,6 @@ public class SscsCaseTransformer implements CaseTransformer {
         this.regionalProcessingCenterService = regionalProcessingCenterService;
     }
 
-    public void setUcOfficeFeatureActive(boolean ucOfficeFeatureActive) {
-        this.ucOfficeFeatureActive = ucOfficeFeatureActive;
-    }
-
     @Override
     public CaseResponse transformExceptionRecord(ExceptionRecord exceptionRecord, boolean combineWarnings) {
         // New transformation request contains exceptionRecordId
@@ -125,11 +123,7 @@ public class SscsCaseTransformer implements CaseTransformer {
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
         String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
         String orgFormType = exceptionRecord.getFormType();
-        boolean formTypeUpdated = false;
-
-        if (formType != null && !formType.equals(orgFormType)) {
-            formTypeUpdated = true;
-        }
+        boolean formTypeUpdated = formType != null && !formType.equals(orgFormType);
 
         if (formType == null || notAValidFormType(formType)) {
             formType = exceptionRecord.getFormType();
@@ -239,15 +233,12 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Subscription generateSubscriptionWithAppealNumber(Map<String, Object> pairs, String personType) {
-        boolean wantsSms = getBoolean(pairs, errors, personType + "_want_sms_notifications");
-        String email = getField(pairs, personType + "_email");
-        String mobile = getField(pairs, personType + "_mobile");
+        boolean wantsSms = getBoolean(pairs, errors, personType + WANTS_SMS_NOTIFICATIONS);
+        String email = getField(pairs, personType + EMAIL);
+        String mobile = getField(pairs, personType + MOBILE);
 
-        boolean wantEmailNotifications = false;
-        if ((PERSON1_VALUE.equals(personType) || REPRESENTATIVE_VALUE.equals(personType))
-            && isNotBlank(email)) {
-            wantEmailNotifications = true;
-        }
+        boolean wantEmailNotifications = (PERSON1_VALUE.equals(personType) || REPRESENTATIVE_VALUE.equals(personType))
+            && isNotBlank(email);
 
         return Subscription.builder().email(email).mobile(mobile).subscribeSms(convertBooleanToYesNoString(wantsSms))
             .subscribeEmail(convertBooleanToYesNoString(wantEmailNotifications))
@@ -257,7 +248,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     private Appeal buildAppealFromData(Map<String, Object> pairs, String caseId, String formType, Set<String> errors, boolean ignoreWarnings, boolean isSscs8) {
         Appellant appellant = null;
 
-        if (pairs != null && pairs.size() != 0) {
+        if (pairs != null && !pairs.isEmpty()) {
             if (hasPerson(pairs, PERSON2_VALUE)) {
                 Appointee appointee = null;
                 if (hasPerson(pairs, PERSON1_VALUE)) {
@@ -445,7 +436,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             // only add when no other errors, otherwise similar errors get added to the list
             errors.add(BENEFIT_TYPE_OTHER + " " + IS_INVALID);
         }
-        return (benefit.isPresent() && errors.size() == 0)
+        return (benefit.isPresent() && errors.isEmpty())
             ? BenefitType.builder().code(code).description(benefit.get().getDescription()).build() : null;
     }
 
@@ -501,7 +492,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private YesNo getConfidentialityRequired(Map<String, Object> pairs, Set<String> errors) {
         String keepHomeAddressConfidential = (String) pairs.get(KEEP_HOME_ADDRESS_CONFIDENTIAL);
-        return keepHomeAddressConfidential != null && isNotBlank(keepHomeAddressConfidential)
+        return isNotBlank(keepHomeAddressConfidential)
             ? convertBooleanToYesNo(getBoolean(pairs, errors, KEEP_HOME_ADDRESS_CONFIDENTIAL)) : null;
     }
 
@@ -615,7 +606,7 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private List<CcdValue<OtherParty>> buildOtherParty(Map<String, Object> pairs, boolean isSscs8) {
-        if (pairs != null && pairs.size() != 0) {
+        if (pairs != null && !pairs.isEmpty()) {
 
             boolean doesOtherPartyExist = hasPerson(pairs, OTHER_PARTY_VALUE);
 
@@ -642,11 +633,8 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private boolean isOtherPartyAddressValid(Map<String, Object> pairs) {
         // yes+dont check address, no
-        if (extractBooleanValue(pairs, errors, IS_OTHER_PARTY_ADDRESS_KNOWN)
-            || (hasAddress(pairs, OTHER_PARTY_VALUE))) {
-            return true;
-        }
-        return false;
+        return extractBooleanValue(pairs, errors, IS_OTHER_PARTY_ADDRESS_KNOWN)
+            || (hasAddress(pairs, OTHER_PARTY_VALUE));
     }
 
     private MrnDetails buildMrnDetails(Map<String, Object> pairs, BenefitType benefitType) {
@@ -728,15 +716,16 @@ public class SscsCaseTransformer implements CaseTransformer {
     }
 
     private Address buildPersonAddress(Map<String, Object> pairs, String personType, boolean isSscs8) {
-        if (findBooleanExists(getField(pairs, personType + ADDRESS_PORT_OF_ENTRY))) {
+        if (isSscs8) {
+            boolean hasPortOfEntry = findBooleanExists(getField(pairs, personType + ADDRESS_PORT_OF_ENTRY));
             return Address.builder()
                 .line1(getField(pairs, personType + ADDRESS_LINE1))
                 .line2(getField(pairs, personType + ADDRESS_LINE2))
                 .town(getField(pairs, personType + ADDRESS_LINE3))
                 .country(getField(pairs, personType + ADDRESS_COUNTRY))
-                .portOfEntry(getField(pairs, personType + ADDRESS_PORT_OF_ENTRY))
+                .portOfEntry(hasPortOfEntry ? getField(pairs, personType + ADDRESS_PORT_OF_ENTRY) : null)
                 .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
-                .inMainlandUk(isSscs8 ? YesNo.NO : null)
+                .inMainlandUk(hasPortOfEntry ? YesNo.NO : YesNo.YES)
                 .build();
         }
         if (findBooleanExists(getField(pairs, personType + ADDRESS_LINE4))) {
@@ -746,7 +735,6 @@ public class SscsCaseTransformer implements CaseTransformer {
                 .town(getField(pairs, personType + ADDRESS_LINE3))
                 .county(getField(pairs, personType + ADDRESS_LINE4))
                 .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
-                .inMainlandUk(isSscs8 ? YesNo.YES : null)
                 .build();
         }
         boolean line3IsBlank = findBooleanExists(getField(pairs, personType + ADDRESS_LINE2))
@@ -756,7 +744,6 @@ public class SscsCaseTransformer implements CaseTransformer {
             .town(getField(pairs, personType + ADDRESS_LINE2))
             .county(line3IsBlank ? "." : getField(pairs, personType + ADDRESS_LINE3))
             .postcode(getField(pairs, personType + ADDRESS_POSTCODE))
-            .inMainlandUk(isSscs8 ? YesNo.YES : null)
             .build();
     }
 
@@ -914,10 +901,7 @@ public class SscsCaseTransformer implements CaseTransformer {
 
     private boolean findSignLanguageInterpreterRequired(Map<String, Object> pairs) {
         Optional<Boolean> fromOldVersionForm = findSignLanguageInterpreterRequiredInOldForm(pairs);
-        if (fromOldVersionForm.isPresent()) {
-            return fromOldVersionForm.get();
-        }
-        return isNotBlank(getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL));
+        return fromOldVersionForm.orElseGet(() -> isNotBlank(getField(pairs, HEARING_OPTIONS_SIGN_LANGUAGE_TYPE_LITERAL)));
     }
 
     private String findSignLanguageType(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
@@ -955,7 +939,7 @@ public class SscsCaseTransformer implements CaseTransformer {
                     ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
             }
         }
-        if (excludeDates.size() == 0) {
+        if (excludeDates.isEmpty()) {
             String tellTribunalAboutDates = checkBooleanValue(pairs, errors, TELL_TRIBUNAL_ABOUT_DATES)
                 ? convertBooleanToYesNoString(getBoolean(pairs, errors, TELL_TRIBUNAL_ABOUT_DATES)) : null;
 
@@ -1052,8 +1036,7 @@ public class SscsCaseTransformer implements CaseTransformer {
             matchedByNinoCases = ccdService.findCaseBy("data.appeal.appellant.identity.nino", nino, token);
         }
 
-        sscsCaseData = addAssociatedCases(sscsCaseData, matchedByNinoCases);
-        return sscsCaseData;
+        return addAssociatedCases(sscsCaseData, matchedByNinoCases);
     }
 
     private Map<String, Object> addAssociatedCases(Map<String, Object> sscsCaseData,
@@ -1066,9 +1049,9 @@ public class SscsCaseTransformer implements CaseTransformer {
             associatedCases.add(caseLink);
 
             String caseId = null != sscsCaseDetails.getId() ? sscsCaseDetails.getId().toString() : "N/A";
-            log.info("Added associated case {}" + caseId);
+            log.info("Added associated case {}", caseId);
         }
-        if (associatedCases.size() > 0) {
+        if (!associatedCases.isEmpty()) {
             sscsCaseData.put("associatedCase", associatedCases);
             sscsCaseData.put("linkedCasesBoolean", "Yes");
         } else {
