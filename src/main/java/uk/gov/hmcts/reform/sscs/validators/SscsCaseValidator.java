@@ -159,6 +159,8 @@ public class SscsCaseValidator implements CaseValidator {
             isIbcOrSscs8
         );
 
+        checkAppealReasons(appeal);
+
         checkRepresentative(appeal, ocrCaseData, caseData, isIbcOrSscs8);
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation, formType);
 
@@ -261,6 +263,14 @@ public class SscsCaseValidator implements CaseValidator {
             }
         }
 
+    }
+
+    private void checkAppealReasons(Appeal appeal) {
+        AppealReasons appealReasons = appeal.getAppealReasons();
+        if (appealReasons == null || appealReasons.getReasons() == null || appealReasons.getReasons().isEmpty()) {
+            warnings.add(getMessageByCallbackType(callbackType, "", APPEAL_GROUNDS,
+                IS_EMPTY));
+        }
     }
 
     private void checkAppellantRole(Role role, boolean ignoreWarnings) {
@@ -639,9 +649,23 @@ public class SscsCaseValidator implements CaseValidator {
         return false;
     }
 
+    private Boolean isPortOfEntryValid(Address address) {
+        if (address != null && address.getPortOfEntry() != null) {
+            String portOfEntry = address.getPortOfEntry();
+            List<String> validPortCodes = Arrays.stream(UkPortOfEntry.values()).map((UkPortOfEntry::getLocationCode)).toList();
+            if (!validPortCodes.contains(portOfEntry)) {
+                errors.add(getMessageByCallbackType(callbackType, PERSON1_VALUE, ADDRESS_PORT_OF_ENTRY, "is not a valid port of entry code."));
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
         if (address != null && YesNo.NO.equals(address.getInMainlandUk())) {
-            return true;
+            return isPortOfEntryValid(address);
         }
         if (address != null && address.getPostcode() != null) {
             if (postcodeValidator.isValidPostcodeFormat(address.getPostcode())) {
@@ -809,7 +833,7 @@ public class SscsCaseValidator implements CaseValidator {
         String hearingType = appeal.getHearingType();
         FormType formType = (FormType) caseData.get("formType");
         log.info("Bulk-scan form type: {}", formType != null ? formType.toString() : null);
-        if ((FormType.SSCS1PEU.equals(formType) || FormType.SSCS2.equals(formType) || FormType.SSCS5.equals(formType))
+        if ((FormType.SSCS1PEU.equals(formType) || FormType.SSCS2.equals(formType) || FormType.SSCS5.equals(formType) || FormType.SSCS8.equals(formType))
             && hearingType != null && hearingType.equals(HEARING_TYPE_ORAL)
             && !isValidHearingSubType(appeal)) {
             warnings.add(
