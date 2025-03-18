@@ -122,8 +122,6 @@ public class SscsCaseTransformer implements CaseTransformer {
 
         ScannedData scannedData = sscsJsonExtractor.extractJson(exceptionRecord);
         String formType = getField(scannedData.getOcrCaseData(), FORM_TYPE);
-        String orgFormType = exceptionRecord.getFormType();
-        boolean formTypeUpdated = formType != null && !formType.equals(orgFormType);
 
         if (formType == null || notAValidFormType(formType)) {
             formType = exceptionRecord.getFormType();
@@ -144,7 +142,8 @@ public class SscsCaseTransformer implements CaseTransformer {
         boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null && exceptionRecord.getIgnoreWarnings();
 
         IdamTokens token = idamService.getIdamTokens();
-
+        String orgFormType = exceptionRecord.getFormType();
+        boolean formTypeUpdated = formType != null && !formType.equals(orgFormType);
         Map<String, Object> transformed = transformData(caseId, sscsJsonExtractor.extractJson(exceptionRecord), token, formType, errors, ignoreWarningsValue, formTypeUpdated, orgFormType);
 
         duplicateCaseCheck(caseId, transformed, token);

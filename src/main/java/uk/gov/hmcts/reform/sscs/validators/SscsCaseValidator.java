@@ -159,7 +159,9 @@ public class SscsCaseValidator implements CaseValidator {
             isIbcOrSscs8
         );
 
-        checkAppealReasons(appeal);
+        if (isIbcOrSscs8) {
+            checkAppealReasons(appeal);
+        }
 
         checkRepresentative(appeal, ocrCaseData, caseData, isIbcOrSscs8);
         checkMrnDetails(appeal, ocrCaseData, ignoreMrnValidation, formType);
@@ -262,7 +264,6 @@ public class SscsCaseValidator implements CaseValidator {
                 checkAppellantRole(appellant.getRole(), ignoreWarnings);
             }
         }
-
     }
 
     private void checkAppealReasons(Appeal appeal) {
@@ -652,11 +653,11 @@ public class SscsCaseValidator implements CaseValidator {
     private Boolean isPortOfEntryValid(Address address) {
         if (address != null && address.getPortOfEntry() != null) {
             // TODO get actual wording for warning message below
-            warnings.add(getMessageByCallbackType(callbackType, PERSON1_VALUE, ADDRESS_PORT_OF_ENTRY, "needs updating to its associated port of entry code. Please refer to guidance."));
+            warnings.add(PORT_OF_ENTRY_WARNING_MESSAGE);
             String portOfEntry = address.getPortOfEntry();
             List<String> validPortCodes = Arrays.stream(UkPortOfEntry.values()).map((UkPortOfEntry::getLocationCode)).toList();
             if (!validPortCodes.contains(portOfEntry)) {
-                errors.add(getMessageByCallbackType(callbackType, PERSON1_VALUE, ADDRESS_PORT_OF_ENTRY, "is not a valid port of entry code."));
+                errors.add(PORT_OF_ENTRY_INVALID_ERROR);
                 return false;
             } else {
                 return true;
@@ -666,7 +667,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private Boolean isAddressPostcodeValid(Address address, String personType, Appellant appellant) {
-        if (address != null && YesNo.NO.equals(address.getInMainlandUk())) {
+        if (address != null && YesNo.NO.equals(address.getInMainlandUk()) && personType.equals(PERSON1_VALUE)) {
             return isPortOfEntryValid(address);
         }
         if (address != null && address.getPostcode() != null) {

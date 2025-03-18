@@ -437,7 +437,13 @@ public class SscsCaseValidatorTest {
         given(scannedData.getOcrCaseData()).willReturn(ocrCaseDataEmptyOffice);
         Map<String, Object> pairs = new HashMap<>();
         BenefitType benefitType = BenefitType.builder().code(INFECTED_BLOOD_COMPENSATION.getShortName()).build();
-        pairs.put("appeal", Appeal.builder().hearingType(HEARING_TYPE_ORAL).benefitType(benefitType).build());
+        AppealReasons appealReasons = AppealReasons.builder().reasons(List.of(AppealReason.builder().value(AppealReasonDetails.builder().reason("some reason").description("some description").build()).build())).build();
+        pairs.put("appeal", Appeal.builder()
+            .hearingType(HEARING_TYPE_ORAL)
+            .hearingSubtype(HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build())
+            .benefitType(benefitType)
+            .appealReasons(appealReasons).build());
+
         pairs.put("bulkScanCaseReference", 123);
         pairs.put("formType", FormType.SSCS8);
 
@@ -559,10 +565,12 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenIbcCaseAppellantWithNoAddress_thenAddWarnings() {
         Map<String, Object> pairs = new HashMap<>();
+        AppealReasons appealReasons = AppealReasons.builder().reasons(List.of(AppealReason.builder().value(AppealReasonDetails.builder().reason("some reason").description("some description").build()).build())).build();
         pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(
                     Name.builder().firstName("Harry").lastName("Kane").build())
                 .identity(Identity.builder().ibcaReference("A12A21").build())
                 .ibcRole("some-role").build())
+            .appealReasons(appealReasons)
             .benefitType(BenefitType.builder().code(INFECTED_BLOOD_COMPENSATION.getShortName()).build())
             .mrnDetails(defaultMrnDetails)
             .hearingType(HEARING_TYPE_ORAL)
@@ -583,11 +591,13 @@ public class SscsCaseValidatorTest {
     @Test
     public void givenIbcCaseAppellantWithPortOfEntry_thenNoWarningsForCountyPostcode() {
         Map<String, Object> pairs = new HashMap<>();
+        AppealReasons appealReasons = AppealReasons.builder().reasons(List.of(AppealReason.builder().value(AppealReasonDetails.builder().reason("some reason").description("some description").build()).build())).build();
         pairs.put("appeal", Appeal.builder().appellant(Appellant.builder().name(
                     Name.builder().firstName("Harry").lastName("Kane").build())
                 .identity(Identity.builder().ibcaReference("A12A21").build())
-                .ibcRole("some-role").address(Address.builder().portOfEntry("GBSTGTY00")
+                .ibcRole("some-role").address(Address.builder().portOfEntry(PORT_OF_NORWICH_A_FINE_CITY)
                     .build()).build())
+            .appealReasons(appealReasons)
             .benefitType(BenefitType.builder().code(INFECTED_BLOOD_COMPENSATION.getShortName()).build())
             .mrnDetails(defaultMrnDetails)
             .hearingType(HEARING_TYPE_ORAL)
@@ -600,7 +610,8 @@ public class SscsCaseValidatorTest {
         assertThat(response.getWarnings())
             .containsOnly(
                 "person1_address_line1 is empty",
-                "person1_address_line3 is empty");
+                "person1_address_line3 is empty",
+                PORT_OF_ENTRY_WARNING_MESSAGE);
     }
 
     @Test
@@ -855,7 +866,7 @@ public class SscsCaseValidatorTest {
     }
 
     @Test
-    public void givenAnAppellantDoesNotContainAPostcodeButNotInUk_thenLetItGoElsa() {
+    public void givenAnIbcCase_warnsIfNoAppealReasons() {
         defaultMrnDetails.setDwpIssuingOffice("IBCA");
         Appellant appellant = buildAppellant(false);
         appellant.getAddress().setPostcode(null);
@@ -864,11 +875,65 @@ public class SscsCaseValidatorTest {
         appellant.getIdentity().setIbcaReference("A12A12");
         appellant.setIbcRole("some-role");
 
-        var data = buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8);
+        var data = buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8, null);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
+
+        assertEquals(2, response.getWarnings().size());
+        assertTrue(response.getWarnings().contains(PORT_OF_ENTRY_WARNING_MESSAGE));
+        assertTrue(response.getWarnings().contains(APPEAL_GROUNDS + " " + IS_EMPTY));
+        verify(regionalProcessingCenterService).getByPostcode(PORT_OF_NORWICH_A_FINE_CITY, true);
+    }
+
+    @Test
+    public void givenAnIbcCase_doesNotWarnIfAppealReasons() {
+        defaultMrnDetails.setDwpIssuingOffice("IBCA");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setPostcode(null);
+        appellant.getAddress().setInMainlandUk(YesNo.NO);
+        appellant.getAddress().setPortOfEntry(PORT_OF_NORWICH_A_FINE_CITY);
+        appellant.getIdentity().setIbcaReference("A12A12");
+        appellant.setIbcRole("some-role");
+        AppealReasons appealReasons = AppealReasons.builder().reasons(List.of(AppealReason.builder().value(AppealReasonDetails.builder().reason("some reason").description("some description").build()).build())).build();
+        var data = buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8, appealReasons);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
+
+        assertEquals(1, response.getWarnings().size());
+        assertTrue(response.getWarnings().contains(PORT_OF_ENTRY_WARNING_MESSAGE));
+        verify(regionalProcessingCenterService).getByPostcode(PORT_OF_NORWICH_A_FINE_CITY, true);
+    }
+
+    @Test
+    public void givenAnIbcCase_doesNotWarnPortOfEntryIfInUk() {
+        defaultMrnDetails.setDwpIssuingOffice("IBCA");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setPostcode(VALID_POSTCODE);
+        appellant.getAddress().setInMainlandUk(YesNo.YES);
+        appellant.getIdentity().setIbcaReference("A12A12");
+        appellant.setIbcRole("some-role");
+        AppealReasons appealReasons = AppealReasons.builder().reasons(List.of(AppealReason.builder().value(AppealReasonDetails.builder().reason("some reason").description("some description").build()).build())).build();
+        var data = buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8, appealReasons);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
 
         assertEquals(0, response.getWarnings().size());
-        verify(regionalProcessingCenterService).getByPostcode(PORT_OF_NORWICH_A_FINE_CITY, true);
+        verify(regionalProcessingCenterService).getByPostcode(VALID_POSTCODE, true);
+    }
+
+    @Test
+    public void givenAnIbcCase_errorsIfInvalidPortOfEntry() {
+        defaultMrnDetails.setDwpIssuingOffice("IBCA");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setPostcode(null);
+        appellant.getAddress().setInMainlandUk(YesNo.NO);
+        appellant.getAddress().setPortOfEntry("some-invalid-port");
+        appellant.getIdentity().setIbcaReference("A12A12");
+        appellant.setIbcRole("some-role");
+        AppealReasons appealReasons = AppealReasons.builder().reasons(List.of(AppealReason.builder().value(AppealReasonDetails.builder().reason("some reason").description("some description").build()).build())).build();
+        var data = buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8, appealReasons);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
+
+        assertEquals(1, response.getWarnings().size());
+        assertTrue(response.getWarnings().contains(PORT_OF_ENTRY_WARNING_MESSAGE));
+        assertTrue(response.getErrors().contains(PORT_OF_ENTRY_INVALID_ERROR));
     }
 
     @Test
@@ -1478,8 +1543,9 @@ public class SscsCaseValidatorTest {
         ocrCaseData.put(IBC_ROLE_FOR_SELF, true);
         given(postcodeValidator.isValidPostcodeFormat(anyString())).willReturn(true);
         given(postcodeValidator.isValid(anyString())).willReturn(true);
+        AppealReasons appealReasons = AppealReasons.builder().reasons(List.of(AppealReason.builder().value(AppealReasonDetails.builder().reason("some reason").description("some description").build()).build())).build();
         given(regionalProcessingCenterService.getByPostcode(anyString(), eq(true))).willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
-        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitType(INFECTED_BLOOD_COMPENSATION.getShortName(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS8), false);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), buildAppellantWithPostcode("W1 1LA"), true, FormType.SSCS8, appealReasons), false);
 
         assertThat(response.getWarnings().size()).isEqualTo(0);
         assertThat(response.getErrors().size()).isEqualTo(0);
@@ -2308,6 +2374,15 @@ public class SscsCaseValidatorTest {
             exceptionCaseType, HEARING_TYPE_PAPER, null, formType);
     }
 
+    private Map<String, Object> buildMinimumAppealDataWithBenefitTypeWithAppealReasons(String benefitCode, Appellant appellant,
+                                                                                          Boolean exceptionCaseType,
+                                                                                          FormType formType,
+                                                                                          AppealReasons appealReasons) {
+        return buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(defaultMrnDetails, benefitCode, appellant,
+            buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL,
+            HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType, appealReasons);
+    }
+
     private Map<String, Object> buildMinimumAppealDataWithBenefitType(String benefitCode, Appellant appellant,
                                                                       Boolean exceptionCaseType,
                                                                       FormType formType) {
@@ -2357,7 +2432,7 @@ public class SscsCaseValidatorTest {
                                                                                  FormType formType) {
         return buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(defaultMrnDetails, benefitCode, appellant,
             buildMinimumRep(), null, exceptionCaseType, HEARING_TYPE_ORAL,
-            HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType);
+            HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(), formType, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrnDateAndBenefitType(MrnDetails mrn, String benefitCode,
@@ -2370,7 +2445,7 @@ public class SscsCaseValidatorTest {
                                                                                 FormType formType) {
         return buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(mrn, benefitCode, appellant, representative,
             excludeDates,
-            exceptionCaseType, hearingType, hearingSubtype, formType);
+            exceptionCaseType, hearingType, hearingSubtype, formType, null);
     }
 
     private Map<String, Object> buildMinimumAppealDataWithMrnDateFormTypeAndBenefitType(MrnDetails mrn,
@@ -2381,13 +2456,14 @@ public class SscsCaseValidatorTest {
                                                                                         Boolean exceptionCaseType,
                                                                                         String hearingType,
                                                                                         HearingSubtype hearingSubtype,
-                                                                                        FormType formType) {
+                                                                                        FormType formType,
+                                                                                        AppealReasons appealReasons) {
         Map<String, Object> dataMap = new HashMap<>();
         List<ExcludeDate> excludedDates = new ArrayList<>();
         excludedDates.add(ExcludeDate.builder().value(DateRange.builder().start(excludeDates).build()).build());
-
         dataMap.put("formType", formType);
         dataMap.put("appeal", Appeal.builder()
+            .appealReasons(appealReasons)
             .mrnDetails(
                 MrnDetails.builder().mrnDate(mrn.getMrnDate()).dwpIssuingOffice(mrn.getDwpIssuingOffice()).build())
             .benefitType(BenefitType.builder().code(benefitCode).build())
@@ -2444,7 +2520,8 @@ public class SscsCaseValidatorTest {
             true,
             HEARING_TYPE_ORAL,
             HearingSubtype.builder().wantsHearingTypeFaceToFace("Yes").build(),
-            FormType.SSCS2);
+            FormType.SSCS2,
+            null);
         datamap.put("childMaintenanceNumber", childMaintenanceNumber);
         datamap.put("otherParties", Collections.singletonList(CcdValue.<OtherParty>builder().value(
                 OtherParty.builder()

@@ -727,7 +727,6 @@ public class SscsCaseTransformerTest {
         pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
         pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
         pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
-        pairs.put("person1_Country", APPELLANT_ADDRESS_COUNTRY);
         pairs.put("person1_postcode", APPELLANT_POSTCODE);
         pairs.put("person1_phone", APPELLANT_PHONE);
         pairs.put("person1_mobile", APPELLANT_MOBILE);
@@ -747,13 +746,13 @@ public class SscsCaseTransformerTest {
         assertEquals(APPELLANT_IBCA_REFERENCE, transformedAppeal.getAppellant().getIdentity().getIbcaReference());
         Address address = transformedAppeal.getAppellant().getAddress();
         assertNotNull(address);
-        Address expectedAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).county(APPELLANT_ADDRESS_LINE4).postcode(APPELLANT_POSTCODE).inMainlandUk(YesNo.YES).build();
+        Address expectedAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).postcode(APPELLANT_POSTCODE).inMainlandUk(YesNo.YES).build();
         assertEquals(expectedAddress, address);
         assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
-    public void givenPortOfEntry_thenBuildAnAppealWithAddressWithCountryPortOfEntryWithoutCounty() {
+    public void givenPortOfEntry_thenBuildAnAppealWithAddressWithCountryPortOfEntry() {
         pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
         pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
         pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
