@@ -254,7 +254,7 @@ dependencies {
   }
 
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.1'
-  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '3.4.1'
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '4.1.0'
   testImplementation group: 'org.pitest', name: 'pitest', version: '1.17.0'
   testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: pitest.pitestVersion.get()
   testImplementation group: 'org.codehaus.sonar-plugins', name: 'sonar-pitest-plugin', version: '0.5'
