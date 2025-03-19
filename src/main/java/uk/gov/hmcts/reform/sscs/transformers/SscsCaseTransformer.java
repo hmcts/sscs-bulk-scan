@@ -717,10 +717,11 @@ public class SscsCaseTransformer implements CaseTransformer {
     private Address buildPersonAddress(Map<String, Object> pairs, String personType, boolean isSscs8) {
         if (isSscs8) {
             boolean hasPortOfEntry = findBooleanExists(getField(pairs, personType + ADDRESS_PORT_OF_ENTRY));
+            boolean hasLine3 = findBooleanExists(getField(pairs, personType + ADDRESS_LINE3));
             return Address.builder()
                 .line1(getField(pairs, personType + ADDRESS_LINE1))
-                .line2(getField(pairs, personType + ADDRESS_LINE2))
-                .town(getField(pairs, personType + ADDRESS_LINE3))
+                .line2(hasLine3 ? getField(pairs, personType + ADDRESS_LINE2) : null)
+                .town(getField(pairs, personType + (hasLine3 ? ADDRESS_LINE3 : ADDRESS_LINE2)))
                 .country(getField(pairs, personType + ADDRESS_COUNTRY))
                 .portOfEntry(hasPortOfEntry ? getField(pairs, personType + ADDRESS_PORT_OF_ENTRY) : null)
                 .postcode(getField(pairs, personType + ADDRESS_POSTCODE))

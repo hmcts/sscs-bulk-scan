@@ -88,8 +88,7 @@ public final class SscsConstants {
     public static final String IS_ANOTHER_PARTY = "is_another_party";
     public static final String OTHER_PARTY_DETAILS = "other_party_details";
     public static final String FORM_TYPE = "form_type";
-    public static final String PORT_OF_ENTRY_WARNING_MESSAGE = "person1_port_of_entry needs updating to its associated port of entry code. Please refer to guidance.";
-    public static final String PORT_OF_ENTRY_INVALID_ERROR = "person1_port_of_entry is not a valid port of entry code.";
+    public static final String PORT_OF_ENTRY_INVALID_ERROR = "person1_port_of_entry is not a valid port of entry code. Please refer to guidance to update it to its associated port of entry code. Please refer to guidance.";
 
     public static final String INFECTED_BLOOD_COMPENSATION = "infectedBloodCompensation";
 }

@@ -537,19 +537,17 @@ public class SscsCaseValidator implements CaseValidator {
                 getWarningMessageName(personType, appellant) + ADDRESS_LINE1, HAS_INVALID_ADDRESS));
         }
 
-        String townLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
-        if (!doesAddressTownExist(address)) {
+        if (!isIbcOrSscs8) {
+            String townLine = (isAddressLine4Present) ? ADDRESS_LINE3 : ADDRESS_LINE2;
+            if (!doesAddressTownExist(address)) {
 
-            warnings.add(getMessageByCallbackType(callbackType, personType,
-                getWarningMessageName(personType, appellant) + townLine, IS_EMPTY));
-        } else if (!address.getTown().matches(ADDRESS_REGEX)) {
-            warnings.add(getMessageByCallbackType(callbackType, personType,
-                getWarningMessageName(personType, appellant) + townLine, HAS_INVALID_ADDRESS));
-        }
-
-        // Removed from IBC as it's an optional field for non mainland UK addresses
-        if (!isIbcOrSscs8 || isInMainlandUk(address)) {
-            // Once form has been updated to account for this, this can be re-enabled
+                warnings.add(getMessageByCallbackType(callbackType, personType,
+                    getWarningMessageName(personType, appellant) + townLine, IS_EMPTY));
+            } else if (!address.getTown().matches(ADDRESS_REGEX)) {
+                warnings.add(getMessageByCallbackType(callbackType, personType,
+                    getWarningMessageName(personType, appellant) + townLine, HAS_INVALID_ADDRESS));
+            }
+            // Removed from IBC as it's not on the SSCS8 form
             String countyLine = (isAddressLine4Present) ? ADDRESS_LINE4 : "_ADDRESS_LINE3_COUNTY";
             if (!doesAddressCountyExist(address)) {
                 warnings.add(getMessageByCallbackType(callbackType, personType,
@@ -557,6 +555,16 @@ public class SscsCaseValidator implements CaseValidator {
             } else if (!address.getCounty().matches(COUNTY_REGEX)) {
                 warnings.add(getMessageByCallbackType(callbackType, personType,
                     getWarningMessageName(personType, appellant) + countyLine, HAS_INVALID_ADDRESS));
+            }
+        } else {
+            boolean hasLine3 = findBooleanExists(getField(ocrCaseData, personType + ADDRESS_LINE3));
+            String townLine = (hasLine3) ? ADDRESS_LINE3 : ADDRESS_LINE2;
+            if (!doesAddressTownExist(address)) {
+                warnings.add(getMessageByCallbackType(callbackType, personType,
+                    getWarningMessageName(personType, appellant) + townLine, IS_EMPTY));
+            } else if (!address.getTown().matches(ADDRESS_REGEX)) {
+                warnings.add(getMessageByCallbackType(callbackType, personType,
+                    getWarningMessageName(personType, appellant) + townLine, HAS_INVALID_ADDRESS));
             }
         }
 
@@ -653,7 +661,6 @@ public class SscsCaseValidator implements CaseValidator {
     private Boolean isPortOfEntryValid(Address address) {
         if (address != null && address.getPortOfEntry() != null) {
             // TODO get actual wording for warning message below
-            warnings.add(PORT_OF_ENTRY_WARNING_MESSAGE);
             String portOfEntry = address.getPortOfEntry();
             List<String> validPortCodes = Arrays.stream(UkPortOfEntry.values()).map((UkPortOfEntry::getLocationCode)).toList();
             if (!validPortCodes.contains(portOfEntry)) {

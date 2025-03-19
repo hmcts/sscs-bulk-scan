@@ -583,8 +583,7 @@ public class SscsCaseValidatorTest {
         assertThat(response.getWarnings())
             .containsOnly(
                 "person1_address_line1 is empty",
-                "person1_address_line3 is empty",
-                "person1_address_line4 is empty",
+                "person1_address_line2 is empty",
                 "person1_postcode is empty");
     }
 
@@ -610,8 +609,7 @@ public class SscsCaseValidatorTest {
         assertThat(response.getWarnings())
             .containsOnly(
                 "person1_address_line1 is empty",
-                "person1_address_line3 is empty",
-                PORT_OF_ENTRY_WARNING_MESSAGE);
+                "person1_address_line2 is empty");
     }
 
     @Test
@@ -878,8 +876,7 @@ public class SscsCaseValidatorTest {
         var data = buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8, null);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
 
-        assertEquals(2, response.getWarnings().size());
-        assertTrue(response.getWarnings().contains(PORT_OF_ENTRY_WARNING_MESSAGE));
+        assertEquals(1, response.getWarnings().size());
         assertTrue(response.getWarnings().contains(APPEAL_GROUNDS + " " + IS_EMPTY));
         verify(regionalProcessingCenterService).getByPostcode(PORT_OF_NORWICH_A_FINE_CITY, true);
     }
@@ -897,8 +894,7 @@ public class SscsCaseValidatorTest {
         var data = buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8, appealReasons);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
 
-        assertEquals(1, response.getWarnings().size());
-        assertTrue(response.getWarnings().contains(PORT_OF_ENTRY_WARNING_MESSAGE));
+        assertEquals(0, response.getWarnings().size());
         verify(regionalProcessingCenterService).getByPostcode(PORT_OF_NORWICH_A_FINE_CITY, true);
     }
 
@@ -931,8 +927,7 @@ public class SscsCaseValidatorTest {
         var data = buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8, appealReasons);
         CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
 
-        assertEquals(1, response.getWarnings().size());
-        assertTrue(response.getWarnings().contains(PORT_OF_ENTRY_WARNING_MESSAGE));
+        assertEquals(0, response.getWarnings().size());
         assertTrue(response.getErrors().contains(PORT_OF_ENTRY_INVALID_ERROR));
     }
 
