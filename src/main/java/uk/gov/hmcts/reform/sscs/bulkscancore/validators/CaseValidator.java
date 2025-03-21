@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.sscs.ccd.domain.EventType;
 public interface CaseValidator {
     CaseResponse  validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation);
 
-    CaseResponse validateExceptionRecord(CaseResponse transformResponse, ExceptionRecord exceptionRecord, Map<String, Object> caseData, boolean combineWarnings);
-
     CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation, EventType eventType);
+
+    CaseResponse validateExceptionRecord(CaseResponse transformResponse, ExceptionRecord exceptionRecord, Map<String, Object> caseData, boolean combineWarnings);
 }
