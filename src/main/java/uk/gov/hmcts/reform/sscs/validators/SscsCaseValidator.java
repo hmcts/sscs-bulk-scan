@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.validators;
 
+import static uk.gov.hmcts.reform.sscs.ccd.domain.EventType.VALID_APPEAL;
 import static uk.gov.hmcts.reform.sscs.constants.SscsConstants.*;
 import static uk.gov.hmcts.reform.sscs.constants.WarningMessage.getMessageByCallbackType;
 import static uk.gov.hmcts.reform.sscs.domain.CallbackType.EXCEPTION_CALLBACK;
@@ -107,7 +108,7 @@ public class SscsCaseValidator implements CaseValidator {
         ScannedData ocrCaseData = sscsJsonExtractor.extractJson(exceptionRecord);
 
         boolean ignoreWarningsValue = exceptionRecord.getIgnoreWarnings() != null ? exceptionRecord.getIgnoreWarnings() : false;
-        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, false, ignoreWarningsValue, true);
+        validateAppeal(ocrCaseData.getOcrCaseData(), caseData, false, ignoreWarningsValue, true, null);
 
         if (combineWarnings) {
             warnings = combineWarnings();
@@ -122,14 +123,19 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     @Override
-    public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation, boolean validateIbcRoleField) {
+    public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation) {
+        return validateValidationRecord(caseData, ignoreMrnValidation, null);
+    }
+
+    @Override
+    public CaseResponse validateValidationRecord(Map<String, Object> caseData, boolean ignoreMrnValidation, EventType eventType) {
         warnings = new ArrayList<>();
         errors = new ArrayList<>();
         callbackType = VALIDATION_CALLBACK;
 
         Map<String, Object> ocrCaseData = new HashMap<>();
 
-        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation, validateIbcRoleField, false, false);
+        validateAppeal(ocrCaseData, caseData, ignoreMrnValidation, false, false, eventType);
 
         return CaseResponse.builder()
             .errors(errors)
@@ -139,7 +145,7 @@ public class SscsCaseValidator implements CaseValidator {
     }
 
     private List<String> validateAppeal(Map<String, Object> ocrCaseData, Map<String, Object> caseData,
-                                        boolean ignoreMrnValidation, boolean validateIbcRoleField, boolean ignoreWarnings, boolean ignorePartyRoleValidation) {
+                                        boolean ignoreMrnValidation, boolean ignoreWarnings, boolean ignorePartyRoleValidation, EventType eventType) {
 
         FormType formType = (FormType) caseData.get("formType");
         Appeal appeal = (Appeal) caseData.get("appeal");
@@ -147,6 +153,8 @@ public class SscsCaseValidator implements CaseValidator {
 
         final boolean isIbcOrSscs8 = isIbcOrSscs8(formType,
             Optional.ofNullable(appeal.getBenefitType()).orElse(BenefitType.builder().build()).getCode());
+
+        boolean validateIbcRoleField = FormType.SSCS8.equals(formType) && VALID_APPEAL.equals(eventType);
         checkAppellant(
             appeal,
             ocrCaseData,
@@ -158,8 +166,8 @@ public class SscsCaseValidator implements CaseValidator {
             ignoreWarnings,
             isIbcOrSscs8
         );
-
-        if (isIbcOrSscs8) {
+        boolean isFromValidateAppealEvent = VALID_APPEAL.equals(eventType);
+        if (isIbcOrSscs8 && !isFromValidateAppealEvent) {
             checkAppealReasons(appeal);
         }
 

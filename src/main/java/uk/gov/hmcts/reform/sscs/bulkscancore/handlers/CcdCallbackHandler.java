@@ -166,17 +166,15 @@ public class CcdCallbackHandler {
         );
 
         boolean ignoreMrnValidation = false;
-        boolean validateIbcRoleField = false;
-        if (callback.getEvent() != null && (EventType.DIRECTION_ISSUED.equals(callback.getEvent())
-            || EventType.DIRECTION_ISSUED_WELSH.equals(callback.getEvent()))
+        EventType eventType = callback.getEvent();
+        if ((EventType.DIRECTION_ISSUED.equals(eventType)
+            || EventType.DIRECTION_ISSUED_WELSH.equals(eventType))
             && callback.getCaseDetails().getCaseData().getDirectionTypeDl() != null) {
             ignoreMrnValidation = StringUtils.equals(DirectionType.APPEAL_TO_PROCEED.toString(),
                 callback.getCaseDetails().getCaseData().getDirectionTypeDl().getValue().getCode());
         }
-        if (callback.getEvent() != null && EventType.VALID_APPEAL.equals(callback.getEvent()) && FormType.SSCS8.equals(formType)) {
-            validateIbcRoleField = true;
-        }
-        CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData, ignoreMrnValidation, validateIbcRoleField);
+
+        CaseResponse caseValidationResponse = caseValidator.validateValidationRecord(appealData, ignoreMrnValidation, eventType);
 
         PreSubmitCallbackResponse<SscsCaseData> validationErrorResponse = convertWarningsToErrors(callback.getCaseDetails().getCaseData(), caseValidationResponse);
 
