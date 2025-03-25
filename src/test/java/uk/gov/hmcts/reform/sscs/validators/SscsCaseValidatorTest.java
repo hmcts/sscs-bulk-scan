@@ -88,6 +88,7 @@ public class SscsCaseValidatorTest {
         ocrCaseData.put("person2_address_line4", "county");
         ocrCaseData.put("representative_address_line4", "county");
         ocrCaseData.put("office", "2");
+        ocrCaseData.put("appeal_grounds", "True");
 
         given(regionalProcessingCenterService.getByPostcode(eq(VALID_POSTCODE), anyBoolean()))
             .willReturn(RegionalProcessingCenter.builder().address1("Address 1").name("Liverpool").build());
@@ -459,7 +460,8 @@ public class SscsCaseValidatorTest {
                 "person1_address_line4 is empty",
                 "person1_postcode is empty",
                 "person1_ibca_reference is empty",
-                "mrn_date is empty");
+                "mrn_date is empty",
+                "appeal_grounds is missing");
     }
 
     @Test
@@ -878,6 +880,25 @@ public class SscsCaseValidatorTest {
 
         assertEquals(1, response.getWarnings().size());
         assertTrue(response.getWarnings().contains(APPEAL_GROUNDS + " " + IS_EMPTY));
+        verify(regionalProcessingCenterService).getByPostcode(PORT_OF_NORWICH_A_FINE_CITY, true);
+    }
+
+    @Test
+    public void givenAnIbcCase_warnsIfAppealReasonsOcrIsFalse() {
+        defaultMrnDetails.setDwpIssuingOffice("IBCA");
+        Appellant appellant = buildAppellant(false);
+        appellant.getAddress().setPostcode(null);
+        appellant.getAddress().setInMainlandUk(YesNo.NO);
+        appellant.getAddress().setPortOfEntry(PORT_OF_NORWICH_A_FINE_CITY);
+        appellant.getIdentity().setIbcaReference("A12A12");
+        appellant.setIbcRole("some-role");
+        ocrCaseData.put(APPEAL_GROUNDS, "False");
+        AppealReasons appealReasons = AppealReasons.builder().reasons(List.of(AppealReason.builder().value(AppealReasonDetails.builder().reason("some reason").description("some description").build()).build())).build();
+        var data = buildMinimumAppealDataWithBenefitTypeWithAppealReasons(INFECTED_BLOOD_COMPENSATION.getShortName(), appellant, true, FormType.SSCS8, appealReasons);
+        CaseResponse response = validator.validateExceptionRecord(transformResponse, exceptionRecord, data, false);
+
+        assertEquals(1, response.getWarnings().size());
+        assertTrue(response.getWarnings().contains(APPEAL_GROUNDS + " " + IS_MISSING));
         verify(regionalProcessingCenterService).getByPostcode(PORT_OF_NORWICH_A_FINE_CITY, true);
     }
 

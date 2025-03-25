@@ -168,7 +168,7 @@ public class SscsCaseValidator implements CaseValidator {
         );
         boolean isFromValidateAppealEvent = VALID_APPEAL.equals(eventType);
         if (isIbcOrSscs8 && !isFromValidateAppealEvent) {
-            checkAppealReasons(appeal);
+            checkAppealReasons(appeal, ocrCaseData);
         }
 
         checkRepresentative(appeal, ocrCaseData, caseData, isIbcOrSscs8);
@@ -274,11 +274,18 @@ public class SscsCaseValidator implements CaseValidator {
         }
     }
 
-    private void checkAppealReasons(Appeal appeal) {
+    private void checkAppealReasons(Appeal appeal, Map<String, Object> ocrCaseData) {
         AppealReasons appealReasons = appeal.getAppealReasons();
         if (appealReasons == null || appealReasons.getReasons() == null || appealReasons.getReasons().isEmpty()) {
             warnings.add(getMessageByCallbackType(callbackType, "", APPEAL_GROUNDS,
                 IS_EMPTY));
+        } else if (!ocrCaseData.isEmpty()) {
+            boolean appealReasonBool = getBoolean(ocrCaseData, Collections.emptySet(), APPEAL_GROUNDS)
+                || getBoolean(ocrCaseData, Collections.emptySet(), APPEAL_GROUNDS_2);
+            if (!appealReasonBool) {
+                warnings.add(getMessageByCallbackType(callbackType, "", APPEAL_GROUNDS,
+                    IS_MISSING));
+            }
         }
     }
 

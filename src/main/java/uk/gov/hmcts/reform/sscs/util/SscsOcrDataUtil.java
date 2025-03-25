@@ -111,13 +111,13 @@ public final class SscsOcrDataUtil {
         return false;
     }
 
-    public static boolean extractBooleanValueWarning(Map<String, Object> pairs, List<String> errors, String value) {
+    public static boolean extractBooleanValueWarning(Map<String, Object> pairs, List<String> warnings, String value) {
         if (pairs.get(value) != null) {
             Boolean booleanValue = BooleanUtils.toBooleanObject(pairs.get(value).toString());
             if (booleanValue != null) {
                 return booleanValue;
             } else {
-                errors.add(value + INVALID_YES_NO_ERROR_MESSAGE);
+                warnings.add(value + INVALID_YES_NO_ERROR_MESSAGE);
             }
         }
         return false;
