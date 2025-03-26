@@ -304,7 +304,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), anyBoolean(), any())).thenReturn(caseValidationResponse);
         when(appealPostcodeHelper.resolvePostCodeOrPort(appeal.getAppellant())).thenReturn("CV35 2TD");
 
         when(caseManagementLocationService.retrieveCaseManagementLocation(PROCESSING_VENUE, rpc)).thenReturn(
@@ -356,7 +356,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validateValidationRecord(any(), anyBoolean())).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), anyBoolean(), any())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -403,7 +403,7 @@ public class CcdCallbackHandlerTest {
 
         caseDetails.getCaseData().setDirectionTypeDl(appealToProccedDynamicList);
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validateValidationRecord(any(), eq(true))).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), eq(true), any())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DIRECTION_ISSUED);
 
@@ -450,7 +450,7 @@ public class CcdCallbackHandlerTest {
 
         caseDetails.getCaseData().setDirectionTypeDl(appealToProccedDynamicList);
         CaseResponse caseValidationResponse = CaseResponse.builder().build();
-        when(caseValidator.validateValidationRecord(any(), eq(true))).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), eq(true), any())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData(), EventType.DIRECTION_ISSUED_WELSH);
 
@@ -495,7 +495,7 @@ public class CcdCallbackHandlerTest {
             .build();
 
         CaseResponse caseValidationResponse = CaseResponse.builder().warnings(Lists.list("Mrn date is empty")).build();
-        when(caseValidator.validateValidationRecord(any(), eq(false))).thenReturn(caseValidationResponse);
+        when(caseValidator.validateValidationRecord(any(), eq(false), any())).thenReturn(caseValidationResponse);
 
         PreSubmitCallbackResponse<SscsCaseData> ccdCallbackResponse = invokeValidationCallbackHandler(caseDetails.getCaseData());
 
@@ -531,7 +531,7 @@ public class CcdCallbackHandlerTest {
             .caseId("123")
             .build();
 
-        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean(), any()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("NI Number is invalid"))
                 .build());
@@ -554,7 +554,7 @@ public class CcdCallbackHandlerTest {
             .caseId("123")
             .build();
 
-        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean(), any()))
             .thenReturn(CaseResponse.builder()
                 .warnings(ImmutableList.of("Postcode is invalid"))
                 .build());
@@ -578,7 +578,7 @@ public class CcdCallbackHandlerTest {
             .caseId("123")
             .build();
 
-        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean(), any()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Benefit type is invalid"))
                 .build());
@@ -599,7 +599,7 @@ public class CcdCallbackHandlerTest {
             .caseId("123")
             .build();
 
-        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean(), any()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Benefit type is invalid"))
                 .build());
@@ -619,7 +619,7 @@ public class CcdCallbackHandlerTest {
             .caseId("123")
             .build();
 
-        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean(), any()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Benefit type is invalid"))
                 .build());
@@ -639,7 +639,7 @@ public class CcdCallbackHandlerTest {
             .caseId("123")
             .build();
 
-        when(caseValidator.validateValidationRecord(any(), anyBoolean()))
+        when(caseValidator.validateValidationRecord(any(), anyBoolean(), any()))
             .thenReturn(CaseResponse.builder()
                 .errors(ImmutableList.of("Benefit type is invalid"))
                 .build());

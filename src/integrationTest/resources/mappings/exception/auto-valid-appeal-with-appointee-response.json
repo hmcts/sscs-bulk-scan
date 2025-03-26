@@ -158,7 +158,6 @@
           }
         }
       ],
-
       "linkedCasesBoolean": "No",
       "caseCreated": "2018-01-11",
       "region": "BRADFORD",
@@ -173,7 +172,7 @@
         "postcode": "BD3 7BH",
         "city": "BRADFORD",
         "email": "SSCS_Bradford@justice.gov.uk",
-        "hearingRoute":  "gaps",
+        "hearingRoute": "gaps",
         "epimsId": "698118"
       },
       "caseManagementLocation": {
@@ -187,7 +186,7 @@
   },
   "warnings": [],
   "supplementary_data": {
-    "$set" : {
+    "$set": {
       "HMCTSServiceId": "BBA3"
     }
   }

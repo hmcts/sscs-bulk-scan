@@ -92,7 +92,7 @@ public class SscsCaseTransformerTest {
 
     private final List<OcrDataField> ocrList = new ArrayList<>();
 
-    private final Map<String, Object> pairs = new HashMap<>();
+    private Map<String, Object> pairs;
 
     private ExceptionRecord exceptionRecord;
 
@@ -106,7 +106,7 @@ public class SscsCaseTransformerTest {
     @Before
     public void setup() {
         openMocks(this);
-
+        pairs = new HashMap<>();
         DwpAddressLookupService dwpAddressLookupService = new DwpAddressLookupService();
 
         formTypeValidator2 = new FormTypeValidator(sscsJsonExtractor);
@@ -484,6 +484,7 @@ public class SscsCaseTransformerTest {
             .town("town")
             .county("county")
             .postcode(APPELLANT_POSTCODE)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.put(person + "_address_line1", expectedAddress.getLine1());
@@ -508,6 +509,7 @@ public class SscsCaseTransformerTest {
             .town("town")
             .county(".")
             .postcode(APPELLANT_POSTCODE)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.remove(person + "_address_line4");
@@ -532,6 +534,7 @@ public class SscsCaseTransformerTest {
             .town("town")
             .county(".")
             .postcode(APPELLANT_POSTCODE)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.remove(person + "_address_line4");
@@ -556,6 +559,7 @@ public class SscsCaseTransformerTest {
             .town(null)
             .county(null)
             .postcode(APPELLANT_POSTCODE)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.remove(person + "_address_line4");
@@ -581,6 +585,7 @@ public class SscsCaseTransformerTest {
             .town(null)
             .county("county")
             .postcode(APPELLANT_POSTCODE)
+
             .build();
         for (String person : Arrays.asList("person1", personType)) {
             pairs.put(person + "_address_line1", expectedAddress.getLine1());
@@ -710,6 +715,100 @@ public class SscsCaseTransformerTest {
         assertEquals(CASE_CODE, result.getTransformedCase().get("caseCode"));
         assertEquals(DWP_REGIONAL_CENTRE, result.getTransformedCase().get("dwpRegionalCentre"));
 
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenSscs8IbcInUk_thenBuildAnAppealWithIbcRoleAndIbcaReference() {
+        pairs.put("person1_title", APPELLANT_TITLE);
+        pairs.put("person1_first_name", APPELLANT_FIRST_NAME);
+        pairs.put("person1_last_name", APPELLANT_LAST_NAME);
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_phone", APPELLANT_PHONE);
+        pairs.put("person1_mobile", APPELLANT_MOBILE);
+        pairs.put("person1_dob", APPELLANT_DATE_OF_BIRTH);
+        pairs.put("person1_email", APPELLANT_EMAIL);
+        pairs.put(APPEAL_GROUNDS, APPEAL_REASON);
+        pairs.put("person1_ibca_reference", APPELLANT_IBCA_REFERENCE);
+        pairs.put(IBC_ROLE_FOR_SELF, true);
+        pairs.put("form_type", SSCS8_FORM_TYPE);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(SSCS8, result.getTransformedCase().get("formType"));
+        Appeal transformedAppeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertNotNull(transformedAppeal);
+        assertEquals(APPELLANT_IBC_ROLE_FOR_SELF, transformedAppeal.getAppellant().getIbcRole());
+        assertEquals(APPELLANT_IBCA_REFERENCE, transformedAppeal.getAppellant().getIdentity().getIbcaReference());
+        Address address = transformedAppeal.getAppellant().getAddress();
+        assertNotNull(address);
+        Address expectedAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).postcode(APPELLANT_POSTCODE).inMainlandUk(YesNo.YES).build();
+        assertEquals(expectedAddress, address);
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    public void givenPortOfEntry_thenBuildAnAppealWithAddressWithCountryPortOfEntry() {
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_Country", APPELLANT_ADDRESS_COUNTRY);
+        pairs.put("person1_port_of_entry", APPELLANT_PORT_OF_ENTRY);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_ibca_reference", APPELLANT_IBCA_REFERENCE);
+        pairs.put(IBC_ROLE_FOR_SELF, true);
+        pairs.put("form_type", SSCS8_FORM_TYPE);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(SSCS8, result.getTransformedCase().get("formType"));
+        Appeal transformedAppeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertNotNull(transformedAppeal);
+        assertEquals(APPELLANT_IBC_ROLE_FOR_SELF, transformedAppeal.getAppellant().getIbcRole());
+        assertEquals(APPELLANT_IBCA_REFERENCE, transformedAppeal.getAppellant().getIdentity().getIbcaReference());
+        Address address = transformedAppeal.getAppellant().getAddress();
+        assertNotNull(address);
+        Address expectedAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).country(APPELLANT_ADDRESS_COUNTRY).postcode(APPELLANT_POSTCODE).portOfEntry(APPELLANT_PORT_OF_ENTRY).inMainlandUk(YesNo.NO).build();
+        assertEquals(expectedAddress, address);
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    @Parameters({
+        IBC_ROLE_FOR_SELF + "," + APPELLANT_IBC_ROLE_FOR_SELF,
+        IBC_ROLE_FOR_U18 + "," + APPELLANT_IBC_ROLE_FOR_U18,
+        IBC_ROLE_FOR_DECEASED + "," + APPELLANT_IBC_ROLE_FOR_DECEASED,
+        IBC_ROLE_FOR_POA + "," + APPELLANT_IBC_ROLE_FOR_POA,
+        IBC_ROLE_FOR_LACKING_CAPACITY + "," + APPELLANT_IBC_ROLE_FOR_LACKING_CAPACITY
+    })
+    public void givenChosenIbcRole_thenBuildAnAppealWithIbcRoleSet(String ibcRoleBoolean, String ibcRoleValue) {
+        pairs.put("person1_address_line1", APPELLANT_ADDRESS_LINE1);
+        pairs.put("person1_address_line2", APPELLANT_ADDRESS_LINE2);
+        pairs.put("person1_address_line3", APPELLANT_ADDRESS_LINE3);
+        pairs.put("person1_address_line4", APPELLANT_ADDRESS_LINE4);
+        pairs.put("person1_Country", APPELLANT_ADDRESS_COUNTRY);
+        pairs.put("person1_port_of_entry", APPELLANT_PORT_OF_ENTRY);
+        pairs.put("person1_postcode", APPELLANT_POSTCODE);
+        pairs.put("person1_ibca_reference", APPELLANT_IBCA_REFERENCE);
+        pairs.put(ibcRoleBoolean, true);
+        pairs.put("form_type", SSCS8_FORM_TYPE);
+
+        CaseResponse result = transformer.transformExceptionRecord(exceptionRecord, false);
+
+        assertEquals(SSCS8, result.getTransformedCase().get("formType"));
+        Appeal transformedAppeal = (Appeal) result.getTransformedCase().get("appeal");
+        assertNotNull(transformedAppeal);
+        assertEquals(ibcRoleValue, transformedAppeal.getAppellant().getIbcRole());
+        assertEquals(APPELLANT_IBCA_REFERENCE, transformedAppeal.getAppellant().getIdentity().getIbcaReference());
+        Address address = transformedAppeal.getAppellant().getAddress();
+        assertNotNull(address);
+        Address expectedAddress = Address.builder().line1(APPELLANT_ADDRESS_LINE1).line2(APPELLANT_ADDRESS_LINE2).town(APPELLANT_ADDRESS_LINE3).country(APPELLANT_ADDRESS_COUNTRY).postcode(APPELLANT_POSTCODE).portOfEntry(APPELLANT_PORT_OF_ENTRY).inMainlandUk(YesNo.NO).build();
+        assertEquals(expectedAddress, address);
         assertTrue(result.getErrors().isEmpty());
     }
 
@@ -2676,8 +2775,6 @@ public class SscsCaseTransformerTest {
     public void givenNullFormAndWithSscs5FormTypeInput_thenDocumentUpdated() {
         checkFormTypeAndDocumentUpdated(null, "sscs5", "sscs5");
     }
-
-
 
     private Appeal buildTestAppealData() {
         Name appellantName = Name.builder().title(APPELLANT_TITLE).firstName(APPELLANT_FIRST_NAME).lastName(APPELLANT_LAST_NAME).build();
