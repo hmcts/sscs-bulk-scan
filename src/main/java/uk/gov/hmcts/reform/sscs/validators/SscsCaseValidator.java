@@ -591,6 +591,9 @@ public class SscsCaseValidator implements CaseValidator {
                 RegionalProcessingCenter rpc = regionalProcessingCenterService.getByPostcode(postCodeOrPort, isIbcOrSscs8);
 
                 if (rpc != null) {
+                    if (isIbcOrSscs8) {
+                        rpc = rpc.toBuilder().hearingRoute(HearingRoute.LIST_ASSIST).build();
+                    }
                     caseData.put("region", rpc.getName());
                     caseData.put("regionalProcessingCenter", rpc);
                 } else if (!isPort) {
