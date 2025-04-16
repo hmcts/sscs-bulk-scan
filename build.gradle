@@ -8,7 +8,7 @@ plugins {
   id 'org.springframework.boot' version '3.4.3'
   id 'uk.gov.hmcts.java' version '0.12.63'
   id 'org.owasp.dependencycheck' version '12.1.0'
-  id 'com.github.ben-manes.versions' version '0.51.0'
+  id 'com.github.ben-manes.versions' version '0.52.0'
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -254,15 +254,15 @@ dependencies {
   }
 
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.1'
-  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '3.4.1'
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version: '3.5.0'
   testImplementation group: 'org.pitest', name: 'pitest', version: '1.17.0'
   testImplementation group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: pitest.pitestVersion.get()
   testImplementation group: 'org.codehaus.sonar-plugins', name: 'sonar-pitest-plugin', version: '0.5'
   testImplementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-contract-stub-runner'
 
   testImplementation group: 'com.typesafe', name: 'config', version: '1.4.3'
-  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.0'
-  testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '5.11.0'
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.12.2'
+  testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '5.12.2'
   testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: '1.1.2'
 
   integrationTestImplementation sourceSets.main.runtimeClasspath
