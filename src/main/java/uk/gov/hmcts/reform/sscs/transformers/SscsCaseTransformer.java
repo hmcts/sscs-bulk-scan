@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.sscs.transformers;
 
+import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.AppellantRole.OTHER;
 import static uk.gov.hmcts.reform.sscs.ccd.domain.Benefit.CHILD_SUPPORT;
@@ -930,11 +931,12 @@ public class SscsCaseTransformer implements CaseTransformer {
                 }
 
                 String startDate = getDateForCcd(range.get(0), errors, errorMessage);
-                String endDate = null;
+                String endDate = setEndDatesForExcludeDates(startDate, range, errorMessage);
 
-                if (2 == range.size()) {
-                    endDate = getDateForCcd(range.get(1), errors, errorMessage);
+                if (isNull(startDate) && !isNull(endDate)) {
+                    startDate = endDate;
                 }
+
                 excludeDates.add(
                     ExcludeDate.builder().value(DateRange.builder().start(startDate).end(endDate).build()).build());
             }
@@ -949,6 +951,18 @@ public class SscsCaseTransformer implements CaseTransformer {
             return null;
         }
         return excludeDates;
+    }
+
+    private String setEndDatesForExcludeDates(String startDate, List<String> range, String errorMessage) {
+        if (2 == range.size()) {
+            return getDateForCcd(range.get(1), errors, errorMessage);
+        }
+
+        if (1 == range.size()) {
+            return startDate;
+        }
+
+        return null;
     }
 
     private List<String> buildArrangements(Map<String, Object> pairs, boolean isSignLanguageInterpreterRequired) {
